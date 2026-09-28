@@ -1,5 +1,7 @@
-# Deployt die Umfrage (survey/index.html) nach GitHub Pages: bei jedem Push auf main
-# und auf Knopfdruck (Actions → pages → Run workflow). Vorher läuft npm run check.
+# Deployt die Umfrage nach GitHub Pages: bei jedem Push auf main und auf Knopfdruck
+# (Actions → pages → Run workflow). Ablauf: npm run bundle, npm run check, dann die
+# gebündelte Einzeldatei dist/vave-discovery-umfrage.html als index.html veröffentlichen.
+# Online liegt damit genau die Datei, die auch verschickt wird (D-003).
 # Solange survey/index.html fehlt, wird nichts deployt und der Lauf bleibt grün.
 #
 # Einmalig nötig: Settings → Pages → Build and deployment → Source: "GitHub Actions".
@@ -33,7 +35,6 @@ jobs:
         with:
           node-version: 22
           package-manager-cache: false
-      - run: npm run check
       - name: Umfrage vorhanden?
         id: survey
         run: |
@@ -43,6 +44,15 @@ jobs:
             echo "present=false" >> "$GITHUB_OUTPUT"
             echo "::notice::survey/index.html fehlt noch, kein Deploy."
           fi
+      - name: Einzeldatei bündeln
+        if: steps.survey.outputs.present == 'true'
+        run: npm run bundle
+      - run: npm run check
+      - name: Seite zusammenstellen
+        if: steps.survey.outputs.present == 'true'
+        run: |
+          mkdir -p _site
+          cp dist/vave-discovery-umfrage.html _site/index.html
       - if: steps.survey.outputs.present == 'true'
         uses: actions/configure-pages@v5
         with:
@@ -50,7 +60,7 @@ jobs:
       - if: steps.survey.outputs.present == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: survey
+          path: _site
 
   deploy:
     needs: build

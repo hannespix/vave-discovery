@@ -1,65 +1,70 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "vave-discovery — Umfrage-Ergebnis",
-  "description": "Ausgabe von survey/index.html. Eine Datei pro Befragung. zone 'skip' ist die Neutraloption (weiß nicht / betrifft mich nicht) und wird bei allen Berechnungen ignoriert.",
+  "title": "vave-discovery — Umfrage-Export (schema vave-discovery/1)",
+  "description": "Exakt das, was survey/index.html per Download erzeugt. Modul-, Wunsch- und Rollen-IDs stammen aus survey/modules.js. Zone 'unknown' (Kenne ich nicht) ist die Neutraloption und wird bei allen Berechnungen ignoriert. Reibung (friction) nur für Module in Zone 'keep', Skala 0 (läuft rund) … 4 (bremst täglich).",
   "type": "object",
-  "required": ["meta", "modules", "missing", "budget", "wand"],
+  "required": ["schema", "exportedAt", "startedAt", "respondent", "sort", "friction", "wishes", "customWishes", "roles", "budget", "wand", "noGo", "hypothesis"],
   "additionalProperties": false,
   "properties": {
-    "meta": {
+    "schema": { "const": "vave-discovery/1" },
+    "exportedAt": { "type": "string", "format": "date-time" },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "respondent": { "type": "string", "minLength": 1 },
+    "sort": {
       "type": "object",
-      "required": ["schemaVersion", "surveyVersion", "target", "respondent", "role", "completedAt", "durationSec"],
-      "additionalProperties": false,
-      "properties": {
-        "schemaVersion": { "const": "1.0" },
-        "surveyVersion": { "type": "string", "description": "git describe der Umfrage-Datei" },
-        "target": { "enum": ["quojob", "prototype"], "description": "Was wird bewertet — Bestand (M1) oder Prototyp (M4)" },
-        "respondent": { "type": "string" },
-        "role": { "enum": ["gf", "pm", "kreation", "backoffice", "asia"] },
-        "completedAt": { "type": "string", "format": "date-time" },
-        "durationSec": { "type": "integer", "minimum": 0 },
-        "device": { "type": "string" }
-      }
+      "description": "moduleId → Zone",
+      "additionalProperties": { "enum": ["keep", "drop", "unknown"] }
     },
-    "modules": {
+    "friction": {
+      "type": "object",
+      "description": "moduleId → Reibung 0–4, nur für Zone keep",
+      "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 4 }
+    },
+    "wishes": {
+      "type": "object",
+      "description": "wishId → Stufe",
+      "additionalProperties": { "enum": ["off", "nice", "must"] }
+    },
+    "customWishes": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["id", "zone"],
+        "required": ["id", "text", "level"],
         "additionalProperties": false,
         "properties": {
-          "id": { "type": "string", "description": "id aus modules.json" },
-          "zone": { "enum": ["keep", "kill", "miss", "skip"] },
-          "frust": { "type": ["integer", "null"], "minimum": 0, "maximum": 5, "description": "nur bei zone=keep; Skala: wie oft bremst es (0 nie … 5 täglich)" },
-          "roles": { "type": "array", "items": { "enum": ["gf", "pm", "kreation", "backoffice", "asia"] }, "description": "wer nutzt es bei VAVE tatsächlich" }
+          "id": { "type": "string" },
+          "text": { "type": "string", "minLength": 1 },
+          "level": { "enum": ["off", "nice", "must"] }
         }
       }
     },
-    "missing": {
-      "type": "array",
-      "description": "Vermisstes — aus Zone miss und/oder Freitext, in Prioritätsreihenfolge",
-      "items": {
-        "type": "object",
-        "required": ["label", "priority"],
-        "additionalProperties": false,
-        "properties": {
-          "label": { "type": "string" },
-          "priority": { "type": "integer", "minimum": 1 },
-          "moduleId": { "type": ["string", "null"] }
-        }
-      }
+    "roles": {
+      "type": "object",
+      "description": "roleId → Nutzungshäufigkeit",
+      "additionalProperties": { "enum": ["never", "rarely", "weekly", "daily"] }
     },
     "budget": {
       "type": "object",
-      "required": ["currentMonthlyEur", "painThresholdEur", "buildWillingness"],
+      "required": ["current", "currentUnknown", "max", "buildBuy"],
       "additionalProperties": false,
       "properties": {
-        "currentMonthlyEur": { "type": ["number", "null"], "minimum": 0, "description": "heutige Kosten für Agentursoftware, null = weiß nicht" },
-        "painThresholdEur": { "type": ["number", "null"], "minimum": 0, "description": "monatliche Schmerzgrenze für eine bessere Lösung" },
-        "buildWillingness": { "type": "integer", "minimum": 0, "maximum": 10, "description": "Bereitschaft, Eigenentwicklung zu tragen (Pflege, Verantwortung)" }
+        "current": { "type": "number", "minimum": 0, "maximum": 6000, "description": "heutige Kosten €/Monat; nur gültig, wenn currentUnknown=false" },
+        "currentUnknown": { "type": "boolean" },
+        "max": { "type": "number", "minimum": 0, "description": "Schmerzgrenze €/Monat" },
+        "buildBuy": { "type": "integer", "minimum": 0, "maximum": 100, "description": "0 = fertiges Tool kaufen … 100 = selbst bauen lassen" }
       }
     },
-    "wand": { "type": "string", "description": "Zauberstab-Freitext, wörtlich" }
+    "wand": { "type": "string", "description": "Zauberstab, wörtlich" },
+    "noGo": { "type": "string", "description": "Darf nicht passieren, wörtlich" },
+    "hypothesis": {
+      "type": "object",
+      "description": "Von der Umfrage selbst berechnet (hypothesis() in index.html). Hinweis für Menschen, kein Urteil — der gatekeeper rechnet unabhängig nach.",
+      "required": ["target", "reasons"],
+      "additionalProperties": false,
+      "properties": {
+        "target": { "enum": ["A", "B", "C"] },
+        "reasons": { "type": "array", "items": { "type": "string" } }
+      }
+    }
   }
 }

@@ -22,13 +22,13 @@ M0 Fundament ──G0──▶ M1 Umfrage ──G1──▶ M2 Auswertung & Ziel
 **Ziel:** Repo, Regeln, Katalog und Schema stehen; jeder Agent kann ohne Rückfrage loslegen.
 
 Zwischenziele (Startmenge):
-- Modulkatalog `docs/survey/modules.json` vollständig, jedes Modul mit `layer` und `roles`
-- `docs/survey/results-schema.json` fixiert; `scripts/check.mjs` validiert Beispieldatei
+- Baustein-Katalog `survey/modules.js` vollständig: jeder Baustein mit `group` und `price`; Wünsche, Rollen, Reibungsskala
+- `docs/survey/results-schema.json` fixiert; `npm run check` validiert `data/results/example.json`
 - `docs/design-principles.md` mit messbaren Kriterien für den `ui-critic`
 - Offene Frage an Tobias/VAVE beantwortet: **welche QuoJob-Module sind tatsächlich gebucht?**
 
 ### Gate G0 — „Bauen darf beginnen“
-- Nachweis: `npm run check` grün auf `data/results/example.json`; Katalog hat ≥ 20 Module
+- Nachweis: `npm run check` grün; Katalog hat ≥ 20 Bausteine in 5 Gruppen
 - Kriterium: Liste der gebuchten Module liegt vor **oder** ist als Annahme in `DECISIONS.md` dokumentiert
 - Verzweigung: → M1
 - Abbruch: keiner (M0 kann nicht scheitern, nur dauern)
@@ -39,16 +39,19 @@ Zwischenziele (Startmenge):
 
 **Ziel:** Tobias füllt in 5–7 Minuten aus, hat Spaß dabei, und wir bekommen ein valides `results.json`.
 
-Zwischenziele (Startmenge):
-- Screen 1 Keep/Kill/Miss: Modulkarten per Drag in drei animierte Zonen (Touch + Maus + Tastatur)
-- Screen 2 Frust-Heatmap: Emoji-Slider 0–5 pro behaltenem Modul
-- Screen 3 Rollen-Matrix: wer nutzt was (GF, PM, Kreation, Backoffice, Studios Asien/ME)
-- Screen 4 Budget: heutige Kosten, Schmerzgrenze, Bereitschaft zur Eigenentwicklung (0–10)
-- Screen 5 Zauberstab: ein Freitext, dann JSON-Download + Confetti
-- Fortschrittsanzeige als animierte SVG, Wiederaufnahme nach Reload (localStorage, try/catch)
+Stand r00: Die sieben Stationen sind gebaut (Eingang · Sortieren Keep/Drop/Unknown per Drag, Tap oder
+Tasten 1/2/3 · Reibung 0–4 mit animiertem Gesicht · Wünsche 3-stufig + eigene · Rollen × Häufigkeit ·
+Budget mit drei Reglern · Zauberstab + „Darf nicht passieren“ · Ergebnis mit Hypothese, JSON- und
+Brief-Download, Confetti). Desktop, Touch-Tap und Touch-Drag laufen in Playwright.
+
+Zwischenziele (Startmenge, was noch fehlt):
+- Test durch eine unbeteiligte Person auf dem eigenen Handy, Zeit stoppen (< 8 Min.)
+- `ui-critic` einmal über alle sieben Stationen (Viewport 390 px und 1280 px)
+- `red-team` Prüfrichtung Umfrage: Suggestivität, Reihenfolgeeffekt der Karten, Neutraloption sichtbar?
+- `npm run bundle` → Einzeldatei an Tobias, mit Zwei-Zeilen-Anleitung (öffnen, am Ende beide Downloads zurückschicken)
 
 ### Gate G1 — „Daten sind da“
-- Nachweis: `data/results/tobias-<datum>.json` validiert gegen Schema
+- Nachweis: `data/results/YYYY-MM-DD_tobias.json` validiert gegen Schema (`npm run check`)
 - Kriterien: `ui-critic` ≥ 8/10 in allen Dimensionen aus `design-principles.md`;
   `red-team` findet keine Bias-Falle mit Schwere „hoch“ (Suggestivfragen, Reihenfolgeeffekte, fehlende Neutraloption);
   Testlauf durch eine unbeteiligte Person unter 8 Minuten
@@ -72,25 +75,30 @@ Zwischenziele (Startmenge):
 
 ### Zielbild-Regeln (der `gatekeeper` rechnet, Menschen entscheiden)
 
-Aus `results.json` werden berechnet (Definitionen in `docs/survey/modules.json` → `layer`):
+Die Umfrage berechnet selbst eine Hypothese (`hypothesis()` in `survey/index.html`, Feld `hypothesis` im
+Export). Der Gatekeeper rechnet **unabhängig** mit denselben Definitionen nach; stimmen beide nicht überein,
+ist das ein Red-Team-Befund. Aus dem Export (`schema: vave-discovery/1`) werden berechnet:
 
-- `pain[layer]` = Summe `frust` aller Module des Layers mit `zone == "keep"`, normiert auf 1 über alle Layer
-- `killCore` = Anzahl Module mit `layer in {core, backoffice}` und `zone == "kill"`
-- `missCount` = Anzahl Einträge unter `missing`
-- `will` = `budget.buildWillingness` (0–10)
-- `ratio` = `budget.painThresholdEur / budget.currentMonthlyEur` (wenn beide > 0)
+- `keep` = Bausteine mit `sort[id] == "keep"`; `unknown` wird ignoriert (Neutraloption)
+- `keptBack` = Anzahl `keep`-Bausteine der Gruppen `finanzen` und `gruppe` (Backoffice/Gruppe)
+- `frontPain` = Ø `friction` der `keep`-Bausteine `zeit, kalender, pm, app` (Alltag)
+- `backPain` = Ø `friction` der `keep`-Bausteine aus `finanzen` + `gruppe`
+- `bb` = `budget.buildBuy` (0 = kaufen … 100 = bauen)
+- `dailyMakers` = Anzahl Rollen aus {`kreation`, `tech`} mit `roles[id] == "daily"`
+- `costSignal` = `!budget.currentUnknown && budget.max < 0.8 × budget.current`
 
-Regeln, in dieser Reihenfolge, erste zutreffende gewinnt:
+Regeln, in dieser Reihenfolge, erste zutreffende gewinnt (identisch mit `hypothesis()`):
 
 | # | Bedingung | Vorschlag | Begründungspflicht |
 |---|---|---|---|
-| 1 | `pain.surface ≥ 0.60` **und** `killCore == 0` | **A** — Frontend auf Bestand | Zeigen, welche 3 Surface-Module den meisten Frust tragen |
-| 2 | `pain.backoffice ≥ 0.50` **und** `will ≤ 5` | **B** — Markt-Screening + Ergänzungen | Zeigen, welche Backoffice-Module fehlen/nerven; Kandidatenliste aus `docs/research/` |
-| 3 | `will ≥ 8` **und** `ratio ≥ 2` **und** Zauberstab nennt explizit Ablösung | **C** — Eigener Kern | Explizite Risikoliste (Rechnungsnummern, E-Rechnung, Mandanten, Steuer in mehreren Ländern) |
-| 4 | sonst | **A** mit Vermerk „unklares Signal“ | Vorschlag für eine zweite, kürzere Befragung von 3 PMs + 1 Backoffice |
+| 1 | `bb ≥ 70` **und** `keptBack ≤ 2` | **C** — Eigener Kern | Risikoliste: Rechnungsnummern, E-Rechnung, Mandanten, Steuer in mehreren Ländern |
+| 2 | `backPain ≥ 2.5` **und** `bb ≤ 40` | **B** — Markt-Screening + Ergänzungen | Welche Backoffice-Bausteine reiben; Kandidaten aus `docs/research/06-marktscreening.md` |
+| 3 | `backPain ≥ 2.5` **und** `bb ≥ 60` | **C** — Eigener Kern | wie Regel 1, zusätzlich: warum kein SaaS |
+| 4 | sonst | **A** — Frontend auf Bestand | Die drei Alltags-Bausteine mit höchster Reibung; `keptBack` als Argument für Bestand |
 
-Der Vorschlag enthält immer: Konfidenz (niedrig/mittel/hoch), die drei Zahlen, die ihn tragen,
-und was ihn kippen würde.
+Zusätzlich immer prüfen: `costSignal` → Kosten sind Teil des Problems, im Vorschlag benennen.
+Der Vorschlag enthält: Konfidenz (niedrig, wenn eine Regel bei ±1 Reibungspunkt oder ±10 `bb` kippt),
+die Zahlen, die ihn tragen, was ihn kippen würde, und ob er mit `hypothesis.target` der Umfrage übereinstimmt.
 
 ### Gate G2 — „Zielbild entschieden“
 - Nachweis: `DECISIONS.md` enthält `D-0xx Zielbild` mit A/B/C, Unterschrift Hannes + Tobias (Name, Datum)
@@ -105,7 +113,7 @@ und was ihn kippen würde.
 **Annahme:** QuoJob bleibt System of Record (Rechnungen, FiBu, Mandanten). Wir bauen die
 Oberfläche, die PMs und Kreative täglich anfassen.
 
-Zwischenziele (Startmenge, Reihenfolge nach Frust-Rangfolge aus dem Brief):
+Zwischenziele (Startmenge, Reihenfolge nach Reibungs-Rangfolge aus dem Brief):
 - Datenmodell nur für Surface-Objekte (Zeitbuchung, Aufgabe, Projektstatus, Nutzer) — read-only Mock aus Beispieldaten
 - Flow 1: Zeit buchen in < 3 Interaktionen, mobil
 - Flow 2: Projektstatus-Board mit Budgetampel, für Junioren lesbar
@@ -151,7 +159,7 @@ Zwischenziele (Startmenge):
 
 ### Gate G4
 - Nachweis: `data/results/pilot-*.json`
-- Kriterien: ≥ 60 % der Pilotnutzer buchen Zeiten im Prototyp statt im Altsystem (Selbstauskunft); Frust-Summe der Surface-Module sinkt gegenüber M1
+- Kriterien: ≥ 60 % der Pilotnutzer buchen Zeiten im Prototyp statt im Altsystem (Selbstauskunft); Ø Reibung der Alltags-Bausteine sinkt gegenüber M1
 - Verzweigung: erfüllt → M5 Rollout-Plan; nicht erfüllt → eine Runde „Top-3-Pain-Points“, dann erneut G4
 - Abbruch: nach 2 Pilotzyklen ohne Verbesserung → M5 mit Status *Stop*, Learnings dokumentieren
 

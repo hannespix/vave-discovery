@@ -1,41 +1,101 @@
 {
-  "meta": {
-    "schemaVersion": "1.0",
-    "surveyVersion": "0.1.0-example",
-    "target": "quojob",
-    "respondent": "Beispiel (nicht echt)",
-    "role": "gf",
-    "completedAt": "2026-09-28T12:00:00+02:00",
-    "durationSec": 371,
-    "device": "iPhone"
+  "schema": "vave-discovery/1",
+  "exportedAt": "2026-09-28T12:06:11.000Z",
+  "startedAt": "2026-09-28T12:00:02.000Z",
+  "respondent": "Beispiel (nicht echt)",
+  "sort": {
+    "kalender": "drop",
+    "zeit": "keep",
+    "kontakte": "keep",
+    "korrespondenz": "unknown",
+    "bizdev": "drop",
+    "suche": "keep",
+    "pm": "keep",
+    "ressourcen": "keep",
+    "media": "drop",
+    "angebote": "keep",
+    "controlling": "keep",
+    "op": "keep",
+    "liquiditaet": "unknown",
+    "fibu": "keep",
+    "ocr": "keep",
+    "retainer": "keep",
+    "wkl": "drop",
+    "preislisten": "unknown",
+    "kassenbuch": "drop",
+    "mandanten": "keep",
+    "waehrung": "keep",
+    "sprachen": "keep",
+    "hr": "unknown",
+    "app": "keep",
+    "exchange": "drop",
+    "mail": "unknown",
+    "api": "keep",
+    "export": "keep"
   },
-  "modules": [
-    { "id": "time-tracking", "zone": "keep", "frust": 4, "roles": ["pm", "kreation", "asia"] },
-    { "id": "tasks", "zone": "keep", "frust": 5, "roles": ["pm", "kreation"] },
-    { "id": "project-board", "zone": "keep", "frust": 4, "roles": ["gf", "pm"] },
-    { "id": "dashboard", "zone": "keep", "frust": 3, "roles": ["gf", "pm", "kreation"] },
-    { "id": "calendar", "zone": "kill", "frust": null, "roles": [] },
-    { "id": "mobile-app", "zone": "miss", "frust": null, "roles": ["kreation", "asia"] },
-    { "id": "jobs", "zone": "keep", "frust": 2, "roles": ["pm"] },
-    { "id": "quotes", "zone": "keep", "frust": 2, "roles": ["pm", "backoffice"] },
-    { "id": "invoices-out", "zone": "keep", "frust": 1, "roles": ["backoffice"] },
-    { "id": "crm", "zone": "keep", "frust": 1, "roles": ["gf", "pm"] },
-    { "id": "controlling", "zone": "keep", "frust": 2, "roles": ["gf"] },
-    { "id": "invoices-in", "zone": "keep", "frust": 1, "roles": ["backoffice"] },
-    { "id": "accounting-export", "zone": "keep", "frust": 0, "roles": ["backoffice"] },
-    { "id": "multi-entity", "zone": "keep", "frust": 1, "roles": ["gf", "backoffice", "asia"] },
-    { "id": "currencies", "zone": "keep", "frust": 1, "roles": ["backoffice", "asia"] },
-    { "id": "media", "zone": "kill", "frust": null, "roles": [] },
-    { "id": "cashbook", "zone": "skip", "frust": null, "roles": [] }
+  "friction": {
+    "zeit": 4,
+    "kontakte": 1,
+    "suche": 3,
+    "pm": 4,
+    "ressourcen": 3,
+    "angebote": 2,
+    "controlling": 2,
+    "op": 0,
+    "fibu": 0,
+    "ocr": 1,
+    "retainer": 1,
+    "mandanten": 1,
+    "waehrung": 0,
+    "sprachen": 2,
+    "app": 4,
+    "api": 3,
+    "export": 1
+  },
+  "wishes": {
+    "budget-ampel": "must",
+    "zeit-5s": "must",
+    "ki-belege": "nice",
+    "onboarding": "must",
+    "kapazitaet": "must",
+    "forecast": "nice",
+    "dashboards": "nice",
+    "slack-teams": "off",
+    "kundenportal": "nice",
+    "en-zh": "must",
+    "auto-rechnung": "off",
+    "offene-api": "nice",
+    "schnell": "must",
+    "preis-pro-kopf": "off"
+  },
+  "customWishes": [
+    {
+      "id": "custom-example1",
+      "text": "Projektstatus für Kunden in Shanghai ohne VPN sichtbar",
+      "level": "nice"
+    }
   ],
-  "missing": [
-    { "label": "Mobile App", "priority": 1, "moduleId": "mobile-app" },
-    { "label": "Budgetampel, die Junioren verstehen", "priority": 2, "moduleId": null }
-  ],
+  "roles": {
+    "gf": "weekly",
+    "pm": "daily",
+    "kreation": "daily",
+    "tech": "weekly",
+    "finanzen": "daily",
+    "asia": "daily",
+    "freelancer": "rarely"
+  },
   "budget": {
-    "currentMonthlyEur": 1700,
-    "painThresholdEur": 2200,
-    "buildWillingness": 6
+    "current": 1700,
+    "currentUnknown": false,
+    "max": 2200,
+    "buildBuy": 55
   },
-  "wand": "Zeit buchen darf nicht länger dauern als die Arbeit, die ich buche."
+  "wand": "Zeit buchen darf nicht länger dauern als die Arbeit, die ich buche.",
+  "noGo": "Die Buchhaltung darf nicht drei Monate stillstehen.",
+  "hypothesis": {
+    "target": "A",
+    "reasons": [
+      "Beispieldatei — Begründungen erzeugt die Umfrage selbst."
+    ]
+  }
 }

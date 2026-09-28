@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VAVE Discovery – Euer Agentur-Tool in sechs Minuten</title>
+<meta name="description" content="Sieben Stationen zu QuoJob bei VAVE: was ihr braucht, was bremst, was fehlt.">
+<style>
+/* ------------------------------------------------------------------
+   Tokens – ein Akzent (Ultramarin), sonst Ruhe. Änderungen hier, nicht
+   verstreut im Code. Siehe CLAUDE.md.
+------------------------------------------------------------------- */
+:root {
+  --bg: #F4F5F8;
+  --surface: #FFFFFF;
+  --ink: #171A21;
+  --ink-2: #626878;
+  --ink-3: #9AA0AE;
+  --line: #DCDFE6;
+  --signal: #2D3BFF;
+  --signal-deep: #1F2BC9;
+  --signal-soft: #E9EBFF;
+  --graphite: #33384A;
+  --graphite-soft: #E7E9EE;
+  --amber: #B97D00;
+  --amber-soft: #FFF1CF;
+  --radius: 14px;
+  --radius-s: 8px;
+  --shadow-lift: 0 18px 40px -18px rgba(23, 26, 33, .35);
+  --font: 'Manrope', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; /* Manrope nur, wenn lokal installiert – keine externen Fonts (D-003) */
+  --ease-spring: cubic-bezier(.2, .9, .25, 1.15);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+*, *::before, *::after { box-sizing: inherit; }
+
+html, body { height: 100%; }
+html { overflow-x: hidden; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--signal); outline-offset: 3px; border-radius: var(--radius-s); }
+
+h1, h2, h3 { margin: 0; letter-spacing: -.02em; line-height: 1.1; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 800; }
+h2 { font-size: clamp(1.7rem, 3.6vw, 2.4rem); font-weight: 800; }
+h3 { font-size: 1.05rem; font-weight: 800; letter-spacing: -.01em; }
+p { margin: 0; }
+.lead { font-size: 1.15rem; color: var(--ink-2); max-width: 38em; }
+.muted { color: var(--ink-2); }
+.small { font-size: .9rem; }
+
+/* ------------------------------------------------------------------
+   Kopf: Marke + Route. Die Route ist das eine bewusste Element.
+------------------------------------------------------------------- */
+.top {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.top-inner { max-width: 980px; margin: 0 auto; padding: 14px 24px 10px; }
+.brand-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.brand { font-weight: 800; letter-spacing: -.01em; }
+.brand span { color: var(--signal); }
+.room { color: var(--ink-2); font-weight: 600; font-size: .95rem; }
+.route { display: block; width: 100%; height: 44px; margin-top: 4px; overflow: visible; }
+.route-base { fill: none; stroke: var(--line); stroke-width: 2; }
+.route-done { fill: none; stroke: var(--signal); stroke-width: 2.5; stroke-linecap: round; transition: stroke-dashoffset .6s var(--ease-out); }
+.node { cursor: default; }
+.node circle { fill: var(--bg); stroke: var(--line); stroke-width: 2; transition: fill .3s, stroke .3s; }
+.node.is-done circle { fill: var(--signal); stroke: var(--signal); }
+.node.is-done { cursor: pointer; }
+.node.is-current circle { fill: var(--surface); stroke: var(--signal); stroke-width: 3; }
+.node .pulse { fill: none; stroke: var(--signal); stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.node.is-current .pulse { animation: pulse 2.2s ease-out infinite; }
+@keyframes pulse {
+  0%   { transform: scale(1);   opacity: .7; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+.node text { font-size: 11px; font-weight: 600; fill: var(--ink-3); text-anchor: middle; }
+.node.is-current text, .node.is-done text { fill: var(--ink-2); }
+@media (max-width: 640px) { .node text { display: none; } }
+
+/* ------------------------------------------------------------------
+   Bühne
+------------------------------------------------------------------- */
+.stage { max-width: 980px; margin: 0 auto; padding: 40px 24px 140px; }
+.step { display: none; }
+.step.is-active { display: block; animation: stepIn .45s var(--ease-out); }
+@keyframes stepIn { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+.step-head { display: grid; gap: 12px; margin-bottom: 28px; max-width: 46em; }
+
+/* Eingang */
+.entry-grid { display: grid; gap: 28px; max-width: 46em; }
+.entry-facts { display: flex; flex-wrap: wrap; gap: 10px 22px; color: var(--ink-2); font-weight: 600; }
+.entry-facts b { color: var(--ink); font-weight: 800; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px; border-radius: 999px; border: 1.5px solid var(--line);
+  background: var(--surface); font-weight: 700; line-height: 1;
+  transition: transform .15s var(--ease-out), background .2s, border-color .2s, opacity .2s;
+}
+.btn:hover { transform: translateY(-1px); border-color: var(--ink-3); }
+.btn:active { transform: translateY(0) scale(.98); }
+.btn.primary { background: var(--signal); border-color: var(--signal); color: #fff; }
+.btn.primary:hover { background: var(--signal-deep); border-color: var(--signal-deep); }
+.btn.quiet { background: transparent; border-color: transparent; color: var(--ink-2); }
+.btn.quiet:hover { color: var(--ink); border-color: transparent; background: var(--graphite-soft); }
+.btn.small { padding: 8px 14px; font-size: .9rem; }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+/* ------------------------------------------------------------------
+   Station 1 – Sortieren: ein Kartenstapel, drei Zonen, immer im Blick.
+------------------------------------------------------------------- */
+.deck {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 6px 0 22px; border-radius: var(--radius); transition: background .2s;
+}
+.deck.is-over { background: var(--graphite-soft); }
+.deck-stack { position: relative; width: min(100%, 460px); min-height: 150px; }
+.deck-ghost {
+  position: absolute; inset: 0; border-radius: var(--radius);
+  background: var(--surface); border: 1.5px solid var(--line);
+}
+.deck-ghost.g1 { transform: translateY(9px) scale(.97); opacity: .85; }
+.deck-ghost.g2 { transform: translateY(18px) scale(.94); opacity: .5; }
+.deck-meta {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  width: min(100%, 460px); color: var(--ink-2); font-weight: 600; font-size: .9rem;
+}
+.deck-empty {
+  width: min(100%, 460px); padding: 26px 24px; text-align: center;
+  border: 1.5px dashed var(--line); border-radius: var(--radius); color: var(--ink-2); font-weight: 600;
+}
+.deck-help { margin-top: 14px; display: none; }
+@media (hover: hover) and (min-width: 760px) { .deck-help { display: block; } }
+
+.card {
+  --tint: var(--graphite-soft);
+  position: relative; display: grid; min-width: 0; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: start;
+  text-align: left; width: 100%;
+  padding: 10px 30px 10px 14px;
+  border-radius: var(--radius-s); border: 1.5px solid var(--line); background: var(--surface);
+  user-select: none; -webkit-user-select: none; touch-action: none;
+  transition: transform .18s var(--ease-out), box-shadow .18s, border-color .18s, opacity .18s;
+}
+.card::before {
+  content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 4px;
+  border-radius: 0 3px 3px 0; background: var(--tint);
+}
+.card[data-group="alltag"]    { --tint: #C8D0FF; }
+.card[data-group="projekt"]   { --tint: #B9E4D8; }
+.card[data-group="finanzen"]  { --tint: #FFD9A8; }
+.card[data-group="gruppe"]    { --tint: #F3C1E1; }
+.card[data-group="anbindung"] { --tint: #D8D8D8; }
+.card-name { font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; min-width: 0; }
+.card-price { font-size: .78rem; color: var(--ink-3); font-weight: 600; white-space: nowrap; padding-top: 2px; }
+.card-desc { grid-column: 1 / -1; font-size: .85rem; color: var(--ink-2); line-height: 1.35; }
+.card.is-lifted { opacity: .25; }
+
+/* Die aktuelle Karte im Stapel */
+.deck .card {
+  padding: 22px 24px 22px 26px; border-radius: var(--radius); cursor: grab;
+  box-shadow: 0 14px 34px -20px rgba(23, 26, 33, .4);
+}
+.deck .card::before { width: 5px; top: 16px; bottom: 16px; }
+.deck .card-name { font-size: 1.35rem; font-weight: 800; letter-spacing: -.015em; }
+.deck .card-price { font-size: .85rem; padding-top: 6px; }
+.deck .card-desc { font-size: 1rem; margin-top: 8px; }
+.deck .card.is-enter { animation: rise .38s var(--ease-out); }
+@keyframes rise { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+.card.is-flying {
+  transition: transform .34s cubic-bezier(.2, .8, .2, 1), opacity .3s ease .05s;
+  transform: translate(var(--fx, 0px), var(--fy, 0px)) scale(.45) rotate(var(--fr, 0deg));
+  opacity: 0; pointer-events: none;
+}
+
+/* Karten in den Zonen: kompakt, Kreuz immer sichtbar */
+.zone .card { padding: 8px 30px 8px 12px; cursor: pointer; }
+.zone .card:hover { border-color: var(--ink-3); }
+.zone .card-desc { display: none; }
+.zone .card.is-new { animation: snapIn .45s var(--ease-spring); }
+@keyframes snapIn { 0% { transform: scale(.9); } 100% { transform: scale(1); } }
+.card .unassign {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  color: var(--ink-3); font-size: 15px; line-height: 1;
+}
+.zone .card:hover .unassign { background: var(--graphite-soft); color: var(--ink); }
+
+.ghost {
+  position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none; margin: 0;
+  box-shadow: var(--shadow-lift); transform-origin: center; transition: none; will-change: transform;
+}
+body.is-dragging { cursor: grabbing; }
+body.is-dragging * { cursor: grabbing !important; }
+
+.zones { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.zone {
+  --zone: var(--graphite); --zone-soft: var(--graphite-soft);
+  display: flex; flex-direction: column; gap: 8px; min-width: 0;
+  min-height: 200px; padding: 14px; cursor: pointer;
+  border-radius: var(--radius); border: 1.5px solid var(--line); background: var(--surface);
+  transition: border-color .2s, background .2s, transform .2s var(--ease-out);
+}
+.zone[data-zone="keep"]    { --zone: var(--signal);   --zone-soft: var(--signal-soft); }
+.zone[data-zone="drop"]    { --zone: var(--graphite); --zone-soft: var(--graphite-soft); }
+.zone[data-zone="unknown"] { --zone: var(--amber);    --zone-soft: var(--amber-soft); }
+.zone:hover { border-color: var(--zone); }
+.zone.is-over { border-color: var(--zone); background: var(--zone-soft); transform: translateY(-2px); }
+.zone-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.zone-head h3 { color: var(--zone); overflow-wrap: anywhere; }
+.zone-head kbd {
+  font: inherit; font-size: .75rem; font-weight: 700; color: var(--ink-3);
+  border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; margin-right: 6px; display: none;
+}
+@media (hover: hover) and (min-width: 760px) { .zone-head kbd { display: inline-block; } }
+.zone-count { font-weight: 800; color: var(--zone); font-variant-numeric: tabular-nums; }
+.zone-hint { font-size: .85rem; color: var(--ink-2); }
+.zone-list { display: flex; flex-direction: column; gap: 6px; flex: 1; max-height: 220px; overflow-y: auto; padding-right: 2px; }
+.zone-list:empty::after {
+  content: "Hier ablegen oder antippen"; display: grid; place-items: center; flex: 1; min-height: 72px;
+  color: var(--ink-3); font-weight: 600; font-size: .85rem; text-align: center; padding: 0 8px;
+  border: 1.5px dashed var(--line); border-radius: var(--radius-s);
+}
+.zone.is-over .zone-list:empty::after { border-color: var(--zone); color: var(--zone); }
+@media (max-width: 640px) {
+  .zones { gap: 8px; }
+  .zone { min-height: 150px; padding: 10px; gap: 6px; }
+  .zone-head { flex-direction: column; gap: 0; }
+  .zone-head h3 { font-size: .9rem; line-height: 1.15; }
+  .zone-hint { display: none; }
+  .zone-list { max-height: 150px; }
+  .zone .card { padding: 7px 24px 7px 10px; }
+  .zone .card-name { font-size: .82rem; }
+  .zone .card-price { display: none; }
+  .zone-list:empty::after { content: "Antippen"; min-height: 56px; }
+  .deck .card { padding: 18px 18px 18px 22px; }
+  .deck .card-name { font-size: 1.15rem; }
+}
+
+/* ------------------------------------------------------------------
+   Station 2 – Reibung
+------------------------------------------------------------------- */
+.friction-list { display: grid; gap: 10px; }
+.friction-row {
+  display: grid; grid-template-columns: 44px 1fr; gap: 6px 16px; align-items: center;
+  padding: 14px 18px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line);
+}
+.friction-row .face { width: 44px; height: 44px; grid-row: 1 / 3; }
+.face circle.head { fill: var(--graphite-soft); stroke: var(--ink); stroke-width: 1.5; transition: fill .3s; }
+.face .eye { fill: var(--ink); }
+.face .mouth { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; transition: d .25s var(--ease-out); }
+.friction-row[data-rated="false"] .face circle.head { fill: var(--bg); }
+.friction-row[data-rated="false"] .face .eye { fill: var(--ink-3); }
+.friction-row[data-rated="false"] .face .mouth { stroke: var(--ink-3); }
+.friction-top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.friction-top .name { font-weight: 700; }
+.friction-top .label { color: var(--ink-2); font-weight: 600; font-size: .95rem; text-align: right; }
+.friction-row[data-rated="false"] .label { color: var(--ink-3); }
+input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; margin: 0; }
+input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--line); }
+input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--line); }
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px; margin-top: -9px; border-radius: 50%;
+  background: var(--surface); border: 2.5px solid var(--signal); box-shadow: 0 2px 6px rgba(0,0,0,.12);
+  transition: transform .15s var(--ease-out);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--surface); border: 2.5px solid var(--signal); box-shadow: 0 2px 6px rgba(0,0,0,.12);
+}
+input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
+.friction-empty { padding: 28px; border-radius: var(--radius); border: 1.5px dashed var(--line); color: var(--ink-2); }
+
+/* ------------------------------------------------------------------
+   Station 3 – Wünsche
+------------------------------------------------------------------- */
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 18px; color: var(--ink-2); font-size: .95rem; font-weight: 600; }
+.legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; vertical-align: -2px; margin-right: 6px; border: 1.5px solid var(--line); background: var(--surface); }
+.legend i.nice { background: var(--signal-soft); border-color: var(--signal-soft); }
+.legend i.must { background: var(--signal); border-color: var(--signal); }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-width: 0;
+  padding: 10px 16px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface);
+  text-align: left; line-height: 1.25; font-weight: 600;
+  transition: background .18s, border-color .18s, color .18s, transform .15s var(--ease-out);
+}
+.chip:hover { border-color: var(--ink-3); }
+.chip:active { transform: scale(.97); }
+.chip[data-level="nice"] { background: var(--signal-soft); border-color: var(--signal-soft); color: var(--signal-deep); }
+.chip[data-level="must"] { background: var(--signal); border-color: var(--signal); color: #fff; }
+.chip .star { display: none; width: 14px; height: 14px; }
+.chip[data-level="must"] .star { display: inline-block; }
+.chip .remove { margin-left: 2px; opacity: .6; }
+.chip .remove:hover { opacity: 1; }
+.chip-add { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; max-width: 560px; }
+.chip-add input { flex: 1 1 220px; min-width: 0; padding: 11px 16px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); }
+.chip-add input:focus { border-color: var(--signal); outline: none; }
+
+/* ------------------------------------------------------------------
+   Station 4 – Rollen
+------------------------------------------------------------------- */
+.roles { display: grid; gap: 10px; }
+.role-row {
+  display: grid; grid-template-columns: minmax(160px, 1fr) auto; gap: 12px 18px; align-items: center;
+  padding: 12px 18px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line);
+}
+@media (max-width: 640px) { .role-row { grid-template-columns: 1fr; } }
+.role-name { font-weight: 700; }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--graphite-soft); }
+.seg button {
+  padding: 8px 14px; border: 0; border-radius: 999px; background: transparent; font-weight: 600; font-size: .92rem; color: var(--ink-2);
+  transition: background .18s, color .18s, transform .15s var(--ease-out);
+}
+.seg button:hover { color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.seg button[aria-pressed="true"][data-value="daily"] { background: var(--signal); color: #fff; }
+@media (max-width: 420px) { .seg button { padding: 8px 10px; font-size: .85rem; } }
+
+/* ------------------------------------------------------------------
+   Station 5 – Budget
+------------------------------------------------------------------- */
+.budget { display: grid; gap: 16px; }
+.budget-row {
+  display: grid; gap: 10px; padding: 18px 20px 14px;
+  border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line);
+}
+.budget-top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+.budget-top .q { font-weight: 700; }
+.budget-value { font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--signal); }
+.budget-row.is-unknown .budget-value { color: var(--ink-3); }
+.budget-row.is-unknown input[type="range"] { opacity: .35; }
+.budget-ends { display: flex; justify-content: space-between; color: var(--ink-2); font-size: .9rem; font-weight: 600; }
+.check { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); font-weight: 600; font-size: .95rem; cursor: pointer; }
+.check input { width: 18px; height: 18px; accent-color: var(--signal); }
+
+/* ------------------------------------------------------------------
+   Station 6 – Zauberstab
+------------------------------------------------------------------- */
+.wand { display: grid; gap: 18px; max-width: 46em; }
+.wand label { display: grid; gap: 8px; font-weight: 700; }
+.wand textarea {
+  width: 100%; min-height: 120px; resize: vertical;
+  padding: 14px 16px; border-radius: var(--radius); border: 1.5px solid var(--line); background: var(--surface);
+  font-weight: 400; line-height: 1.5;
+}
+.wand textarea:focus { border-color: var(--signal); outline: none; }
+
+/* ------------------------------------------------------------------
+   Station 7 – Ergebnis
+------------------------------------------------------------------- */
+.result { display: grid; gap: 28px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 640px) { .stats { grid-template-columns: 1fr; } }
+.stat { padding: 18px 20px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line); }
+.stat b { display: block; font-size: 2rem; font-weight: 800; letter-spacing: -.03em; line-height: 1; margin-bottom: 6px; }
+.stat[data-k="keep"] b { color: var(--signal); }
+.stat[data-k="drop"] b { color: var(--graphite); }
+.stat[data-k="unknown"] b { color: var(--amber); }
+.result-block { padding: 22px 24px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line); display: grid; gap: 10px; }
+.result-block ul { margin: 0; padding-left: 1.2em; }
+.result-block li { margin: 2px 0; }
+.hypo { border-color: var(--signal); background: var(--signal-soft); }
+.hypo .target { font-size: 1.15rem; font-weight: 800; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.toast {
+  position: fixed; left: 50%; bottom: 96px; transform: translate(-50%, 20px); z-index: 60;
+  padding: 10px 18px; border-radius: 999px; background: var(--ink); color: #fff; font-weight: 600; font-size: .95rem;
+  opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s var(--ease-out);
+}
+.toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ------------------------------------------------------------------
+   Navigation unten
+------------------------------------------------------------------- */
+.nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.nav-inner {
+  max-width: 980px; margin: 0 auto; padding: 14px 24px;
+  display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center;
+}
+.nav-hint { text-align: center; color: var(--ink-2); font-weight: 600; font-size: .95rem; }
+@media (max-width: 640px) { .nav-hint { display: none; } }
+
+#confetti { position: fixed; inset: 0; z-index: 90; pointer-events: none; display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand-row">
+      <div class="brand">VAVE <span>Discovery</span></div>
+      <div class="room" id="roomLabel"></div>
+    </div>
+    <svg class="route" id="route" viewBox="0 0 800 44" aria-hidden="true"></svg>
+  </div>
+</header>
+
+<main class="stage" id="stage">
+
+  <section class="step" data-step="0" aria-labelledby="h0">
+    <div class="entry-grid">
+      <h1 id="h0">Sechs Minuten für euer Agentur-Tool.</h1>
+      <p class="lead">
+        Hallo <span data-respondent></span>. Es geht um QuoJob bei VAVE: was ihr davon braucht,
+        was euch bremst und was fehlt. Am Ende bekommst du eine Zusammenfassung,
+        die wir als Grundlage für alles Weitere nehmen.
+      </p>
+      <div class="entry-facts">
+        <span><b>7</b> Stationen</span>
+        <span><b>~6</b> Minuten</span>
+        <span><b>0</b> falsche Antworten</span>
+      </div>
+      <p class="muted small">
+        Antworte aus dem Bauch. Du kannst jederzeit unterbrechen – der Stand bleibt in diesem Browser gespeichert.
+      </p>
+    </div>
+  </section>
+
+  <section class="step" data-step="1" aria-labelledby="h1">
+    <div class="step-head">
+      <h2 id="h1">Sortier die Bausteine.</h2>
+      <p class="lead">
+        Das sind die Module, aus denen QuoJob besteht – eins nach dem anderen.
+        Zieh die Karte in eine Zone oder tipp die Zone einfach an.
+      </p>
+    </div>
+    <div class="deck" data-zone="pool" id="deck" aria-live="polite"></div>
+    <div class="zones" id="zones">
+      <section class="zone" data-zone="keep" tabindex="0" aria-label="Zone: Brauchen wir">
+        <div class="zone-head"><h3><kbd>1</kbd>Brauchen wir</h3><span class="zone-count">0</span></div>
+        <p class="zone-hint">Ohne das läuft der Laden nicht.</p>
+        <div class="zone-list"></div>
+      </section>
+      <section class="zone" data-zone="drop" tabindex="0" aria-label="Zone: Brauchen wir nicht">
+        <div class="zone-head"><h3><kbd>2</kbd>Brauchen wir nicht</h3><span class="zone-count">0</span></div>
+        <p class="zone-hint">Ballast. Weg damit.</p>
+        <div class="zone-list"></div>
+      </section>
+      <section class="zone" data-zone="unknown" tabindex="0" aria-label="Zone: Kenne ich nicht">
+        <div class="zone-head"><h3><kbd>3</kbd>Kenne ich nicht</h3><span class="zone-count">0</span></div>
+        <p class="zone-hint">Nie gesehen oder nie benutzt.</p>
+        <div class="zone-list"></div>
+      </section>
+    </div>
+    <p class="small muted deck-help">Tasten 1, 2, 3 sortieren die aktuelle Karte. Eine Karte in einer Zone antippen holt sie zurück in den Stapel.</p>
+  </section>
+
+  <section class="step" data-step="2" aria-labelledby="h2">
+    <div class="step-head">
+      <h2 id="h2">Wie oft bremst es?</h2>
+      <p class="lead">Nur die Bausteine, die ihr behalten wollt. Schieb den Regler dahin, wo es sich ehrlich anfühlt.</p>
+    </div>
+    <div class="friction-list" id="frictionList"></div>
+  </section>
+
+  <section class="step" data-step="3" aria-labelledby="h3">
+    <div class="step-head">
+      <h2 id="h3">Was fehlt euch heute?</h2>
+      <p class="lead">Vorschläge aus dem, was andere Tools inzwischen können. Ergänz, was dir fehlt.</p>
+    </div>
+    <div class="legend">
+      <span><i></i>tippen: wäre schön</span>
+      <span><i class="nice"></i>noch mal tippen: unverzichtbar</span>
+      <span><i class="must"></i>dritter Tipp: zurück</span>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="chip-add">
+      <input type="text" id="customWish" placeholder="Eigener Wunsch – Enter zum Hinzufügen" maxlength="120" autocomplete="off">
+      <button type="button" class="btn" id="addWish">Hinzufügen</button>
+    </div>
+  </section>
+
+  <section class="step" data-step="4" aria-labelledby="h4">
+    <div class="step-head">
+      <h2 id="h4">Wer arbeitet wie oft in QuoJob?</h2>
+      <p class="lead">Grob geschätzt reicht. Es zeigt uns, wo der Hebel liegt.</p>
+    </div>
+    <div class="roles" id="roles"></div>
+  </section>
+
+  <section class="step" data-step="5" aria-labelledby="h5">
+    <div class="step-head">
+      <h2 id="h5">Was darf es kosten?</h2>
+      <p class="lead">Netto pro Monat für die ganze Gruppe. Ungefähr ist völlig in Ordnung.</p>
+    </div>
+    <div class="budget" id="budget"></div>
+  </section>
+
+  <section class="step" data-step="6" aria-labelledby="h6">
+    <div class="step-head">
+      <h2 id="h6">Zauberstab.</h2>
+      <p class="lead">Zwei Sätze, mehr nicht.</p>
+    </div>
+    <div class="wand">
+      <label>
+        Wenn du morgen eine Sache am Tool ändern könntest – welche?
+        <textarea id="wand" placeholder="Zum Beispiel: Ich will morgens in 30 Sekunden sehen, welches Projekt aus dem Budget läuft."></textarea>
+      </label>
+      <label>
+        Was darf auf keinen Fall passieren, egal was wir bauen oder wechseln?
+        <textarea id="noGo" placeholder="Zum Beispiel: Die Buchhaltung darf nicht drei Monate stillstehen."></textarea>
+      </label>
+    </div>
+  </section>
+
+  <section class="step" data-step="7" aria-labelledby="h7">
+    <div class="result" id="result"></div>
+  </section>
+
+</main>
+
+<footer class="nav">
+  <div class="nav-inner">
+    <button type="button" class="btn quiet" id="back">Zurück</button>
+    <div class="nav-hint" id="hint"></div>
+    <button type="button" class="btn primary" id="next">Los geht's</button>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+/* --- eingebettet aus survey/modules.js (npm run bundle) --- */
+// Datenbasis der Umfrage. Einzige Quelle für Karten, Wünsche und Rollen.
+// Preise: €/Monat netto laut QuoJob-Konfigurator (09/2026); 0 = in Lizenz enthalten.
+// Wird von index.html per <script src="modules.js"> geladen – kein fetch, damit
+// die Umfrage auch direkt aus dem Dateisystem (file://) läuft.
+
+window.VAVE_DATA = {
+  respondent: "Tobias",
+
+  groups: {
+    alltag: "Alltag",
+    projekt: "Projekt",
+    finanzen: "Finanzen",
+    gruppe: "Gruppe",
+    anbindung: "Anbindung"
+  },
+
+  modules: [
+    { id: "kalender",     group: "alltag",    price: 0,   name: "Kalender & Termine",            desc: "Termine, Tagesplanung, Teamkalender" },
+    { id: "zeit",         group: "alltag",    price: 0,   name: "Zeiterfassung",                 desc: "Stunden buchen, Soll-Ist, Urlaub und Krankheit" },
+    { id: "kontakte",     group: "alltag",    price: 24,  name: "Kontakte & Akquise",            desc: "Kunden, Ansprechpartner, Serienmails, Dokumente" },
+    { id: "korrespondenz",group: "alltag",    price: 14,  name: "Korrespondenz",                 desc: "Briefe und E-Mails auf dem eigenen Briefbogen" },
+    { id: "bizdev",       group: "alltag",    price: 24,  name: "Business Development",          desc: "Pitches und Auftragschancen bewerten" },
+    { id: "suche",        group: "alltag",    price: 14,  name: "Volltextsuche",                 desc: "Suche über Dateien, Dokumente, Termine" },
+
+    { id: "pm",           group: "projekt",   price: 24,  name: "Projektmanagement Pro",         desc: "Aufgaben, Boards, Gantt, Drag & Drop" },
+    { id: "ressourcen",   group: "projekt",   price: 0,   name: "Ressourcenplanung",             desc: "Kapazitäten und Auslastung im Team" },
+    { id: "media",        group: "projekt",   price: 52,  name: "Media-Abwicklung",              desc: "Schaltungen, Streu- und Kostenpläne" },
+
+    { id: "angebote",     group: "finanzen",  price: 0,   name: "Angebote & Rechnungen",         desc: "Kalkulation, Faktura, E-Rechnung" },
+    { id: "controlling",  group: "finanzen",  price: 0,   name: "Controlling & Reports",         desc: "Projektrentabilität, Auswertungen" },
+    { id: "op",           group: "finanzen",  price: 14,  name: "Offene Posten & Mahnwesen",     desc: "Zahlungseingänge, Mahnlauf" },
+    { id: "liquiditaet",  group: "finanzen",  price: 24,  name: "Liquiditätsplanung",            desc: "Kosten und Erlöse vorausschauen" },
+    { id: "fibu",         group: "finanzen",  price: 68,  name: "FiBu-Schnittstelle",            desc: "Export an DATEV, Lexware, SAP, Steuerberater" },
+    { id: "ocr",          group: "finanzen",  price: 52,  name: "Belegerkennung (OCR)",          desc: "KI liest Eingangsrechnungen ein" },
+    { id: "retainer",     group: "finanzen",  price: 108, name: "Retainer",                      desc: "Vereinbarte Stunden oder Budgets abrechnen" },
+    { id: "wkl",          group: "finanzen",  price: 32,  name: "Wiederkehrende Leistungen",     desc: "Periodische Rechnungen automatisch" },
+    { id: "preislisten",  group: "finanzen",  price: 24,  name: "Kundenpreislisten",             desc: "Individuelle Sätze, Rabatte, Zuschläge" },
+    { id: "kassenbuch",   group: "finanzen",  price: 32,  name: "E-Kassenbuch",                  desc: "Bargeldvorgänge sauber erfassen" },
+
+    { id: "mandanten",    group: "gruppe",    price: 108, name: "Mandanten",                     desc: "Mehrere Gesellschaften in einem System" },
+    { id: "waehrung",     group: "gruppe",    price: 24,  name: "Währungen",                     desc: "Angebote und Rechnungen in Fremdwährung" },
+    { id: "sprachen",     group: "gruppe",    price: 24,  name: "Mehrsprachigkeit",              desc: "DE/EN/FR/NL, Zeitzonen je Standort" },
+    { id: "hr",           group: "gruppe",    price: 24,  name: "HR Professional",               desc: "Überstunden, Qualifikationen, Personalakte" },
+
+    { id: "app",          group: "anbindung", price: 28,  name: "Mobile App",                    desc: "Zeiten, ToDos, Termine unterwegs" },
+    { id: "exchange",     group: "anbindung", price: 52,  name: "Outlook / Exchange",            desc: "Termine beidseitig synchron" },
+    { id: "mail",         group: "anbindung", price: 24,  name: "E-Mail-Client",                 desc: "Mails direkt an Jobs und Kontakte hängen" },
+    { id: "api",          group: "anbindung", price: 52,  name: "REST API",                      desc: "Andere Tools anbinden" },
+    { id: "export",       group: "anbindung", price: 24,  name: "Daten-Export",                  desc: "Reports und Kontakte nach Excel & Co." }
+  ],
+
+  // Vorschläge aus dem SaaS-Vergleich (docs/research/01-quojob-osint.md, Abschnitt 5). Kurz, konkret, in Tobias' Sprache.
+  wishes: [
+    { id: "budget-ampel",   text: "Budget-Ampel pro Projekt, für alle sichtbar" },
+    { id: "zeit-5s",        text: "Zeit buchen in 5 Sekunden, auch am Handy" },
+    { id: "ki-belege",      text: "KI liest Belege und Stundenzettel" },
+    { id: "onboarding",     text: "Neue Leute sind in 10 Minuten drin, ohne Schulung" },
+    { id: "kapazitaet",     text: "Auslastung aller Studios live auf einer Seite" },
+    { id: "forecast",       text: "Umsatz und Auslastung drei Monate voraus" },
+    { id: "dashboards",     text: "Ein Dashboard je Rolle: GF, PM, Kreation, Finanzen" },
+    { id: "slack-teams",    text: "Slack- oder Teams-Anbindung" },
+    { id: "kundenportal",   text: "Kundenportal für Freigaben und Status" },
+    { id: "en-zh",          text: "Oberfläche auf Englisch und Chinesisch" },
+    { id: "auto-rechnung",  text: "Rechnung entsteht automatisch aus dem Projekt" },
+    { id: "offene-api",     text: "Offene API und Automationen ohne Herstellertermin" },
+    { id: "schnell",        text: "Schnelle, aufgeräumte Oberfläche, Dark Mode" },
+    { id: "preis-pro-kopf", text: "Transparenter Preis pro Kopf" }
+  ],
+
+  roles: [
+    { id: "gf",         name: "Geschäftsführung" },
+    { id: "pm",         name: "Projektmanagement" },
+    { id: "kreation",   name: "Kreation & Design" },
+    { id: "tech",       name: "Tech & Development" },
+    { id: "finanzen",   name: "Backoffice & Finanzen" },
+    { id: "asia",       name: "Studios Asien & Middle East" },
+    { id: "freelancer", name: "Freelancer" }
+  ],
+
+  frequency: [
+    { id: "never",  label: "nie" },
+    { id: "rarely", label: "selten" },
+    { id: "weekly", label: "wöchentlich" },
+    { id: "daily",  label: "täglich" }
+  ],
+
+  frictionLabels: [
+    "läuft rund",
+    "kleine Haken",
+    "kostet regelmäßig Zeit",
+    "nervt jede Woche",
+    "bremst täglich"
+  ]
+};
+
+</script>
+<script>
+
+(function () {
+  'use strict';
+
+  const D = window.VAVE_DATA;
+  const KEY = 'vave-discovery-v1';
+  const STEPS = ['Eingang', 'Sortieren', 'Reibung', 'Wünsche', 'Rollen', 'Budget', 'Zauberstab', 'Ergebnis'];
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const MOUTHS = [
+    'M12 24 Q20 32 28 24',
+    'M12 25 Q20 29 28 25',
+    'M12 27 L28 27',
+    'M12 29 Q20 25 28 29',
+    'M13 31 Q20 23 27 31'
+  ];
+  const FACE_FILL = ['#DCE1FF', '#E9EBFF', '#EEF0F4', '#FFE3D6', '#FFC9B8'];
+  const BACKOFFICE = new Set(['finanzen', 'gruppe']);
+  const FRONT = new Set(['zeit', 'kalender', 'pm', 'app', 'ressourcen', 'kontakte']);
+
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+  const modById = Object.fromEntries(D.modules.map(m => [m.id, m]));
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const eur = n => n.toLocaleString('de-DE') + ' €';
+
+  /* ---------------- Zustand ---------------- */
+  function freshState() {
+    return {
+      step: 0,
+      startedAt: new Date().toISOString(),
+      sort: {}, seq: {}, friction: {}, wishes: {}, customWishes: [], roles: {},
+      budget: { current: 1500, currentUnknown: false, max: 2500, buildBuy: 50 },
+      wand: '', noGo: ''
+    };
+  }
+  function load() { try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ohne Speicher weiter */ } }
+  let state = load() || freshState();
+
+  /* ---------------- Route ---------------- */
+  const route = $('#route');
+  const NODE_X = STEPS.map((_, i) => 30 + i * (740 / (STEPS.length - 1)));
+  const NODE_Y = STEPS.map((_, i) => (i % 2 === 0 ? 14 : 24));
+  let routeDone, routeLen = 0;
+
+  function buildRoute() {
+    let d = `M${NODE_X[0]} ${NODE_Y[0]}`;
+    for (let i = 1; i < STEPS.length; i++) {
+      const x0 = NODE_X[i - 1], y0 = NODE_Y[i - 1], x1 = NODE_X[i], y1 = NODE_Y[i], mx = (x0 + x1) / 2;
+      d += ` C${mx} ${y0} ${mx} ${y1} ${x1} ${y1}`;
+    }
+    route.innerHTML = `<path class="route-base" d="${d}"/><path class="route-done" d="${d}"/>` +
+      STEPS.map((name, i) => `
+        <g class="node" data-i="${i}">
+          <circle class="pulse" cx="${NODE_X[i]}" cy="${NODE_Y[i]}" r="7"/>
+          <circle cx="${NODE_X[i]}" cy="${NODE_Y[i]}" r="6"/>
+          <text x="${NODE_X[i]}" y="${NODE_Y[i] + 19}">${esc(name)}</text>
+        </g>`).join('');
+    routeDone = $('.route-done', route);
+    routeLen = routeDone.getTotalLength();
+    routeDone.style.strokeDasharray = String(routeLen);
+    route.addEventListener('click', e => {
+      const g = e.target.closest('.node');
+      if (!g) return;
+      const i = Number(g.dataset.i);
+      if (i < state.step) goTo(i);
+    });
+  }
+  function updateRoute() {
+    const frac = state.step / (STEPS.length - 1);
+    routeDone.style.strokeDashoffset = String(routeLen * (1 - frac));
+    $$('.node', route).forEach(g => {
+      const i = Number(g.dataset.i);
+      g.classList.toggle('is-done', i < state.step);
+      g.classList.toggle('is-current', i === state.step);
+    });
+    $('#roomLabel').textContent = state.step === 0 ? '' : `Station ${state.step} von ${STEPS.length - 1}: ${STEPS[state.step]}`;
+  }
+
+  /* ---------------- Navigation ---------------- */
+  const backBtn = $('#back'), nextBtn = $('#next'), hint = $('#hint');
+
+  function goTo(n) {
+    state.step = Math.max(0, Math.min(STEPS.length - 1, n));
+    save();
+    $$('.step').forEach(s => s.classList.toggle('is-active', Number(s.dataset.step) === state.step));
+    updateRoute();
+    render();
+    updateNav();
+    window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
+  }
+  function updateNav() {
+    const s = state.step;
+    backBtn.style.visibility = s === 0 ? 'hidden' : 'visible';
+    nextBtn.style.display = s === STEPS.length - 1 ? 'none' : '';
+    nextBtn.textContent = s === 0 ? 'Los geht\u2019s' : s === STEPS.length - 2 ? 'Zum Ergebnis' : 'Weiter';
+    let ok = true, msg = '';
+    if (s === 1) {
+      const left = D.modules.filter(m => !state.sort[m.id]).length;
+      ok = left === 0;
+      msg = left === 0 ? 'Alles sortiert.' : `Noch ${left} ${left === 1 ? 'Karte' : 'Karten'} im Stapel`;
+    } else if (s === 2) {
+      const keep = kept();
+      const rated = keep.filter(m => state.friction[m.id] !== undefined).length;
+      msg = keep.length ? `${rated} von ${keep.length} bewertet` : '';
+    } else if (s === 3) {
+      const must = Object.values(state.wishes).filter(v => v === 'must').length + state.customWishes.filter(w => w.level === 'must').length;
+      msg = must ? `${must} unverzichtbar` : '';
+    }
+    nextBtn.disabled = !ok;
+    hint.textContent = msg;
+  }
+  backBtn.addEventListener('click', () => goTo(state.step - 1));
+  nextBtn.addEventListener('click', () => goTo(state.step + 1));
+
+  function kept() { return D.modules.filter(m => state.sort[m.id] === 'keep'); }
+  function render() {
+    switch (state.step) {
+      case 1: renderSort(); break;
+      case 2: renderFriction(); break;
+      case 3: renderWishes(); break;
+      case 4: renderRoles(); break;
+      case 5: renderBudget(); break;
+      case 6: renderWand(); break;
+      case 7: renderResult(); break;
+    }
+  }
+
+  /* ---------------- Station 1: Sortieren ---------------- */
+  const deck = $('#deck'), zonesEl = $('#zones'), stepSort = $('.step[data-step="1"]');
+  let lastMoved = null, busy = false;
+
+  function unsorted() { return D.modules.filter(m => !state.sort[m.id]); }
+  function currentCard() { return unsorted()[0] || null; }
+  function cardHtml(m, inZone) {
+    return `<div class="card${inZone && m.id === lastMoved ? ' is-new' : ''}${inZone ? '' : ' is-enter'}" role="${inZone ? 'button' : 'group'}" tabindex="${inZone ? 0 : -1}" data-id="${m.id}" data-group="${m.group}" aria-label="${esc(m.name)}${inZone ? ', zurück in den Stapel' : ''}">
+      <span class="card-name">${esc(m.name)}</span>
+      <span class="card-price">${m.price ? m.price + ' €/Monat' : 'in Lizenz'}</span>
+      <span class="card-desc">${esc(m.desc)}</span>
+      ${inZone ? '<span class="unassign" aria-hidden="true">×</span>' : ''}
+    </div>`;
+  }
+  function renderSort() {
+    const rest = unsorted(), cur = rest[0];
+    if (cur) {
+      deck.innerHTML = `
+        <div class="deck-stack">
+          ${rest[2] ? '<div class="deck-ghost g2"></div>' : ''}
+          ${rest[1] ? '<div class="deck-ghost g1"></div>' : ''}
+          ${cardHtml(cur, false)}
+        </div>
+        <div class="deck-meta">
+          <span>Karte ${D.modules.length - rest.length + 1} von ${D.modules.length}, Bereich ${esc(D.groups[cur.group])}</span>
+          ${rest.length > 1 ? '<button type="button" class="btn quiet small" id="restUnknown">Rest zu „Kenne ich nicht"</button>' : ''}
+        </div>`;
+    } else {
+      deck.innerHTML = '<div class="deck-empty">Alles sortiert. Zum Umschichten eine Karte in einer Zone antippen – sie kommt zurück in den Stapel.</div>';
+    }
+    $$('.zone', zonesEl).forEach(z => {
+      const key = z.dataset.zone;
+      const items = D.modules.filter(m => state.sort[m.id] === key).sort((a, b) => (state.seq[b.id] || 0) - (state.seq[a.id] || 0));
+      $('.zone-list', z).innerHTML = items.map(m => cardHtml(m, true)).join('');
+      $('.zone-count', z).textContent = items.length;
+    });
+    lastMoved = null;
+    updateNav();
+  }
+  function commit(id, zone) {
+    if (!state.seq) state.seq = {};
+    if (zone === 'pool') { delete state.sort[id]; delete state.seq[id]; }
+    else { state.sort[id] = zone; state.seq[id] = Date.now(); }
+    if (zone !== 'keep') delete state.friction[id];
+    lastMoved = id; busy = false;
+    save(); renderSort();
+  }
+  // Zuweisen mit Flug der Karte in Richtung Zone; ohne Element (Tastatur) sofort.
+  function assign(id, zone, fromEl) {
+    if (busy) return;
+    const targetEl = zone === 'pool' ? deck : $(`.zone[data-zone="${zone}"]`, zonesEl);
+    if (!fromEl || REDUCED || !targetEl) { commit(id, zone); return; }
+    const a = fromEl.getBoundingClientRect(), b = targetEl.getBoundingClientRect();
+    const dx = (b.left + b.width / 2) - (a.left + a.width / 2), dy = (b.top + Math.min(b.height / 2, 90)) - (a.top + a.height / 2);
+    fromEl.style.setProperty('--fx', dx + 'px'); fromEl.style.setProperty('--fy', dy + 'px');
+    fromEl.style.setProperty('--fr', Math.max(-10, Math.min(10, dx / 30)) + 'deg');
+    fromEl.classList.add('is-flying'); busy = true;
+    setTimeout(() => commit(id, zone), 330);
+  }
+
+  let suppressClick = false;
+  stepSort.addEventListener('click', e => {
+    if (suppressClick) { suppressClick = false; return; }
+    if (e.target.closest('#restUnknown')) {
+      unsorted().forEach(m => { state.sort[m.id] = 'unknown'; state.seq = state.seq || {}; state.seq[m.id] = Date.now(); });
+      save(); renderSort(); return;
+    }
+    const card = e.target.closest('.card');
+    if (card && card.closest('.zone')) { assign(card.dataset.id, 'pool', card); return; }
+    if (card) return; // Stapelkarte: ziehen oder Zone antippen
+    const zone = e.target.closest('.zone');
+    const cur = currentCard();
+    if (zone && cur) assign(cur.id, zone.dataset.zone, $('.deck .card'));
+  });
+  stepSort.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const card = e.target.closest('.card');
+    if (card && card.closest('.zone')) { e.preventDefault(); assign(card.dataset.id, 'pool', card); return; }
+    const zone = e.target.closest('.zone');
+    const cur = currentCard();
+    if (zone && cur) { e.preventDefault(); assign(cur.id, zone.dataset.zone, $('.deck .card')); }
+  });
+  document.addEventListener('keydown', e => {
+    if (state.step !== 1 || e.target.matches('input, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+    const map = { '1': 'keep', '2': 'drop', '3': 'unknown' };
+    const cur = currentCard();
+    if (map[e.key] && cur) { e.preventDefault(); assign(cur.id, map[e.key], $('.deck .card')); }
+  });
+
+  // Ziehen mit Pointer Events: Geist folgt dem Finger, Ziel unter dem Finger leuchtet.
+  let drag = null;
+  stepSort.addEventListener('pointerdown', e => {
+    const card = e.target.closest('.card');
+    if (!card || e.button !== 0 || busy) return;
+    drag = { card, id: card.dataset.id, x0: e.clientX, y0: e.clientY, moved: false, ghost: null, pid: e.pointerId, over: null };
+    try { card.setPointerCapture(e.pointerId); } catch (err) { /* egal */ }
+  });
+  stepSort.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.pid) return;
+    const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+    if (!drag.moved) {
+      if (Math.hypot(dx, dy) < 6) return;
+      drag.moved = true;
+      const r = drag.card.getBoundingClientRect();
+      const g = drag.card.cloneNode(true);
+      g.classList.add('ghost'); g.classList.remove('is-enter', 'is-new');
+      g.style.width = r.width + 'px'; g.style.left = r.left + 'px'; g.style.top = r.top + 'px';
+      if (drag.card.closest('.deck')) g.classList.add('from-deck');
+      document.body.appendChild(g); document.body.classList.add('is-dragging');
+      drag.ghost = g; drag.card.classList.add('is-lifted');
+    }
+    drag.ghost.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.max(-5, Math.min(5, dx / 40))}deg)`;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    let target = el ? el.closest('[data-zone]') : null;
+    if (target === deck && drag.card.closest('.deck')) target = null;
+    if (target !== drag.over) {
+      if (drag.over) drag.over.classList.remove('is-over');
+      if (target) target.classList.add('is-over');
+      drag.over = target;
+    }
+  });
+  function endDrag(e, doCommit) {
+    if (!drag || (e && e.pointerId !== drag.pid)) return;
+    const d = drag; drag = null;
+    if (d.ghost) d.ghost.remove();
+    d.card.classList.remove('is-lifted');
+    document.body.classList.remove('is-dragging');
+    if (d.over) d.over.classList.remove('is-over');
+    if (d.moved) {
+      suppressClick = true;
+      setTimeout(() => { suppressClick = false; }, 0);
+      if (doCommit && d.over) {
+        const target = d.over.dataset.zone, current = state.sort[d.id] || 'pool';
+        if (target !== current) commit(d.id, target);
+      }
+    }
+  }
+  stepSort.addEventListener('pointerup', e => endDrag(e, true));
+  stepSort.addEventListener('pointercancel', e => endDrag(e, false));
+
+  /* ---------------- Station 2: Reibung ---------------- */
+  const frictionList = $('#frictionList');
+  function faceSvg(level) {
+    const l = level === undefined ? 2 : level;
+    return `<svg class="face" viewBox="0 0 40 40" aria-hidden="true">
+      <circle class="head" cx="20" cy="20" r="18" style="fill:${level === undefined ? '' : FACE_FILL[l]}"/>
+      <circle class="eye" cx="14" cy="16" r="2"/><circle class="eye" cx="26" cy="16" r="2"/>
+      <path class="mouth" d="${MOUTHS[l]}"/>
+    </svg>`;
+  }
+  function renderFriction() {
+    const keep = kept();
+    if (!keep.length) {
+      frictionList.innerHTML = '<div class="friction-empty">Du hast keinen Baustein unter „Brauchen wir" einsortiert. Dann gibt es hier nichts zu bewerten – weiter zu den Wünschen.</div>';
+      return;
+    }
+    frictionList.innerHTML = keep.map(m => {
+      const v = state.friction[m.id];
+      return `<div class="friction-row" data-id="${m.id}" data-rated="${v !== undefined}">
+        ${faceSvg(v)}
+        <div class="friction-top"><span class="name">${esc(m.name)}</span><span class="label">${v === undefined ? 'noch nicht bewertet' : esc(D.frictionLabels[v])}</span></div>
+        <input type="range" min="0" max="4" step="1" value="${v === undefined ? 2 : v}" aria-label="Reibung: ${esc(m.name)}">
+      </div>`;
+    }).join('');
+  }
+  frictionList.addEventListener('input', e => {
+    const input = e.target.closest('input[type="range"]');
+    if (!input) return;
+    const row = input.closest('.friction-row'), id = row.dataset.id, v = Number(input.value);
+    state.friction[id] = v; save();
+    row.dataset.rated = 'true';
+    $('.label', row).textContent = D.frictionLabels[v];
+    $('.mouth', row).setAttribute('d', MOUTHS[v]);
+    $('.head', row).style.fill = FACE_FILL[v];
+    updateNav();
+  });
+
+  /* ---------------- Station 3: Wünsche ---------------- */
+  const chips = $('#chips'), customInput = $('#customWish');
+  const STAR = '<svg class="star" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L10 14.9l-5.3 2.8 1.1-5.9L1.5 7.7l5.9-.8z"/></svg>';
+  function renderWishes() {
+    chips.innerHTML =
+      D.wishes.map(w => `<button type="button" class="chip" data-id="${w.id}" data-level="${state.wishes[w.id] || 'off'}" aria-pressed="${!!state.wishes[w.id]}">${STAR}${esc(w.text)}</button>`).join('') +
+      state.customWishes.map(w => `<button type="button" class="chip" data-id="${w.id}" data-custom="1" data-level="${w.level}" aria-pressed="${w.level !== 'off'}">${STAR}${esc(w.text)}<span class="remove" data-remove title="Entfernen">×</span></button>`).join('');
+  }
+  function cycle(level) { return level === 'off' ? 'nice' : level === 'nice' ? 'must' : 'off'; }
+  chips.addEventListener('click', e => {
+    const chip = e.target.closest('.chip'); if (!chip) return;
+    const id = chip.dataset.id;
+    if (e.target.closest('[data-remove]')) {
+      state.customWishes = state.customWishes.filter(w => w.id !== id);
+    } else if (chip.dataset.custom) {
+      const w = state.customWishes.find(x => x.id === id); w.level = cycle(w.level);
+    } else {
+      const next = cycle(state.wishes[id] || 'off');
+      if (next === 'off') delete state.wishes[id]; else state.wishes[id] = next;
+    }
+    save(); renderWishes(); updateNav();
+  });
+  function addWish() {
+    const text = customInput.value.trim(); if (!text) return;
+    state.customWishes.push({ id: 'custom-' + Date.now().toString(36), text, level: 'nice' });
+    customInput.value = ''; save(); renderWishes(); updateNav();
+  }
+  $('#addWish').addEventListener('click', addWish);
+  customInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addWish(); } });
+
+  /* ---------------- Station 4: Rollen ---------------- */
+  const rolesEl = $('#roles');
+  function renderRoles() {
+    rolesEl.innerHTML = D.roles.map(r => `
+      <div class="role-row" data-id="${r.id}">
+        <span class="role-name">${esc(r.name)}</span>
+        <div class="seg" role="group" aria-label="${esc(r.name)}">
+          ${D.frequency.map(f => `<button type="button" data-value="${f.id}" aria-pressed="${state.roles[r.id] === f.id}">${esc(f.label)}</button>`).join('')}
+        </div>
+      </div>`).join('');
+  }
+  rolesEl.addEventListener('click', e => {
+    const b = e.target.closest('.seg button'); if (!b) return;
+    const id = b.closest('.role-row').dataset.id;
+    state.roles[id] = state.roles[id] === b.dataset.value ? undefined : b.dataset.value;
+    if (!state.roles[id]) delete state.roles[id];
+    save(); renderRoles();
+  });
+
+  /* ---------------- Station 5: Budget ---------------- */
+  const budgetEl = $('#budget');
+  function bbLabel(v) { return v < 35 ? 'Lieber kaufen' : v > 65 ? 'Lieber selbst bauen' : 'Offen'; }
+  function renderBudget() {
+    const b = state.budget;
+    budgetEl.innerHTML = `
+      <div class="budget-row${b.currentUnknown ? ' is-unknown' : ''}" data-k="current">
+        <div class="budget-top"><span class="q">Was zahlt ihr heute für QuoJob, alles in allem?</span><span class="budget-value">${b.currentUnknown ? 'weiß ich nicht' : eur(b.current) + '/Monat'}</span></div>
+        <input type="range" min="0" max="6000" step="50" value="${b.current}" ${b.currentUnknown ? 'disabled' : ''} aria-label="Heutige Kosten pro Monat">
+        <div class="budget-ends"><span>0 €</span><label class="check"><input type="checkbox" data-k="currentUnknown" ${b.currentUnknown ? 'checked' : ''}> weiß ich nicht genau</label><span>6.000 €</span></div>
+      </div>
+      <div class="budget-row" data-k="max">
+        <div class="budget-top"><span class="q">Wo liegt die Schmerzgrenze für ein Tool, das wirklich passt?</span><span class="budget-value">${eur(b.max)}/Monat</span></div>
+        <input type="range" min="0" max="6000" step="50" value="${b.max}" aria-label="Schmerzgrenze pro Monat">
+        <div class="budget-ends"><span>0 €</span><span>6.000 €</span></div>
+      </div>
+      <div class="budget-row" data-k="buildBuy">
+        <div class="budget-top"><span class="q">Bauchgefühl: fertiges Tool kaufen oder selbst bauen lassen?</span><span class="budget-value">${bbLabel(b.buildBuy)}</span></div>
+        <input type="range" min="0" max="100" step="5" value="${b.buildBuy}" aria-label="Kaufen oder bauen">
+        <div class="budget-ends"><span>Kaufen</span><span>Bauen</span></div>
+      </div>`;
+  }
+  budgetEl.addEventListener('input', e => {
+    const row = e.target.closest('.budget-row'); if (!row) return;
+    const k = row.dataset.k;
+    if (e.target.type === 'checkbox') {
+      state.budget.currentUnknown = e.target.checked; save(); renderBudget(); return;
+    }
+    state.budget[k] = Number(e.target.value); save();
+    const out = $('.budget-value', row);
+    out.textContent = k === 'buildBuy' ? bbLabel(state.budget.buildBuy) : eur(state.budget[k]) + '/Monat';
+  });
+
+  /* ---------------- Station 6: Zauberstab ---------------- */
+  function renderWand() { $('#wand').value = state.wand; $('#noGo').value = state.noGo; }
+  $('#wand').addEventListener('input', e => { state.wand = e.target.value; save(); });
+  $('#noGo').addEventListener('input', e => { state.noGo = e.target.value; save(); });
+
+  /* ---------------- Auswertung ---------------- */
+  function mean(arr) { const v = arr.filter(x => typeof x === 'number'); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; }
+  function hypothesis() {
+    const keep = kept();
+    const keptBack = keep.filter(m => BACKOFFICE.has(m.group));
+    const frontPain = mean(keep.filter(m => FRONT.has(m.id)).map(m => state.friction[m.id]));
+    const backPain = mean(keptBack.map(m => state.friction[m.id]));
+    const bb = state.budget.buildBuy;
+    const dailyMakers = ['kreation', 'tech'].filter(r => state.roles[r] === 'daily').length;
+    const reasons = [];
+    let target = 'A';
+
+    if (bb >= 70 && keptBack.length <= 2) {
+      target = 'C';
+      reasons.push('Bauchgefühl klar Richtung Bauen, und kaum Backoffice-Bausteine als unverzichtbar markiert.');
+    } else if (backPain !== null && backPain >= 2.5 && bb <= 40) {
+      target = 'B';
+      reasons.push(`Reibung auch im Kaufmännischen (Ø ${backPain.toFixed(1)}) bei Haltung „lieber kaufen".`);
+    } else if (backPain !== null && backPain >= 2.5 && bb >= 60) {
+      target = 'C';
+      reasons.push(`Reibung im Kaufmännischen (Ø ${backPain.toFixed(1)}) und Bereitschaft zu bauen.`);
+    } else {
+      target = 'A';
+      if (keptBack.length >= 3) reasons.push(`${keptBack.length} Backoffice-/Gruppen-Bausteine als „Brauchen wir" markiert – das kann QuoJob, das ist teuer nachzubauen.`);
+      if (frontPain !== null && frontPain >= 2) reasons.push(`Reibung liegt im Alltag (Ø ${frontPain.toFixed(1)} bei Zeit, Kalender, Aufgaben, App).`);
+      if (dailyMakers) reasons.push('Kreation und/oder Tech arbeiten täglich im Tool – dort entsteht der Hebel.');
+      if (!reasons.length) reasons.push('Keine klaren Signale gegen den Verbund „QuoJob im Hintergrund, neue Oberfläche davor".');
+    }
+    if (!state.budget.currentUnknown && state.budget.max < state.budget.current * 0.8) reasons.push('Schmerzgrenze liegt deutlich unter den heutigen Kosten – Kosten sind Teil des Problems.');
+    return { target, reasons, frontPain, backPain };
+  }
+  const TARGET_TEXT = {
+    A: ['Neues Frontend, altes Rückgrat', 'QuoJob bleibt für Rechnungen, Buchhaltung und Mandanten. Davor entsteht die Oberfläche, die das Team täglich nutzt: Zeit, Aufgaben, Projektstatus, Auslastung – angebunden über die QuoJob-Schnittstelle.'],
+    B: ['Wechsel auf ein modernes SaaS', 'Ein System, das für eure Größe gebaut ist, ersetzt QuoJob. Wir bauen höchstens kleine Ergänzungen.'],
+    C: ['Eigenes System', 'Projekte, Zeiten, Faktura und Mandanten neu – mit allem, was an Verantwortung für Rechnungen und Buchhaltung dazugehört.']
+  };
+  function exportData() {
+    const h = hypothesis();
+    return {
+      schema: 'vave-discovery/1',
+      exportedAt: new Date().toISOString(),
+      startedAt: state.startedAt,
+      respondent: D.respondent,
+      sort: state.sort, friction: state.friction, wishes: state.wishes, customWishes: state.customWishes,
+      roles: state.roles, budget: state.budget, wand: state.wand, noGo: state.noGo,
+      hypothesis: { target: h.target, reasons: h.reasons }
+    };
+  }
+  function byZone(z) { return D.modules.filter(m => state.sort[m.id] === z); }
+  function buildBrief() {
+    const h = hypothesis();
+    const keep = kept().slice().sort((a, b) => (state.friction[b.id] ?? -1) - (state.friction[a.id] ?? -1));
+    const musts = [...D.wishes.filter(w => state.wishes[w.id] === 'must').map(w => w.text), ...state.customWishes.filter(w => w.level === 'must').map(w => w.text)];
+    const nices = [...D.wishes.filter(w => state.wishes[w.id] === 'nice').map(w => w.text), ...state.customWishes.filter(w => w.level === 'nice').map(w => w.text)];
+    const freq = Object.fromEntries(D.frequency.map(f => [f.id, f.label]));
+    const dur = Math.max(1, Math.round((Date.now() - new Date(state.startedAt).getTime()) / 60000));
+    const top = keep.filter(m => (state.friction[m.id] ?? 0) >= 3).map(m => m.name);
+    const L = [];
+    L.push(`# VAVE Discovery – Brief`, ``, `Datum: ${new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}  `, `Person: ${D.respondent}  `, `Dauer: ~${dur} ${dur === 1 ? 'Minute' : 'Minuten'}`, ``);
+    L.push(`## Behalten (${keep.length})`, ``, `| Baustein | Reibung 0–4 | Preis |`, `|---|---|---|`);
+    keep.forEach(m => L.push(`| ${m.name} | ${state.friction[m.id] === undefined ? '–' : state.friction[m.id] + ' – ' + D.frictionLabels[state.friction[m.id]]} | ${m.price ? m.price + ' €' : 'in Lizenz'} |`));
+    L.push(``, `## Weg damit (${byZone('drop').length})`, ``, ...byZone('drop').map(m => `- ${m.name}`));
+    L.push(``, `## Kenne ich nicht (${byZone('unknown').length})`, ``, ...byZone('unknown').map(m => `- ${m.name}`));
+    L.push(``, `## Vermisst`, ``, `Unverzichtbar:`, ...(musts.length ? musts.map(t => `- ${t}`) : ['- –']), ``, `Wäre schön:`, ...(nices.length ? nices.map(t => `- ${t}`) : ['- –']));
+    L.push(``, `## Rollen`, ``, ...D.roles.map(r => `- ${r.name}: ${state.roles[r.id] ? freq[state.roles[r.id]] : '–'}`));
+    L.push(``, `## Budget`, ``, `- Heute: ${state.budget.currentUnknown ? 'unbekannt' : eur(state.budget.current) + '/Monat'}`, `- Schmerzgrenze: ${eur(state.budget.max)}/Monat`, `- Haltung: ${bbLabel(state.budget.buildBuy)} (${state.budget.buildBuy}/100)`);
+    L.push(``, `## Zauberstab`, ``, `> ${state.wand.trim() || '–'}`, ``, `Darf nicht passieren:`, ``, `> ${state.noGo.trim() || '–'}`);
+    L.push(``, `## Zielbild-Hypothese: ${h.target} – ${TARGET_TEXT[h.target][0]}`, ``, TARGET_TEXT[h.target][1], ``, ...h.reasons.map(r => `- ${r}`), ``, `Hypothese, kein Urteil. Zur Diskussion mit Tobias.`);
+    L.push(``, `## Erster Prompt`, ``,
+      `Baue für VAVE Studio (100+ Leute, 8 Studios, mehrere Gesellschaften) ${h.target === 'A' ? 'eine neue Oberfläche vor QuoJob' : h.target === 'B' ? 'einen Migrations- und Ergänzungsplan zu einem passenden SaaS' : 'ein eigenes Agentursystem'}. ` +
+      `Unverzichtbar: ${musts.length ? musts.join('; ') : 'siehe Behalten-Liste'}. ` +
+      `Größte Reibung heute: ${top.length ? top.join(', ') : 'keine Bausteine mit Reibung ≥ 3'}. ` +
+      `Nicht anfassen: ${byZone('drop').length ? byZone('drop').map(m => m.name).join(', ') : '–'}. ` +
+      `Leitplanke: ${state.noGo.trim() || 'keine genannt'}. Budgetrahmen: ${eur(state.budget.max)}/Monat.`);
+    return L.join('\n');
+  }
+
+  /* ---------------- Station 7: Ergebnis ---------------- */
+  const resultEl = $('#result');
+  function renderResult() {
+    const h = hypothesis();
+    const keep = kept();
+    const top = keep.filter(m => state.friction[m.id] !== undefined).sort((a, b) => state.friction[b.id] - state.friction[a.id]).slice(0, 3);
+    const musts = [...D.wishes.filter(w => state.wishes[w.id] === 'must').map(w => w.text), ...state.customWishes.filter(w => w.level === 'must').map(w => w.text)];
+    resultEl.innerHTML = `
+      <div class="step-head">
+        <h2>Danke, ${esc(D.respondent)}.</h2>
+        <p class="lead">Das ist deine Zusammenfassung. Lad beide Dateien herunter und schick sie mir – damit legen wir los.</p>
+      </div>
+      <div class="stats">
+        <div class="stat" data-k="keep"><b>${keep.length}</b>Bausteine behalten</div>
+        <div class="stat" data-k="drop"><b>${byZone('drop').length}</b>Bausteine weg</div>
+        <div class="stat" data-k="unknown"><b>${byZone('unknown').length}</b>Bausteine unbekannt</div>
+      </div>
+      <div class="result-block hypo">
+        <span class="small muted">Arbeitshypothese, keine Entscheidung</span>
+        <span class="target">Zielbild ${h.target}: ${esc(TARGET_TEXT[h.target][0])}</span>
+        <p>${esc(TARGET_TEXT[h.target][1])}</p>
+        <ul>${h.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+      </div>
+      <div class="result-block">
+        <h3>Größte Reibung</h3>
+        ${top.length ? `<ul>${top.map(m => `<li>${esc(m.name)} – ${esc(D.frictionLabels[state.friction[m.id]])}</li>`).join('')}</ul>` : '<p class="muted">Nichts bewertet.</p>'}
+      </div>
+      <div class="result-block">
+        <h3>Unverzichtbar</h3>
+        ${musts.length ? `<ul>${musts.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : '<p class="muted">Keine Wünsche als unverzichtbar markiert.</p>'}
+      </div>
+      <div class="result-block">
+        <h3>Budget</h3>
+        <p>Heute ${state.budget.currentUnknown ? 'unbekannt' : eur(state.budget.current) + '/Monat'}, Schmerzgrenze ${eur(state.budget.max)}/Monat, Haltung: ${bbLabel(state.budget.buildBuy)}.</p>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn primary" id="dlJson">Daten herunterladen (JSON)</button>
+        <button type="button" class="btn" id="dlMd">Brief herunterladen (Markdown)</button>
+        <button type="button" class="btn" id="copyMd">Brief kopieren</button>
+        <button type="button" class="btn quiet" id="restart">Von vorn</button>
+      </div>`;
+    const stamp = new Date().toISOString().slice(0, 10) + '_' + D.respondent.toLowerCase();
+    $('#dlJson').addEventListener('click', () => download(stamp + '.json', JSON.stringify(exportData(), null, 2), 'application/json'));
+    $('#dlMd').addEventListener('click', () => download(stamp + '.md', buildBrief(), 'text/markdown'));
+    $('#copyMd').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(buildBrief()); toast('Brief kopiert.'); }
+      catch (e) { download(stamp + '.md', buildBrief(), 'text/markdown'); toast('Zwischenablage nicht verfügbar – Datei geladen.'); }
+    });
+    $('#restart').addEventListener('click', () => {
+      if (!confirm('Alle Antworten löschen und von vorn beginnen?')) return;
+      state = freshState(); save(); goTo(0);
+    });
+    if (!REDUCED) confetti();
+  }
+  function download(name, text, type) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type }));
+    a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  let toastTimer;
+  function toast(msg) {
+    const t = $('#toast'); t.textContent = msg; t.classList.add('is-on');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('is-on'), 2200);
+  }
+
+  /* ---------------- Konfetti ---------------- */
+  function confetti() {
+    const c = $('#confetti'), ctx = c.getContext('2d');
+    c.width = innerWidth; c.height = innerHeight; c.style.display = 'block';
+    const colors = ['#2D3BFF', '#E9EBFF', '#FFD9A8', '#B9E4D8', '#F3C1E1', '#171A21'];
+    const P = Array.from({ length: 140 }, () => ({
+      x: Math.random() * c.width, y: -20 - Math.random() * c.height * 0.4,
+      vx: (Math.random() - .5) * 2.2, vy: 2 + Math.random() * 3.5,
+      r: 4 + Math.random() * 6, a: Math.random() * Math.PI, va: (Math.random() - .5) * .2,
+      col: colors[Math.floor(Math.random() * colors.length)]
+    }));
+    const t0 = performance.now();
+    (function frame(t) {
+      const el = t - t0;
+      ctx.clearRect(0, 0, c.width, c.height);
+      P.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.a += p.va; p.vy += .03;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a);
+        ctx.globalAlpha = Math.max(0, 1 - Math.max(0, el - 1800) / 900);
+        ctx.fillStyle = p.col; ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); ctx.restore();
+      });
+      if (el < 2700) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, c.width, c.height); c.style.display = 'none'; }
+    })(t0);
+  }
+
+  /* ---------------- Start ---------------- */
+  $$('[data-respondent]').forEach(el => { el.textContent = D.respondent; });
+  buildRoute();
+  goTo(state.step);
+})();
+</script>
+</body>
+</html>

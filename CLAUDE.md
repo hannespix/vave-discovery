@@ -18,17 +18,21 @@ Agenten bekommen einen Auftrag mit Dateipfaden, nicht „schau dich mal um“.
 
 ## Stack & Konventionen
 
-- **Umfrage (M1):** Einzeldatei-HTML (`survey/index.html`), Vanilla JS, inline SVG- und
-  CSS-Animationen, **keine Laufzeit-Abhängigkeiten, kein Build**. Läuft per Doppelklick,
-  offline, auf dem Handy. Ergebnis wird als JSON heruntergeladen (`data/results/`).
+- **Umfrage (M1):** `survey/index.html` + `survey/modules.js` (einzige Datenquelle: Bausteine,
+  Wünsche, Rollen). Vanilla JS, inline SVG- und CSS-Animationen, **keine Laufzeit-Abhängigkeiten,
+  kein Build für die Entwicklung**. Läuft per Doppelklick aus dem Dateisystem, offline, auf dem Handy.
+  Zum Verschicken erzeugt `npm run bundle` die Einzeldatei `dist/vave-discovery-umfrage.html`.
+  Ergebnis wird als JSON + Markdown-Brief heruntergeladen → `data/results/YYYY-MM-DD_<vorname>.json`.
+  Zustand liegt im `localStorage` unter `vave-discovery-v1`.
 - **Prototyp (M3+):** React/Vite. Datenhaltung je Zielbild (PGlite lokal oder Firebase) —
   wird in Gate G2 entschieden. **Vorher keine Zeile Prototyp-Code.**
 - **Sprache:** UI Deutsch, Code und Identifier Englisch, Doku Deutsch.
 - **Commits:** Conventional Commits mit Runden-Präfix: `feat(r12): keep-kill-miss board`.
   Ein Zwischenziel = ein PR.
 - **Branches:** `loop/r<NN>-<slug>`. Builder arbeiten in eigenen `git worktree`s.
-- **Vor jedem Commit:** `npm run check` (Single-File-Prüfung, Schema-Prüfung).
-  Läuft automatisch als Hook, siehe `.claude/settings.json`.
+- **Vor jedem Commit:** `npm run check` (keine externen Referenzen, Katalog konsistent, Exporte
+  gegen Schema). Läuft automatisch als Hook, siehe `.claude/settings.json`.
+  Syntax des Inline-Scripts: `node --check` auf den extrahierten Script-Block (macht der Builder).
 
 ## Nicht verhandelbar
 
@@ -83,11 +87,14 @@ CLAUDE.md              du liest das gerade
 STATE.md               lebender Zustand — Einstiegspunkt jeder Runde
 ROADMAP.md             Meilensteine M0–M5, Gates, Verzweigungen A/B/C
 DECISIONS.md           Entscheidungslog (D-001 …), von Menschen geschrieben
-docs/design-principles.md    Maßstab für ui-critic
-docs/research/quojob-osint.md   Recherche-Stand (nur bei Bedarf laden)
-docs/survey/modules.json        Modulkatalog mit Layer-Zuordnung (surface/core/backoffice)
-docs/survey/results-schema.json Ausgabeformat der Umfrage
-survey/index.html      die Umfrage (M1)
-data/results/          Rohdaten, unantastbar
-scripts/check.mjs      npm run check
+docs/design-principles.md         Maßstab für ui-critic
+docs/research/00-kurzfassung.md   Recherche in 60 Zeilen — reicht meist
+docs/research/01…06-*.md          OSINT, Modulpreise, VAVE-Profil, Zielbilder, Umfrage-Konzept, Marktscreening
+docs/survey/results-schema.json   Exportformat `vave-discovery/1` — exakt das, was die Umfrage herunterlädt
+survey/index.html                 die Umfrage (M1) — Markup, CSS, Inline-Script
+survey/modules.js                 Bausteine (mit Gruppe + Preis), Wünsche, Rollen, Reibungsskala — einzige Datenquelle
+data/results/                     Rohdaten, unantastbar (+ example.json zum Testen)
+docs/brief/                       Vibecoding-Briefs und Zielbild-Vorschläge (Agenten-Output)
+scripts/check.mjs                 npm run check
+scripts/bundle.mjs                npm run bundle → dist/vave-discovery-umfrage.html
 ```
