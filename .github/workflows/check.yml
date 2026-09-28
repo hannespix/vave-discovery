@@ -1,11 +1,9 @@
-# npm run check auf jedem PR und jedem Push, der nicht auf main geht.
-# (main läuft über pages.yml, dort ist der Check die Vorstufe des Deploys.)
+# npm run check auf jedem PR (und auf Knopfdruck).
+# Pushes auf main prüft pages.yml, dort ist der Check die Vorstufe des Deploys.
 name: check
 
 on:
   pull_request:
-  push:
-    branches-ignore: [main]
   workflow_dispatch:
 
 permissions:
