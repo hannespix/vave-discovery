@@ -5,6 +5,9 @@ was fehlt — und daraus die belegte Entscheidung, ob und was gebaut wird.
 
 **Kein Nachbau.** Erst Umfrage (M1), dann Brief und Zielbild (M2), dann genau der entschiedene Umfang (M3).
 
+**Umfrage online (Vorschau):** https://hannespix.github.io/vave-discovery/ — bei jedem Merge auf `main` neu gebündelt
+und deployt (`.github/workflows/pages.yml`). Online liegt dieselbe Einzeldatei wie in `dist/`.
+
 ## Quickstart
 
 ```bash
