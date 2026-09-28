@@ -15,14 +15,15 @@
   --surface: #FFFFFF;
   --ink: #171A21;
   --ink-2: #626878;
-  --ink-3: #9AA0AE;
-  --line: #DCDFE6;
+  --ink-3: #666C7B; /* Text ≥ 4,5:1 auf --surface und --bg */
+  --line: #DCDFE6;  /* nur Deko-Rahmen */
+  --control: #7A8090; /* Umriss von Bedienelementen, ≥ 3:1 auf --surface, --bg, --graphite-soft */
   --signal: #2D3BFF;
   --signal-deep: #1F2BC9;
   --signal-soft: #E9EBFF;
   --graphite: #33384A;
   --graphite-soft: #E7E9EE;
-  --amber: #B97D00;
+  --amber: #8F6000;
   --amber-soft: #FFF1CF;
   --radius: 14px;
   --radius-s: 8px;
@@ -108,7 +109,8 @@ p { margin: 0; }
 /* Buttons */
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 12px 22px; border-radius: 999px; border: 1.5px solid var(--line);
+  min-height: 44px; /* Trefferfläche; .btn.small (Station 1) bleibt kompakt, siehe unten */
+  padding: 12px 22px; border-radius: 999px; border: 1.5px solid var(--control);
   background: var(--surface); font-weight: 700; line-height: 1;
   transition: transform .15s var(--ease-out), background .2s, border-color .2s, opacity .2s;
 }
@@ -118,8 +120,9 @@ p { margin: 0; }
 .btn.primary:hover { background: var(--signal-deep); border-color: var(--signal-deep); }
 .btn.quiet { background: transparent; border-color: transparent; color: var(--ink-2); }
 .btn.quiet:hover { color: var(--ink); border-color: transparent; background: var(--graphite-soft); }
-.btn.small { padding: 8px 14px; font-size: .9rem; }
-.btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.btn.small { padding: 8px 14px; font-size: .9rem; min-height: 0; }
+/* Gesperrt: lesbar (≥ 4,5:1), aber klar kein Primärknopf. Was fehlt, steht in #hint. */
+.btn:disabled, .btn.primary:disabled { background: var(--graphite-soft); border-color: var(--graphite-soft); color: var(--ink-2); cursor: not-allowed; transform: none; }
 
 /* ------------------------------------------------------------------
    Station 1 – Sortieren: ein Kartenstapel, drei Zonen, immer im Blick.
@@ -296,61 +299,98 @@ body.is-dragging * { cursor: grabbing !important; }
 /* ------------------------------------------------------------------
    Station 2 – Reibung
 ------------------------------------------------------------------- */
+.friction-scale { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; margin-bottom: 12px; color: var(--ink-2); font-weight: 600; }
+.friction-scale span { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
 .friction-list { display: grid; gap: 10px; }
+/* Mobil: Name / Zustand / Regler untereinander; breit: Regler rechts daneben. Der Zustand ist so hoch wie
+   der Rücksetzknopf – ein längeres Label verschiebt den Regler nicht. */
 .friction-row {
-  display: grid; grid-template-columns: 44px 1fr; gap: 6px 16px; align-items: center;
-  padding: 14px 18px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line);
+  display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "name" "state" "slider"; gap: 2px 24px;
+  padding: 12px 16px 8px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line);
 }
-.friction-row .face { width: 44px; height: 44px; grid-row: 1 / 3; }
-.face circle.head { fill: var(--graphite-soft); stroke: var(--ink); stroke-width: 1.5; transition: fill .3s; }
-.face .eye { fill: var(--ink); }
-.face .mouth { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; transition: d .25s var(--ease-out); }
-.friction-row[data-rated="false"] .face circle.head { fill: var(--bg); }
-.friction-row[data-rated="false"] .face .eye { fill: var(--ink-3); }
-.friction-row[data-rated="false"] .face .mouth { stroke: var(--ink-3); }
-.friction-top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
-.friction-top .name { font-weight: 700; }
-.friction-top .label { color: var(--ink-2); font-weight: 600; font-size: .95rem; text-align: right; }
-.friction-row[data-rated="false"] .label { color: var(--ink-3); }
-input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; margin: 0; }
-input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--line); }
-input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--line); }
+@media (min-width: 641px) {
+  .friction-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-template-areas: "name slider" "state slider"; align-items: center; padding: 10px 20px; }
+}
+.friction-row .name { grid-area: name; font-weight: 700; overflow-wrap: break-word; }
+.friction-state { grid-area: state; display: flex; align-items: center; gap: 10px; min-height: 44px; min-width: 0; }
+.friction-state .label { flex: 1; min-width: 0; color: var(--ink); font-weight: 600; line-height: 1.2; }
+.friction-row[data-rated="false"] .label { color: var(--ink-2); }
+.friction-row .slider { grid-area: slider; }
+/* Reibung als Linie: glatt bei 0, gezackter bis 4; unbewertet gepunktet (kein Wert) */
+.fline { flex: none; width: 48px; height: 24px; overflow: visible; }
+.fline path { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.friction-row[data-rated="false"] .fline path { stroke: var(--control); stroke-dasharray: 1 5; }
+.friction-scale .fline { width: 32px; height: 16px; }
+.friction-empty { padding: 28px; border-radius: var(--radius); border: 1.5px dashed var(--line); color: var(--ink-2); }
+
+/* Regler (Station 2 und 5). Zeiger-Eingaben nimmt .slider an (senkrecht wischen = scrollen, siehe Script);
+   das native Feld bleibt für Tastatur und Screenreader. Spur und Stufenpunkte zeichnet .slider-track. */
+.slider { position: relative; height: 44px; touch-action: pan-y pinch-zoom; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.slider-track {
+  position: absolute; left: 13px; right: 13px; top: 50%; height: 4px; margin-top: -2px; border-radius: 2px;
+  display: flex; justify-content: space-between; align-items: center; background: var(--control); pointer-events: none;
+}
+.slider-track i { flex: none; width: 10px; height: 10px; margin: 0 -5px; border-radius: 50%; background: var(--surface); border: 2px solid var(--control); }
+input[type="range"] { -webkit-appearance: none; appearance: none; display: block; position: relative; width: 100%; height: 44px; margin: 0; background: transparent; pointer-events: none; }
+input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: transparent; }
+input[type="range"]::-moz-range-track { height: 4px; background: transparent; }
 input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 22px; height: 22px; margin-top: -9px; border-radius: 50%;
-  background: var(--surface); border: 2.5px solid var(--signal); box-shadow: 0 2px 6px rgba(0,0,0,.12);
+  -webkit-appearance: none; box-sizing: border-box; width: 26px; height: 26px; margin-top: -11px; border-radius: 50%;
+  background: var(--surface); border: 3px solid var(--signal); box-shadow: 0 2px 6px rgba(0,0,0,.15);
   transition: transform .15s var(--ease-out);
 }
 input[type="range"]::-moz-range-thumb {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--surface); border: 2.5px solid var(--signal); box-shadow: 0 2px 6px rgba(0,0,0,.12);
+  box-sizing: border-box; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--surface); border: 3px solid var(--signal); box-shadow: 0 2px 6px rgba(0,0,0,.15);
 }
-input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
-.friction-empty { padding: 28px; border-radius: var(--radius); border: 1.5px dashed var(--line); color: var(--ink-2); }
+.slider.is-active input[type="range"]::-webkit-slider-thumb { transform: scale(1.12); }
+/* Unbewertet/unberührt: Spur sichtbar, kein Daumen – also keine Position, kein Wert */
+.friction-row[data-rated="false"] input[type="range"]::-webkit-slider-thumb,
+.budget-row[data-touched="false"] input[type="range"]::-webkit-slider-thumb { opacity: 0; }
+.friction-row[data-rated="false"] input[type="range"]::-moz-range-thumb,
+.budget-row[data-touched="false"] input[type="range"]::-moz-range-thumb { opacity: 0; }
+.reset {
+  flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin-right: -8px; padding: 0;
+  border: 0; border-radius: 50%; background: transparent; color: var(--ink-2);
+}
+.reset:hover { background: var(--graphite-soft); color: var(--ink); }
+.reset svg { width: 20px; height: 20px; }
+.friction-row[data-rated="false"] .reset, .budget-row[data-touched="false"] .reset, .budget-row.is-unknown .reset { visibility: hidden; }
 
 /* ------------------------------------------------------------------
    Station 3 – Wünsche
 ------------------------------------------------------------------- */
-.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 18px; color: var(--ink-2); font-size: .95rem; font-weight: 600; }
-.legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; vertical-align: -2px; margin-right: 6px; border: 1.5px solid var(--line); background: var(--surface); }
-.legend i.nice { background: var(--signal-soft); border-color: var(--signal-soft); }
-.legend i.must { background: var(--signal); border-color: var(--signal); }
+/* Legende = die drei Zustände, gezeichnet wie die Chips selbst (Fläche + Symbol, nie Farbe allein) */
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 18px; color: var(--ink-2); font-weight: 600; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { flex: none; display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--control); background: var(--surface); }
+.legend i.nice { background: var(--signal-soft); border-color: var(--signal-deep); color: var(--signal-deep); }
+.legend i.must { background: var(--signal); border-color: var(--signal); color: #fff; }
+.legend svg { width: 14px; height: 14px; }
 .chips { display: flex; flex-wrap: wrap; gap: 10px; }
 .chip {
-  display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-width: 0;
-  padding: 10px 16px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface);
+  display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-width: 0; min-height: 44px;
+  padding: 9px 16px; border-radius: 999px; border: 1.5px solid var(--control); background: var(--surface);
   text-align: left; line-height: 1.25; font-weight: 600;
   transition: background .18s, border-color .18s, color .18s, transform .15s var(--ease-out);
 }
-.chip:hover { border-color: var(--ink-3); }
+.chip:hover { border-color: var(--ink); }
 .chip:active { transform: scale(.97); }
-.chip[data-level="nice"] { background: var(--signal-soft); border-color: var(--signal-soft); color: var(--signal-deep); }
+.chip[data-level="nice"] { background: var(--signal-soft); border-color: var(--signal-deep); color: var(--signal-deep); }
 .chip[data-level="must"] { background: var(--signal); border-color: var(--signal); color: #fff; }
-.chip .star { display: none; width: 14px; height: 14px; }
-.chip[data-level="must"] .star { display: inline-block; }
-.chip .remove { margin-left: 2px; opacity: .6; }
-.chip .remove:hover { opacity: 1; }
+.chip span { min-width: 0; overflow-wrap: break-word; } /* sehr lange eigene Wörter umbrechen statt die Seite zu verbreitern */
+.chip .ico { display: none; flex: none; width: 16px; height: 16px; }
+.chip[data-level="nice"] .ico.nice, .chip[data-level="must"] .ico.must { display: inline-block; }
+.chip .state { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.chip-group { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; min-width: 0; }
+.chip-x {
+  flex: none; display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+  border-radius: 50%; border: 1.5px solid var(--control); background: var(--surface); color: var(--ink-2);
+}
+.chip-x:hover { color: var(--ink); border-color: var(--ink); }
+.chip-x svg { width: 14px; height: 14px; }
 .chip-add { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; max-width: 560px; }
-.chip-add input { flex: 1 1 220px; min-width: 0; padding: 11px 16px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); }
+.chip-add input { flex: 1 1 220px; min-width: 0; min-height: 44px; padding: 10px 16px; border-radius: 999px; border: 1.5px solid var(--control); background: var(--surface); }
 .chip-add input:focus { border-color: var(--signal); outline: none; }
 
 /* ------------------------------------------------------------------
@@ -361,41 +401,39 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
   display: grid; grid-template-columns: minmax(160px, 1fr) auto; gap: 12px 18px; align-items: center;
   padding: 12px 18px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line);
 }
-@media (max-width: 640px) { .role-row { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .role-row { grid-template-columns: minmax(0, 1fr); padding: 12px 14px; } }
 .role-name { font-weight: 700; }
-.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--graphite-soft); }
+/* Alle Stufen gleich gewichtet: gewählt = gefüllt, unabhängig vom Wert */
+.seg { display: inline-grid; grid-auto-flow: column; gap: 2px; padding: 3px; border-radius: 26px; background: var(--graphite-soft); border: 1.5px solid var(--control); }
 .seg button {
-  padding: 8px 14px; border: 0; border-radius: 999px; background: transparent; font-weight: 600; font-size: .92rem; color: var(--ink-2);
+  min-height: 44px; padding: 8px 16px; border: 0; border-radius: 999px; background: transparent;
+  font-weight: 600; font-size: 1rem; line-height: 1.2; color: var(--ink);
   transition: background .18s, color .18s, transform .15s var(--ease-out);
 }
-.seg button:hover { color: var(--ink); }
-.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
-.seg button[aria-pressed="true"][data-value="daily"] { background: var(--signal); color: #fff; }
-@media (max-width: 420px) { .seg button { padding: 8px 10px; font-size: .85rem; } }
+.seg button:hover { background: var(--surface); }
+.seg button[aria-pressed="true"] { background: var(--signal); color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+@media (max-width: 640px) { .seg { display: grid; grid-auto-flow: row; grid-template-columns: repeat(4, minmax(0, 1fr)); } .seg button { padding: 8px 4px; } }
+@media (max-width: 540px) { .seg { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* ------------------------------------------------------------------
    Station 5 – Budget
 ------------------------------------------------------------------- */
 .budget { display: grid; gap: 16px; }
 .budget-row {
-  display: grid; gap: 10px; padding: 18px 20px 14px;
+  display: grid; gap: 2px; padding: 16px 20px 10px;
   border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line);
 }
-.budget-top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-.budget-top .q { font-weight: 700; }
-.budget-value { font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--signal); }
+/* Frage über die volle Breite, darunter Wert + Rücksetzknopf in fester Höhe (kein Springen beim ersten Tipp) */
+.budget-top { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: center; gap: 4px 12px; }
+.budget-top .q { grid-column: 1 / -1; font-weight: 700; }
+@media (min-width: 641px) { .budget-top { grid-template-columns: minmax(0, 1fr) auto 44px; } .budget-top .q { grid-column: auto; } }
+.budget-value { min-height: 44px; display: flex; align-items: center; font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--signal); }
 .budget-row.is-unknown .budget-value,
-.budget-row[data-touched="false"] .budget-value { color: var(--ink-3); font-size: 1rem; font-weight: 600; letter-spacing: 0; }
-.budget-row.is-unknown input[type="range"] { opacity: .35; }
-/* Unberührt: kein Daumen, gestrichelte Spur – der Regler zeigt keinen Wert, bis man ihn antippt. */
-.budget-row[data-touched="false"] input[type="range"] { cursor: pointer; }
-.budget-row[data-touched="false"] input[type="range"]::-webkit-slider-thumb { opacity: 0; }
-.budget-row[data-touched="false"] input[type="range"]::-moz-range-thumb { opacity: 0; }
-.budget-row[data-touched="false"] input[type="range"]::-webkit-slider-runnable-track { background: repeating-linear-gradient(90deg, var(--ink-3) 0 4px, transparent 4px 9px); }
-.budget-row[data-touched="false"] input[type="range"]::-moz-range-track { background: repeating-linear-gradient(90deg, var(--ink-3) 0 4px, transparent 4px 9px); }
-.budget-ends { display: flex; justify-content: space-between; color: var(--ink-2); font-size: .9rem; font-weight: 600; }
-.check { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); font-weight: 600; font-size: .95rem; cursor: pointer; }
-.check input { width: 18px; height: 18px; accent-color: var(--signal); }
+.budget-row[data-touched="false"] .budget-value { color: var(--ink-2); font-size: 1rem; font-weight: 600; letter-spacing: 0; }
+.budget-row.is-unknown .slider { opacity: .45; cursor: default; }
+.budget-ends { display: flex; justify-content: space-between; gap: 12px; color: var(--ink-2); font-size: 1rem; font-weight: 600; }
+.check { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; justify-self: start; color: var(--ink); font-weight: 600; font-size: 1rem; cursor: pointer; }
+.check input { width: 20px; height: 20px; margin: 0; accent-color: var(--signal); }
 
 /* ------------------------------------------------------------------
    Station 6 – Zauberstab
@@ -447,8 +485,13 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
   max-width: 980px; margin: 0 auto; padding: 14px 24px;
   display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center;
 }
-.nav-hint { text-align: center; color: var(--ink-2); font-weight: 600; font-size: .95rem; }
-@media (max-width: 640px) { .nav-hint { display: none; } }
+.nav-hint { text-align: center; color: var(--ink-2); font-weight: 600; font-size: 1rem; line-height: 1.2; }
+/* Mobil bleibt der Hinweis sichtbar (was vor „Weiter" fehlt): höchstens zwei Zeilen, Leiste wird nicht höher */
+@media (max-width: 640px) {
+  .nav-inner { padding: 13.5px 12px; gap: 8px; } /* 13,5 px: mit 44-px-Knöpfen so hoch wie vorher (72 px) */
+  .nav .btn { padding-left: 14px; padding-right: 14px; }
+  .nav-hint { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: break-word; }
+}
 
 #confetti { position: fixed; inset: 0; z-index: 90; pointer-events: none; display: none; }
 
@@ -528,22 +571,19 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
 
   <section class="step" data-step="2" aria-labelledby="h2">
     <div class="step-head">
-      <h2 id="h2">Wie oft bremst es?</h2>
-      <p class="lead">Nur die Bausteine, die ihr behalten wollt. Schieb den Regler dahin, wo es sich ehrlich anfühlt.</p>
+      <h2 id="h2">Wie gut läuft jeder Baustein?</h2>
+      <p class="lead">Setz bei jedem Baustein, den ihr behaltet, den Regler: links läuft rund, rechts bremst täglich – was du auslässt, zählt nicht.</p>
     </div>
+    <div class="friction-scale" id="frictionScale"></div>
     <div class="friction-list" id="frictionList"></div>
   </section>
 
   <section class="step" data-step="3" aria-labelledby="h3">
     <div class="step-head">
       <h2 id="h3">Was fehlt euch heute?</h2>
-      <p class="lead">Vorschläge aus dem, was andere Tools inzwischen können. Ergänz, was dir fehlt.</p>
+      <p class="lead">Tipp an, was euch im Alltag fehlt. Eigene Wünsche kannst du unten ergänzen.</p>
     </div>
-    <div class="legend">
-      <span><i></i>tippen: wäre schön</span>
-      <span><i class="nice"></i>noch mal tippen: unverzichtbar</span>
-      <span><i class="must"></i>dritter Tipp: zurück</span>
-    </div>
+    <div class="legend" id="legend"></div>
     <div class="chips" id="chips"></div>
     <div class="chip-add">
       <input type="text" id="customWish" placeholder="Eigener Wunsch – Enter zum Hinzufügen" maxlength="120" autocomplete="off">
@@ -611,14 +651,6 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
   const KEY = 'vave-discovery-v1';
   const STEPS = ['Eingang', 'Sortieren', 'Reibung', 'Wünsche', 'Rollen', 'Budget', 'Zauberstab', 'Ergebnis'];
   const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const MOUTHS = [
-    'M12 24 Q20 32 28 24',
-    'M12 25 Q20 29 28 25',
-    'M12 27 L28 27',
-    'M12 29 Q20 25 28 29',
-    'M13 31 Q20 23 27 31'
-  ];
-  const FACE_FILL = ['#DCE1FF', '#E9EBFF', '#EEF0F4', '#FFE3D6', '#FFC9B8'];
   const BACKOFFICE = new Set(['finanzen', 'gruppe']);
   const FRONT = new Set(['zeit', 'kalender', 'pm', 'app']); // = frontPain in ROADMAP „Zielbild-Regeln“
 
@@ -752,9 +784,9 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
       const must = Object.values(state.wishes).filter(v => v === 'must').length + state.customWishes.filter(w => w.level === 'must').length;
       msg = must ? `${must} unverzichtbar` : '';
     } else if (s === 5) {
-      const open = budgetOpen(state);
-      ok = open === 0;
-      msg = open ? `Noch ${open} Regler einstellen` : '';
+      const open = BUDGET_KEYS.filter(k => !state.budgetTouched[k] && !(k === 'current' && state.budget.currentUnknown));
+      ok = open.length === 0;
+      msg = open.length === 1 ? `Fehlt noch: ${BUDGET_NAME[open[0]]}` : open.length ? `Noch ${open.length} Regler einstellen` : '';
     }
     nextBtn.disabled = !ok;
     hint.textContent = msg;
@@ -980,17 +1012,76 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
   stepSort.addEventListener('contextmenu', e => { if (drag && !drag.mouse) e.preventDefault(); });
 
   /* ---------------- Station 2: Reibung ---------------- */
-  const frictionList = $('#frictionList');
-  function faceSvg(level) {
-    const l = level === undefined ? 2 : level;
-    return `<svg class="face" viewBox="0 0 40 40" aria-hidden="true">
-      <circle class="head" cx="20" cy="20" r="18" style="fill:${level === undefined ? '' : FACE_FILL[l]}"/>
-      <circle class="eye" cx="14" cy="16" r="2"/><circle class="eye" cx="26" cy="16" r="2"/>
-      <path class="mouth" d="${MOUTHS[l]}"/>
-    </svg>`;
+  /* ---------------- Regler (Station 2 und 5) ---------------- */
+  // Zeiger-Eingaben laufen über .slider (touch-action: pan-y), das native Feld hat pointer-events: none.
+  // Tippen setzt den Wert an der Stelle, waagerecht ziehen verstellt ihn, senkrecht wischen scrollt die
+  // Seite und setzt nichts. Tastatur und Screenreader bedienen das native Feld wie gewohnt.
+  const THUMB = 26; // Daumenbreite in px, siehe CSS input[type="range"]
+  const SLOP = 8;   // ab so vielen px Bewegung ist es kein Tipp mehr
+  const RESET_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4.5H9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const trackHtml = stops => `<span class="slider-track" aria-hidden="true">${'<i></i>'.repeat(stops)}</span>`;
+  const resetHtml = what => `<button type="button" class="reset" aria-label="Zurücksetzen: ${esc(what)}" title="Zurücksetzen">${RESET_SVG}</button>`;
+  function valueAt(input, x) {
+    const r = input.getBoundingClientRect(), min = Number(input.min), max = Number(input.max), step = Number(input.step) || 1;
+    const f = Math.max(0, Math.min(1, (x - r.left - THUMB / 2) / (r.width - THUMB)));
+    return min + Math.round(f * (max - min) / step) * step;
   }
+  function bindSliders(root) {
+    let g = null;
+    const setAt = (input, x) => { input.value = String(valueAt(input, x)); input.dispatchEvent(new Event('input', { bubbles: true })); };
+    const end = () => { if (g) g.box.classList.remove('is-active'); g = null; };
+    root.addEventListener('pointerdown', e => {
+      const box = e.target.closest('.slider'), input = box && $('input[type="range"]', box);
+      if (!input || input.disabled || e.button !== 0) return;
+      g = { box, input, id: e.pointerId, x0: e.clientX, y0: e.clientY, drag: false, mouse: e.pointerType === 'mouse' };
+      if (g.mouse) e.preventDefault(); // keine Textauswahl beim Ziehen mit der Maus
+    });
+    root.addEventListener('pointermove', e => {
+      if (!g || e.pointerId !== g.id) return;
+      const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
+      if (!g.drag) {
+        if (Math.abs(dy) > SLOP && Math.abs(dy) >= Math.abs(dx)) { end(); return; } // senkrecht: das ist Scrollen
+        if (Math.abs(dx) < SLOP) return;
+        g.drag = true; g.box.classList.add('is-active');
+        try { g.box.setPointerCapture(g.id); } catch (err) { /* egal */ }
+      }
+      setAt(g.input, e.clientX);
+    });
+    root.addEventListener('pointerup', e => {
+      if (!g || e.pointerId !== g.id) return;
+      const d = g; end();
+      if (!d.drag && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) > SLOP) return;
+      setAt(d.input, e.clientX);
+      if (d.mouse) d.input.focus({ preventScroll: true });
+    });
+    root.addEventListener('pointercancel', e => { if (g && e.pointerId === g.id) end(); });
+  }
+
+  /* ---------------- Station 2: Reibung ---------------- */
+  // Reibung als Linie: glatt bei 0, zunehmend gezackt bis 4. Wechsel 220 ms, bei reduzierter Bewegung sofort.
+  const frictionList = $('#frictionList');
+  const LINE_X = [2, 6.4, 10.8, 15.2, 19.6, 24, 28.4, 32.8, 37.2, 41.6, 46];
+  const LINE_JAG = [0, .9, -.7, 1, -.8, .95, -1, .75, -.9, .8, 0];
+  const LINE_AMP = [0, 1.5, 3.5, 6, 9];
+  const linePath = a => 'M' + LINE_X.map((x, i) => `${x} ${(12 - LINE_JAG[i] * a).toFixed(2)}`).join(' L');
+  const lineSvg = a => `<svg class="fline" viewBox="0 0 48 24" aria-hidden="true"><path d="${linePath(a)}"/></svg>`;
+  function animateLine(path, to) {
+    const from = path._amp === undefined ? to : path._amp;
+    cancelAnimationFrame(path._raf);
+    if (REDUCED || from === to) { path._amp = to; path.setAttribute('d', linePath(to)); return; }
+    const t0 = performance.now();
+    const frame = t => {
+      const p = Math.min(1, (t - t0) / 220), k = 1 - Math.pow(1 - p, 3);
+      path._amp = from + (to - from) * k; path.setAttribute('d', linePath(path._amp));
+      if (p < 1) path._raf = requestAnimationFrame(frame);
+    };
+    path._raf = requestAnimationFrame(frame);
+  }
+  $('#frictionScale').innerHTML = `<span>${lineSvg(LINE_AMP[0])}${esc(D.frictionLabels[0])}</span><span>${esc(D.frictionLabels[4])}${lineSvg(LINE_AMP[4])}</span>`;
+  const frictionText = v => v === undefined ? 'noch nicht bewertet' : D.frictionLabels[v];
   function renderFriction() {
     const keep = kept();
+    $('#frictionScale').style.display = keep.length ? '' : 'none';
     if (!keep.length) {
       frictionList.innerHTML = '<div class="friction-empty">Du hast keinen Baustein unter „Brauchen wir" einsortiert. Dann gibt es hier nichts zu bewerten – weiter zu den Wünschen.</div>';
       return;
@@ -998,45 +1089,85 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
     frictionList.innerHTML = keep.map(m => {
       const v = state.friction[m.id];
       return `<div class="friction-row" data-id="${m.id}" data-rated="${v !== undefined}">
-        ${faceSvg(v)}
-        <div class="friction-top"><span class="name">${esc(m.name)}</span><span class="label">${v === undefined ? 'noch nicht bewertet' : esc(D.frictionLabels[v])}</span></div>
-        <input type="range" min="0" max="4" step="1" value="${v === undefined ? 2 : v}" aria-label="Reibung: ${esc(m.name)}">
+        <span class="name">${esc(m.name)}</span>
+        <div class="friction-state">${lineSvg(v === undefined ? 0 : LINE_AMP[v])}<span class="label">${esc(frictionText(v))}</span>${resetHtml('Reibung ' + m.name)}</div>
+        <div class="slider">${trackHtml(5)}<input type="range" min="0" max="4" step="1" value="${v === undefined ? 2 : v}" aria-label="Reibung: ${esc(m.name)}" aria-valuetext="${esc(frictionText(v))}"></div>
       </div>`;
     }).join('');
+    $$('.fline path', frictionList).forEach((p, i) => { p._amp = LINE_AMP[state.friction[keep[i].id]] || 0; });
+  }
+  // v undefined = Bewertung zurücknehmen: zählt dann nicht, zeigt keinen Wert
+  function setFriction(row, v) {
+    const id = row.dataset.id;
+    if (v === undefined) delete state.friction[id]; else state.friction[id] = v;
+    save();
+    const input = $('input[type="range"]', row), text = frictionText(v);
+    row.dataset.rated = String(v !== undefined);
+    $('.label', row).textContent = text;
+    input.setAttribute('aria-valuetext', text);
+    if (v === undefined) input.value = '2';
+    animateLine($('.fline path', row), v === undefined ? 0 : LINE_AMP[v]);
+    updateNav();
   }
   frictionList.addEventListener('input', e => {
     const input = e.target.closest('input[type="range"]');
-    if (!input) return;
-    const row = input.closest('.friction-row'), id = row.dataset.id, v = Number(input.value);
-    state.friction[id] = v; save();
-    row.dataset.rated = 'true';
-    $('.label', row).textContent = D.frictionLabels[v];
-    $('.mouth', row).setAttribute('d', MOUTHS[v]);
-    $('.head', row).style.fill = FACE_FILL[v];
-    updateNav();
+    if (input) setFriction(input.closest('.friction-row'), Number(input.value));
   });
+  frictionList.addEventListener('click', e => {
+    const b = e.target.closest('.reset'); if (!b) return;
+    const row = b.closest('.friction-row');
+    setFriction(row, undefined);
+    $('input[type="range"]', row).focus({ preventScroll: true });
+  });
+  bindSliders(frictionList);
 
   /* ---------------- Station 3: Wünsche ---------------- */
   const chips = $('#chips'), customInput = $('#customWish');
-  const STAR = '<svg class="star" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L10 14.9l-5.3 2.8 1.1-5.9L1.5 7.7l5.9-.8z"/></svg>';
+  // Stufe = Fläche + Symbol (Umriss-Stern: wäre schön, voller Stern: unverzichtbar), nie Farbe allein.
+  const STAR_PATH = 'M10 2.2l2.4 5 5.5.8-4 3.9.9 5.4L10 14.8l-4.8 2.5.9-5.4-4-3.9 5.5-.8z';
+  const ICO_NICE = `<svg class="ico nice" viewBox="0 0 20 20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="${STAR_PATH}"/></svg>`;
+  const ICO_MUST = `<svg class="ico must" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="${STAR_PATH}"/></svg>`;
+  const X_SVG = '<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  const LEVEL_TEXT = { off: '', nice: ', wäre schön', must: ', unverzichtbar' };
+  $('#legend').innerHTML =
+    `<span><i class="nice">${ICO_NICE.replace('class="ico nice"', '')}</i>1× tippen: wäre schön</span>` +
+    `<span><i class="must">${ICO_MUST.replace('class="ico must"', '')}</i>2× tippen: unverzichtbar</span>` +
+    '<span><i></i>3× tippen: wieder aus</span>';
+  function chipHtml(id, text, level, custom) {
+    const chip = `<button type="button" class="chip" data-id="${id}"${custom ? ' data-custom="1"' : ''} data-level="${level}" aria-pressed="${level !== 'off'}">${ICO_NICE}${ICO_MUST}<span>${esc(text)}</span><span class="state">${LEVEL_TEXT[level]}</span></button>`;
+    return custom ? `<span class="chip-group">${chip}<button type="button" class="chip-x" data-remove="${id}" aria-label="Entfernen: ${esc(text)}" title="Entfernen">${X_SVG}</button></span>` : chip;
+  }
   function renderWishes() {
     chips.innerHTML =
-      D.wishes.map(w => `<button type="button" class="chip" data-id="${w.id}" data-level="${state.wishes[w.id] || 'off'}" aria-pressed="${!!state.wishes[w.id]}">${STAR}${esc(w.text)}</button>`).join('') +
-      state.customWishes.map(w => `<button type="button" class="chip" data-id="${w.id}" data-custom="1" data-level="${w.level}" aria-pressed="${w.level !== 'off'}">${STAR}${esc(w.text)}<span class="remove" data-remove title="Entfernen">×</span></button>`).join('');
+      D.wishes.map(w => chipHtml(w.id, w.text, state.wishes[w.id] || 'off', false)).join('') +
+      state.customWishes.map(w => chipHtml(w.id, w.text, w.level, true)).join('');
   }
   function cycle(level) { return level === 'off' ? 'nice' : level === 'nice' ? 'must' : 'off'; }
+  // Stufe am Element umschalten statt neu zeichnen: Fokus und Position bleiben (Enter/Leertaste).
   chips.addEventListener('click', e => {
+    const x = e.target.closest('[data-remove]');
+    if (x) {
+      const had = document.activeElement === x, group = x.closest('.chip-group');
+      const near = group.nextElementSibling || group.previousElementSibling;
+      const nearId = near && (near.dataset.id || $('.chip', near).dataset.id);
+      state.customWishes = state.customWishes.filter(w => w.id !== x.dataset.remove);
+      save(); renderWishes(); updateNav();
+      if (had) (nearId ? $(`.chip[data-id="${nearId}"]`, chips) : $('#customWish')).focus();
+      return;
+    }
     const chip = e.target.closest('.chip'); if (!chip) return;
     const id = chip.dataset.id;
-    if (e.target.closest('[data-remove]')) {
-      state.customWishes = state.customWishes.filter(w => w.id !== id);
-    } else if (chip.dataset.custom) {
-      const w = state.customWishes.find(x => x.id === id); w.level = cycle(w.level);
+    let level;
+    if (chip.dataset.custom) {
+      const w = state.customWishes.find(c => c.id === id); w.level = level = cycle(w.level);
     } else {
-      const next = cycle(state.wishes[id] || 'off');
-      if (next === 'off') delete state.wishes[id]; else state.wishes[id] = next;
+      level = cycle(state.wishes[id] || 'off');
+      if (level === 'off') delete state.wishes[id]; else state.wishes[id] = level;
     }
-    save(); renderWishes(); updateNav();
+    chip.dataset.level = level;
+    chip.setAttribute('aria-pressed', String(level !== 'off'));
+    $('.state', chip).textContent = LEVEL_TEXT[level];
+    save(); updateNav();
   });
   function addWish() {
     const text = customInput.value.trim(); if (!text) return;
@@ -1057,18 +1188,32 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
         </div>
       </div>`).join('');
   }
+  // Nur die Zeile umschalten, nicht neu zeichnen: der Fokus bleibt am gedrückten Knopf.
   rolesEl.addEventListener('click', e => {
     const b = e.target.closest('.seg button'); if (!b) return;
-    const id = b.closest('.role-row').dataset.id;
-    state.roles[id] = state.roles[id] === b.dataset.value ? undefined : b.dataset.value;
-    if (!state.roles[id]) delete state.roles[id];
-    save(); renderRoles();
+    const row = b.closest('.role-row'), id = row.dataset.id;
+    const v = state.roles[id] === b.dataset.value ? undefined : b.dataset.value;
+    if (v) state.roles[id] = v; else delete state.roles[id];
+    save();
+    $$('.seg button', row).forEach(x => x.setAttribute('aria-pressed', String(x.dataset.value === v)));
   });
 
   /* ---------------- Station 5: Budget ---------------- */
   const budgetEl = $('#budget');
-  const THUMB = 22; // Daumenbreite der Regler in px, siehe CSS input[type="range"]
-  function bbLabel(v) { return v < 35 ? 'Lieber kaufen' : v > 65 ? 'Lieber selbst bauen' : 'Offen'; }
+  const BUDGET_KEYS = ['current', 'max', 'buildBuy'];
+  const BUDGET_NAME = { current: 'heutige Kosten', max: 'Schmerzgrenze', buildBuy: 'Kaufen/Bauen' }; // kurz: passt mobil in #hint
+  // Kaufen oder bauen in fünf benannten Stufen. Die Bereiche folgen den Regelgrenzen in hypothesis():
+  // ≤ 40 (Regel 2), 41–59 (keine), 60–69 (Regel 3), ≥ 70 (Regel 1 und 3). Jede Stufe liegt ganz in einem
+  // Bereich; die Anzeige leitet sich aus dem Bereich ab, auch für Werte älterer Fassungen (z. B. 45, 80).
+  const BB_STAGES = [
+    { v: 0,   upTo: 20,  label: 'Klar kaufen' },
+    { v: 35,  upTo: 40,  label: 'Eher kaufen' },
+    { v: 50,  upTo: 59,  label: 'Unentschieden' },
+    { v: 65,  upTo: 69,  label: 'Eher bauen' },
+    { v: 100, upTo: 100, label: 'Klar bauen' }
+  ];
+  function bbStage(v) { const i = BB_STAGES.findIndex(s => v <= s.upTo); return i < 0 ? BB_STAGES.length - 1 : i; }
+  function bbLabel(v) { return BB_STAGES[bbStage(v)].label; }
   // Anzeige je Regler. Unberührt kein Wert – eine Vorgabe wäre ein Anker für die Antwort.
   function budgetText(k) {
     const b = state.budget;
@@ -1076,57 +1221,63 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
     if (!state.budgetTouched[k]) return 'noch nicht eingestellt';
     return k === 'buildBuy' ? bbLabel(b.buildBuy) : eur(b[k]) + '/Monat';
   }
+  const sliderValue = k => k === 'buildBuy' ? bbStage(state.budget.buildBuy) : state.budget[k];
   function renderBudget() {
     const b = state.budget;
     const row = k => `data-k="${k}" data-touched="${!!state.budgetTouched[k]}"`;
-    const val = k => `<span class="budget-value">${esc(budgetText(k))}</span>`;
+    const top = (k, q) => `<div class="budget-top"><span class="q">${q}</span><span class="budget-value">${esc(budgetText(k))}</span>${resetHtml(BUDGET_NAME[k])}</div>`;
     const vt = k => `aria-valuetext="${esc(budgetText(k))}"`;
     budgetEl.innerHTML = `
       <div class="budget-row${b.currentUnknown ? ' is-unknown' : ''}" ${row('current')}>
-        <div class="budget-top"><span class="q">Was zahlt ihr heute für QuoJob, alles in allem?</span>${val('current')}</div>
-        <input type="range" min="0" max="6000" step="50" value="${b.current}" ${b.currentUnknown ? 'disabled' : ''} aria-label="Heutige Kosten pro Monat" ${vt('current')}>
-        <div class="budget-ends"><span>0 €</span><label class="check"><input type="checkbox" data-k="currentUnknown" ${b.currentUnknown ? 'checked' : ''}> weiß ich nicht genau</label><span>6.000 €</span></div>
+        ${top('current', 'Was zahlt ihr heute für QuoJob, alles in allem?')}
+        <div class="slider">${trackHtml(0)}<input type="range" min="0" max="6000" step="50" value="${sliderValue('current')}" ${b.currentUnknown ? 'disabled' : ''} aria-label="Heutige Kosten pro Monat" ${vt('current')}></div>
+        <div class="budget-ends"><span>0 €</span><span>6.000 €</span></div>
+        <label class="check"><input type="checkbox" data-k="currentUnknown" ${b.currentUnknown ? 'checked' : ''}> weiß ich nicht genau</label>
       </div>
       <div class="budget-row" ${row('max')}>
-        <div class="budget-top"><span class="q">Wo liegt die Schmerzgrenze für ein Tool, das wirklich passt?</span>${val('max')}</div>
-        <input type="range" min="0" max="6000" step="50" value="${b.max}" aria-label="Schmerzgrenze pro Monat" ${vt('max')}>
+        ${top('max', 'Wo liegt die Schmerzgrenze für ein Tool, das wirklich passt?')}
+        <div class="slider">${trackHtml(0)}<input type="range" min="0" max="6000" step="50" value="${sliderValue('max')}" aria-label="Schmerzgrenze pro Monat" ${vt('max')}></div>
         <div class="budget-ends"><span>0 €</span><span>6.000 €</span></div>
       </div>
       <div class="budget-row" ${row('buildBuy')}>
-        <div class="budget-top"><span class="q">Bauchgefühl: fertiges Tool kaufen oder selbst bauen lassen?</span>${val('buildBuy')}</div>
-        <input type="range" min="0" max="100" step="5" value="${b.buildBuy}" aria-label="Kaufen oder bauen" ${vt('buildBuy')}>
+        ${top('buildBuy', 'Bauchgefühl: fertiges Tool kaufen oder selbst bauen lassen?')}
+        <div class="slider">${trackHtml(BB_STAGES.length)}<input type="range" min="0" max="${BB_STAGES.length - 1}" step="1" value="${sliderValue('buildBuy')}" aria-label="Kaufen oder bauen" ${vt('buildBuy')}></div>
         <div class="budget-ends"><span>Kaufen</span><span>Bauen</span></div>
       </div>`;
   }
+  function paintBudget(row) {
+    const k = row.dataset.k, text = budgetText(k);
+    row.dataset.touched = String(!!state.budgetTouched[k]);
+    $('.budget-value', row).textContent = text;
+    $('input[type="range"]', row).setAttribute('aria-valuetext', text);
+  }
   // Wert übernehmen, Regler als berührt markieren – ohne Neuaufbau, damit laufendes Ziehen weitergeht.
   function setBudget(row, input) {
-    const k = row.dataset.k;
-    state.budget[k] = Number(input.value);
+    const k = row.dataset.k, n = Number(input.value);
+    state.budget[k] = k === 'buildBuy' ? BB_STAGES[n].v : n;
     state.budgetTouched[k] = true; save();
-    row.dataset.touched = 'true';
-    const text = budgetText(k);
-    $('.budget-value', row).textContent = text;
-    input.setAttribute('aria-valuetext', text);
-    updateNav();
+    paintBudget(row); updateNav();
   }
   budgetEl.addEventListener('input', e => {
     const row = e.target.closest('.budget-row'); if (!row) return;
-    if (e.target.type === 'checkbox') {
-      state.budget.currentUnknown = e.target.checked; save(); renderBudget(); updateNav(); return;
+    if (e.target.type === 'checkbox') { // am Element umschalten: Fokus bleibt auf dem Kästchen
+      state.budget.currentUnknown = e.target.checked; save();
+      row.classList.toggle('is-unknown', e.target.checked);
+      $('input[type="range"]', row).disabled = e.target.checked;
+      paintBudget(row); updateNav(); return;
     }
     setBudget(row, e.target);
   });
-  // Loslassen auf einem unberührten Regler setzt den Wert an dieser Stelle: iOS springt beim Tippen nicht
-  // von selbst dorthin, und ein Tipp genau auf den verborgenen Daumen löst weder input noch (Touch) click aus.
-  // pointerup statt click; beim Scrollen kommt pointercancel, dann bleibt der Regler unberührt.
-  budgetEl.addEventListener('pointerup', e => {
-    const input = e.target.closest('input[type="range"]'), row = input && input.closest('.budget-row');
-    if (!row || e.button !== 0 || input.disabled || state.budgetTouched[row.dataset.k]) return;
-    const r = input.getBoundingClientRect(), min = Number(input.min), max = Number(input.max), step = Number(input.step) || 1;
-    const f = Math.max(0, Math.min(1, (e.clientX - r.left - THUMB / 2) / (r.width - THUMB)));
-    input.value = String(min + Math.round(f * (max - min) / step) * step);
-    setBudget(row, input);
+  // Zurücksetzen = wieder „noch nicht eingestellt": Platzhalter zurück, zählt nicht, Weiter wieder gesperrt.
+  budgetEl.addEventListener('click', e => {
+    const b = e.target.closest('.reset'); if (!b) return;
+    const row = b.closest('.budget-row'), k = row.dataset.k, input = $('input[type="range"]', row);
+    state.budget[k] = freshState().budget[k]; state.budgetTouched[k] = false; save();
+    input.value = String(sliderValue(k));
+    paintBudget(row); updateNav();
+    input.focus({ preventScroll: true });
   });
+  bindSliders(budgetEl);
 
   /* ---------------- Station 6: Zauberstab ---------------- */
   function renderWand() { $('#wand').value = state.wand; $('#noGo').value = state.noGo; }
