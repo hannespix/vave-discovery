@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "schemaVersion": "1.0",
+    "surveyVersion": "0.1.0-example",
+    "target": "quojob",
+    "respondent": "Beispiel (nicht echt)",
+    "role": "gf",
+    "completedAt": "2026-09-28T12:00:00+02:00",
+    "durationSec": 371,
+    "device": "iPhone"
+  },
+  "modules": [
+    { "id": "time-tracking", "zone": "keep", "frust": 4, "roles": ["pm", "kreation", "asia"] },
+    { "id": "tasks", "zone": "keep", "frust": 5, "roles": ["pm", "kreation"] },
+    { "id": "project-board", "zone": "keep", "frust": 4, "roles": ["gf", "pm"] },
+    { "id": "dashboard", "zone": "keep", "frust": 3, "roles": ["gf", "pm", "kreation"] },
+    { "id": "calendar", "zone": "kill", "frust": null, "roles": [] },
+    { "id": "mobile-app", "zone": "miss", "frust": null, "roles": ["kreation", "asia"] },
+    { "id": "jobs", "zone": "keep", "frust": 2, "roles": ["pm"] },
+    { "id": "quotes", "zone": "keep", "frust": 2, "roles": ["pm", "backoffice"] },
+    { "id": "invoices-out", "zone": "keep", "frust": 1, "roles": ["backoffice"] },
+    { "id": "crm", "zone": "keep", "frust": 1, "roles": ["gf", "pm"] },
+    { "id": "controlling", "zone": "keep", "frust": 2, "roles": ["gf"] },
+    { "id": "invoices-in", "zone": "keep", "frust": 1, "roles": ["backoffice"] },
+    { "id": "accounting-export", "zone": "keep", "frust": 0, "roles": ["backoffice"] },
+    { "id": "multi-entity", "zone": "keep", "frust": 1, "roles": ["gf", "backoffice", "asia"] },
+    { "id": "currencies", "zone": "keep", "frust": 1, "roles": ["backoffice", "asia"] },
+    { "id": "media", "zone": "kill", "frust": null, "roles": [] },
+    { "id": "cashbook", "zone": "skip", "frust": null, "roles": [] }
+  ],
+  "missing": [
+    { "label": "Mobile App", "priority": 1, "moduleId": "mobile-app" },
+    { "label": "Budgetampel, die Junioren verstehen", "priority": 2, "moduleId": null }
+  ],
+  "budget": {
+    "currentMonthlyEur": 1700,
+    "painThresholdEur": 2200,
+    "buildWillingness": 6
+  },
+  "wand": "Zeit buchen darf nicht länger dauern als die Arbeit, die ich buche."
+}

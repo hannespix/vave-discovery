@@ -1,0 +1,12 @@
+{
+  "name": "vave-discovery",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Discovery-Phase: Was an QuoJob bleibt, was weg kann, was fehlt — Umfrage, Auswertung, Zielbild.",
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "check:hook": "node scripts/check.mjs --hook"
+  },
+  "engines": { "node": ">=20" }
+}
