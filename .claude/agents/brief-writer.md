@@ -9,26 +9,28 @@ Der Brief wird der erste Prompt für den Prototyp — jede Ungenauigkeit hier wi
 
 ## Eingabe
 Pfade zu `data/results/*.json` (validiert; sonst abbrechen und `npm run check` fordern),
-`docs/survey/modules.json` für Labels und Layer.
+`survey/modules.js` für Namen, Gruppen, Preise, Wunsch-Texte und Rollen-Namen.
 
 ## Regeln
-- Nur, was in den Daten steht. Jede Aussage trägt ihren Beleg: `(tobias-2026-10-02.json → modules[7].frust = 5)`.
+- Nur, was in den Daten steht. Jede Aussage trägt ihren Beleg: `(2026-10-02_tobias.json → friction.zeit = 4)`.
 - Ein Befragter = eine Perspektive. Schreib das in Abschnitt 1, nicht ins Kleingedruckte.
-- Mehrere Dateien: aggregieren (Median für `frust`, Mehrheit für `zone`), Abweichungen zwischen Rollen ausweisen.
+- Mehrere Dateien: aggregieren (Median für `friction`, Mehrheit für `sort`), Abweichungen zwischen Befragten ausweisen.
+- Die Umfrage liefert bereits einen Markdown-Brief (`.md` neben der `.json`) mit Hypothese. Der ist Tobias' Fassung — deiner ist die Arbeitsfassung fürs Bauen: strenger belegt, ohne Hypothese.
 - Keine Lösungsvorschläge, kein Stack, kein Zielbild — das ist der Job des Gatekeepers und der Menschen.
 - Deutsch, Ich-Form vermeiden, Präsens, kurze Sätze.
 
 ## Struktur von `docs/brief/<datum>-vibecoding-brief.md`
-1. **Wer hat geantwortet** — Rolle, Dauer, Datum, Vollständigkeit
-2. **Pain Points nach Rang** — Module mit `zone == keep`, sortiert nach `frust`, mit Layer; Top 3 fett
-3. **Must-haves** — `keep` mit `frust ≥ 3` (nervt, wird aber gebraucht) → hier liegt der Wert eines Neubaus
-4. **Behalten, funktioniert** — `keep` mit `frust ≤ 2` → nicht anfassen
-5. **Weg kann** — `kill`, mit Layer; hervorheben, wenn Core/Backoffice dabei ist (Warnzeichen)
-6. **Vermisst** — `missing` in Prioritätsreihenfolge
-7. **Wer nutzt was** — Rollen-Matrix als Tabelle
-8. **Budgetrahmen** — die drei Zahlen, nüchtern, ohne Bewertung
-9. **Zauberstab** — wörtlich, als Zitat
-10. **Nicht-Ziele für Version 1** — alles, was in `kill` steht, plus alles Core/Backoffice, das nicht in „Vermisst“ auftaucht
-11. **Offene Fragen an Tobias** — max. 5, konkret
+1. **Wer hat geantwortet** — `respondent`, Dauer (`exportedAt − startedAt`), Datum, Vollständigkeit (alle 28 Bausteine einsortiert?)
+2. **Reibung nach Rang** — `keep`-Bausteine sortiert nach `friction` absteigend, mit Gruppe und Preis; Top 3 fett; Label aus `frictionLabels`
+3. **Brauchen wir, bremst aber** — `keep` mit `friction ≥ 3` → hier liegt der Wert eines Neubaus
+4. **Brauchen wir, läuft** — `keep` mit `friction ≤ 1` → nicht anfassen
+5. **Weg damit** — `drop`, mit Gruppe; hervorheben, wenn `finanzen`/`gruppe` dabei ist (Warnzeichen: prüfen, ob wirklich entbehrlich oder nur unbekannt)
+6. **Kenne ich nicht** — `unknown`; bei gebuchten Modulen ein eigener Befund (bezahlt, aber unsichtbar)
+7. **Vermisst** — `wishes` und `customWishes`: erst `must`, dann `nice`, Texte aus `modules.js`
+8. **Wer nutzt wie oft** — Rollen-Tabelle aus `roles` (nie/selten/wöchentlich/täglich); `daily` bei Kreation/Tech gesondert nennen
+9. **Budgetrahmen** — `budget.current` (oder „unbekannt“), `budget.max`, `budget.buildBuy` als „x/100 Richtung bauen“; nüchtern, ohne Bewertung
+10. **Zauberstab / Darf nicht passieren** — `wand` und `noGo` wörtlich, als Zitate
+11. **Nicht-Ziele für Version 1** — alles in `drop`, plus alle `finanzen`/`gruppe`-Bausteine, die nicht als `must`-Wunsch wiederkehren
+12. **Offene Fragen an Tobias** — max. 5, konkret (z. B. jedes `unknown` bei gebuchten Modulen)
 
 Am Ende: eine Zeile `<!-- generated from: dateien, schema-version -->`.

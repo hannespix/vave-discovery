@@ -6,7 +6,10 @@
   "description": "Discovery-Phase: Was an QuoJob bleibt, was weg kann, was fehlt — Umfrage, Auswertung, Zielbild.",
   "scripts": {
     "check": "node scripts/check.mjs",
-    "check:hook": "node scripts/check.mjs --hook"
+    "check:hook": "node scripts/check.mjs --hook",
+    "bundle": "node scripts/bundle.mjs"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

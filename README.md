@@ -9,10 +9,14 @@ was fehlt — und daraus die belegte Entscheidung, ob und was gebaut wird.
 
 ```bash
 git clone <repo> vave-discovery && cd vave-discovery
-npm run check            # Katalog, Schema, Beispieldatei — muss grün sein
+npm run check            # Katalog, Schema, Beispieldatei, keine externen Referenzen — muss grün sein
+open survey/index.html   # die Umfrage lokal ansehen (Doppelklick reicht)
+npm run bundle           # dist/vave-discovery-umfrage.html — die Datei, die an Tobias geht
 claude                   # Claude Code starten
-> /loop                  # erste Runde auf Zwischenziel 1 aus STATE.md
+> /loop 2                # erste Agenten-Runde laut STATE.md
 ```
+
+Kein `npm install` nötig — es gibt keine Abhängigkeiten. Node ≥ 20.
 
 Über den bestehenden GitHub-Workflow: Issue oder PR kommentieren mit `@claude /loop` bzw. `@claude /gate G1`.
 
@@ -24,7 +28,8 @@ claude                   # Claude Code starten
 - `DECISIONS.md` — Entscheidungen, von Menschen geschrieben. Ein Gate ist erst passiert, wenn hier ein Eintrag steht.
 - `.claude/agents/` — scout, builder, ui-critic, red-team, gatekeeper, brief-writer.
 - `.claude/skills/` — `/loop`, `/gate`, `/milestone`, `/brief`.
-- `docs/survey/` — Modulkatalog und Ergebnis-Schema. `data/results/` — Rohdaten, unantastbar.
+- `survey/` — die Umfrage (`index.html` + `modules.js` als einzige Datenquelle). `docs/survey/` — Export-Schema.
+- `docs/research/` — Recherche (00 Kurzfassung, 01–06 Detail). `data/results/` — Rohdaten, unantastbar.
 
 ## Der Loop in einem Satz
 

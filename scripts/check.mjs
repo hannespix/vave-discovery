@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// npm run check [-- <results.json ...>] [--hook]
-// Prüft: 1) survey/index.html ist eine echte Einzeldatei ohne externe Referenzen
-//        2) docs/survey/modules.json ist konsistent
-//        3) data/results/*.json (oder übergebene Dateien) entsprechen results-schema.json
+// npm run check [-- <export.json ...>] [--hook]
+// Prüft: 1) survey/index.html (und dist/*.html, falls vorhanden): keine externen Referenzen, Motion-Ausweg, Viewport
+//        2) survey/modules.js: konsistent (eindeutige IDs, bekannte Gruppen, Pflichtfelder)
+//        3) data/results/*.json (oder übergebene Dateien) gegen docs/survey/results-schema.json (Format vave-discovery/1)
 // Keine Abhängigkeiten. --hook: Fehler nach stderr, Exit 2 (Claude-Code-Hook-Konvention).
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
@@ -15,96 +15,117 @@ const files = args.filter((a) => !a.startsWith("--"));
 const errors = [];
 const fail = (msg) => errors.push(msg);
 
-// 1) Einzeldatei
+// 1) HTML-Dateien: Einzeldatei-Regeln
+const externals = [
+  [/<script[^>]+src=["']https?:/i, "externes Script"],
+  [/<link[^>]+href=["']https?:/i, "externes Stylesheet/Link"],
+  [/<link[^>]+href=["']\/\//i, "protokollrelativer Link"],
+  [/@import\s+url\(\s*["']?https?:/i, "@import von extern"],
+  [/url\(\s*["']?https?:\/\//i, "url() nach extern"],
+  [/<img[^>]+src=["']https?:/i, "externes Bild"],
+  [/fetch\(\s*["']https?:/i, "fetch nach extern"],
+];
+function checkHtml(path, label) {
+  const html = readFileSync(path, "utf8");
+  externals.forEach(([re, what]) => { if (re.test(html)) fail(`${label}: ${what} gefunden — Einzeldatei-Regel (D-003) verletzt`); });
+  if (html.length > 2_000_000) fail(`${label}: ${html.length} Bytes — größer als 2 MB`);
+  if (!/prefers-reduced-motion/.test(html)) fail(`${label}: kein prefers-reduced-motion — Animationen brauchen einen Ausweg`);
+  if (!/<meta[^>]+viewport/.test(html)) fail(`${label}: kein viewport-Meta`);
+  return html;
+}
 const surveyPath = join(root, "survey", "index.html");
-if (existsSync(surveyPath)) {
-  const html = readFileSync(surveyPath, "utf8");
-  const externals = [
-    /<script[^>]+src=["']https?:/i,
-    /<link[^>]+href=["']https?:/i,
-    /<link[^>]+href=["']\/\//i,
-    /@import\s+url\(\s*["']?https?:/i,
-    /url\(\s*["']?https?:\/\//i,
-    /<img[^>]+src=["']https?:/i,
-    /fetch\(\s*["']https?:/i,
-  ];
-  externals.forEach((re) => {
-    if (re.test(html)) fail(`survey/index.html: externe Referenz gefunden (${re})`);
-  });
-  if (html.length > 2_000_000) fail(`survey/index.html: ${html.length} Bytes — größer als 2 MB`);
-  if (!/prefers-reduced-motion/.test(html)) fail("survey/index.html: kein prefers-reduced-motion — Animationen brauchen einen Ausweg");
-  if (!/viewport/.test(html)) fail("survey/index.html: kein viewport-Meta");
-}
-
-// 2) Katalog
-const roles = ["gf", "pm", "kreation", "backoffice", "asia"];
-const layers = ["surface", "core", "backoffice"];
-const catalog = JSON.parse(readFileSync(join(root, "docs/survey/modules.json"), "utf8"));
-const ids = new Set();
-if (!Array.isArray(catalog.modules) || catalog.modules.length < 20) fail("modules.json: weniger als 20 Module");
-for (const m of catalog.modules ?? []) {
-  for (const k of ["id", "label", "hint", "layer", "roles", "assumedBooked"]) {
-    if (!(k in m)) fail(`modules.json: ${m.id ?? "?"} ohne Feld '${k}'`);
+let surveyHtml = null;
+if (existsSync(surveyPath)) surveyHtml = checkHtml(surveyPath, "survey/index.html");
+const distDir = join(root, "dist");
+if (existsSync(distDir)) {
+  for (const f of readdirSync(distDir).filter((f) => f.endsWith(".html"))) {
+    const html = checkHtml(join(distDir, f), `dist/${f}`);
+    if (/<script\s+src=["'][^"']+["']\s*><\/script>/i.test(html)) fail(`dist/${f}: enthält noch <script src=…></script> — nicht gebündelt`);
   }
-  if (ids.has(m.id)) fail(`modules.json: doppelte id '${m.id}'`);
-  ids.add(m.id);
-  if (!layers.includes(m.layer)) fail(`modules.json: ${m.id} hat ungültigen layer '${m.layer}'`);
-  for (const r of m.roles ?? []) if (!roles.includes(r)) fail(`modules.json: ${m.id} hat ungültige Rolle '${r}'`);
 }
 
-// 3) Ergebnisse gegen Schema (handgeschriebene Teilmenge von JSON Schema, ohne ajv)
-const zones = ["keep", "kill", "miss", "skip"];
-function validateResult(path) {
-  const p = `${path}:`;
+// 2) Modulkatalog aus survey/modules.js (einzige Quelle)
+const groups = ["alltag", "projekt", "finanzen", "gruppe", "anbindung"];
+const win = {};
+try {
+  new Function("window", readFileSync(join(root, "survey/modules.js"), "utf8"))(win);
+} catch (e) { fail(`survey/modules.js: lässt sich nicht laden (${e.message})`); }
+const D = win.VAVE_DATA ?? { modules: [], wishes: [], roles: [], frequency: [] };
+const moduleIds = new Set(), wishIds = new Set(), roleIds = new Set();
+if (!Array.isArray(D.modules) || D.modules.length < 20) fail("modules.js: weniger als 20 Module");
+for (const m of D.modules ?? []) {
+  for (const k of ["id", "group", "price", "name", "desc"]) if (!(k in m)) fail(`modules.js: Modul ${m.id ?? "?"} ohne Feld '${k}'`);
+  if (moduleIds.has(m.id)) fail(`modules.js: doppelte Modul-ID '${m.id}'`);
+  moduleIds.add(m.id);
+  if (!groups.includes(m.group)) fail(`modules.js: ${m.id} hat unbekannte Gruppe '${m.group}'`);
+  if (D.groups && !(m.group in D.groups)) fail(`modules.js: Gruppe '${m.group}' fehlt in groups{}`);
+}
+for (const w of D.wishes ?? []) { if (wishIds.has(w.id)) fail(`modules.js: doppelte Wunsch-ID '${w.id}'`); wishIds.add(w.id); }
+for (const r of D.roles ?? []) { if (roleIds.has(r.id)) fail(`modules.js: doppelte Rollen-ID '${r.id}'`); roleIds.add(r.id); }
+if (!Array.isArray(D.frictionLabels) || D.frictionLabels.length !== 5) fail("modules.js: frictionLabels braucht genau 5 Einträge (Skala 0–4)");
+if (surveyHtml && !/modules\.js/.test(surveyHtml)) fail("survey/index.html: lädt modules.js nicht");
+
+// 3) Exporte gegen Schema (handgeschriebene Teilmenge von JSON Schema, ohne ajv)
+const zones = ["keep", "drop", "unknown"], levels = ["off", "nice", "must"], freq = ["never", "rarely", "weekly", "daily"];
+const isDate = (s) => typeof s === "string" && !Number.isNaN(Date.parse(s));
+function validateExport(path) {
+  const p = `${path.replace(root + "/", "")}:`;
   let r;
   try { r = JSON.parse(readFileSync(path, "utf8")); } catch (e) { return fail(`${p} kein gültiges JSON (${e.message})`); }
-  const top = ["meta", "modules", "missing", "budget", "wand"];
+  const top = ["schema", "exportedAt", "startedAt", "respondent", "sort", "friction", "wishes", "customWishes", "roles", "budget", "wand", "noGo", "hypothesis"];
   for (const k of top) if (!(k in r)) fail(`${p} Feld '${k}' fehlt`);
   for (const k of Object.keys(r)) if (!top.includes(k)) fail(`${p} unbekanntes Feld '${k}'`);
+  if (r.schema !== "vave-discovery/1") fail(`${p} schema muss "vave-discovery/1" sein`);
+  if (!isDate(r.exportedAt)) fail(`${p} exportedAt kein Datum`);
+  if (!isDate(r.startedAt)) fail(`${p} startedAt kein Datum`);
+  if (typeof r.respondent !== "string" || !r.respondent) fail(`${p} respondent fehlt`);
 
-  const m = r.meta ?? {};
-  if (m.schemaVersion !== "1.0") fail(`${p} meta.schemaVersion muss "1.0" sein`);
-  if (!["quojob", "prototype"].includes(m.target)) fail(`${p} meta.target ungültig`);
-  if (!roles.includes(m.role)) fail(`${p} meta.role ungültig`);
-  if (typeof m.respondent !== "string" || !m.respondent) fail(`${p} meta.respondent fehlt`);
-  if (Number.isNaN(Date.parse(m.completedAt ?? ""))) fail(`${p} meta.completedAt kein Datum`);
-  if (!Number.isInteger(m.durationSec) || m.durationSec < 0) fail(`${p} meta.durationSec ungültig`);
-
-  if (!Array.isArray(r.modules) || r.modules.length === 0) fail(`${p} modules leer`);
-  for (const x of r.modules ?? []) {
-    if (!ids.has(x.id)) fail(`${p} modules: unbekannte id '${x.id}'`);
-    if (!zones.includes(x.zone)) fail(`${p} modules[${x.id}]: zone ungültig`);
-    if (x.zone === "keep" && !(Number.isInteger(x.frust) && x.frust >= 0 && x.frust <= 5))
-      fail(`${p} modules[${x.id}]: zone=keep braucht frust 0–5`);
-    if (x.zone !== "keep" && x.frust != null) fail(`${p} modules[${x.id}]: frust nur bei zone=keep`);
-    for (const ro of x.roles ?? []) if (!roles.includes(ro)) fail(`${p} modules[${x.id}]: Rolle '${ro}' ungültig`);
+  for (const [id, z] of Object.entries(r.sort ?? {})) {
+    if (!moduleIds.has(id)) fail(`${p} sort: unbekannte Modul-ID '${id}'`);
+    if (!zones.includes(z)) fail(`${p} sort[${id}]: Zone '${z}' ungültig`);
   }
-
-  for (const [i, x] of (r.missing ?? []).entries()) {
-    if (typeof x.label !== "string" || !x.label) fail(`${p} missing[${i}].label fehlt`);
-    if (!Number.isInteger(x.priority) || x.priority < 1) fail(`${p} missing[${i}].priority ungültig`);
-    if (x.moduleId != null && !ids.has(x.moduleId)) fail(`${p} missing[${i}].moduleId unbekannt`);
+  const unsorted = [...moduleIds].filter((id) => !(id in (r.sort ?? {})));
+  if (unsorted.length) fail(`${p} sort: ${unsorted.length} Modul(e) nicht einsortiert (${unsorted.slice(0, 4).join(", ")}${unsorted.length > 4 ? ", …" : ""})`);
+  for (const [id, v] of Object.entries(r.friction ?? {})) {
+    if (!moduleIds.has(id)) fail(`${p} friction: unbekannte Modul-ID '${id}'`);
+    if (!(Number.isInteger(v) && v >= 0 && v <= 4)) fail(`${p} friction[${id}]: muss ganze Zahl 0–4 sein`);
+    if (r.sort?.[id] !== "keep") fail(`${p} friction[${id}]: Reibung nur für Zone keep`);
   }
-
+  for (const [id, lv] of Object.entries(r.wishes ?? {})) {
+    if (!wishIds.has(id)) fail(`${p} wishes: unbekannte Wunsch-ID '${id}'`);
+    if (!levels.includes(lv)) fail(`${p} wishes[${id}]: Stufe '${lv}' ungültig`);
+  }
+  if (!Array.isArray(r.customWishes)) fail(`${p} customWishes muss Array sein`);
+  for (const [i, w] of (r.customWishes ?? []).entries()) {
+    if (typeof w.id !== "string" || typeof w.text !== "string" || !w.text) fail(`${p} customWishes[${i}]: id/text fehlen`);
+    if (!levels.includes(w.level)) fail(`${p} customWishes[${i}]: Stufe ungültig`);
+  }
+  for (const [id, f] of Object.entries(r.roles ?? {})) {
+    if (!roleIds.has(id)) fail(`${p} roles: unbekannte Rollen-ID '${id}'`);
+    if (!freq.includes(f)) fail(`${p} roles[${id}]: Häufigkeit '${f}' ungültig`);
+  }
   const b = r.budget ?? {};
-  for (const k of ["currentMonthlyEur", "painThresholdEur"])
-    if (!(b[k] === null || (typeof b[k] === "number" && b[k] >= 0))) fail(`${p} budget.${k} muss Zahl ≥ 0 oder null sein`);
-  if (!Number.isInteger(b.buildWillingness) || b.buildWillingness < 0 || b.buildWillingness > 10)
-    fail(`${p} budget.buildWillingness muss 0–10 sein`);
+  if (typeof b.currentUnknown !== "boolean") fail(`${p} budget.currentUnknown muss boolean sein`);
+  if (!(typeof b.current === "number" && b.current >= 0 && b.current <= 6000)) fail(`${p} budget.current muss Zahl 0–6000 sein`);
+  if (!(typeof b.max === "number" && b.max >= 0)) fail(`${p} budget.max muss Zahl ≥ 0 sein`);
+  if (!(Number.isInteger(b.buildBuy) && b.buildBuy >= 0 && b.buildBuy <= 100)) fail(`${p} budget.buildBuy muss ganze Zahl 0–100 sein`);
   if (typeof r.wand !== "string") fail(`${p} wand muss String sein`);
+  if (typeof r.noGo !== "string") fail(`${p} noGo muss String sein`);
+  const h = r.hypothesis ?? {};
+  if (!["A", "B", "C"].includes(h.target)) fail(`${p} hypothesis.target muss A, B oder C sein`);
+  if (!Array.isArray(h.reasons)) fail(`${p} hypothesis.reasons muss Array sein`);
 }
-
+const resultsDir = join(root, "data/results");
 const resultFiles = files.length
   ? files.map((f) => resolve(f))
-  : readdirSync(join(root, "data/results")).filter((f) => f.endsWith(".json")).map((f) => join(root, "data/results", f));
-resultFiles.forEach(validateResult);
+  : (existsSync(resultsDir) ? readdirSync(resultsDir).filter((f) => f.endsWith(".json")).map((f) => join(resultsDir, f)) : []);
+resultFiles.forEach(validateExport);
 
 // Ausgabe
 if (errors.length) {
   const out = errors.map((e) => `✗ ${e}`).join("\n");
   if (hookMode) { console.error(`npm run check: ${errors.length} Fehler\n${out}`); process.exit(2); }
-  console.error(out);
-  console.error(`\n${errors.length} Fehler`);
+  console.error(`${out}\n\n${errors.length} Fehler`);
   process.exit(1);
 }
-if (!hookMode) console.log(`✓ check grün — ${catalog.modules.length} Module, ${resultFiles.length} Ergebnisdatei(en)${existsSync(surveyPath) ? ", Einzeldatei ok" : ", survey/index.html noch nicht vorhanden"}`);
+if (!hookMode) console.log(`✓ check grün — ${moduleIds.size} Module, ${wishIds.size} Wünsche, ${roleIds.size} Rollen, ${resultFiles.length} Export(e)${surveyHtml ? ", survey/index.html ohne externe Referenzen" : ""}`);
