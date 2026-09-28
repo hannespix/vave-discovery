@@ -1,0 +1,64 @@
+# Deployt die Umfrage (survey/index.html) nach GitHub Pages: bei jedem Push auf main
+# und auf Knopfdruck (Actions → pages → Run workflow). Vorher läuft npm run check.
+# Solange survey/index.html fehlt, wird nichts deployt und der Lauf bleibt grün.
+#
+# Einmalig nötig: Settings → Pages → Build and deployment → Source: "GitHub Actions".
+# configure-pages versucht das über `enablement` selbst. Mit dem Standard-GITHUB_TOKEN
+# lehnt GitHub das laut Doku der Action ab — dann den Schalter einmal von Hand setzen
+# und den Workflow erneut starten.
+name: pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      survey: ${{ steps.survey.outputs.present }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: npm run check
+      - name: Umfrage vorhanden?
+        id: survey
+        run: |
+          if [ -f survey/index.html ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::survey/index.html fehlt noch, kein Deploy."
+          fi
+      - if: steps.survey.outputs.present == 'true'
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - if: steps.survey.outputs.present == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: survey
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.survey == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

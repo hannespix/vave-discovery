@@ -1,0 +1,21 @@
+# npm run check auf jedem PR (und auf Knopfdruck).
+# Pushes auf main prüft pages.yml, dort ist der Check die Vorstufe des Deploys.
+name: check
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: npm run check
