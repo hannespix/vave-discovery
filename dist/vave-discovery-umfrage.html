@@ -165,7 +165,8 @@ p { margin: 0; }
 .card[data-group="finanzen"]  { --tint: #FFD9A8; }
 .card[data-group="gruppe"]    { --tint: #F3C1E1; }
 .card[data-group="anbindung"] { --tint: #D8D8D8; }
-.card-name { font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; min-width: 0; }
+/* Umbruch zwischen Wörtern; im Wort nur als Notlösung. Platz für das längste Wort schafft das Layout. */
+.card-name { font-weight: 700; line-height: 1.25; overflow-wrap: break-word; min-width: 0; }
 .card-price { font-size: .78rem; color: var(--ink-3); font-weight: 600; white-space: nowrap; padding-top: 2px; }
 .card-desc { grid-column: 1 / -1; font-size: .85rem; color: var(--ink-2); line-height: 1.35; }
 .card.is-lifted { opacity: .25; }
@@ -188,7 +189,8 @@ p { margin: 0; }
 }
 
 /* Karten in den Zonen: kompakt, Kreuz immer sichtbar */
-.zone .card { padding: 8px 30px 8px 12px; cursor: pointer; }
+.zone .card { padding: 8px 30px 8px 12px; cursor: pointer; grid-template-columns: minmax(0, 1fr); } /* Preis unter dem Namen: Name bekommt die volle Breite */
+.zone .card-price { padding-top: 0; }
 .zone .card:hover { border-color: var(--ink-3); }
 .zone .card-desc { display: none; }
 .zone .card.is-new { animation: snapIn .45s var(--ease-spring); }
@@ -236,19 +238,28 @@ body.is-dragging * { cursor: grabbing !important; }
   border: 1.5px dashed var(--line); border-radius: var(--radius-s);
 }
 .zone.is-over .zone-list:empty::after { border-color: var(--zone); color: var(--zone); }
+/* Drei Spalten erst ab 941 px – schmaler fasst eine Zonenkarte das längste Wort eines Namens nicht.
+   Darunter liegen die Zonen untereinander, die Karten fließen als Chips über die volle Breite. */
+@media (max-width: 940px) {
+  .zones { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .zone { min-height: 0; }
+  .zone-list { flex-direction: row; flex-wrap: wrap; align-content: flex-start; max-height: 150px; }
+  .zone .card { width: auto; max-width: 100%; }
+  .zone-list:empty::after { min-height: 48px; }
+}
 @media (max-width: 640px) {
   .zones { gap: 8px; }
-  .zone { min-height: 150px; padding: 10px; gap: 6px; }
-  .zone-head { flex-direction: column; gap: 0; }
-  .zone-head h3 { font-size: .9rem; line-height: 1.15; }
+  .zone { padding: 10px 12px; gap: 6px; }
+  .zone-head h3 { font-size: .95rem; line-height: 1.15; }
   .zone-hint { display: none; }
-  .zone-list { max-height: 150px; }
-  .zone .card { padding: 7px 24px 7px 10px; }
-  .zone .card-name { font-size: .82rem; }
+  .zone-list { max-height: 96px; }
+  .zone .card { padding: 7px 28px 7px 10px; }
+  .zone .card-name { font-size: .85rem; }
   .zone .card-price { display: none; }
-  .zone-list:empty::after { content: "Antippen"; min-height: 56px; }
-  .deck .card { padding: 18px 18px 18px 22px; }
+  .zone-list:empty::after { content: "Antippen"; min-height: 36px; }
+  .deck .card { padding: 18px 18px 18px 22px; grid-template-columns: minmax(0, 1fr); } /* Preis unter den Namen */
   .deck .card-name { font-size: 1.15rem; }
+  .deck .card-price { padding-top: 2px; }
 }
 
 /* ------------------------------------------------------------------
@@ -342,8 +353,15 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
 .budget-top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
 .budget-top .q { font-weight: 700; }
 .budget-value { font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--signal); }
-.budget-row.is-unknown .budget-value { color: var(--ink-3); }
+.budget-row.is-unknown .budget-value,
+.budget-row[data-touched="false"] .budget-value { color: var(--ink-3); font-size: 1rem; font-weight: 600; letter-spacing: 0; }
 .budget-row.is-unknown input[type="range"] { opacity: .35; }
+/* Unberührt: kein Daumen, gestrichelte Spur – der Regler zeigt keinen Wert, bis man ihn antippt. */
+.budget-row[data-touched="false"] input[type="range"] { cursor: pointer; }
+.budget-row[data-touched="false"] input[type="range"]::-webkit-slider-thumb { opacity: 0; }
+.budget-row[data-touched="false"] input[type="range"]::-moz-range-thumb { opacity: 0; }
+.budget-row[data-touched="false"] input[type="range"]::-webkit-slider-runnable-track { background: repeating-linear-gradient(90deg, var(--ink-3) 0 4px, transparent 4px 9px); }
+.budget-row[data-touched="false"] input[type="range"]::-moz-range-track { background: repeating-linear-gradient(90deg, var(--ink-3) 0 4px, transparent 4px 9px); }
 .budget-ends { display: flex; justify-content: space-between; color: var(--ink-2); font-size: .9rem; font-weight: 600; }
 .check { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); font-weight: 600; font-size: .95rem; cursor: pointer; }
 .check input { width: 18px; height: 18px; accent-color: var(--signal); }
@@ -564,38 +582,38 @@ window.VAVE_DATA = {
   },
 
   modules: [
-    { id: "kalender",     group: "alltag",    price: 0,   name: "Kalender & Termine",            desc: "Termine, Tagesplanung, Teamkalender" },
-    { id: "zeit",         group: "alltag",    price: 0,   name: "Zeiterfassung",                 desc: "Stunden buchen, Soll-Ist, Urlaub und Krankheit" },
-    { id: "kontakte",     group: "alltag",    price: 24,  name: "Kontakte & Akquise",            desc: "Kunden, Ansprechpartner, Serienmails, Dokumente" },
-    { id: "korrespondenz",group: "alltag",    price: 14,  name: "Korrespondenz",                 desc: "Briefe und E-Mails auf dem eigenen Briefbogen" },
-    { id: "bizdev",       group: "alltag",    price: 24,  name: "Business Development",          desc: "Pitches und Auftragschancen bewerten" },
-    { id: "suche",        group: "alltag",    price: 14,  name: "Volltextsuche",                 desc: "Suche über Dateien, Dokumente, Termine" },
+    { id: "kalender",     group: "alltag",    price: 0,   name: "Kalender & Termine",            desc: "Wer ist wann wo, Termine fürs Team" },
+    { id: "zeit",         group: "alltag",    price: 0,   name: "Zeiterfassung",                 desc: "Stunden buchen, Urlaub und Krankentage" },
+    { id: "kontakte",     group: "alltag",    price: 24,  name: "Kunden & Kontakte",             desc: "Wer ist wer beim Kunden, Rundmails, Ablage" },
+    { id: "korrespondenz",group: "alltag",    price: 14,  name: "Korrespondenz",                 desc: "Briefe und Mails mit unserem Briefkopf" },
+    { id: "bizdev",       group: "alltag",    price: 24,  name: "Pitches & Neugeschäft",         desc: "Chancen einschätzen, Pitches nachhalten" },
+    { id: "suche",        group: "alltag",    price: 14,  name: "Volltextsuche",                 desc: "Alles finden, egal ob Datei, Mail, Termin" },
 
-    { id: "pm",           group: "projekt",   price: 24,  name: "Projektmanagement Pro",         desc: "Aufgaben, Boards, Gantt, Drag & Drop" },
-    { id: "ressourcen",   group: "projekt",   price: 0,   name: "Ressourcenplanung",             desc: "Kapazitäten und Auslastung im Team" },
-    { id: "media",        group: "projekt",   price: 52,  name: "Media-Abwicklung",              desc: "Schaltungen, Streu- und Kostenpläne" },
+    { id: "pm",           group: "projekt",   price: 24,  name: "Aufgaben & Zeitpläne",          desc: "Karten auf Boards schieben, Gantt-Diagramm" },
+    { id: "ressourcen",   group: "projekt",   price: 0,   name: "Ressourcenplanung",             desc: "Wer hat wann Luft, wer ist überbucht" },
+    { id: "media",        group: "projekt",   price: 52,  name: "Mediaplanung & Einkauf",        desc: "Anzeigen und Spots planen, buchen, abrechnen" },
 
-    { id: "angebote",     group: "finanzen",  price: 0,   name: "Angebote & Rechnungen",         desc: "Kalkulation, Faktura, E-Rechnung" },
-    { id: "controlling",  group: "finanzen",  price: 0,   name: "Controlling & Reports",         desc: "Projektrentabilität, Auswertungen" },
-    { id: "op",           group: "finanzen",  price: 14,  name: "Offene Posten & Mahnwesen",     desc: "Zahlungseingänge, Mahnlauf" },
-    { id: "liquiditaet",  group: "finanzen",  price: 24,  name: "Liquiditätsplanung",            desc: "Kosten und Erlöse vorausschauen" },
-    { id: "fibu",         group: "finanzen",  price: 68,  name: "FiBu-Schnittstelle",            desc: "Export an DATEV, Lexware, SAP, Steuerberater" },
-    { id: "ocr",          group: "finanzen",  price: 52,  name: "Belegerkennung (OCR)",          desc: "KI liest Eingangsrechnungen ein" },
-    { id: "retainer",     group: "finanzen",  price: 108, name: "Retainer",                      desc: "Vereinbarte Stunden oder Budgets abrechnen" },
-    { id: "wkl",          group: "finanzen",  price: 32,  name: "Wiederkehrende Leistungen",     desc: "Periodische Rechnungen automatisch" },
-    { id: "preislisten",  group: "finanzen",  price: 24,  name: "Kundenpreislisten",             desc: "Individuelle Sätze, Rabatte, Zuschläge" },
-    { id: "kassenbuch",   group: "finanzen",  price: 32,  name: "E-Kassenbuch",                  desc: "Bargeldvorgänge sauber erfassen" },
+    { id: "angebote",     group: "finanzen",  price: 0,   name: "Angebote & Rechnungen",         desc: "Von der Kalkulation bis zur E-Rechnung" },
+    { id: "controlling",  group: "finanzen",  price: 0,   name: "Controlling & Reports",         desc: "Was ein Projekt am Ende wirklich abwirft" },
+    { id: "op",           group: "finanzen",  price: 14,  name: "Zahlungen & Mahnungen",         desc: "Wer uns noch Geld schuldet, nachfassen" },
+    { id: "liquiditaet",  group: "finanzen",  price: 24,  name: "Cashflow-Vorschau",             desc: "Geld rein, Geld raus, Monate im Voraus" },
+    { id: "fibu",         group: "finanzen",  price: 68,  name: "Übergabe ans Steuerbüro",       desc: "Buchungsdaten fertig für die Buchhaltung" },
+    { id: "ocr",          group: "finanzen",  price: 52,  name: "Automatische Belegerfassung",   desc: "Beleg hochladen, Felder füllen sich selbst" },
+    { id: "retainer",     group: "finanzen",  price: 108, name: "Retainer",                      desc: "Feste Monatsbudgets und was davon übrig ist" },
+    { id: "wkl",          group: "finanzen",  price: 32,  name: "Regelmäßige Rechnungen",        desc: "Jeden Monat dieselbe Leistung abrechnen" },
+    { id: "preislisten",  group: "finanzen",  price: 24,  name: "Preise je Kunde",               desc: "Eigene Stundensätze, Rabatte und Aufschläge" },
+    { id: "kassenbuch",   group: "finanzen",  price: 32,  name: "Barkasse",                      desc: "Bareinnahmen und Barausgaben festhalten" },
 
-    { id: "mandanten",    group: "gruppe",    price: 108, name: "Mandanten",                     desc: "Mehrere Gesellschaften in einem System" },
-    { id: "waehrung",     group: "gruppe",    price: 24,  name: "Währungen",                     desc: "Angebote und Rechnungen in Fremdwährung" },
-    { id: "sprachen",     group: "gruppe",    price: 24,  name: "Mehrsprachigkeit",              desc: "DE/EN/FR/NL, Zeitzonen je Standort" },
-    { id: "hr",           group: "gruppe",    price: 24,  name: "HR Professional",               desc: "Überstunden, Qualifikationen, Personalakte" },
+    { id: "mandanten",    group: "gruppe",    price: 108, name: "Mandanten",                     desc: "Alle Firmen der Gruppe unter einem Dach" },
+    { id: "waehrung",     group: "gruppe",    price: 24,  name: "Währungen",                     desc: "Anbieten und abrechnen in fremder Währung" },
+    { id: "sprachen",     group: "gruppe",    price: 24,  name: "Mehrsprachigkeit",              desc: "Andere Sprachen und Zeitzonen je Studio" },
+    { id: "hr",           group: "gruppe",    price: 24,  name: "Personalverwaltung",            desc: "Wer kann was, Überstunden, Personalakte" },
 
-    { id: "app",          group: "anbindung", price: 28,  name: "Mobile App",                    desc: "Zeiten, ToDos, Termine unterwegs" },
-    { id: "exchange",     group: "anbindung", price: 52,  name: "Outlook / Exchange",            desc: "Termine beidseitig synchron" },
-    { id: "mail",         group: "anbindung", price: 24,  name: "E-Mail-Client",                 desc: "Mails direkt an Jobs und Kontakte hängen" },
-    { id: "api",          group: "anbindung", price: 52,  name: "REST API",                      desc: "Andere Tools anbinden" },
-    { id: "export",       group: "anbindung", price: 24,  name: "Daten-Export",                  desc: "Reports und Kontakte nach Excel & Co." }
+    { id: "app",          group: "anbindung", price: 28,  name: "Mobile App",                    desc: "Unterwegs Zeit buchen, Termine, Aufgaben" },
+    { id: "exchange",     group: "anbindung", price: 52,  name: "Outlook-Abgleich",              desc: "Termine in beide Richtungen synchron" },
+    { id: "mail",         group: "anbindung", price: 24,  name: "Postfach im System",            desc: "Mails lesen, schreiben, an Projekte hängen" },
+    { id: "api",          group: "anbindung", price: 52,  name: "Anbindung eigener Tools",       desc: "Andere Programme greifen auf unsere Daten zu" },
+    { id: "export",       group: "anbindung", price: 24,  name: "Export als Tabelle",            desc: "Listen und Kontakte nach Excel rausziehen" }
   ],
 
   // Vorschläge aus dem SaaS-Vergleich (docs/research/01-quojob-osint.md, Abschnitt 5). Kurz, konkret, in Tobias' Sprache.
@@ -661,7 +679,7 @@ window.VAVE_DATA = {
   ];
   const FACE_FILL = ['#DCE1FF', '#E9EBFF', '#EEF0F4', '#FFE3D6', '#FFC9B8'];
   const BACKOFFICE = new Set(['finanzen', 'gruppe']);
-  const FRONT = new Set(['zeit', 'kalender', 'pm', 'app', 'ressourcen', 'kontakte']);
+  const FRONT = new Set(['zeit', 'kalender', 'pm', 'app']); // = frontPain in ROADMAP „Zielbild-Regeln“
 
   const $ = (sel, root) => (root || document).querySelector(sel);
   const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
@@ -669,19 +687,53 @@ window.VAVE_DATA = {
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const eur = n => n.toLocaleString('de-DE') + ' €';
 
+  // Kartenreihenfolge für Stapel und Reibung: Gruppen reihum verschränkt (Folge wie in D.groups,
+  // in der Gruppe Dateireihenfolge), damit keine Gruppe gebündelt am Ende kommt. Deterministisch.
+  const ORDER = (function () {
+    const keys = Object.keys(D.groups || {});
+    D.modules.forEach(m => { if (!keys.includes(m.group)) keys.push(m.group); });
+    const byGroup = keys.map(k => D.modules.filter(m => m.group === k));
+    const out = [];
+    for (let i = 0; i < D.modules.length && out.length < D.modules.length; i++) byGroup.forEach(list => { if (list[i]) out.push(list[i]); });
+    return out;
+  })();
+
   /* ---------------- Zustand ---------------- */
+  // Budget-Werte sind Platzhalter (Reglermitte); sie zählen erst, wenn der Regler berührt wurde.
   function freshState() {
     return {
       step: 0,
       startedAt: new Date().toISOString(),
       sort: {}, seq: {}, friction: {}, wishes: {}, customWishes: [], roles: {},
-      budget: { current: 1500, currentUnknown: false, max: 2500, buildBuy: 50 },
+      budget: { current: 3000, currentUnknown: false, max: 3000, buildBuy: 50 },
+      budgetTouched: { current: false, max: false, buildBuy: false },
       wand: '', noGo: ''
     };
   }
+  const LEGACY_BUDGET = { current: 1500, max: 2500, buildBuy: 50 }; // Vorgaben der Fassung vor r02
+  function budgetOpen(s) {
+    const t = s.budgetTouched;
+    return (t.current || s.budget.currentUnknown ? 0 : 1) + (t.max ? 0 : 1) + (t.buildBuy ? 0 : 1);
+  }
+  // Stände älterer Fassungen (gleicher Schlüssel): fehlende Felder ergänzen, Antworten behalten.
+  function upgrade(s) {
+    if (!s || typeof s !== 'object') return null;
+    const f = freshState();
+    if (!s.budgetTouched || typeof s.budgetTouched !== 'object') {
+      // Ohne Merker gilt ein Regler nur als bewegt, wenn er von der alten Vorgabe abweicht.
+      const b = s.budget || {};
+      s.budgetTouched = {};
+      Object.keys(LEGACY_BUDGET).forEach(k => { s.budgetTouched[k] = typeof b[k] === 'number' && b[k] !== LEGACY_BUDGET[k]; });
+    }
+    Object.keys(f).forEach(k => { if (s[k] === undefined || s[k] === null) s[k] = f[k]; });
+    s.budget = Object.assign({}, f.budget, s.budget);
+    s.budgetTouched = Object.assign({}, f.budgetTouched, s.budgetTouched);
+    if (s.step > 5 && budgetOpen(s)) s.step = 5; // unbestätigtes Budget nicht ins Ergebnis
+    return s;
+  }
   function load() { try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ohne Speicher weiter */ } }
-  let state = load() || freshState();
+  let state = upgrade(load()) || freshState();
 
   /* ---------------- Route ---------------- */
   const route = $('#route');
@@ -752,6 +804,10 @@ window.VAVE_DATA = {
     } else if (s === 3) {
       const must = Object.values(state.wishes).filter(v => v === 'must').length + state.customWishes.filter(w => w.level === 'must').length;
       msg = must ? `${must} unverzichtbar` : '';
+    } else if (s === 5) {
+      const open = budgetOpen(state);
+      ok = open === 0;
+      msg = open ? `Noch ${open} Regler einstellen` : '';
     }
     nextBtn.disabled = !ok;
     hint.textContent = msg;
@@ -759,7 +815,7 @@ window.VAVE_DATA = {
   backBtn.addEventListener('click', () => goTo(state.step - 1));
   nextBtn.addEventListener('click', () => goTo(state.step + 1));
 
-  function kept() { return D.modules.filter(m => state.sort[m.id] === 'keep'); }
+  function kept() { return ORDER.filter(m => state.sort[m.id] === 'keep'); }
   function render() {
     switch (state.step) {
       case 1: renderSort(); break;
@@ -776,7 +832,7 @@ window.VAVE_DATA = {
   const deck = $('#deck'), zonesEl = $('#zones'), stepSort = $('.step[data-step="1"]');
   let lastMoved = null, busy = false;
 
-  function unsorted() { return D.modules.filter(m => !state.sort[m.id]); }
+  function unsorted() { return ORDER.filter(m => !state.sort[m.id]); }
   function currentCard() { return unsorted()[0] || null; }
   function cardHtml(m, inZone) {
     return `<div class="card${inZone && m.id === lastMoved ? ' is-new' : ''}${inZone ? '' : ' is-enter'}" role="${inZone ? 'button' : 'group'}" tabindex="${inZone ? 0 : -1}" data-id="${m.id}" data-group="${m.group}" aria-label="${esc(m.name)}${inZone ? ', zurück in den Stapel' : ''}">
@@ -804,7 +860,7 @@ window.VAVE_DATA = {
     }
     $$('.zone', zonesEl).forEach(z => {
       const key = z.dataset.zone;
-      const items = D.modules.filter(m => state.sort[m.id] === key).sort((a, b) => (state.seq[b.id] || 0) - (state.seq[a.id] || 0));
+      const items = ORDER.filter(m => state.sort[m.id] === key).sort((a, b) => (state.seq[b.id] || 0) - (state.seq[a.id] || 0));
       $('.zone-list', z).innerHTML = items.map(m => cardHtml(m, true)).join('');
       $('.zone-count', z).textContent = items.length;
     });
@@ -1000,35 +1056,65 @@ window.VAVE_DATA = {
 
   /* ---------------- Station 5: Budget ---------------- */
   const budgetEl = $('#budget');
+  const THUMB = 22; // Daumenbreite der Regler in px, siehe CSS input[type="range"]
   function bbLabel(v) { return v < 35 ? 'Lieber kaufen' : v > 65 ? 'Lieber selbst bauen' : 'Offen'; }
+  // Anzeige je Regler. Unberührt kein Wert – eine Vorgabe wäre ein Anker für die Antwort.
+  function budgetText(k) {
+    const b = state.budget;
+    if (k === 'current' && b.currentUnknown) return 'weiß ich nicht';
+    if (!state.budgetTouched[k]) return 'noch nicht eingestellt';
+    return k === 'buildBuy' ? bbLabel(b.buildBuy) : eur(b[k]) + '/Monat';
+  }
   function renderBudget() {
     const b = state.budget;
+    const row = k => `data-k="${k}" data-touched="${!!state.budgetTouched[k]}"`;
+    const val = k => `<span class="budget-value">${esc(budgetText(k))}</span>`;
+    const vt = k => `aria-valuetext="${esc(budgetText(k))}"`;
     budgetEl.innerHTML = `
-      <div class="budget-row${b.currentUnknown ? ' is-unknown' : ''}" data-k="current">
-        <div class="budget-top"><span class="q">Was zahlt ihr heute für QuoJob, alles in allem?</span><span class="budget-value">${b.currentUnknown ? 'weiß ich nicht' : eur(b.current) + '/Monat'}</span></div>
-        <input type="range" min="0" max="6000" step="50" value="${b.current}" ${b.currentUnknown ? 'disabled' : ''} aria-label="Heutige Kosten pro Monat">
+      <div class="budget-row${b.currentUnknown ? ' is-unknown' : ''}" ${row('current')}>
+        <div class="budget-top"><span class="q">Was zahlt ihr heute für QuoJob, alles in allem?</span>${val('current')}</div>
+        <input type="range" min="0" max="6000" step="50" value="${b.current}" ${b.currentUnknown ? 'disabled' : ''} aria-label="Heutige Kosten pro Monat" ${vt('current')}>
         <div class="budget-ends"><span>0 €</span><label class="check"><input type="checkbox" data-k="currentUnknown" ${b.currentUnknown ? 'checked' : ''}> weiß ich nicht genau</label><span>6.000 €</span></div>
       </div>
-      <div class="budget-row" data-k="max">
-        <div class="budget-top"><span class="q">Wo liegt die Schmerzgrenze für ein Tool, das wirklich passt?</span><span class="budget-value">${eur(b.max)}/Monat</span></div>
-        <input type="range" min="0" max="6000" step="50" value="${b.max}" aria-label="Schmerzgrenze pro Monat">
+      <div class="budget-row" ${row('max')}>
+        <div class="budget-top"><span class="q">Wo liegt die Schmerzgrenze für ein Tool, das wirklich passt?</span>${val('max')}</div>
+        <input type="range" min="0" max="6000" step="50" value="${b.max}" aria-label="Schmerzgrenze pro Monat" ${vt('max')}>
         <div class="budget-ends"><span>0 €</span><span>6.000 €</span></div>
       </div>
-      <div class="budget-row" data-k="buildBuy">
-        <div class="budget-top"><span class="q">Bauchgefühl: fertiges Tool kaufen oder selbst bauen lassen?</span><span class="budget-value">${bbLabel(b.buildBuy)}</span></div>
-        <input type="range" min="0" max="100" step="5" value="${b.buildBuy}" aria-label="Kaufen oder bauen">
+      <div class="budget-row" ${row('buildBuy')}>
+        <div class="budget-top"><span class="q">Bauchgefühl: fertiges Tool kaufen oder selbst bauen lassen?</span>${val('buildBuy')}</div>
+        <input type="range" min="0" max="100" step="5" value="${b.buildBuy}" aria-label="Kaufen oder bauen" ${vt('buildBuy')}>
         <div class="budget-ends"><span>Kaufen</span><span>Bauen</span></div>
       </div>`;
   }
+  // Wert übernehmen, Regler als berührt markieren – ohne Neuaufbau, damit laufendes Ziehen weitergeht.
+  function setBudget(row, input) {
+    const k = row.dataset.k;
+    state.budget[k] = Number(input.value);
+    state.budgetTouched[k] = true; save();
+    row.dataset.touched = 'true';
+    const text = budgetText(k);
+    $('.budget-value', row).textContent = text;
+    input.setAttribute('aria-valuetext', text);
+    updateNav();
+  }
   budgetEl.addEventListener('input', e => {
     const row = e.target.closest('.budget-row'); if (!row) return;
-    const k = row.dataset.k;
     if (e.target.type === 'checkbox') {
-      state.budget.currentUnknown = e.target.checked; save(); renderBudget(); return;
+      state.budget.currentUnknown = e.target.checked; save(); renderBudget(); updateNav(); return;
     }
-    state.budget[k] = Number(e.target.value); save();
-    const out = $('.budget-value', row);
-    out.textContent = k === 'buildBuy' ? bbLabel(state.budget.buildBuy) : eur(state.budget[k]) + '/Monat';
+    setBudget(row, e.target);
+  });
+  // Loslassen auf einem unberührten Regler setzt den Wert an dieser Stelle: iOS springt beim Tippen nicht
+  // von selbst dorthin, und ein Tipp genau auf den verborgenen Daumen löst weder input noch (Touch) click aus.
+  // pointerup statt click; beim Scrollen kommt pointercancel, dann bleibt der Regler unberührt.
+  budgetEl.addEventListener('pointerup', e => {
+    const input = e.target.closest('input[type="range"]'), row = input && input.closest('.budget-row');
+    if (!row || e.button !== 0 || input.disabled || state.budgetTouched[row.dataset.k]) return;
+    const r = input.getBoundingClientRect(), min = Number(input.min), max = Number(input.max), step = Number(input.step) || 1;
+    const f = Math.max(0, Math.min(1, (e.clientX - r.left - THUMB / 2) / (r.width - THUMB)));
+    input.value = String(min + Math.round(f * (max - min) / step) * step);
+    setBudget(row, input);
   });
 
   /* ---------------- Station 6: Zauberstab ---------------- */
@@ -1080,7 +1166,9 @@ window.VAVE_DATA = {
       startedAt: state.startedAt,
       respondent: D.respondent,
       sort: state.sort, friction: state.friction, wishes: state.wishes, customWishes: state.customWishes,
-      roles: state.roles, budget: state.budget, wand: state.wand, noGo: state.noGo,
+      roles: state.roles,
+      budget: { current: state.budget.current, currentUnknown: state.budget.currentUnknown, max: state.budget.max, buildBuy: state.budget.buildBuy },
+      wand: state.wand, noGo: state.noGo,
       hypothesis: { target: h.target, reasons: h.reasons }
     };
   }
