@@ -16,18 +16,20 @@ export function Avatar({ person }) {
   return <span className="pj-avatar" aria-hidden="true">{initials(person?.name)}</span>;
 }
 
-// Budget-Ampel für die Liste: Zustand als Text + Icon (nicht nur Farbe), Balken, Zahlen
-export function BudgetMeter({ id, spent, budget }) {
-  const { percent, state, label } = budgetInfo(spent, budget);
-  const Icon = budgetIcon[state];
+// Budget-Ampel (Liste und Kopf des Details): Zustand als Icon + Wort (nicht nur Farbe), Balken, Zahlen.
+// spent = ungerundete Stunden inkl. Buchungen (lib/budget.js); withRest: dazu „noch X h frei“ bzw. „überzogen um X h“.
+export function BudgetMeter({ id, spent, budget, withRest = false, className = '' }) {
+  const b = budgetInfo(spent, budget);
+  const Icon = budgetIcon[b.state];
+  const rest = b.rest < 0 ? `überzogen um ${fmtH(-b.rest)}` : `noch ${fmtH(b.rest)} frei`;
   return (
-    <div className={`pj-budget is-${state}`} id={id}>
+    <div className={`pj-budget is-${b.state} ${className}`} id={id}>
       <p className="pj-budget-line">
-        <span className="pj-budget-state"><Icon size={18} aria-hidden="true" /> Budget {label}</span>
-        <span className="pj-budget-pct num">{percent} %</span>
+        <span className="pj-budget-state"><Icon size={18} aria-hidden="true" /> Budget {b.label}</span>
+        <span className="pj-budget-pct num">{b.percent} %</span>
       </p>
-      <span className="pj-bar" aria-hidden="true"><span style={{ width: `${Math.min(percent, 100)}%` }} /></span>
-      <p className="quiet num">{fmtH(spent)} von {fmtH(budget)} gebucht</p>
+      <span className="pj-bar" aria-hidden="true"><span style={{ width: `${Math.min(b.percent, 100)}%` }} /></span>
+      <p className="quiet num">{fmtH(b.spent)} von {fmtH(budget)} gebucht{withRest && `, ${rest}`}</p>
     </div>
   );
 }
