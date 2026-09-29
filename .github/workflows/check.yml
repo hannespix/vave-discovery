@@ -1,4 +1,4 @@
-# npm run check auf jedem PR (und auf Knopfdruck).
+# npm run check und der Build des Prototyps (prototype/) auf jedem PR (und auf Knopfdruck).
 # Pushes auf main prüft pages.yml, dort ist der Check die Vorstufe des Deploys.
 name: check
 
@@ -19,3 +19,9 @@ jobs:
           node-version: 22
           package-manager-cache: false
       - run: npm run check
+      - name: Prototyp bauen
+        if: hashFiles('prototype/package-lock.json') != ''
+        working-directory: prototype
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build

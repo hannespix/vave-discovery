@@ -3,6 +3,8 @@
 # gebündelte Einzeldatei dist/vave-discovery-umfrage.html als index.html veröffentlichen.
 # Online liegt damit genau die Datei, die auch verschickt wird (D-003).
 # Solange survey/index.html fehlt, wird nichts deployt und der Lauf bleibt grün.
+# Seit r06 zusätzlich der UI-Entwurf aus prototype/ unter /prototyp/ (Vite-Build). Ein kaputter Prototyp hält den
+# Deploy der Umfrage nicht auf: Dann bleibt /prototyp/ weg, die Umfrage geht trotzdem raus (check.yml prüft den Build im PR).
 #
 # Einmalig nötig: Settings → Pages → Build and deployment → Source: "GitHub Actions".
 # configure-pages versucht das über `enablement` selbst. Mit dem Standard-GITHUB_TOKEN
@@ -53,6 +55,19 @@ jobs:
         run: |
           mkdir -p _site
           cp dist/vave-discovery-umfrage.html _site/index.html
+      - name: Prototyp bauen
+        id: proto
+        if: steps.survey.outputs.present == 'true' && hashFiles('prototype/package-lock.json') != ''
+        continue-on-error: true
+        working-directory: prototype
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+      - name: Prototyp einhängen (/prototyp/)
+        if: steps.proto.outcome == 'success'
+        run: |
+          mkdir -p _site/prototyp
+          cp -r prototype/dist/. _site/prototyp/
       - if: steps.survey.outputs.present == 'true'
         uses: actions/configure-pages@v5
         with:
