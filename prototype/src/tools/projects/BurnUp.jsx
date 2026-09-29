@@ -1,6 +1,9 @@
 // Burn-up als SVG in echter Pixelbreite (ResizeObserver) – so bleiben Beschriftungen am Handy lesbar.
 // Kumulierte Stunden je Woche (durchgezogen), Budgetlinie, Prognose gestrichelt, Heute-Marke, Abgabe.
-// Das SVG ist aria-hidden: dieselbe Aussage steht im Satz darüber und als Tabelle (Overview.jsx).
+// Die Budgetlinie springt an jedem Änderungsdatum (f.steps); beschriftet ist der aktuelle Wert auf seiner Höhe,
+// links vor dem letzten Sprung.
+// Das SVG ist aria-hidden: dieselbe Aussage steht im Satz darüber, als Tabelle (mit Budget je Woche) und in der Liste
+// „Budgetänderungen“ (Overview.jsx).
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { addDays, weekStart } from '../../lib/format.js';
 import { fmtH, fmtKw, isoWeek } from './helpers.js';
@@ -49,9 +52,20 @@ export default function BurnUp({ f }) {
     } else if (f.over && f.tempo > 0.05 && f.due && !f.duePast) {
       prog = [f.today, f.due, f.total + f.toDue];
     }
-    const top = Math.max(f.budget, f.total, prog ? prog[2] : 0) * 1.12 || 1;
+    const top = Math.max(f.budget, f.budgetStart, ...f.steps.map(s => s.to), f.total, prog ? prog[2] : 0) * 1.12 || 1;
     const y = v => pad.t + (1 - v / top) * ih;
     const base = y(0);
+
+    // Budget als Stufenlinie: Startwert, an jedem Änderungsdatum senkrecht auf den neuen Wert
+    const bx = d => Math.min(W - pad.r, Math.max(pad.l, x(d)));
+    let budgetPath = `M${pad.l},${y(f.budgetStart).toFixed(1)}`;
+    for (const s of f.steps) budgetPath += `H${bx(s.at).toFixed(1)}V${y(s.to).toFixed(1)}`;
+    budgetPath += `H${W - pad.r}`;
+    // Beschriftung auf Höhe des aktuellen Werts: ohne Änderung links am Anfang; sonst links vor dem letzten Sprung
+    // (Vergangenheit, dort liegen weder Abgabe noch Prognose), bei zu wenig Platz rechts daneben
+    const lastX = f.steps.length ? bx(f.steps[f.steps.length - 1].at) : null;
+    const budgetLabelEnd = lastX !== null && lastX - pad.l > 110;
+    const budgetLabelX = lastX === null ? pad.l + 2 : budgetLabelEnd ? lastX - 6 : lastX + 6;
 
     const pts = [[f.start, 0], ...f.weeks.slice(0, f.n).map((w, i) => [f.weeks[i + 1].monday, w.cum]), [f.today, f.total]];
     const line = pts.map(([d, v], i) => `${i ? 'L' : 'M'}${x(d).toFixed(1)},${y(v).toFixed(1)}`).join('');
@@ -80,8 +94,8 @@ export default function BurnUp({ f }) {
         <line className="pj-burn-base" x1={pad.l} x2={W - pad.r} y1={base} y2={base} />
         <path className="pj-burn-area" d={area} />
         {f.total > f.budget && <path className="pj-burn-over" d={area} clipPath={`url(#over-${clipId})`} />}
-        <line className="pj-burn-budget" x1={pad.l} x2={W - pad.r} y1={yb} y2={yb} />
-        <text className="pj-burn-label" x={pad.l + 2} y={yb - 7}>Budget {fmtH(f.budget)}</text>
+        <path className="pj-burn-budget" d={budgetPath} />
+        <text className="pj-burn-label" x={budgetLabelX} y={yb - 7} textAnchor={budgetLabelEnd ? 'end' : 'start'}>Budget {fmtH(f.budget)}</text>
         {xd !== null && (
           <g>
             <line className="pj-burn-due" x1={xd} x2={xd} y1={34} y2={base} />

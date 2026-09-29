@@ -1,16 +1,43 @@
 // Übersicht = Projektgesundheit in Stunden: Rest als große Zahl, Balken, ein Satz zur Prognose, Hinweis nur beim
-// Überschreiten einer Schwelle (Budget reicht nicht bis zur Abgabe). Darunter der Burn-up mit Textalternative, dann Team.
+// Überschreiten einer Schwelle (Budget reicht nicht bis zur Abgabe). Darunter der Burn-up mit Textalternative, die
+// Budgetänderungen (neueste zuerst, aus budgetLog), dann Team. Prognose und Rest rechnen mit dem aktuellen Budget.
 import { useId, useMemo } from 'react';
 import { TriangleAlert } from 'lucide-react';
 import { fmtDate } from '../../lib/format.js';
 import { forecast, TEMPO_WEEKS } from './forecast.js';
-import { fmt1, fmtH, fmtKw, fmtRest, personById } from './helpers.js';
+import { budgetChanges, fmt1, fmtDelta, fmtH, fmtKw, fmtRest, personById } from './helpers.js';
 import { Avatar, BudgetBar, StateIcon, StudioTag } from './parts.jsx';
 import BurnUp from './BurnUp.jsx';
 
+// Budgetänderungen: Datum, alt → neu, Differenz, Grund – ohne Änderungen ein Satz
+function BudgetChanges({ project, headingId }) {
+  const changes = budgetChanges(project);
+  return (
+    <section className="pj-changes" aria-labelledby={headingId}>
+      <h2 id={headingId}>Budgetänderungen</h2>
+      {changes.length ? (
+        <ul className="list pj-change-list">
+          {changes.map(c => (
+            <li key={`${c.i}-${c.at.getTime()}`} className="row pj-change">
+              <span className="pj-change-day num">{fmtDate(c.at, { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+              <div className="row__main">
+                <p className="row__title num">{fmtH(c.from)} → {fmtH(c.to)}</p>
+                {c.note && <p className="row__meta">{c.note}</p>}
+              </div>
+              <span className="row__aside num"><span className="visually-hidden">Differenz: </span>{fmtDelta(c.to - c.from)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="pj-changes-empty">Noch keine Budgetänderung erfasst.</p>
+      )}
+    </section>
+  );
+}
+
 export default function Overview({ project: p, entries, tasks }) {
   const f = useMemo(() => forecast(p, entries), [p, entries]);
-  const ids = { health: useId(), burn: useId(), team: useId(), desc: useId() };
+  const ids = { health: useId(), burn: useId(), changes: useId(), team: useId(), desc: useId() };
   const { info } = f;
   const year = f.today.getFullYear();
   const tempo = `≈ ${Math.round(f.tempo).toLocaleString('de-DE')} h/Woche`;
@@ -64,21 +91,27 @@ export default function Overview({ project: p, entries, tasks }) {
             <span><span className="pj-key is-prog" aria-hidden="true" /> Prognose</span>
             <span><span className="pj-key is-budget" aria-hidden="true" /> Budget</span>
           </figcaption>
-          <table className="visually-hidden">
-            <caption>Gebuchte Stunden je Woche (Verlauf aus Beispieldaten)</caption>
-            <thead><tr><th scope="col">Woche</th><th scope="col">Gebucht</th><th scope="col">Kumuliert</th></tr></thead>
-            <tbody>
-              {f.weeks.map((w, i) => (
-                <tr key={i}>
-                  <th scope="row">{fmtKw(w.kw, year)} ({range(w.monday)}){i === f.n ? ', bis heute' : ''}</th>
-                  <td>{fmt1(w.hours)} h</td>
-                  <td>{i === f.n ? fmt1(info.spent) : fmt1(w.cum)} h</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {/* Hülle statt Tabelle verstecken: Tabellen ignorieren width: 1px und verbreiterten sonst die Seite am Handy */}
+          <div className="visually-hidden">
+            <table>
+              <caption>Gebuchte Stunden und Budget je Woche (Verlauf aus Beispieldaten)</caption>
+              <thead><tr><th scope="col">Woche</th><th scope="col">Gebucht</th><th scope="col">Kumuliert</th><th scope="col">Budget</th></tr></thead>
+              <tbody>
+                {f.weeks.map((w, i) => (
+                  <tr key={i}>
+                    <th scope="row">{fmtKw(w.kw, year)} ({range(w.monday)}){i === f.n ? ', bis heute' : ''}</th>
+                    <td>{fmt1(w.hours)} h</td>
+                    <td>{i === f.n ? fmt1(info.spent) : fmt1(w.cum)} h</td>
+                    <td>{fmtH(w.budget)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </figure>
       </section>
+
+      <BudgetChanges project={p} headingId={ids.changes} />
 
       <section className="pj-team" aria-labelledby={ids.team}>
         <h2 id={ids.team}>Team</h2>

@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { CalendarRange, ClockPlus, FolderKanban, Keyboard, ListPlus, Play, Search, Square, SquareCheck } from 'lucide-react';
+import { CalendarRange, ClockPlus, FolderKanban, FolderPlus, Keyboard, ListPlus, Play, Search, Square, SquareCheck } from 'lucide-react';
 import { uid, useStoredState } from '../lib/store.js';
 import { cleanTasks } from '../lib/data.js';
 import { byId, me, people, projectStatusLabel, statusLabel, tasks as sampleTasks } from '../data/sample.js';
@@ -78,6 +78,8 @@ function buildIndex({ routes, running, timer, elapsedMin, lastProject, bookedIds
       hay: haystack('Zeit nachtragen eintragen vergessen buchen manuell') },
     { id: 'new-task', icon: ListPlus, label: 'Neue Aufgabe', meta: routeProject ? `in ${routeProject.code}` : 'mit Titel und Projekt',
       step: 'task', hay: haystack('Neue Aufgabe anlegen erstellen hinzufügen') },
+    { id: 'new-project', icon: FolderPlus, label: 'Neues Projekt', meta: 'Kunde, Code, Budget', to: '/projekte/neu',
+      hay: haystack('Neues Projekt anlegen erstellen hinzufügen') },
     { id: 'help', icon: Keyboard, label: 'Tastenkürzel anzeigen', keys: ['?'], run: handlers.onHelp,
       hay: haystack('Tastenkürzel Kürzel Tastatur Hilfe') },
   ];

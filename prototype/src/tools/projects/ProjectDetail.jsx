@@ -1,12 +1,13 @@
-// Projektdetail (r07): Titel aus Code und Name, darunter Eigenschaften als Chips (Status, Lead, Studio, Abgabe,
-// Budget-Rest), dann Tabs als Links mit aria-current: Aufgaben | Übersicht | Zeiten. Keine Einleitung.
-import { ArrowLeft, CalendarDays } from 'lucide-react';
+// Projektdetail (r07): Titel aus Code und Name, daneben „Bearbeiten“ (öffnet #/projekte/<id>/bearbeiten), darunter
+// Eigenschaften als Chips (Status, Lead, Studio, Abgabe, Budget-Rest), dann Tabs als Links mit aria-current:
+// Aufgaben | Übersicht | Zeiten. Keine Einleitung.
+import { ArrowLeft, CalendarDays, Pencil } from 'lucide-react';
 import { tasks as seedTasks, timeEntries as sampleEntries } from '../../data/sample.js';
 import { clientsById, projectsById } from '../../lib/projects.js';
 import { useStoredState } from '../../lib/store.js';
 import { cleanEntries, cleanTasks } from '../../lib/data.js';
 import { spentHours } from '../../lib/budget.js';
-import { href } from '../../lib/router.js';
+import { href, navigate } from '../../lib/router.js';
 import { budgetInfo, fmtDay, fmtH, fmtKw, isDay, isoWeek, parseDay, personById, studioById } from './helpers.js';
 import { Avatar, StateIcon, StatusDot } from './parts.jsx';
 import TaskBoard from './TaskBoard.jsx';
@@ -69,6 +70,10 @@ export default function ProjectDetail({ id, tab = 'aufgaben', taskId }) {
         <h1 id="pj-title" className="pj-dtitle" tabIndex={-1}>
           <span className="pj-dcode num">{p.code}</span> {p.name}
         </h1>
+        <button type="button" className="btn pj-edit" data-pj-opener="edit" aria-haspopup="dialog"
+          onClick={() => navigate(`/projekte/${p.id}/bearbeiten`)}>
+          <Pencil size={16} aria-hidden="true" /> Bearbeiten
+        </button>
         <ul className="pj-props" aria-label="Eigenschaften">
           <li className="chip"><span className="visually-hidden">Status: </span><StatusDot status={p.status} /></li>
           {lead && (
