@@ -608,16 +608,17 @@ input[type="range"]::-moz-range-thumb {
       <h1 id="h0">Ein paar Minuten für euer Agentur-Tool.</h1>
       <p class="lead">
         Hallo <span data-respondent></span>. Es geht um QuoJob bei VAVE: was ihr davon braucht,
-        was euch bremst und was fehlt. Am Ende bekommst du eine Zusammenfassung,
-        die wir als Grundlage für alles Weitere nehmen.
+        was euch bremst und was fehlt. Alles bleibt auf deinem Gerät; am Ende entsteht eine Datei
+        für Hannes, die du selbst abschickst.
       </p>
       <div class="entry-facts">
         <span><b>7</b> Stationen</span>
         <span><b>ein paar</b> Minuten</span>
         <span><b>0</b> falsche Antworten</span>
       </div>
-      <p class="muted small">
+      <p class="muted">
         Antworte aus dem Bauch. Du kannst jederzeit unterbrechen – der Stand bleibt in diesem Browser gespeichert.
+        Löschen kannst du ihn auf der letzten Seite mit „Von vorn“.
       </p>
     </div>
   </section>
@@ -1501,15 +1502,17 @@ input[type="range"]::-moz-range-thumb {
 
   /* ---------------- Station 7: Ergebnis ---------------- */
   const resultEl = $('#result');
+  const HANNES = 'hannes@pix-el.de'; // Empfänger der Ergebnisse, einzige Stelle der Adresse
   function renderResult() {
     const h = hypothesis();
     const keep = kept();
     const top = keep.filter(m => state.friction[m.id] !== undefined).sort((a, b) => state.friction[b.id] - state.friction[a.id]).slice(0, 3);
     const musts = [...D.wishes.filter(w => state.wishes[w.id] === 'must').map(w => w.text), ...state.customWishes.filter(w => w.level === 'must').map(w => w.text)];
+    const out = resultFiles(), send = sendData(out);
     resultEl.innerHTML = `
       <div class="step-head">
         <h2>Danke, ${esc(D.respondent)}.</h2>
-        <p class="lead">Das ist deine Zusammenfassung. Lad beide Dateien herunter und schick sie mir – damit legen wir los.</p>
+        <p class="lead">Das ist deine Zusammenfassung. Schick sie unten per E-Mail an Hannes – damit legen wir los.</p>
       </div>
       <div class="stats">
         <div class="stat" data-k="keep"><b>${keep.length}</b>Bausteine behalten</div>
@@ -1534,18 +1537,45 @@ input[type="range"]::-moz-range-thumb {
         <h3>Budget</h3>
         <p>Heute ${state.budget.currentUnknown ? 'unbekannt' : eur(state.budget.current) + '/Monat'}, Schmerzgrenze ${eur(state.budget.max)}/Monat, Haltung: ${bbLabel(state.budget.buildBuy)}.</p>
       </div>
+      <section class="result-block" aria-labelledby="sendHead">
+        <h3 id="sendHead">An Hannes schicken</h3>
+        <p>An <b id="sendAddr">${esc(HANNES)}</b>, mit Daten (JSON) und Brief (Markdown) im Anhang.</p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="sendMail">Per E-Mail an Hannes senden</button>
+          <button type="button" class="btn" id="copyAddr">Adresse kopieren</button>
+          ${send.canShare ? '<button type="button" class="btn" id="shareFiles">Teilen</button>' : ''}
+        </div>
+        <ul class="muted">
+          <li>Outlook öffnet die Datei als Entwurf – nur noch senden.</li>
+          <li>Apple Mail: Datei öffnen, dann im Menü „E-Mail“ „Erneut senden“.</li>
+          ${send.canShare ? '<li>Am Handy: Adresse kopieren, „Teilen“, Mail wählen, Adresse einfügen.</li>' : ''}
+          <li>Sonst: beide Dateien unten einzeln laden und an eine Mail hängen.</li>
+        </ul>
+      </section>
       <div class="actions">
-        <button type="button" class="btn primary" id="dlJson">Daten herunterladen (JSON)</button>
+        <button type="button" class="btn" id="dlJson">Daten herunterladen (JSON)</button>
         <button type="button" class="btn" id="dlMd">Brief herunterladen (Markdown)</button>
         <button type="button" class="btn" id="copyMd">Brief kopieren</button>
         <button type="button" class="btn quiet" id="restart">Von vorn</button>
       </div>`;
-    const stamp = new Date().toISOString().slice(0, 10) + '_' + D.respondent.toLowerCase();
-    $('#dlJson').addEventListener('click', () => download(stamp + '.json', JSON.stringify(exportData(), null, 2), 'application/json'));
-    $('#dlMd').addEventListener('click', () => download(stamp + '.md', buildBrief(), 'text/markdown'));
+    $('#sendMail').addEventListener('click', () => {
+      download(out.stamp + '.eml', buildEml([out.json, out.md], send.subject, send.body), 'message/rfc822');
+      toast('E-Mail-Datei geladen.');
+    });
+    if (send.canShare) $('#shareFiles').addEventListener('click', () => shareFiles(send.share));
+    $('#copyAddr').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(HANNES); toast('Adresse kopiert.'); }
+      catch (e) {
+        const r = document.createRange(), sel = getSelection();
+        r.selectNodeContents($('#sendAddr')); sel.removeAllRanges(); sel.addRange(r);
+        toast('Adresse markiert – jetzt kopieren.');
+      }
+    });
+    $('#dlJson').addEventListener('click', () => download(out.json.name, out.json.text, out.json.type));
+    $('#dlMd').addEventListener('click', () => download(out.md.name, out.md.text, out.md.type));
     $('#copyMd').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(buildBrief()); toast('Brief kopiert.'); }
-      catch (e) { download(stamp + '.md', buildBrief(), 'text/markdown'); toast('Zwischenablage nicht verfügbar – Datei geladen.'); }
+      try { await navigator.clipboard.writeText(out.md.text); toast('Brief kopiert.'); }
+      catch (e) { download(out.md.name, out.md.text, out.md.type); toast('Zwischenablage nicht verfügbar – Datei geladen.'); }
     });
     $('#restart').addEventListener('click', () => {
       if (!confirm('Alle Antworten löschen und von vorn beginnen?')) return;
@@ -1558,6 +1588,78 @@ input[type="range"]::-moz-range-thumb {
     a.href = URL.createObjectURL(new Blob([text], { type }));
     a.download = name; document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  /* ---------------- Versand an Hannes ---------------- */
+  // Dateien einmal je Ergebnis erzeugen: Einzel-Download, E-Mail-Anhang und Teilen tragen dieselben Bytes
+  // (exportData() setzt exportedAt bei jedem Aufruf neu). Namen wie bisher: YYYY-MM-DD_<vorname>.json/.md
+  function resultFiles() {
+    const day = new Date().toISOString().slice(0, 10), stamp = day + '_' + D.respondent.toLowerCase();
+    return {
+      day, stamp,
+      json: { name: stamp + '.json', type: 'application/json', text: JSON.stringify(exportData(), null, 2) },
+      md: { name: stamp + '.md', type: 'text/markdown', text: buildBrief() }
+    };
+  }
+  function sendData(out) {
+    const subject = `VAVE Discovery – Ergebnis von ${D.respondent}, ${out.day.split('-').reverse().join('.')}`;
+    const body = ['Hallo Hannes,', '', 'anbei mein Ergebnis aus der VAVE-Discovery-Umfrage:',
+      `- ${out.json.name} (Daten)`, `- ${out.md.name} (Brief)`, '', 'Viele Grüße', D.respondent].join('\r\n');
+    const share = {
+      files: [out.json, out.md].map(f => new File([f.text], f.name, { type: f.type })),
+      title: subject,
+      text: `An ${HANNES}: ${subject}. Im Anhang Daten (JSON) und Brief (Markdown).`
+    };
+    let canShare = false;
+    try { canShare = !!(navigator.canShare && navigator.canShare({ files: share.files })); } catch (e) { /* ohne Teilen */ }
+    return { subject, body, share, canShare };
+  }
+  async function shareFiles(data) {
+    try { await navigator.share(data); }
+    catch (e) { if (!e || e.name !== 'AbortError') toast('Teilen ging nicht – Dateien einzeln laden.'); }
+  }
+  // Base64 von UTF-8-Text; für MIME in Zeilen zu höchstens 76 Zeichen (RFC 2045)
+  function b64(text) {
+    const bytes = new TextEncoder().encode(text);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  const b64Lines = text => (b64(text).match(/.{1,76}/g) || []).join('\r\n');
+  // Header-Text als RFC-2047-Wörter (UTF-8, B): je Wort höchstens 36 Bytes (60 Zeichen), kein Zeichen geteilt
+  function encodeWords(text) {
+    const enc = new TextEncoder(), words = [];
+    let cur = '';
+    for (const ch of text) {
+      if (cur && enc.encode(cur + ch).length > 36) { words.push(cur); cur = ''; }
+      cur += ch;
+    }
+    if (cur) words.push(cur);
+    return words.map(w => '=?UTF-8?B?' + b64(w) + '?=').join('\r\n ');
+  }
+  // Datum nach RFC 5322 in Ortszeit mit Zonenversatz, z. B. „Tue, 29 Sep 2026 14:03:12 +0200“
+  function mailDate(d) {
+    const p = n => String(n).padStart(2, '0'), off = -d.getTimezoneOffset(), a = Math.abs(off);
+    return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()] + ', ' + p(d.getDate()) + ' ' +
+      ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()] + ' ' + d.getFullYear() + ' ' +
+      p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) + ' ' + (off < 0 ? '-' : '+') + p(Math.floor(a / 60)) + p(a % 60);
+  }
+  // Dateiname als MIME-Parameter: druckbares ASCII in Anführungszeichen, sonst RFC 2231 (UTF-8, prozentkodiert)
+  function mimeParam(key, value) {
+    if (/^[\x20-\x7e]*$/.test(value) && !/["\\]/.test(value)) return `${key}="${value}"`;
+    return `${key}*=UTF-8''` + encodeURIComponent(value).replace(/['()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
+  }
+  // Sendefertiger Entwurf (.eml): X-Unsent: 1 öffnet ihn in Outlook zum Senden; multipart/mixed, CRLF, Anhänge base64
+  function buildEml(files, subject, body) {
+    const boundary = 'vave-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    const L = ['MIME-Version: 1.0', 'Date: ' + mailDate(new Date()), `To: Hannes <${HANNES}>`, 'Subject: ' + encodeWords(subject),
+      'X-Unsent: 1', `Content-Type: multipart/mixed; boundary="${boundary}"`, '',
+      '--' + boundary, 'Content-Type: text/plain; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', b64Lines(body)];
+    files.forEach(f => L.push('--' + boundary,
+      `Content-Type: ${f.type}${f.type.startsWith('text/') ? '; charset=UTF-8' : ''}; ${mimeParam('name', f.name)}`,
+      'Content-Transfer-Encoding: base64', `Content-Disposition: attachment; ${mimeParam('filename', f.name)}`, '', b64Lines(f.text)));
+    L.push('--' + boundary + '--', '');
+    return L.join('\r\n');
   }
   let toastTimer;
   function toast(msg) {
