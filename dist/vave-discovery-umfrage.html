@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>VAVE Discovery – Euer Agentur-Tool in ein paar Minuten</title>
 <meta name="description" content="Sieben Stationen zu QuoJob bei VAVE: was ihr braucht, was bremst, was fehlt.">
+<meta name="robots" content="noindex, nofollow">
 <style>
 /* ------------------------------------------------------------------
    Tokens – ein Akzent (Ultramarin), sonst Ruhe. Änderungen hier, nicht
@@ -137,6 +138,8 @@ p { margin: 0; }
 .entry-grid { display: grid; gap: 28px; max-width: 46em; }
 .entry-facts { display: flex; flex-wrap: wrap; gap: 10px 22px; color: var(--ink-2); font-weight: 600; }
 .entry-facts b { color: var(--ink); font-weight: 800; }
+/* Testlauf (Station 0 und 7): eine ruhige Zeile, nur wenn der Stand ein Test ist – oder noch offen und unter ?test geöffnet */
+.test-note { justify-self: start; max-width: 100%; padding: 8px 14px; border-radius: var(--radius-s); background: var(--amber-soft); color: var(--ink); font-size: 1rem; font-weight: 600; line-height: 1.4; }
 /* Notiz von Hannes: ruhige Karte, Text ≥ 16 px. Darin der Pfad Bedarf, Technik, Zusage im Stil der Route (Linie, Ring,
    Punkt; Signalfarbe nur für „jetzt“). Breit nebeneinander, schmal untereinander; .intro-mark ist der Platz des Punkts,
    Linie und Punkte legt das Script dorthin (Station 0: Einstieg). Bewegung nur per Script, nie bei reduzierter Bewegung. */
@@ -155,12 +158,21 @@ p { margin: 0; }
 .intro-path li { position: relative; padding-top: 30px; font-size: 1rem; line-height: 1.4; color: var(--ink-2); }
 .intro-path li > span, .intro-path strong { display: block; }
 .intro-path strong { color: var(--ink); font-weight: 800; }
-.intro-here { color: var(--signal); font-weight: 700; }
+.intro-here { color: var(--signal); font-weight: 700; white-space: nowrap; }
 .intro-mark { position: absolute; left: 0; top: 0; width: 18px; height: 18px; }
+/* Wartet aufs Einzeichnen (Script): Linie und Punkte noch nicht da, die Beschriftung schon */
+.intro-path.is-waiting .intro-way { stroke-dashoffset: 100; }
+.intro-path.is-waiting .intro-dot { opacity: 0; }
+/* Schmal: Notiz randbündig (hebt das Seitenpolster von .stage auf, 24 px), Text in der Spalte der Seite; je Pfad-Schritt
+   Name, Beschreibung und „du bist hier“ in einer Zeile. So bleibt der Eingang bei 390 × 844 unter 1,6 Bildschirmhöhen. */
 @media (max-width: 640px) {
-  .note { padding: 18px 18px 20px; }
-  .intro-path ol { grid-template-columns: none; gap: 14px; }
+  .entry-grid { gap: 20px; }
+  .note { margin: 0 -24px; padding: 16px 24px; gap: 8px; border-width: 1px 0; border-radius: 0; }
+  .note p { font-size: 1rem; line-height: 1.45; }
+  .intro-path { margin: 0; }
+  .intro-path ol { grid-template-columns: none; gap: 8px; }
   .intro-path li { padding: 0 0 0 32px; }
+  .intro-path li > span, .intro-path strong { display: inline; }
   .intro-mark { top: calc(.7em - 9px); } /* Mitte der ersten Zeile (line-height 1.4) */
 }
 
@@ -650,7 +662,11 @@ input[type="range"]::-moz-range-thumb {
 .result-block { padding: 22px 24px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line); display: grid; gap: 10px; }
 .result-block ul { margin: 0; padding-left: 1.2em; }
 .result-block li { margin: 2px 0; }
-#sendAddr { white-space: nowrap; } /* die Adresse nicht an „-“ umbrechen */
+#sendAddr, .send-status b { white-space: nowrap; } /* die Adresse nicht an „-“ umbrechen */
+/* Rückmeldung nach dem Tipp auf Senden (role="status"). Leer liegt sie außerhalb des Rasters – keine Lücke im Block,
+   aber im DOM, damit Screenreader den neuen Text ansagen. */
+.send-status { padding: 10px 14px; border-radius: var(--radius-s); background: var(--signal-soft); color: var(--ink); font-size: 1rem; line-height: 1.45; }
+.send-status:empty { position: absolute; padding: 0; }
 .hypo { border-color: var(--signal); background: var(--signal-soft); }
 .hypo .target { font-size: 1.15rem; font-weight: 800; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -727,6 +743,7 @@ input[type="range"]::-moz-range-thumb {
 
   <section class="step" data-step="0" aria-labelledby="h0">
     <div class="entry-grid">
+      <p class="test-note" id="testNote" hidden>Testlauf – zählt nicht als Antwort von <span data-respondent></span>.</p>
       <h1 id="h0">Ein paar Minuten für euer Agentur-Tool.</h1>
       <p class="lead">
         Hallo <span data-respondent></span>. Es geht um QuoJob bei VAVE: was ihr davon braucht,
@@ -744,22 +761,18 @@ input[type="range"]::-moz-range-thumb {
           </svg>
           <ol role="list">
             <li><span class="intro-mark"></span><strong>1 Bedarf</strong> <span>diese Umfrage</span> <span class="intro-here">du bist hier</span></li>
-            <li><span class="intro-mark"></span><strong>2 Technik</strong> <span>Server, Daten, Sicherheit, Tempo</span></li>
+            <li><span class="intro-mark"></span><strong>2 Technik</strong> <span>Server, Datenbank, Datenschutz, Tempo</span></li>
             <li><span class="intro-mark"></span><strong>3 Zusage</strong> <span>wenn der Zeitrahmen steht</span></li>
           </ol>
         </div>
         <p>
-          Die Umfrage kostet dich nichts und verpflichtet zu nichts. Solche Aufgaben packe ich gern an&nbsp;– fest zusagen
-          kann ich aber erst, wenn mein Zeitrahmen steht und die Nebentätigkeit mit meinem Arbeitgeber geklärt ist.
+          Die Umfrage kostet dich nichts und verpflichtet zu nichts. Solche Aufgaben packe ich gern an; fest zusagen kann
+          ich erst, wenn mein Zeitrahmen steht und die Nebentätigkeit mit meinem Arbeitgeber geklärt ist.
         </p>
         <p>
-          Ehrlich zum Risiko: Kleine, schicke Tools entstehen mit KI-Agenten heute schnell. Ein großes System mit
-          personenbezogenen Daten, Schnittstellen, eigenem Backend und vielen Nutzern braucht viele Schleifen und viel
-          Zeit&nbsp;– ein Rest Blackbox bleibt.
-        </p>
-        <p>
-          Die Aufgabe reizt mich trotzdem. Darum zuerst: Was braucht ihr wirklich? Das klärt diese Umfrage. Danach die
-          Technik: wo Server und Datenbank stehen, was gespeichert wird, wie sicher und wie schnell es sein muss.
+          Ehrlich zum Risiko: Kleine, schicke Tools entstehen mit KI-Agenten heute schnell. Große Systeme mit
+          personenbezogenen Daten, Schnittstellen und vielen Nutzern brauchen viele Schleifen und Zeit&nbsp;– ein Rest
+          Blackbox bleibt. Die Aufgabe reizt mich trotzdem.
         </p>
         <p class="note-sign">Hannes</p>
       </div>
@@ -1018,15 +1031,16 @@ window.VAVE_DATA = {
 
   /* ---------------- Zustand ---------------- */
   // Budget-Werte sind Platzhalter (Reglermitte); sie zählen erst, wenn der Regler berührt wurde.
-  // Testlauf: test hält fest, ob der Stand unter index.html?test begonnen wurde (Start oder „Von vorn“). Danach zählt
-  // nur der Merker, nicht die URL beim Öffnen (siehe TEST, Station 7). Er bleibt im Browser, nicht im Export.
+  // Testlauf: test hält fest, ob der Stand unter index.html?test beantwortet wurde. Er ist offen (null), bis die erste
+  // Antwort gespeichert wird – bis dahin gilt die URL beim Öffnen; save() schreibt ihn dann aus ihr fest. „Von vorn“
+  // öffnet ihn wieder. Er bleibt im Browser, nicht im Export.
   const TEST_URL = new URLSearchParams(location.search).has('test');
   function freshState() {
     return {
       step: 0,
       maxStep: 0, // höchste erreichte Station; die Route springt vorwärts höchstens bis dorthin
       startedAt: new Date().toISOString(),
-      test: TEST_URL,
+      test: null,
       sort: {}, seq: {}, friction: {}, wishes: {}, customWishes: [], roles: {},
       budget: { current: 3000, currentUnknown: false, max: 3000, buildBuy: 50 },
       budgetTouched: { current: false, max: false, buildBuy: false },
@@ -1038,6 +1052,12 @@ window.VAVE_DATA = {
   function budgetOpen(s) {
     const t = s.budgetTouched;
     return (t.current || s.budget.currentUnknown ? 0 : 1) + (t.max ? 0 : 1) + (t.buildBuy ? 0 : 1);
+  }
+  // Irgendeine Antwort im Stand: eine Karte sortiert, eine Reibung, ein Wunsch, eine Rolle, ein Budget-Regler, ein Freitext
+  function hasAnswer(s) {
+    const any = o => !!o && typeof o === 'object' && Object.keys(o).length > 0, t = s.budgetTouched || {};
+    return any(s.sort) || any(s.friction) || any(s.wishes) || any(s.customWishes) || any(s.roles) ||
+      !!(t.current || t.max || t.buildBuy || (s.budget && s.budget.currentUnknown)) || !!s.wand || !!s.noGo;
   }
   // Stände älterer Fassungen (gleicher Schlüssel): fehlende Felder ergänzen, Antworten behalten.
   function upgrade(s) {
@@ -1052,10 +1072,11 @@ window.VAVE_DATA = {
     }
     const marked = typeof s.test === 'boolean';
     Object.keys(f).forEach(k => { if (s[k] === undefined || s[k] === null) s[k] = f[k]; });
-    // Stände vor r05 kennen den Test-Merker nicht: null = unbekannt, dann gilt die URL beim Öffnen (die sichere Seite).
-    if (!marked) s.test = null;
     s.budget = Object.assign({}, f.budget, s.budget);
     s.budgetTouched = Object.assign({}, f.budgetTouched, s.budgetTouched);
+    // Ohne gültigen Merker (Stände vor r05, oder er blieb offen): Stände mit Antworten gelten als Test – alle stammen aus
+    // Testläufen, Tobias hatte noch keinen Link. Ohne Antwort bleibt er offen, dann gilt die URL (siehe save()).
+    if (!marked) s.test = hasAnswer(s) ? true : null;
     // Kaufen/Bauen kennt fünf Stufen (Werte wie BB_STAGES[].v, Station 5). Ein Wert dazwischen stammt aus der
     // stufenlosen Fassung, dort hieß z. B. 40 oder 60 „Offen“. Nicht still umdeuten: gilt als nicht eingestellt,
     // Station 5 fragt neu. Ohne budgetTouched (Fassung vor r02) gilt das auch für 35 und 65 – dort hieß alles von
@@ -1074,8 +1095,21 @@ window.VAVE_DATA = {
     return s;
   }
   function load() { try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ohne Speicher weiter */ } }
+  // Erste gespeicherte Antwort: Test-Merker aus der URL dieses Aufrufs festschreiben (danach zählt nur er)
+  function save() {
+    if (typeof state.test !== 'boolean' && hasAnswer(state)) { state.test = TEST_URL; syncTest(); }
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ohne Speicher weiter */ }
+  }
+  // Testlauf über den öffentlichen Link (index.html?test): Dateiname, Betreff, Mailtext, Brief und respondent tragen „Test“,
+  // Station 0 und 7 zeigen es. Maßgeblich ist der Merker, solange er offen ist die URL. Neu beim Laden, Festschreiben, „Von vorn“.
+  let TEST, WHO;
+  function syncTest() {
+    TEST = typeof state.test === 'boolean' ? state.test : TEST_URL;
+    WHO = TEST ? D.respondent + ' (Test)' : D.respondent;
+    $('#testNote').hidden = !TEST;
+  }
   let state = upgrade(load()) || freshState();
+  syncTest();
 
   /* ---------------- Route ---------------- */
   // Jede Station ist ein Knopf. Zurück geht immer; vorwärts höchstens bis maxStep und nie über die erste Station
@@ -1304,22 +1338,43 @@ window.VAVE_DATA = {
   /* ---------------- Station 0: Einstieg ---------------- */
   // Pfad in der Notiz von Hannes: Bedarf, Technik, Zusage. CSS stellt die drei Schritte nebeneinander oder untereinander
   // und markiert je Schritt den Platz des Punkts (.intro-mark); Linie und Punkte liegen in Pixeln darauf, bei jeder Größe
-  // neu (auch wenn der Eingang wieder sichtbar wird). Einzeichnen genau einmal je Seitenaufruf, nur wenn er auf dem Eingang
-  // beginnt, sobald die Seite sichtbar ist: Die Linie läuft durch, jeder Punkt steht, sobald sie ihn erreicht (≤ 1,5 s).
-  // Zurück über Route oder „Zurück“ und bei reduzierter Bewegung steht der Pfad fertig da.
-  const INTRO_WAIT = 250, INTRO_DRAW = 900, INTRO_DOT = 240; // erst nach stepIn (0,24 s); letzter Punkt steht nach 1,31 s
+  // neu (auch wenn der Eingang wieder sichtbar wird). Einzeichnen höchstens einmal je Seitenaufruf und nur, wenn er auf dem
+  // Eingang beginnt – aber erst, wenn die Route fertig eingezeichnet ist (nie zwei Linien zugleich), der Pfad zu ≥ 90 %
+  // zwischen Kopf und Leiste im Bild steht und die Seite sichtbar ist. Bis dahin wartet er leer (.is-waiting). Dann läuft
+  // die Linie durch, jeder Punkt steht, sobald sie ihn erreicht. Wer den Eingang vorher verlässt, findet den Pfad bei der
+  // Rückkehr fertig; bei reduzierter Bewegung (oder ohne Web Animations / IntersectionObserver) steht er sofort.
+  const INTRO_WAIT = 150, INTRO_DRAW = 900, INTRO_DOT = 240, INTRO_SEEN = .9; // letzter Punkt steht 1,21 s nach dem Start
   function introPath() {
     const wrap = $('#introPath'), way = $('.intro-way', wrap), dots = $$('.intro-dot', wrap), marks = $$('.intro-mark', wrap);
-    let pts = [], anims = [];
+    let pts = [], anims = [], routeDrawn = false, seen = false, io = null, ioMargin = '';
+    let waiting = state.step === 0 && !REDUCED && !!way.animate && !!document.getAnimations && 'IntersectionObserver' in window;
+    function stopWaiting() {
+      waiting = false;
+      wrap.classList.remove('is-waiting');
+      if (io) { io.disconnect(); io = null; }
+    }
     function layoutIntro() {
       const box = wrap.getBoundingClientRect();
-      if (!box.width) { anims.forEach(a => a.finish()); anims = []; return; } // Eingang verlassen: bei Rückkehr fertig
+      if (!box.width) { stopWaiting(); anims.forEach(a => a.finish()); anims = []; return; } // Eingang verlassen: bei Rückkehr fertig
       pts = marks.map(m => { const r = m.getBoundingClientRect(); return [r.left + r.width / 2 - box.left, r.top + r.height / 2 - box.top]; });
       way.setAttribute('d', 'M' + pts.map(p => p.join(' ')).join(' L'));
       dots.forEach((g, i) => g.parentNode.setAttribute('transform', `translate(${pts[i].join(' ')})`));
+      watch();
+    }
+    // Im Bild = zu ≥ 90 % zwischen Kopf (sticky) und Leiste (fixed): deren Höhen sind der Rand des Beobachters, neu je Größe
+    function watch() {
+      if (!waiting) return;
+      const m = `-${Math.ceil($('.top').getBoundingClientRect().height)}px 0px -${Math.ceil($('.nav').getBoundingClientRect().height)}px 0px`;
+      if (io && m === ioMargin) return;
+      if (io) io.disconnect();
+      ioMargin = m;
+      io = new IntersectionObserver(es => { seen = es[es.length - 1].intersectionRatio >= INTRO_SEEN; drawIntro(); }, { rootMargin: m, threshold: [0, INTRO_SEEN, 1] });
+      io.observe(wrap);
     }
     function drawIntro() {
-      if (state.step !== 0 || !pts.length) return;
+      if (!waiting || !routeDrawn || !seen || state.step !== 0 || !pts.length) return;
+      if (document.hidden) { document.addEventListener('visibilitychange', drawIntro, { once: true }); return; }
+      stopWaiting(); // die Animationen halten mit fill: backwards ab sofort den Anfang, kein Aufblitzen
       const seg = pts.slice(1).map((p, i) => Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1])), len = seg.reduce((a, b) => a + b, 0) || 1;
       let run = 0;
       const at = [0].concat(seg.map(s => (run += s) / len)); // Anteil der Linie bis zum Punkt
@@ -1327,10 +1382,14 @@ window.VAVE_DATA = {
         .concat(dots.map((g, i) => g.animate([{ opacity: 0, transform: 'scale(.3)' }, { opacity: 1, transform: 'scale(1)' }],
           { duration: INTRO_DOT, delay: INTRO_WAIT + Math.max(0, INTRO_DRAW * at[i] - 80), easing: 'ease-out', fill: 'backwards' })));
     }
+    if (waiting) {
+      wrap.classList.add('is-waiting');
+      // Route fertig = alle Animationen in #route beendet (Linie, Fortschritt, Punkte, Namen; drawRoute beim Öffnen)
+      const drawing = document.getAnimations().filter(a => a.effect && a.effect.target && route.contains(a.effect.target));
+      Promise.all(drawing.map(a => a.finished.catch(() => null))).then(() => { routeDrawn = true; drawIntro(); });
+    }
     layoutIntro();
     if (window.ResizeObserver) new ResizeObserver(layoutIntro).observe(wrap); else window.addEventListener('resize', layoutIntro);
-    if (state.step !== 0 || REDUCED || !way.animate) return;
-    if (document.hidden) document.addEventListener('visibilitychange', drawIntro, { once: true }); else drawIntro();
   }
 
   /* ---------------- Station 1: Sortieren ---------------- */
@@ -1967,14 +2026,7 @@ window.VAVE_DATA = {
   /* ---------------- Station 7: Ergebnis ---------------- */
   const resultEl = $('#result');
   const HANNES = 'hannes@pix-el.de'; // Empfänger der Ergebnisse, einzige Stelle der Adresse
-  // Testlauf über den öffentlichen Link (index.html?test): Dateiname, Betreff, Mailtext, Brief und respondent tragen „Test“.
-  // Maßgeblich ist der Merker des Stands (Zustand), die URL nur bei Ständen ohne Merker. Neu gesetzt beim Laden und nach „Von vorn“.
-  let TEST, WHO;
-  function syncTest() {
-    TEST = typeof state.test === 'boolean' ? state.test : TEST_URL;
-    WHO = TEST ? D.respondent + ' (Test)' : D.respondent;
-  }
-  syncTest();
+  // Testlauf: TEST und WHO stehen im Zustand (syncTest)
   // Touch als Hauptzeiger (Handy, Tablet): mailto – dort öffnet sich eine .eml nicht als Entwurf. Maus/Trackpad: die .eml.
   const TOUCH = matchMedia('(pointer: coarse)').matches;
   function renderResult() {
@@ -1986,7 +2038,8 @@ window.VAVE_DATA = {
     resultEl.innerHTML = `
       <div class="step-head">
         <h2>Danke, ${esc(D.respondent)}.</h2>
-        <p class="lead">Das ist deine Zusammenfassung. Schick sie unten per E-Mail an Hannes – damit legen wir los.</p>
+        <p class="lead">Das ist deine Zusammenfassung. Schick sie unten per E-Mail an Hannes – als Grundlage für das Gespräch über die Technik.</p>
+        ${TEST ? `<p class="test-note">Testlauf – zählt nicht als Antwort von ${esc(D.respondent)}.</p>` : ''}
       </div>
       <div class="stats">
         <div class="stat" data-k="keep"><b>${keep.length}</b>Bausteine behalten</div>
@@ -2021,6 +2074,7 @@ window.VAVE_DATA = {
             : TOUCH ? '' : '<button type="button" class="btn primary" id="sendMail">E-Mail-Entwurf laden</button>'}
           <button type="button" class="btn" id="copyAddr">Adresse kopieren</button>
         </div>
+        <div class="send-status" id="sendStatus" role="status"></div>
       </section>
       <div class="actions">
         <button type="button" class="btn" id="dlJson">Daten herunterladen (JSON)</button>
@@ -2028,9 +2082,13 @@ window.VAVE_DATA = {
         <button type="button" class="btn" id="copyMd">Brief kopieren</button>
         <button type="button" class="btn quiet" id="restart">Von vorn</button>
       </div>`;
-    if (!TOUCH) $('#sendMail').addEventListener('click', () => {
+    // Nach dem Tipp auf Senden bleibt eine Zeile stehen: fertig machen – oder, wenn sich nichts geöffnet hat, die Einzel-Downloads
+    const sent = () => { $('#sendStatus').innerHTML = `Mailprogramm offen? Dann nur noch senden. Wenn nichts passiert ist: unten beide Dateien laden und an <b>${esc(HANNES)}</b> schicken.`; };
+    if (send.mailto) $('#sendMail').addEventListener('click', sent); // der Link öffnet danach das Mailprogramm
+    else if (!TOUCH) $('#sendMail').addEventListener('click', () => {
       download(out.stamp + '.eml', buildEml([out.json, out.md], send.subject, send.body, out.at), 'message/rfc822');
       toast('Entwurf geladen – öffnen und senden.');
+      sent();
     });
     $('#copyAddr').addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(HANNES); toast('Adresse kopiert.'); }
