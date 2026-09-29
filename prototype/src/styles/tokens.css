@@ -2,54 +2,66 @@
    Schwarz, Weiß, Violett #641dff, Limette #e8ffb9; Akzentreihe aus der Website (Orange, Koralle, Gelb, Pink, Himmelblau).
    Schrift: Readex Pro (frei, OFL) statt der lizenzierten Hausschrift. Überschriften in Versalien, eng (-0.04em).
    Vertrag für alle Builder: nur diese Variablen verwenden, keine neuen Farbwerte in Komponenten. Besitzer: Builder A.
-   Kontrastwerte in Klammern gelten gegen --c-bg bzw. die genannte Fläche. */
+   Farbregel (r06): je Ansicht höchstens Violett, Limette und eine Signalfarbe (Koralle, nur „überzogen“) plus Neutrals.
+   Neutrals sind echte Grautöne (R = G = B). Die Akzentreihe gehört nur zu den Studios (#/studios).
+   Kontrastwerte (WCAG, gerechnet) in Klammern gelten gegen --c-bg bzw. die genannte Fläche. */
 :root {
   color-scheme: light;
   --font: 'Readex Pro Variable', 'Readex Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   --c-bg: #ffffff;
-  --c-bg-2: #f5f3fb;          /* Flächen, Spuren von Balken */
-  --c-surface: #ffffff;       /* Karten */
-  --c-ink: #0b0b0f;           /* Text 19:1 auf Weiß */
-  --c-ink-2: #45434f;         /* Nebentext, ≥ 9:1 */
-  --c-ink-3: #62606d;         /* leise Angaben, ≥ 6:1 */
-  --c-line: #e3e0ec;          /* Trennlinien (dekorativ) */
-  --c-line-strong: #0b0b0f;   /* Ränder von Bedienelementen (VAVE-Knopf: schwarzer Rand) */
-  --c-control: #6b6978;       /* Ränder von Eingabefeldern, ≥ 3:1 */
+  --c-bg-2: #f2f2f2;          /* Flächen: Spuren, Zeile beim Überfahren, neutrale Marken */
+  --c-surface: #ffffff;       /* Bedienelemente, Panels */
+  --c-ink: #0b0b0b;           /* Text 19,7:1 */
+  --c-ink-2: #474747;         /* Nebentext 9,3:1 (auf bg-2 8,3:1) */
+  --c-ink-3: #5e5e5e;         /* leise Angaben 6,5:1 (auf bg-2 5,8:1) */
+  --c-line: #dcdcdc;          /* Haarlinien zwischen Zeilen (dekorativ) */
+  --c-line-strong: #0b0b0b;   /* Abschnittslinien, Konturen, Knopfrand (VAVE: schwarz) */
+  --c-control: #6e6e6e;       /* Ränder von Eingabefeldern 5,1:1 */
 
-  --c-accent: #641dff;        /* VAVE-Violett: Flächen mit weißer Schrift (6,6:1) */
+  --c-accent: #641dff;        /* VAVE-Violett: Fläche mit weißer Schrift 6,6:1 */
   --c-accent-ink: #ffffff;
-  --c-accent-text: #5a14f0;   /* Violett als Text/Link auf hellem Grund (7,5:1) */
-  --c-accent-soft: #ebe2ff;   /* Lavendel */
-  --c-lime: #e8ffb9;          /* Limette: Flächen mit schwarzer Schrift */
-  --c-lime-ink: #0b0b0f;
+  --c-accent-text: #641dff;   /* dasselbe Violett als Text/Link: 6,6:1 auf Weiß, 5,9:1 auf bg-2 */
+  --c-accent-soft: #ebe2ff;   /* Lavendel: nur Überfahren, Studios-Band, Avatare */
+  --c-lime: #e8ffb9;          /* Limette: Fläche mit schwarzer Schrift 18,2:1 – „jetzt/aktiv“ */
+  --c-lime-ink: #0b0b0b;
 
-  /* Markierung „ausgewählt/aktiv“ auf hellem oder dunklem Grund (Tab-Leiste, Umschalter) – ≥ 3:1 zur Umgebung */
+  /* Markierung „ausgewählt/aktiv“ (Tab-Leiste, Umschalter) – ≥ 3:1 zur Umgebung */
   --c-indicator: #641dff;
   --c-indicator-ink: #ffffff;
 
   /* Navigation (Seitenleiste) – volle violette Fläche wie das Menü auf vave.studio */
   --c-nav: #641dff;
   --c-nav-ink: #ffffff;       /* 6,6:1 */
-  --c-nav-ink-2: #e6dcff;     /* 5,1:1 */
+  --c-nav-ink-2: #e0e0e0;     /* 5,0:1 */
   --c-nav-hover: rgb(255 255 255 / 0.14);
   --c-nav-focus: #ffffff;
 
-  --c-ok: #1b6e35;       --c-ok-soft: #e1f5e6;
-  --c-warn: #7a4f00;     --c-warn-soft: #fff0c7;
-  --c-danger: #b0231b;   --c-danger-soft: #fde6e4;
-  /* Füllungen für Balken (Budget-Ampel), ≥ 3:1 gegen --c-bg-2 */
-  --c-ok-fill: #1b6e35;
-  --c-warn-fill: #a86f00;
-  --c-danger-fill: #b0231b;
+  /* Budget-Zustände. Keine Ampel: „im Rahmen“ grau, „knapp“ schwarz – getragen von Icon und Wort.
+     Nur „überzogen“ hat Farbe: Koralle als Fläche mit schwarzer Schrift, immer mit schwarzer Kontur
+     (Koralle gegen Weiß nur 2,6:1, Kontur 19,7:1 gegen Weiß und 7,5:1 gegen Koralle).
+     -soft = Fläche unter Text in --c-*, -fill = Balken, -fill-ink = Schrift auf -fill. */
+  --c-ok: #474747;            /* Text/Icon 9,3:1, auf bg-2 8,3:1 */
+  --c-ok-soft: #f2f2f2;
+  --c-ok-fill: #767676;       /* Balken 4,5:1 gegen Weiß, 4,1:1 gegen bg-2 */
+  --c-warn: #0b0b0b;          /* 19,7:1, auf bg-2 17,6:1 */
+  --c-warn-soft: #f2f2f2;
+  --c-warn-fill: #0b0b0b;
+  --c-danger: #0b0b0b;        /* Text/Rand bei „überzogen“: 19,7:1, auf Koralle 7,5:1 */
+  --c-danger-soft: #ff727c;   /* Koralle als Fläche, schwarze Schrift 7,5:1 */
+  --c-danger-fill: #ff727c;
+  --c-danger-fill-ink: #0b0b0b;
 
-  /* Akzentreihe (Studios, Kategorien) – nur als Fläche mit --c-ink als Schrift */
+  /* Akzentreihe (nur Studios) – Flächen, Schrift darauf immer --c-accent-row-ink */
   --c-orange: #ff7f53;
   --c-coral: #ff727c;
   --c-yellow: #fef96c;
   --c-pink: #e783ff;
   --c-sky: #6ec7ff;
   --c-green: #9be200;
+  --c-accent-row-ink: #0b0b0b; /* auf allen Akzentflächen ≥ 7:1, hell und dunkel */
+
+  --c-backdrop: rgb(11 11 11 / 0.6);
 
   --radius-s: 0.375rem;
   --radius: 0.5rem;
@@ -63,44 +75,51 @@
   --content-max: 1200px;
   --gutter: 16px;
 
-  --shadow-1: 0 1px 2px rgb(11 11 15 / 0.06), 0 1px 1px rgb(11 11 15 / 0.04);
-  --shadow-2: 0 8px 24px rgb(11 11 15 / 0.10);
+  --shadow-1: 0 1px 2px rgb(11 11 11 / 0.06), 0 1px 1px rgb(11 11 11 / 0.04);
+  --shadow-2: 0 8px 24px rgb(11 11 11 / 0.10);
   --focus: 0 0 0 3px var(--c-bg), 0 0 0 6px var(--c-accent);
 
   --ease: cubic-bezier(.2, .7, .2, 1);
   --dur: 180ms;
+  --dur-change: 240ms;        /* Übergang, wenn sich ein Wert ändert (nie beim Öffnen) */
   --tap: 44px;                /* Mindest-Trefferfläche */
 }
 @media (min-width: 480px) { :root { --gutter: 24px; } }
 
+/* Dunkel – zweimal derselbe Block: System-Einstellung und ausdrückliche Wahl */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --c-bg: #0b0b0f;
-    --c-bg-2: #14131b;
-    --c-surface: #1a1922;
-    --c-ink: #f5f3fb;
-    --c-ink-2: #cdc9da;
-    --c-ink-3: #a9a4bb;
-    --c-line: #2d2b3a;
-    --c-line-strong: #f5f3fb;
-    --c-control: #8d889f;
-    --c-accent: #7447ff;
-    --c-accent-text: #c2a8ff;
+    --c-bg: #0b0b0b;
+    --c-bg-2: #161616;
+    --c-surface: #1c1c1c;
+    --c-ink: #f5f5f5;         /* 18,1:1; auf surface 15,6:1 */
+    --c-ink-2: #cfcfcf;       /* 12,6:1; auf surface 10,9:1 */
+    --c-ink-3: #a8a8a8;       /* 8,3:1; auf surface 7,2:1 */
+    --c-line: #2e2e2e;
+    --c-line-strong: #f5f5f5;
+    --c-control: #8c8c8c;     /* 5,9:1; auf surface 5,1:1 */
+    --c-accent: #7447ff;      /* weiße Schrift 5,1:1 */
+    --c-accent-text: #c2a8ff; /* 9,7:1; auf surface 8,4:1 */
     --c-accent-soft: #2a1d52;
     --c-indicator: #e8ffb9;
-    --c-indicator-ink: #0b0b0f;
+    --c-indicator-ink: #0b0b0b;
     --c-nav: #1d1438;
-    --c-nav-ink: #ffffff;
-    --c-nav-ink-2: #d9cffa;
+    --c-nav-ink: #ffffff;     /* 17,4:1 */
+    --c-nav-ink-2: #d4d4d4;   /* 11,7:1 */
     --c-nav-hover: rgb(255 255 255 / 0.10);
     --c-nav-focus: #e8ffb9;
-    --c-ok: #7fdc98;       --c-ok-soft: #12301c;
-    --c-warn: #ffd166;     --c-warn-soft: #3a2c05;
-    --c-danger: #ff9a92;   --c-danger-soft: #3d1210;
-    --c-ok-fill: #7fdc98;
-    --c-warn-fill: #ffd166;
-    --c-danger-fill: #ff9a92;
+    --c-ok: #cfcfcf;          /* 12,6:1; auf ok-soft 9,7:1 */
+    --c-ok-soft: #262626;
+    --c-ok-fill: #8c8c8c;     /* 5,9:1 gegen bg, 5,1:1 gegen surface */
+    --c-warn: #f5f5f5;        /* auf warn-soft 13,9:1 */
+    --c-warn-soft: #262626;
+    --c-warn-fill: #f5f5f5;
+    --c-danger: #ff727c;      /* Koralle als Text auf Dunkel: 7,5:1; auf surface 6,5:1; auf danger-soft 5,7:1 */
+    --c-danger-soft: #262626;
+    --c-danger-fill: #ff727c; /* 7,5:1 gegen bg */
+    --c-danger-fill-ink: #0b0b0b;
+    --c-backdrop: rgb(0 0 0 / 0.7);
     --shadow-1: none;
     --shadow-2: 0 8px 24px rgb(0 0 0 / 0.5);
     --focus: 0 0 0 3px var(--c-bg), 0 0 0 6px var(--c-lime);
@@ -108,31 +127,36 @@
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --c-bg: #0b0b0f;
-  --c-bg-2: #14131b;
-  --c-surface: #1a1922;
-  --c-ink: #f5f3fb;
-  --c-ink-2: #cdc9da;
-  --c-ink-3: #a9a4bb;
-  --c-line: #2d2b3a;
-  --c-line-strong: #f5f3fb;
-  --c-control: #8d889f;
+  --c-bg: #0b0b0b;
+  --c-bg-2: #161616;
+  --c-surface: #1c1c1c;
+  --c-ink: #f5f5f5;
+  --c-ink-2: #cfcfcf;
+  --c-ink-3: #a8a8a8;
+  --c-line: #2e2e2e;
+  --c-line-strong: #f5f5f5;
+  --c-control: #8c8c8c;
   --c-accent: #7447ff;
   --c-accent-text: #c2a8ff;
   --c-accent-soft: #2a1d52;
   --c-indicator: #e8ffb9;
-  --c-indicator-ink: #0b0b0f;
+  --c-indicator-ink: #0b0b0b;
   --c-nav: #1d1438;
   --c-nav-ink: #ffffff;
-  --c-nav-ink-2: #d9cffa;
+  --c-nav-ink-2: #d4d4d4;
   --c-nav-hover: rgb(255 255 255 / 0.10);
   --c-nav-focus: #e8ffb9;
-  --c-ok: #7fdc98;       --c-ok-soft: #12301c;
-  --c-warn: #ffd166;     --c-warn-soft: #3a2c05;
-  --c-danger: #ff9a92;   --c-danger-soft: #3d1210;
-  --c-ok-fill: #7fdc98;
-  --c-warn-fill: #ffd166;
-  --c-danger-fill: #ff9a92;
+  --c-ok: #cfcfcf;
+  --c-ok-soft: #262626;
+  --c-ok-fill: #8c8c8c;
+  --c-warn: #f5f5f5;
+  --c-warn-soft: #262626;
+  --c-warn-fill: #f5f5f5;
+  --c-danger: #ff727c;
+  --c-danger-soft: #262626;
+  --c-danger-fill: #ff727c;
+  --c-danger-fill-ink: #0b0b0b;
+  --c-backdrop: rgb(0 0 0 / 0.7);
   --shadow-1: none;
   --shadow-2: 0 8px 24px rgb(0 0 0 / 0.5);
   --focus: 0 0 0 3px var(--c-bg), 0 0 0 6px var(--c-lime);
