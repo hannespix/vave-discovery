@@ -342,6 +342,15 @@ body.is-dragging * { cursor: grabbing !important; }
 .sort-tools .btn { min-height: 44px; white-space: nowrap; }
 .rest-q { flex-basis: 100%; font-weight: 700; }
 
+/* r05-A: Karten in der Zone – ein Tipp auf die Karte gilt der Zone (legt die aktuelle Karte ab), zurück holt nur der
+   Knopf „ד (.recall): 44 px breit, so hoch wie die Karte, das Kreuz sitzt, wo es war. Hover zeigt nur der Knopf. */
+.zone .card { padding-right: 44px; }
+.zone .card:hover { border-color: var(--line); }
+.zone .card:hover .unassign { background: none; color: var(--ink-3); }
+.card .recall { position: absolute; top: 0; right: 0; bottom: 0; width: 44px; padding: 0; border: 0; border-radius: 0 var(--radius-s) var(--radius-s) 0; background: none; }
+.card .recall:hover .unassign { background: var(--graphite-soft); color: var(--ink); }
+.card .recall:focus-visible { outline-offset: -3px; }
+
 /* Sortierte Karten in der Leiste: unter den Zonen in voller Breite, antippen holt zurück. */
 .sorted { display: none; }
 .sorted-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; color: var(--zone); }
@@ -688,17 +697,17 @@ input[type="range"]::-moz-range-thumb {
     <div class="sorter">
     <div class="deck" data-zone="pool" id="deck" aria-live="polite"></div>
     <div class="zones" id="zones">
-      <section class="zone" data-zone="keep" tabindex="0" aria-label="Zone: Brauchen wir">
+      <section class="zone" data-zone="keep" role="button" tabindex="0" aria-label="Brauchen wir, 0 Karten">
         <div class="zone-head"><h3><kbd>1</kbd>Brauchen wir</h3><span class="zone-count">0</span></div>
         <p class="zone-hint">Ohne das läuft der Laden nicht.</p>
         <div class="zone-list"></div>
       </section>
-      <section class="zone" data-zone="drop" tabindex="0" aria-label="Zone: Brauchen wir nicht">
+      <section class="zone" data-zone="drop" role="button" tabindex="0" aria-label="Brauchen wir nicht, 0 Karten">
         <div class="zone-head"><h3><kbd>2</kbd>Brauchen wir nicht</h3><span class="zone-count">0</span></div>
         <p class="zone-hint">Ballast. Weg damit.</p>
         <div class="zone-list"></div>
       </section>
-      <section class="zone" data-zone="unknown" tabindex="0" aria-label="Zone: Kenne ich nicht">
+      <section class="zone" data-zone="unknown" role="button" tabindex="0" aria-label="Kenne ich nicht, 0 Karten">
         <div class="zone-head"><h3><kbd>3</kbd>Kenne ich nicht</h3><span class="zone-count">0</span></div>
         <p class="zone-hint">Nie gesehen oder nie benutzt.</p>
         <div class="zone-list"></div>
@@ -707,12 +716,12 @@ input[type="range"]::-moz-range-thumb {
     <div class="sort-tools" id="sortTools"></div>
     </div>
     <section class="sorted" id="sorted" aria-label="Sortierte Karten">
-      <p class="small muted sorted-note">Antippen holt eine Karte zurück in den Stapel.</p>
+      <p class="small muted sorted-note">Eine Karte in dieser Liste antippen holt sie zurück in den Stapel.</p>
       <section class="sorted-group" data-list="keep" hidden><h3 class="sorted-head">Brauchen wir <span class="sorted-count">0</span></h3><div class="sorted-list"></div></section>
       <section class="sorted-group" data-list="drop" hidden><h3 class="sorted-head">Brauchen wir nicht <span class="sorted-count">0</span></h3><div class="sorted-list"></div></section>
       <section class="sorted-group" data-list="unknown" hidden><h3 class="sorted-head">Kenne ich nicht <span class="sorted-count">0</span></h3><div class="sorted-list"></div></section>
     </section>
-    <p class="small muted deck-help">Tasten 1, 2, 3 sortieren die aktuelle Karte. Eine Karte in einer Zone antippen holt sie zurück in den Stapel.</p>
+    <p class="small muted deck-help">Tasten 1, 2, 3 sortieren die aktuelle Karte. Das × an einer sortierten Karte holt sie zurück in den Stapel.</p>
   </section>
 
   <section class="step" data-step="2" aria-labelledby="h2">
@@ -1108,14 +1117,23 @@ input[type="range"]::-moz-range-thumb {
 
   function unsorted() { return ORDER.filter(m => !state.sort[m.id]); }
   function currentCard() { return unsorted()[0] || null; }
-  function cardHtml(m, inZone) {
-    return `<div class="card${inZone ? ' is-placed' : ' is-enter'}${inZone && m.id === lastMoved ? ' is-new' : ''}" role="${inZone ? 'button' : 'group'}" tabindex="${inZone ? 0 : -1}" data-id="${m.id}" data-group="${m.group}" aria-label="${esc(m.name)}${inZone ? ', zurück in den Stapel' : ''}">
-      <span class="card-name">${esc(m.name)}</span>
+  // Karte im Stapel ('deck'), in einer Zone ('zone', breit) oder in der Liste „Sortierte Karten“ ('list', Leiste).
+  // Zurückholen hat ein eigenes Ziel: in der Zone nur der Knopf „ד (ein Tipp auf die Karte selbst gilt der Zone),
+  // in der Liste die ganze Karte.
+  function cardHtml(m, where) {
+    const placed = where !== 'deck', name = esc(m.name), x = '<span class="unassign" aria-hidden="true">×</span>';
+    const attrs = where === 'deck' ? `role="group" tabindex="-1" aria-label="${name}"`
+      : where === 'list' ? `role="button" tabindex="0" aria-label="${name}, zurück in den Stapel"` : '';
+    return `<div class="card${placed ? ' is-placed' : ' is-enter'}${placed && m.id === lastMoved ? ' is-new' : ''}" ${attrs} data-id="${m.id}" data-group="${m.group}">
+      <span class="card-name">${name}</span>
       <span class="card-price">${m.price ? m.price + ' €/Monat' : 'in Lizenz'}</span>
       <span class="card-desc">${esc(m.desc)}</span>
-      ${inZone ? '<span class="unassign" aria-hidden="true">×</span>' : ''}
+      ${where === 'list' ? x : where === 'zone' ? `<button type="button" class="recall" aria-label="${name} zurückholen" title="Zurück in den Stapel">${x}</button>` : ''}
     </div>`;
   }
+  // Zonen sind Knöpfe: Name (Überschrift ohne Tastenhinweis) und Anzahl, z. B. „Brauchen wir, 3 Karten“.
+  const zoneName = z => Array.from($('h3', z).childNodes).filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
+  const zoneLabel = (z, n) => `${zoneName(z)}, ${n} ${n === 1 ? 'Karte' : 'Karten'}`;
   // „Rest zu ‚Kenne ich nicht‘“ fragt erst nach und nennt die Anzahl; Enter auf „Abbrechen“ verschiebt nichts.
   function renderTools(left) {
     if (left < 2) confirmRest = false;
@@ -1134,20 +1152,20 @@ input[type="range"]::-moz-range-thumb {
         <div class="deck-stack">
           ${rest[2] ? '<div class="deck-ghost g2"></div>' : ''}
           ${rest[1] ? '<div class="deck-ghost g1"></div>' : ''}
-          ${cardHtml(cur, false)}
+          ${cardHtml(cur, 'deck')}
           <p class="drag-hint" aria-hidden="true">Kurz halten, dann ziehen</p>
         </div>
         <div class="deck-meta"><span>Karte ${D.modules.length - rest.length + 1} von ${D.modules.length}, Bereich ${esc(D.groups[cur.group])}</span></div>`;
     } else {
-      deck.innerHTML = '<div class="deck-empty">Alles sortiert. Zum Umschichten eine sortierte Karte antippen – sie kommt zurück in den Stapel.</div>';
+      deck.innerHTML = `<div class="deck-empty">Alles sortiert. Zum Umschichten ${bar ? 'unten in der Liste eine Karte antippen' : 'bei einer Karte auf × tippen'} – sie kommt zurück in den Stapel.</div>`;
     }
     $$('.zone', zonesEl).forEach(z => {
       const key = z.dataset.zone, group = $(`.sorted-group[data-list="${key}"]`, sortedEl);
       const items = ORDER.filter(m => state.sort[m.id] === key).sort((a, b) => (state.seq[b.id] || 0) - (state.seq[a.id] || 0));
-      const html = items.map(m => cardHtml(m, true)).join('');
-      $('.zone-list', z).innerHTML = bar ? '' : html;
-      $('.sorted-list', group).innerHTML = bar ? html : '';
+      $('.zone-list', z).innerHTML = bar ? '' : items.map(m => cardHtml(m, 'zone')).join('');
+      $('.sorted-list', group).innerHTML = bar ? items.map(m => cardHtml(m, 'list')).join('') : '';
       $('.zone-count', z).textContent = $('.sorted-count', group).textContent = items.length;
+      z.setAttribute('aria-label', zoneLabel(z, items.length));
       group.hidden = !items.length;
     });
     $('.sorted-note', sortedEl).hidden = rest.length === D.modules.length;
@@ -1223,25 +1241,45 @@ input[type="range"]::-moz-range-thumb {
     if (f) f.focus({ preventScroll: true });
   }
 
+  // Doppeltipp (Finger oder Maus): Höchstens TAP_GAP ms nach einem Tipp auf „Rest“, „Ja“ oder „Abbrechen“ verschiebt kein
+  // Tipp eine Karte – die Rückfrage erscheint unter dem Finger, die Liste darunter rückt nach („Ja“, Zone, Zurückholen
+  // zählen nicht; „Abbrechen“ schon). Ein Tipp auf eine Zone zählt nicht, wenn der vorige auf eine Zone höchstens TAP_GAP ms
+  // zurückliegt – er sortierte sonst die nächste, noch ungelesene Karte mit. Auch ein verworfener Tipp zählt als voriger.
+  // Tastatur und Screenreader lösen Klicks ohne Zählung aus (detail 0) und sind ausgenommen.
+  const TAP_GAP = 400, lastTap = { zone: -Infinity, rest: -Infinity };
+  const quickAfter = (kind, e, now) => e.detail > 0 && now - lastTap[kind] <= TAP_GAP;
   let suppressClick = false;
   stepSort.addEventListener('click', e => {
     if (suppressClick) { suppressClick = false; return; }
+    const now = performance.now(), afterRest = quickAfter('rest', e, now);
     const tool = e.target.closest('#restUnknown, #restYes, #restNo');
-    if (tool) { restTool(tool.id); return; }
-    const card = e.target.closest('.card');
-    if (card && card.classList.contains('is-placed')) { assign(card.dataset.id, 'pool', card); return; }
-    if (card) return; // Stapelkarte: ziehen oder Zone antippen
-    const zone = e.target.closest('.zone');
-    const cur = currentCard();
-    if (zone && cur) assign(cur.id, zone.dataset.zone, $('.deck .card'));
+    if (tool) {
+      if (e.detail) lastTap.rest = now;
+      if (!afterRest || tool.id !== 'restYes') restTool(tool.id);
+      return;
+    }
+    const recall = e.target.closest('.recall, #sorted .card.is-placed'); // eigenes Ziel: „ד an der Karte oder Karte in der Liste
+    if (recall) {
+      const card = recall.closest('.card');
+      if (!afterRest) assign(card.dataset.id, 'pool', card);
+      return;
+    }
+    const zone = e.target.closest('.zone'); // irgendwo in der Zone, auch auf einer dort liegenden Karte
+    if (!zone) return;
+    const afterZone = quickAfter('zone', e, now), cur = currentCard();
+    if (e.detail) lastTap.zone = now;
+    if (cur && !afterZone && !afterRest) assign(cur.id, zone.dataset.zone, $('.deck .card'));
   });
+  // Enter und Leertaste: auf der Zone wie ein Tipp, auf einer Karte der Liste „Sortierte Karten“ zurückholen.
+  // Echte Knöpfe (×, „Rest“) lösen selbst einen Klick aus.
   stepSort.addEventListener('keydown', e => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    const card = e.target.closest('.card');
-    if (card && card.classList.contains('is-placed')) { e.preventDefault(); assign(card.dataset.id, 'pool', card); return; }
-    const zone = e.target.closest('.zone');
+    const t = e.target;
+    if (t.matches('#sorted .card.is-placed')) { e.preventDefault(); assign(t.dataset.id, 'pool', t); return; }
+    if (!t.classList.contains('zone')) return;
+    e.preventDefault();
     const cur = currentCard();
-    if (zone && cur) { e.preventDefault(); assign(cur.id, zone.dataset.zone, $('.deck .card')); }
+    if (cur) assign(cur.id, t.dataset.zone, $('.deck .card'));
   });
   document.addEventListener('keydown', e => {
     if (state.step !== 1 || e.target.matches('input, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -1254,7 +1292,7 @@ input[type="range"]::-moz-range-thumb {
   // Halten (LIFT_MS) – die Karte gibt dabei sofort nach und zeigt eine Halte-Linie (.is-pressing). Bewegt sich der
   // Finger vorher, ist es ein Wisch: Die Seite scrollt, nichts wird zugeordnet, die Karte sagt „Kurz halten, dann ziehen“.
   // Angehoben schwebt die Karte kompakt über dem Finger und nie über den Zonen; die Zone darunter zeigt, wo sie landet.
-  // Sortierte Karten werden per Touch nur angetippt (zurückholen), nie gezogen.
+  // Sortierte Karten werden per Touch nie gezogen; der Knopf „ד ist nie Griff zum Ziehen.
   const LIFT_MS = 220;
   let drag = null, hintTimer = 0;
   function dragHint() {
@@ -1282,7 +1320,7 @@ input[type="range"]::-moz-range-thumb {
   }
   stepSort.addEventListener('pointerdown', e => {
     const card = e.target.closest('.card');
-    if (!card || e.button !== 0 || busy) return;
+    if (!card || e.button !== 0 || busy || e.target.closest('.recall')) return;
     const mouse = e.pointerType === 'mouse';
     if (!mouse && card.classList.contains('is-placed')) return;
     if (drag) endDrag(null, false);
