@@ -6,9 +6,11 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import ProjectList, { initialFilters } from './ProjectList.jsx';
 import ProjectDetail, { TABS } from './ProjectDetail.jsx';
+import { useProjects } from '../../lib/projects.js';
 import './projects.css';
 
 export default function Projects({ parts = [] }) {
+  useProjects(); // neu zeichnen, wenn Projekte bearbeitet werden (Liste, Detail, Board lesen den aktuellen Stand)
   const id = parts[0] || null;
   const sub = parts[1] || null;
   const isTab = TABS.some(t => t.key === sub);

@@ -1,11 +1,10 @@
 // Helfer für das Projekte-Werkzeug (Builder C). Nutzt src/lib, ändert es nicht.
 import { CircleCheck, TriangleAlert, OctagonAlert } from 'lucide-react';
 import { pct, budgetState, budgetLabel, fmtDate } from '../../lib/format.js';
-import { studios, people, clients, byId } from '../../data/sample.js';
+import { studios, people, byId } from '../../data/sample.js';
 
 export const studioById = byId(studios);
 export const personById = byId(people);
-export const clientById = byId(clients);
 
 export const STATUSES = ['todo', 'doing', 'review', 'done'];
 

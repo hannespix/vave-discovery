@@ -1,12 +1,13 @@
 // Projektdetail (r07): Titel aus Code und Name, darunter Eigenschaften als Chips (Status, Lead, Studio, Abgabe,
 // Budget-Rest), dann Tabs als Links mit aria-current: Aufgaben | Übersicht | Zeiten. Keine Einleitung.
 import { ArrowLeft, CalendarDays } from 'lucide-react';
-import { projects, tasks as seedTasks, timeEntries as sampleEntries } from '../../data/sample.js';
+import { tasks as seedTasks, timeEntries as sampleEntries } from '../../data/sample.js';
+import { clientsById, projectsById } from '../../lib/projects.js';
 import { useStoredState } from '../../lib/store.js';
 import { cleanEntries, cleanTasks } from '../../lib/data.js';
 import { spentHours } from '../../lib/budget.js';
 import { href } from '../../lib/router.js';
-import { budgetInfo, clientById, fmtDay, fmtH, fmtKw, isDay, isoWeek, parseDay, personById, studioById } from './helpers.js';
+import { budgetInfo, fmtDay, fmtH, fmtKw, isDay, isoWeek, parseDay, personById, studioById } from './helpers.js';
 import { Avatar, StateIcon, StatusDot } from './parts.jsx';
 import TaskBoard from './TaskBoard.jsx';
 import Overview from './Overview.jsx';
@@ -42,7 +43,7 @@ export default function ProjectDetail({ id, tab = 'aufgaben', taskId }) {
   const [tasks, setTasks] = useStoredState('tasks', seedTasks, cleanTasks);
   // Buchungen lesen; geschrieben wird nur über den gemeinsamen Timer (lib/timer.js)
   const [entries] = useStoredState('time-entries', sampleEntries, cleanEntries);
-  const p = projects.find(x => x.id === id);
+  const p = projectsById()[id] ?? null; // gemeinsame, bearbeitbare Quelle (lib/projects.js)
 
   if (!p) {
     return (
@@ -64,7 +65,7 @@ export default function ProjectDetail({ id, tab = 'aufgaben', taskId }) {
     <article className="pj-page pj-detail" aria-labelledby="pj-title">
       <BackLink />
       <header className="pj-dhead">
-        <p className="overline pj-client">{clientById[p.client]?.name}</p>
+        <p className="overline pj-client">{clientsById()[p.client]?.name}</p>
         <h1 id="pj-title" className="pj-dtitle" tabIndex={-1}>
           <span className="pj-dcode num">{p.code}</span> {p.name}
         </h1>

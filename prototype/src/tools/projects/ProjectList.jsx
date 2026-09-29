@@ -4,12 +4,13 @@
 // Sortierung hinter „Filter“, damit die erste Zeile gleich im Bild ist.
 import { useId, useMemo, useState } from 'react';
 import { Search, SearchX, SlidersHorizontal } from 'lucide-react';
-import { projects, studios, projectStatusLabel, timeEntries as sampleEntries } from '../../data/sample.js';
+import { studios, projectStatusLabel, timeEntries as sampleEntries } from '../../data/sample.js';
+import { clientsById, loadProjects } from '../../lib/projects.js';
 import { href } from '../../lib/router.js';
 import { useStoredState } from '../../lib/store.js';
 import { cleanEntries } from '../../lib/data.js';
 import { spentHours } from '../../lib/budget.js';
-import { budgetInfo, clientById, fmtH, fmtRest, norm, personById } from './helpers.js';
+import { budgetInfo, fmtH, fmtRest, norm, personById } from './helpers.js';
 import { Avatar, BudgetBar, DueText, StateIcon, StatusDot } from './parts.jsx';
 
 export const initialFilters = { query: '', studio: '', statuses: [], sort: 'due' };
@@ -31,7 +32,7 @@ function ProjectRow({ p, spent }) {
       <span className="pj-row-code num">{p.code}</span>
       <a className="pj-row-name" href={href('/projekte/' + p.id)} data-project-link={p.id} aria-describedby={descId}>{p.name}</a>
       <div className="pj-row-sub">
-        <span className="pj-row-client">{clientById[p.client]?.name}</span>
+        <span className="pj-row-client">{clientsById()[p.client]?.name}</span>
         <span className="pj-row-status"><StatusDot status={p.status} /></span>
         <span className="pj-row-lead" title={lead?.name}>
           <Avatar person={lead} size="is-s" /><span className="visually-hidden">Lead: {lead?.name}</span>
@@ -53,7 +54,8 @@ export default function ProjectList({ filters, setFilters }) {
   const [open, setOpen] = useState(false); // nur schmal wirksam, breit ist alles offen
   // Buchungen nur lesen – der Setter bleibt ungenutzt
   const [entries] = useStoredState('time-entries', sampleEntries, cleanEntries);
-  const spent = useMemo(() => Object.fromEntries(projects.map(p => [p.id, spentHours(p, entries)])), [entries]);
+  const projects = loadProjects(); // gemeinsame, bearbeitbare Quelle; Projects.jsx zeichnet bei Änderungen neu
+  const spent = useMemo(() => Object.fromEntries(projects.map(p => [p.id, spentHours(p, entries)])), [entries, projects]);
   const set = patch => setFilters(f => ({ ...f, ...patch }));
   const toggleStatus = value =>
     setFilters(f => ({ ...f, statuses: f.statuses.includes(value) ? f.statuses.filter(x => x !== value) : [...f.statuses, value] }));
@@ -65,9 +67,9 @@ export default function ProjectList({ filters, setFilters }) {
     return projects
       .filter(p => !studio || p.studio === studio)
       .filter(p => !filters.statuses.length || filters.statuses.includes(p.status))
-      .filter(p => !q || [p.name, p.code, clientById[p.client]?.name].some(s => norm(s).includes(q)))
+      .filter(p => !q || [p.name, p.code, clientsById()[p.client]?.name].some(s => norm(s).includes(q)))
       .sort((a, b) => (SORTS[sort] || SORTS.due).fn(a, b, spent));
-  }, [query, studio, filters.statuses, sort, spent]);
+  }, [query, studio, filters.statuses, sort, spent, projects]);
 
   const reset = () => setFilters(f => ({ ...f, query: '', studio: '', statuses: [] }));
 

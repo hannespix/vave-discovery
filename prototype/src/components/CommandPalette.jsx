@@ -58,7 +58,7 @@ const projectItem = (p, prefix) => ({
 function buildIndex({ routes, running, timer, elapsedMin, lastProject, bookedIds, tasks, routeProjectId, handlers }) {
   // Aktionen
   const order = [lastProject, ...bookedIds.filter(id => id !== lastProject),
-    ...projects.map(p => p.id).filter(id => id !== lastProject && !bookedIds.includes(id))];
+    ...loadProjects().map(p => p.id).filter(id => id !== lastProject && !bookedIds.includes(id))];
   const starts = running ? [] : order.map(id => projectsById()[id]).filter(Boolean).map(p => ({
     id: `start-${p.id}`, icon: Play, label: `Timer starten · ${p.code}`, meta: p.name,
     keys: p.id === lastProject ? ['T'] : null, run: () => handlers.onStart(p.id),

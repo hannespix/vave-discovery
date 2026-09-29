@@ -5,7 +5,8 @@
 // Daten: Schlüssel 'tasks' (useStoredState im Elternteil) – { id, project, title, status, assignee, due, estimate }.
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AlarmClock, CircleAlert, Clock, GripVertical, Play, Plus, Square, Timer, Trash2, Undo2, X } from 'lucide-react';
-import { people, projects, statusLabel, studios } from '../../data/sample.js';
+import { people, statusLabel, studios } from '../../data/sample.js';
+import { projectsById } from '../../lib/projects.js';
 import { uid, useStoredState } from '../../lib/store.js';
 import { addDays, fmtDuration, isoDay } from '../../lib/format.js';
 import { href } from '../../lib/router.js';
@@ -353,7 +354,7 @@ export default function TaskBoard({ project, tasks, setTasks, entries, taskId })
     }
     const r = start({ project: project.id, task: task.id });
     if (r.already) {
-      const tp = projects.find(x => x.id === r.timer.project);
+      const tp = projectsById()[r.timer.project];
       const tt = tasks.find(x => x.id === r.timer.task);
       const what = [tp?.code, tt?.title || r.timer.note].filter(Boolean).join(' · ') || 'ohne Angabe';
       const msg = `Es läuft schon ein Timer (${what}). Erst stoppen, dann hier starten.`;
