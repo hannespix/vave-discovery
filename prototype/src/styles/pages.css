@@ -1,7 +1,7 @@
 /* Seiten „Heute“, „Studios“, „Nach Klärung“ (r07). Bausteine aus base.css (.list, .row, .badge, .dot, .table),
    hier nur Anordnung und seitenbezogene Teile – keine globalen Klassen aus base.css überschreiben.
    Farbrollen: Violett = Aktion (Links, Fokus), Limette = Zustand (Fläche mit schwarzer Schrift), Schwarz/Grau = Struktur,
-   Koralle nur „überzogen“, Studiofarben nur auf #/studios als Punkt oder Balken.
+   Koralle nur „überzogen“, Studiofarben nur auf #/studios und dort nur als Punkt am Zeilenanfang.
    Bewegung: keine beim Öffnen; Übergänge nur beim Überfahren (base.css, 160 ms). */
 
 .today-code { font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -65,7 +65,6 @@
   font-size: var(--fs-meta); font-weight: 600; color: var(--c-ink);
 }
 .today-group__count { font-weight: 400; color: var(--c-ink-2); }
-.today-group--empty .today-group__title { padding-bottom: 0; color: var(--c-ink-2); }
 
 /* Lückenhinweis: eine ruhige Zeile, ganz klickbar */
 .today-gap {
@@ -149,16 +148,17 @@
 .tl__time { font-size: var(--fs-title); font-weight: 600; line-height: 1.05; letter-spacing: -0.03em; }
 .tl__offset { font-size: var(--fs-meta); color: var(--c-ink-2); }
 
-/* Spur: 24 h, Raster alle 3 h; Band = gemeinsames Fenster; Balken in Studiofarbe mit Kontur (≥ 3:1) */
+/* Spur: 24 h, Raster alle 3 h. Band = gemeinsames Fenster, ein Zustand: Limette mit schwarzer Kontur an den Kanten.
+   Balken neutral: grau mit schwarzer Kontur (≥ 3:1), Schrift in --c-ink (hell 14:1, dunkel 12:1). */
 .tl__track {
   position: relative; height: 32px; border-radius: var(--radius-s); background-color: var(--c-bg-2);
   background-image: repeating-linear-gradient(to right, var(--c-line) 0 1px, transparent 1px 12.5%);
 }
-.tl__common { position: absolute; top: -4px; bottom: -4px; background: var(--c-accent-soft); border-inline: 2px dashed var(--c-accent-text); }
+.tl__common { position: absolute; top: -4px; bottom: -4px; background: var(--c-lime); border-inline: 2px dashed var(--c-line-strong); }
 .tl__bar {
   position: absolute; top: 6px; bottom: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden;
-  border-radius: 4px; box-shadow: inset 0 0 0 1.5px var(--c-line-strong);
-  color: var(--c-accent-row-ink); font-size: var(--fs-label); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;
+  border-radius: 4px; background: var(--c-line); box-shadow: inset 0 0 0 1.5px var(--c-line-strong);
+  color: var(--c-ink); font-size: var(--fs-label); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 /* Jetzt-Linie mit Saum in Seitenfarbe – bleibt auch auf hellen Balken im Dunkelmodus sichtbar */
 .tl__now { position: absolute; top: -6px; bottom: -6px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--c-ink); box-shadow: 0 0 0 1px var(--c-bg); }

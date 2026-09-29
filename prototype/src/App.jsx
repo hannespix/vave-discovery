@@ -14,6 +14,7 @@ import TabBar from './components/TabBar.jsx';
 import ResetDialog from './components/ResetDialog.jsx';
 import CommandPalette from './components/CommandPalette.jsx';
 import ShortcutsDialog from './components/ShortcutsDialog.jsx';
+import StopGuard from './components/StopGuard.jsx';
 import Toast from './components/Toast.jsx';
 import { useGlobalShortcuts } from './components/shortcuts.js';
 import { RECENT_MAX, bookedProjects, cleanRecent, projectInfo } from './components/shellData.js';
@@ -116,24 +117,32 @@ export default function App() {
     if (res?.started) notify({ quiet: true, text: `Timer läuft: ${projectInfo(project).code}` });
     return res;
   };
-  // Stopp bucht (lib/timer.js); über 24 h bucht er nichts und führt zum Nachtragen
-  const stopTimer = () => {
-    const res = timerApi.stop();
-    if (!res) return res;
-    if (res.overlong) {
+  // Ergebnis eines Stopps (lib/timer.js) → Bestätigung. Gilt für jeden Stopp-Ort der Hülle (Pille, Handy-Chip, Kürzel t,
+  // Palette) und für die Rückfrage bei langen Läufen (StopGuard). pending: die Rückfrage ist offen und übernimmt.
+  const report = useCallback(res => {
+    if (!res || res.pending) return res;
+    if (res.entry) {
+      notify({
+        text: `Gebucht: ${fmtDuration(res.entry.minutes)} auf ${projectInfo(res.entry.project).code}`,
+        link: { to: '/zeit', label: 'Anzeigen' },
+      });
+    } else if (res.tooShort) {
+      notify({ tone: 'info', text: 'Unter einer Minute – nicht gebucht.' });
+    } else if (res.discarded) {
+      notify({ tone: 'info', text: 'Verworfen.', link: { to: `/zeit/nachtragen/${res.date}`, label: 'Nachtragen' } });
+    } else if (res.overlong) {
       notify({
         tone: 'warn', sticky: true,
         text: `Der Timer lief über 24 h (seit ${fmtDate(`${res.date}T00:00`)}, ${res.start} Uhr) und wurde nicht gebucht.`,
         link: { to: `/zeit/nachtragen/${res.date}`, label: 'Nachtragen' },
       });
-    } else {
-      notify({
-        text: `Gebucht: ${fmtDuration(res.entry.minutes)} auf ${projectInfo(res.entry.project).code}`,
-        link: { to: '/zeit', label: 'Anzeigen' },
-      });
     }
     return res;
-  };
+  }, [notify]);
+  // Stopp ohne Entscheidung: unter 1 min nichts, über 10 h erst die Rückfrage (TIMER_GUARD → StopGuard)
+  const stopTimer = () => report(timerApi.stop());
+  // Antwort der Rückfrage: 'full' | 'end' (bis Feierabend, endAt) | 'discard'
+  const resolveGuard = (resolution, endAt) => report(timerApi.stop({ resolution, endAt }));
   const toggleTimer = () => (timerApi.running ? stopTimer() : startTimer());
 
   const openPalette = () => setPaletteOpen(true);
@@ -197,6 +206,7 @@ export default function App() {
         onTaskCreated={taskCreated}
       />
       <ShortcutsDialog ref={helpRef} goRoutes={routes} />
+      <StopGuard timerState={timerState} onResolve={resolveGuard} />
       <ResetDialog ref={resetRef} />
       <Toast toast={toast} onDismiss={dismissToast} />
     </div>

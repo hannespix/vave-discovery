@@ -8,8 +8,9 @@ import { cleanTasks } from '../lib/data.js';
 import { tasks as sampleTasks } from '../data/sample.js';
 import { projectInfo, spokenDuration } from './shellData.js';
 
-// Timer in der Hülle: Pille in der Seitenleiste, Chip im Handy-Kopf. Zustand und Buchen: lib/timer.js (über App).
-// Farbrolle: laufender Timer violett gefüllt; in Ruhe schwarze Kontur wie alle Pillen-Knöpfe.
+// Timer in der Hülle: Pille in der Seitenleiste, Start und Chip im Handy-Kopf. Zustand und Buchen: lib/timer.js (über App).
+// Farbrolle: laufender Timer violett gefüllt; in Ruhe schwarze Kontur, Play im violetten Kreis (Hauptaktion).
+// data-timer-start: sichtbarer Start der Hülle – dorthin geht der Fokus, wenn die Rückfrage (StopGuard) gebucht hat.
 
 // Laufzeit in festen Ziffernzellen (je 1ch) – beim Zählen springt nichts. Für Screenreader steht die Zeit einmal am
 // Stück daneben; die Zellen allein würden als „0 0 : 1 2“ vorgelesen.
@@ -29,7 +30,8 @@ export function Clock({ ms, className = '' }) {
 export function TimerStart({ project, onStart, buttonRef, className = '' }) {
   const p = projectInfo(project);
   return (
-    <button ref={buttonRef} type="button" className={`timer-pill ${className}`} onClick={onStart} aria-keyshortcuts="t">
+    <button ref={buttonRef} type="button" className={`timer-pill ${className}`} onClick={onStart} aria-keyshortcuts="t"
+      data-timer-start="">
       <span className="timer-pill__icon" aria-hidden="true"><Play size={16} strokeWidth={2.25} /></span>
       <span className="timer-pill__text">
         <span className="timer-pill__title">Timer starten</span>
@@ -64,7 +66,8 @@ function TimerRunning({ timer, startedMs, onStop, stopRef }) {
   );
 }
 
-// Seitenleiste: wechselt zwischen Ruhe und Lauf; der Fokus springt mit (Start → Stopp → Start)
+// Seitenleiste: wechselt zwischen Ruhe und Lauf; der Fokus springt mit (Start → Stopp → Start).
+// Fragt der Stopp erst nach (über 10 h: { pending }), übernimmt die Rückfrage auch den Fokus.
 export default function TimerPill({ timerState, lastProject, onStart, onStop }) {
   const { timer, running, startedMs } = timerState;
   const startRef = useRef(null);
@@ -78,11 +81,27 @@ export default function TimerPill({ timerState, lastProject, onStart, onStop }) 
   }, [running]);
 
   if (!running) {
-    return <TimerStart project={lastProject} buttonRef={startRef} onStart={() => { pending.current = 'stop'; onStart(); }} />;
+    return (
+      <TimerStart project={lastProject} buttonRef={startRef}
+        onStart={() => { pending.current = 'stop'; if (!onStart()?.started) pending.current = null; }} />
+    );
   }
   return (
     <TimerRunning timer={timer} startedMs={startedMs} stopRef={stopRef}
-      onStop={() => { pending.current = 'start'; onStop(); }} />
+      onStop={() => { pending.current = 'start'; const res = onStop(); if (!res || res.pending) pending.current = null; }} />
+  );
+}
+
+// Handy-Kopf in Ruhe: sichtbarer Start, 44 px hoch – Play im violetten Kreis und „Timer starten“; das Projekt steht für
+// Screenreader im Namen (sichtbar im Menü). Unter 360 px nur das Icon, der Name bleibt (shell.css).
+export function TimerHeadStart({ project, onStart, buttonRef }) {
+  const p = projectInfo(project);
+  return (
+    <button ref={buttonRef} type="button" className="timer-head" onClick={onStart} aria-keyshortcuts="t" data-timer-start="">
+      <span className="timer-head__icon" aria-hidden="true"><Play size={14} strokeWidth={2.25} /></span>
+      <span className="timer-head__label">Timer starten</span>
+      <span className="visually-hidden"> mit {p.code} · {p.name}</span>
+    </button>
   );
 }
 

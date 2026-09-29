@@ -65,10 +65,7 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)
 .sidebar .demo-note { padding: 0 var(--s-3); }
 .sidebar .demo-note p { color: var(--c-nav-ink-2); }
 .sidebar__reset { justify-content: flex-start; padding: 0 var(--s-3); color: var(--c-nav-ink); font-weight: 400; }
-.sidebar .segmented {
-  --seg-ink: var(--c-nav-ink); --seg-border: var(--c-nav-ink);
-  --seg-on-bg: var(--c-nav-ink); --seg-on-ink: var(--c-nav); --seg-hover: var(--c-nav-hover);
-}
+.sidebar .segmented { --seg-ink: var(--c-nav-ink); --seg-border: var(--c-nav-ink); --seg-hover: var(--c-nav-hover); }
 .sidebar .segmented__legend {
   padding: 0 var(--s-3); margin-bottom: var(--s-1); font-size: var(--fs-label); font-weight: 600; line-height: 1.3;
   letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-nav-ink-2);
@@ -151,7 +148,8 @@ button.timer-pill { cursor: pointer; transition: background-color var(--dur) var
 .topbar__bar { display: flex; align-items: center; gap: var(--s-2); min-height: 60px; }
 .topbar .wordmark__name { font-size: 1.625rem; }
 .topbar__actions { margin-left: auto; display: flex; align-items: center; gap: var(--s-1); min-width: 0; }
-.topbar__toggle[aria-expanded="true"] { background: var(--c-indicator); border-color: var(--c-indicator); color: var(--c-indicator-ink); }
+/* Offenes Menü = Zustand: Limette mit schwarzer Kontur (Limette auf Weiß allein nur 1,08:1) */
+.topbar__toggle[aria-expanded="true"] { background: var(--c-indicator); border-color: var(--c-line-strong); color: var(--c-indicator-ink); }
 .topbar__note { padding: 0 0 var(--s-2); font-size: 0.875rem; line-height: 1.6; color: var(--c-ink-2); }
 .topbar__note .badge { margin-right: var(--s-1); }
 .topbar__panel {
@@ -162,6 +160,27 @@ button.timer-pill { cursor: pointer; transition: background-color var(--dur) var
 }
 .topbar__panel[hidden] { display: none; }
 .timer-pill--menu .timer-pill__key { display: none; }
+
+/* Start im Kopf (Timer ruht): Pille mit schwarzer Kontur, Play im violetten Kreis wie in der Seitenleiste, 44 px hoch */
+.timer-head {
+  display: inline-flex; align-items: center; gap: var(--s-2); flex: none; min-height: var(--tap); min-width: var(--tap);
+  padding: 0 var(--s-3) 0 5px; border: 1.5px solid var(--c-line-strong); border-radius: 999px;
+  background: var(--c-surface); color: var(--c-ink); font-size: var(--fs-meta); font-weight: 600; line-height: 1.2;
+  white-space: nowrap; cursor: pointer; transition: background-color var(--dur) var(--ease);
+}
+.timer-head__icon {
+  flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--c-accent); color: var(--c-accent-ink);
+}
+.timer-head__icon svg { margin-left: 2px; }
+@media (hover: hover) { .timer-head:hover { background: var(--c-accent-soft); } }
+/* Unter 360 px reicht der Platz nicht für die Beschriftung: nur das Icon (44 px), der Name bleibt für Screenreader */
+@media (max-width: 359.98px) {
+  .timer-head { gap: 0; padding: 0 5px; }
+  .timer-head__label {
+    position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+}
 
 /* Timer-Chip: nur solange der Timer läuft */
 .timer-chip {
@@ -195,7 +214,10 @@ button.timer-pill { cursor: pointer; transition: background-color var(--dur) var
   .tabbar__link:hover:not([aria-current]) .tabbar__icon { background: var(--c-accent-soft); transition: background-color var(--dur) var(--ease); }
 }
 .tabbar__link[aria-current="page"] { color: var(--c-ink); font-weight: 600; }
-.tabbar__link[aria-current="page"] .tabbar__icon { background: var(--c-indicator); color: var(--c-indicator-ink); }
+/* Aktiv = Zustand: Limetten-Pille mit schwarzer Kontur, wie der aktive Punkt der Seitenleiste */
+.tabbar__link[aria-current="page"] .tabbar__icon {
+  background: var(--c-indicator); color: var(--c-indicator-ink); box-shadow: inset 0 0 0 1px var(--c-line-strong);
+}
 .tabbar__link:focus-visible { box-shadow: inset 0 0 0 3px var(--c-accent); border-radius: var(--radius); }
 :root[data-theme="dark"] .tabbar__link:focus-visible { box-shadow: inset 0 0 0 3px var(--c-lime); }
 @media (prefers-color-scheme: dark) {
@@ -242,8 +264,12 @@ button.timer-pill { cursor: pointer; transition: background-color var(--dur) var
   transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 @media (hover: hover) { .segmented__option:hover .segmented__face { background: var(--seg-hover); } }
-.segmented__option input:checked + .segmented__face { background: var(--seg-on-bg); color: var(--seg-on-ink); font-weight: 600; }
+/* Gewählt = Zustand: Limette mit schwarzer Kontur – in der Seitenleiste wie im Menü */
+.segmented__option input:checked + .segmented__face {
+  background: var(--seg-on-bg); color: var(--seg-on-ink); font-weight: 600; box-shadow: inset 0 0 0 1px var(--c-line-strong);
+}
 .segmented__option input:focus-visible + .segmented__face { box-shadow: var(--focus); }
+.segmented__option input:checked:focus-visible + .segmented__face { box-shadow: inset 0 0 0 1px var(--c-line-strong), var(--focus); }
 
 /* ---------- Dialoge ---------- */
 .dialog {
@@ -255,6 +281,11 @@ button.timer-pill { cursor: pointer; transition: background-color var(--dur) var
 .dialog__title { font-size: 1.5rem; line-height: 1.1; color: var(--c-ink); text-transform: uppercase; letter-spacing: -0.03em; }
 .dialog__text { margin-top: var(--s-3); color: var(--c-ink-2); }
 .dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--s-3); margin-top: var(--s-5); }
+
+/* Rückfrage bei langem Timer (StopGuard): Wahl untereinander, volle Breite, empfohlene Wahl violett */
+.stop-guard__text > * + * { margin-top: var(--s-2); }
+.stop-guard__options { display: grid; gap: var(--s-2); margin-top: var(--s-5); }
+.stop-guard__keep { white-space: nowrap; }
 
 /* Übersicht der Tastenkürzel */
 .shortcuts { width: min(520px, calc(100vw - 2 * var(--gutter))); }

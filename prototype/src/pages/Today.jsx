@@ -6,8 +6,8 @@ import { useStoredState } from '../lib/store.js';
 import { href } from '../lib/router.js';
 import { cleanEntries, cleanTasks } from '../lib/data.js';
 import { useTimer } from '../lib/timer.js';
-import { spentHours } from '../lib/budget.js';
-import { addDays, budgetState, fmtDate, fmtTime, isoDay, pct } from '../lib/format.js';
+import { restHours, spentHours } from '../lib/budget.js';
+import { addDays, budgetState, fmtDate, fmtH1, fmtTime, isoDay, pct } from '../lib/format.js';
 import { CLOSE_HOUR, OPEN_HOUR, daysFromToday, dueLabel, greeting, studioStatus, useNow } from '../lib/time.js';
 import { me, studios, tasks as sampleTasks, timeEntries as sampleEntries } from '../data/sample.js';
 import { projectsById, useProjects } from '../lib/projects.js';
@@ -43,10 +43,12 @@ const groupOf = (days, toSunday) =>
 const sameCombo = (t, c) => Boolean(t) && t.project === c.project && (t.task ?? null) === (c.task ?? null)
   && String(t.note ?? '').trim() === String(c.note ?? '').trim();
 
+// Ein Play-Zeichen überall (base.css .btn-play): rund, schwarze Kontur. Hier nur Start – der laufende Zustand steht als
+// „läuft“ (Limette) an der Zeile; gestoppt wird in der Hülle.
 function PlayButton({ label, onClick }) {
   return (
-    <button type="button" className="btn btn-ghost btn-icon today-play" aria-label={label} title={label} onClick={onClick}>
-      <Play aria-hidden="true" size={18} strokeWidth={2} fill="currentColor" />
+    <button type="button" className="btn-play today-play" aria-label={label} title={label} onClick={onClick}>
+      <Play aria-hidden="true" size={18} strokeWidth={2} />
     </button>
   );
 }
@@ -109,12 +111,13 @@ export default function Today() {
     })
     .sort((a, b) => (a.days ?? Infinity) - (b.days ?? Infinity) || a.title.localeCompare(b.title, 'de'));
 
-  // Budgets ab 80 %: Stand + alle Buchungen, Zustand auf ungerundeten Stunden
+  // Budgets ab 80 %: Stand + alle Buchungen, Zustand auf ungerundeten Stunden. Rest wie in Projekte und Raster:
+  // restHours (lib/budget.js), angezeigt mit fmtH1 – dieselbe Zahl auf jeder Seite.
   const watch = projects
     .filter(p => p.budget > 0)
     .map(p => {
       const spent = spentHours(p, entries);
-      return { ...p, spent, ratio: spent / p.budget, state: budgetState(spent, p.budget) };
+      return { ...p, spent, rest: restHours(p, entries), ratio: spent / p.budget, state: budgetState(spent, p.budget) };
     })
     .filter(p => p.ratio >= WATCH_FROM)
     .sort((a, b) => b.ratio - a.ratio);
@@ -213,56 +216,52 @@ export default function Today() {
               <h2 id="tasks-title">Meine Aufgaben</h2>
               <p className="today-sect__sum num">{myTasks.length} offen</p>
             </div>
+            {/* Nur Gruppen mit Aufgaben; ein Satz nur, wenn alle leer sind */}
             {myTasks.length === 0 && <p className="today-empty">Keine offenen Aufgaben.</p>}
-            {myTasks.length > 0 && GROUPS.map(g => {
-              const list = myTasks.filter(t => t.group === g.id);
-              return (
-                <div key={g.id} className={`today-group${list.length ? '' : ' today-group--empty'}`} data-group={g.id}>
-                  <h3 className="today-group__title">
-                    {g.label} <span className="today-group__count num">{list.length}</span>
-                  </h3>
-                  {list.length > 0 && (
-                    <ul className="list" role="list">
-                      {list.map(t => {
-                        const p = projectOf(t.project);
-                        const key = `task:${t.id}`;
-                        const here = running && timer?.task === t.id;
-                        const estimate = Number(t.estimate);
-                        return (
-                          <li key={t.id} data-task={t.id}>
-                            <div className="row today-row">
-                              <div className="row__main today-task">
-                                <a className="row__title today-task__link" href={href(p ? `/projekte/${p.id}/${t.id}` : '/projekte')}>
-                                  {t.title}
-                                </a>
-                                <p className="row__meta">
-                                  {p && <><span className="dot" aria-hidden="true" /> <span className="today-code">{p.code}</span> · </>}
-                                  {dueLabel(t.days)}
-                                </p>
-                              </div>
-                              <div className="today-row__aside">
-                                {here && <span className="badge badge-lime">läuft</span>}
-                                <span className="today-row__num today-row__num--quiet num">
-                                  <span className="visually-hidden">gebucht </span>{hours(t.bookedMin / 60)}
-                                  {estimate > 0 && (
-                                    <><span aria-hidden="true"> / </span><span className="visually-hidden"> von geschätzt </span>{hours(estimate)}</>
-                                  )} h
-                                </span>
-                                <PlayButton
-                                  label={`Timer starten: ${t.title}`}
-                                  onClick={() => play({ project: t.project, task: t.id }, key, t.title, 'starten')}
-                                />
-                              </div>
-                            </div>
-                            {hintFor(key)}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </div>
-              );
-            })}
+            {GROUPS.map(g => ({ ...g, list: myTasks.filter(t => t.group === g.id) })).filter(g => g.list.length > 0).map(g => (
+              <div key={g.id} className="today-group" data-group={g.id}>
+                <h3 className="today-group__title">
+                  {g.label} <span className="today-group__count num">{g.list.length}</span>
+                </h3>
+                <ul className="list" role="list">
+                  {g.list.map(t => {
+                    const p = projectOf(t.project);
+                    const key = `task:${t.id}`;
+                    const here = running && timer?.task === t.id;
+                    const estimate = Number(t.estimate);
+                    return (
+                      <li key={t.id} data-task={t.id}>
+                        <div className="row today-row">
+                          <div className="row__main today-task">
+                            <a className="row__title today-task__link" href={href(p ? `/projekte/${p.id}/${t.id}` : '/projekte')}>
+                              {t.title}
+                            </a>
+                            <p className="row__meta">
+                              {p && <><span className="dot" aria-hidden="true" /> <span className="today-code">{p.code}</span> · </>}
+                              {dueLabel(t.days)}
+                            </p>
+                          </div>
+                          <div className="today-row__aside">
+                            {here && <span className="badge badge-lime">läuft</span>}
+                            <span className="today-row__num today-row__num--quiet num">
+                              <span className="visually-hidden">gebucht </span>{hours(t.bookedMin / 60)}
+                              {estimate > 0 && (
+                                <><span aria-hidden="true"> / </span><span className="visually-hidden"> von geschätzt </span>{hours(estimate)}</>
+                              )} h
+                            </span>
+                            <PlayButton
+                              label={`Timer starten: ${t.title}`}
+                              onClick={() => play({ project: t.project, task: t.id }, key, t.title, 'starten')}
+                            />
+                          </div>
+                        </div>
+                        {hintFor(key)}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
           </section>
         </div>
 
@@ -298,8 +297,6 @@ export default function Today() {
               <ul className="list" role="list">
                 {watch.map(p => {
                   const over = p.state === 'danger';
-                  const rest = Math.floor((p.budget - p.spent) * 10 + 1e-9) / 10;
-                  const beyond = Math.ceil((p.spent - p.budget) * 10 - 1e-9) / 10;
                   return (
                     <li key={p.id} data-budget={p.id}>
                       <a className="today-budget" href={href('/projekte/' + p.id)}>
@@ -309,8 +306,8 @@ export default function Today() {
                         </span>
                         <span className="today-budget__meta num">
                           {over
-                            ? <><span className="badge badge-danger">überzogen</span> {hours(beyond)} h über Budget</>
-                            : <>Rest {hours(rest)} h · {pct(p.spent, p.budget)} %</>}
+                            ? <><span className="badge badge-danger">überzogen</span> {fmtH1(-p.rest)} über Budget</>
+                            : <>Rest {fmtH1(p.rest)} · {pct(p.spent, p.budget)} %</>}
                         </span>
                       </a>
                     </li>
