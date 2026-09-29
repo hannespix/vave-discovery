@@ -106,7 +106,7 @@ Seit Ende r02 offen, r03 und r04 ohne Eintrag → halbiert. **Vor dem Einfrieren
 ## Erledigt (letzte 5 Runden, älteres → git log)
 - r04: Navigation, Einstieg und Abschluss (PR #4; drei Builder, eine Korrekturschleife). Route: erreichte Stationen als
   Knöpfe ≥ 44 px, ein Tab-Stopp, vorwärts bis zur ersten offenen Station, kein Wechsel im Kartenflug, Fokus und Ansage
-  auf der Überschrift. Einstieg ohne Minutenzahl. Versand an hannes@pix-el.de: Desktop `.eml` mit zwei Anhängen, Touch
+  auf der Überschrift. Einstieg: alles bleibt auf dem Gerät. Versand an hannes@pix-el.de: Desktop `.eml` mit zwei Anhängen, Touch
   mailto mit Daten im Mailtext (gestuft bis 16 000 Zeichen), kein „Teilen“; eine Uhr `resultTime()`; `?test`. SVG-Finale
   statt Konfetti, Wechsel 240 ms, keine Emojis. Tests grün, `hypothesis()` = ROADMAP in 200 Profilen. ui-critic FIX
   (8/5/7/8/7/7/8/7) → Nachprüfung PASS für den Umfang (6 Dimensionen je 8); red-team FIX → FIX nur wegen E7 („mittel“).
