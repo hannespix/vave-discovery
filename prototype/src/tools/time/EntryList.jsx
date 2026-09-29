@@ -1,44 +1,60 @@
-// Liste „Diese Woche“: nach Tag gruppiert, Summen je Tag und Woche; bearbeiten, löschen, rückgängig.
-// flash = { id, date }: der zuletzt gespeicherte Eintrag und die Summen seines Tages tragen data-highlight (Limette).
+// Ansicht „Liste“: Einträge der gewählten Woche nach Tag, mit Tagessumme. Zeilen zweizeilig (Notiz bzw. Aufgabe, darunter
+// Projektpunkt, Code und Zeit). Aktionen: Fortsetzen (.btn-play – gedrückt und violett, solange der Timer auf genau
+// dieser Kombination läuft; dann stoppt ein Klick), Bearbeiten (Panel an der Zeile), Löschen mit Rückgängig.
+// flash = { id, date }: der zuletzt gespeicherte Eintrag und die Summe seines Tages tragen data-highlight (Limette).
 import { useEffect, useRef, useState } from 'react';
-import { Check, CircleCheck, Pencil, Trash2, Undo2 } from 'lucide-react';
+import { Pencil, Play, Square, Trash2 } from 'lucide-react';
 import { fmtDuration } from '../../lib/format.js';
-import ProjectSelect, { Swatch, projectInfo } from './ProjectSelect.jsx';
-import { FieldError } from './ManualEntry.jsx';
-import { dayTitle, durationMessage, endOf, parseDuration, rowId, sumMinutes, toInputDuration } from './timeUtils.js';
+import ProjectSelect, { Dot, projectInfo } from './ProjectSelect.jsx';
+import { DurationField, FieldError } from './fields.jsx';
+import { parseDuration, toInputDuration } from './duration.js';
+import { dayTitle, endOf, rowId, sumMinutes, toMinutes, todayIso } from './timeUtils.js';
+import { RANGE_TITLE_ID } from './WeekNav.jsx';
 
-const UNDO_MS = 8000;
-const INFO_MS = 4000;
 const byStart = (a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0);
 const context = e => `${projectInfo(e.project).code}, ${e.start} Uhr, ${fmtDuration(e.minutes)}`;
-
-// Boolesches Datenattribut: vorhanden oder gar nicht im DOM
 const flagAttr = flag => (flag ? 'true' : undefined);
 
-function EntryRow({ entry, highlight, onEdit, onDelete }) {
+// Titel einer Zeile: Aufgabe, sonst Notiz, sonst Projektname
+export function entryTitle(entry, taskTitle) {
+  return taskTitle(entry.task) || String(entry.note ?? '').trim() || projectInfo(entry.project).name;
+}
+
+function EntryRow({ entry, taskTitle, highlight, running, onResume, onEdit, onDelete }) {
   const info = projectInfo(entry.project);
+  const title = entryTitle(entry, taskTitle);
+  const task = taskTitle(entry.task);
+  const note = String(entry.note ?? '').trim();
+  const label = `${title}, ${context(entry)}`;
   // tabIndex -1: „Anzeigen“ in der Bestätigung setzt den Fokus hierher
   return (
-    <li id={rowId(entry.id)} className="tt-entry" tabIndex={-1} data-highlight={flagAttr(highlight)}>
-      <Swatch color={info.color} className="tt-entry-swatch" />
-      <div className="tt-entry-main">
-        <p className="tt-entry-title"><strong>{info.code}</strong> {info.name}</p>
-        <p className="tt-entry-meta">
+    <li id={rowId(entry.id)} className="tt-row" tabIndex={-1} data-highlight={flagAttr(highlight)}>
+      <div className="tt-row-main">
+        <p className="tt-row-title">{title}</p>
+        <p className="tt-row-meta">
+          <Dot color={info.color} />
+          <span className="tt-row-code">{info.code}</span>
           <span className="num">{entry.start}–{endOf(entry)}</span>
-          {entry.note ? <> · {entry.note}</> : null}
+          {task && note && note !== task ? <span className="tt-row-note">{note}</span> : null}
         </p>
       </div>
-      <p className="tt-entry-dur num">{fmtDuration(entry.minutes)}</p>
-      <div className="tt-entry-actions">
+      <p className="tt-row-dur num">{fmtDuration(entry.minutes)}</p>
+      <div className="tt-row-actions">
+        <button
+          type="button" className="btn-play" aria-pressed={running} title={running ? 'Läuft – stoppen' : 'Fortsetzen'}
+          aria-label={`Fortsetzen: ${label}`} onClick={onResume}
+        >
+          {running ? <Square aria-hidden="true" fill="currentColor" /> : <Play aria-hidden="true" fill="currentColor" />}
+        </button>
         <button
           id={`tt-edit-${entry.id}`} type="button" className="btn btn-ghost btn-icon" title="Bearbeiten"
-          aria-label={`Bearbeiten: ${context(entry)}`} onClick={onEdit}
+          aria-label={`Bearbeiten: ${label}`} onClick={onEdit}
         >
           <Pencil aria-hidden="true" size={18} />
         </button>
         <button
           id={`tt-del-${entry.id}`} type="button" className="btn btn-ghost btn-icon tt-danger" title="Löschen"
-          aria-label={`Löschen: ${context(entry)}`} onClick={onDelete}
+          aria-label={`Löschen: ${label}`} onClick={onDelete}
         >
           <Trash2 aria-hidden="true" size={18} />
         </button>
@@ -47,59 +63,80 @@ function EntryRow({ entry, highlight, onEdit, onDelete }) {
   );
 }
 
-function EntryEditor({ entry, onSave, onCancel }) {
-  const [duration, setDuration] = useState(toInputDuration(entry.minutes));
+// Bearbeiten als Panel direkt an der Zeile: Dauer mit Echo, Beginn, Datum, Projekt, Notiz. Links „Löschen“, rechts „Speichern“.
+function EntryEditor({ entry, taskOf, onSave, onCancel, onDelete }) {
+  const [duration, setDuration] = useState(toInputDuration(Number(entry.minutes) || 0));
+  const [start, setStart] = useState(entry.start || '09:00');
+  const [date, setDate] = useState(entry.date);
   const [project, setProject] = useState(entry.project);
   const [note, setNote] = useState(String(entry.note ?? ''));
-  const [error, setError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
   const durationRef = useRef(null);
   const base = `tt-e-${entry.id}`;
+  const today = todayIso();
+  const task = taskOf(entry.task);
+  const dropsTask = Boolean(task && task.project !== project);
 
   useEffect(() => {
     durationRef.current?.focus();
     durationRef.current?.select();
   }, []);
 
-  const changeDuration = value => {
-    setDuration(value);
-    if (error) {
-      const p = parseDuration(value);
-      setError(p.error ? durationMessage[p.error] : '');
-    }
-  };
+  const errors = {};
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) errors.date = 'Bitte ein Datum wählen.';
+  else if (date > today) errors.date = 'Das Datum liegt in der Zukunft.';
+  if (toMinutes(start) == null) errors.start = 'Bitte eine Uhrzeit wählen, zum Beispiel 09:00.';
+  const parsed = parseDuration(duration);
+  const shown = submitted ? errors : {};
 
   const submit = ev => {
     ev.preventDefault();
-    const p = parseDuration(duration);
-    if (p.error) {
-      setError(durationMessage[p.error]);
-      durationRef.current?.focus();
-      return;
-    }
-    onSave({ minutes: p.minutes, project, note: note.trim() });
+    setSubmitted(true);
+    if (parsed.error) { durationRef.current?.focus(); return; }
+    if (errors.start) { document.getElementById(`${base}-start`)?.focus(); return; }
+    if (errors.date) { document.getElementById(`${base}-date`)?.focus(); return; }
+    const patch = { minutes: parsed.minutes, start, date, project, note: note.trim() };
+    if (dropsTask) patch.task = undefined;
+    onSave(patch);
   };
 
   return (
-    <li className="tt-entry tt-entry-editing">
+    <li className="tt-row-editing">
       <form
-        className="tt-edit" noValidate onSubmit={submit} aria-label={`Eintrag bearbeiten: ${context(entry)}`}
+        className="panel tt-edit" noValidate onSubmit={submit} aria-label={`Eintrag bearbeiten: ${context(entry)}`}
         onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); onCancel(); } }}
       >
-        <div className="tt-edit-row">
+        <div className="tt-edit-grid">
+          <DurationField
+            id={`${base}-dur`} label="Dauer" value={duration} inputRef={durationRef} forceError={submitted}
+            onChange={setDuration} hint=""
+          />
           <div className="field">
-            <label htmlFor={`${base}-dur`}>Dauer</label>
+            <label htmlFor={`${base}-start`}>Beginn</label>
             <input
-              id={`${base}-dur`} ref={durationRef} className="input" type="text" autoComplete="off" spellCheck={false}
-              value={duration} onChange={e => changeDuration(e.target.value)}
-              aria-invalid={error ? 'true' : undefined} aria-describedby={error ? `${base}-err` : undefined}
+              id={`${base}-start`} className="input" type="time" value={start} onChange={e => setStart(e.target.value)}
+              aria-invalid={shown.start ? 'true' : undefined} aria-describedby={shown.start ? `${base}-start-err` : undefined}
             />
+            <FieldError id={`${base}-start-err`}>{shown.start}</FieldError>
           </div>
           <div className="field">
-            <label htmlFor={`${base}-project`}>Projekt</label>
-            <ProjectSelect id={`${base}-project`} value={project} onChange={setProject} />
+            <label htmlFor={`${base}-date`}>Datum</label>
+            <input
+              id={`${base}-date`} className="input" type="date" max={today} value={date} onChange={e => setDate(e.target.value)}
+              aria-invalid={shown.date ? 'true' : undefined} aria-describedby={shown.date ? `${base}-date-err` : undefined}
+            />
+            <FieldError id={`${base}-date-err`}>{shown.date}</FieldError>
           </div>
         </div>
-        <FieldError id={`${base}-err`}>{error}</FieldError>
+        <div className="field">
+          <label htmlFor={`${base}-project`}>Projekt</label>
+          <ProjectSelect id={`${base}-project`} value={project} onChange={setProject} describedBy={task ? `${base}-task` : undefined} />
+          {task && (
+            <p id={`${base}-task`} className="meta">
+              {dropsTask ? `Aufgabe „${task.title}“ gehört zu einem anderen Projekt und wird beim Speichern entfernt.` : `Aufgabe: ${task.title}`}
+            </p>
+          )}
+        </div>
         <div className="field">
           <label htmlFor={`${base}-note`}>Notiz <span className="tt-optional">(optional)</span></label>
           <input
@@ -107,81 +144,48 @@ function EntryEditor({ entry, onSave, onCancel }) {
             value={note} onChange={e => setNote(e.target.value)}
           />
         </div>
-        <div className="cluster">
-          <button type="submit" className="btn btn-primary"><Check aria-hidden="true" size={18} />Speichern</button>
+        <div className="tt-edit-actions">
+          <button type="button" className="btn btn-ghost tt-edit-delete" onClick={onDelete}>
+            <Trash2 aria-hidden="true" size={18} />
+            Löschen
+          </button>
           <button type="button" className="btn btn-ghost" onClick={onCancel}>Abbrechen</button>
+          <button type="submit" className="btn btn-primary">Speichern</button>
         </div>
       </form>
     </li>
   );
 }
 
-export default function EntryList({ entries, days, weekNo, flash, onUpdate, onDelete, onRestore }) {
+export default function EntryList({
+  entries, days, weekNo, flash, taskOf, taskTitle, isRunning, onResume, onUpdate, onDelete, notify,
+}) {
   const [editing, setEditing] = useState(null);
-  const [toast, setToast] = useState(null);
   const [focusId, setFocusId] = useState(null);
-  const toastRef = useRef(null);
-  const toastTimer = useRef(0);
 
-  // Fokus erst nach dem Rendern setzen (Zeilen und Hinweis entstehen neu)
+  // Fokus erst nach dem Rendern setzen (Zeilen entstehen neu)
   useEffect(() => {
     if (!focusId) return;
     document.getElementById(focusId)?.focus();
     setFocusId(null);
   }, [focusId]);
-  useEffect(() => () => clearTimeout(toastTimer.current), []);
-
-  const dismiss = moveFocus => {
-    clearTimeout(toastTimer.current);
-    const hadFocus = toastRef.current?.contains(document.activeElement);
-    setToast(null);
-    if (hadFocus || moveFocus) setFocusId('tt-list-title');
-  };
-  const schedule = ms => {
-    clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => dismiss(false), ms);
-  };
-  const show = next => {
-    setToast({ ...next, key: Date.now() });
-    schedule(next.undo ? UNDO_MS : INFO_MS);
-  };
-  // Pause, solange die Maus darauf liegt oder der Tastaturfokus darin ist
-  const keyboardFocusInside = () => {
-    const el = document.activeElement;
-    return Boolean(toastRef.current?.contains(el) && el.matches(':focus-visible'));
-  };
-  const toastEvents = {
-    onMouseEnter: () => clearTimeout(toastTimer.current),
-    onMouseLeave: () => { if (toast && !keyboardFocusInside()) schedule(INFO_MS); },
-    onFocus: e => { if (e.target.matches(':focus-visible')) clearTimeout(toastTimer.current); },
-    onBlur: e => { if (toast && !toastRef.current?.contains(e.relatedTarget)) schedule(INFO_MS); },
-    onKeyDown: e => { if (e.key === 'Escape' && toast) { e.preventDefault(); dismiss(true); } },
-  };
 
   const save = (entry, patch) => {
     onUpdate(entry.id, patch);
     setEditing(null);
-    show({ text: `Geändert: ${context({ ...entry, ...patch })}.` });
-    setFocusId(`tt-edit-${entry.id}`);
+    const moved = patch.date !== entry.date && !days.some(d => d.iso === patch.date);
+    notify({ text: `Geändert: ${context({ ...entry, ...patch })}.${moved ? ` Der Tag liegt nicht in KW ${weekNo}.` : ''}` });
+    setFocusId(moved ? RANGE_TITLE_ID : `tt-edit-${entry.id}`);
   };
   const cancel = entry => {
     setEditing(null);
     setFocusId(`tt-edit-${entry.id}`);
   };
   const remove = entry => {
-    const index = onDelete(entry.id);
-    show({ text: `Gelöscht: ${context(entry)}.`, undo: { entry, index } });
-    setFocusId('tt-undo');
-  };
-  const undo = () => {
-    const { entry, index } = toast.undo;
-    onRestore(entry, index);
-    show({ text: `Wiederhergestellt: ${context(entry)}.` });
-    setFocusId(`tt-del-${entry.id}`);
+    setEditing(null);
+    onDelete(entry);
   };
 
-  const weekMinutes = sumMinutes(entries);
-  const weekFlash = Boolean(flash && days.some(d => d.iso === flash.date));
   const groups = days
     .filter(d => !d.isFuture)
     .reverse()
@@ -189,60 +193,41 @@ export default function EntryList({ entries, days, weekNo, flash, onUpdate, onDe
     .filter(g => g.list.length || g.day.isToday);
 
   return (
-    <section className="card tt-card" aria-labelledby="tt-list-title">
-      <div className="tt-card-head">
-        <h2 id="tt-list-title" tabIndex={-1}>Diese Woche</h2>
-        <p className="tt-weeksum">
-          <span className="tt-weeksum-label">KW {weekNo} · Summe</span>
-          <strong className="num" data-highlight={flagAttr(weekFlash)}>{fmtDuration(weekMinutes)}</strong>
-        </p>
-      </div>
-
-      <div className="tt-toast-region" role="status" ref={toastRef} {...toastEvents}>
-        {toast && (
-          <div className="tt-toast" key={toast.key}>
-            <p className="tt-toast-msg">
-              {!toast.undo && <CircleCheck aria-hidden="true" size={18} />}
-              <span>{toast.text}</span>
-            </p>
-            {toast.undo && (
-              <button id="tt-undo" type="button" className="btn tt-toast-btn" onClick={undo}>
-                <Undo2 aria-hidden="true" size={18} />
-                Rückgängig
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
+    <section className="tt-list" aria-labelledby={RANGE_TITLE_ID}>
+      {!groups.length && <p className="tt-empty meta">In KW {weekNo} ist nichts erfasst.</p>}
       {groups.map(({ day, list }) => {
         const title = dayTitle(day.iso);
         return (
-          <div className="tt-day" key={day.iso}>
-            <h3 className="tt-day-head">
-              <span>{title.name}</span>
-              <span className="tt-day-date">{title.dm}</span>
-              <span className="tt-day-sum num" data-highlight={flagAttr(flash?.date === day.iso)}>
+          <section className="tt-day" key={day.iso} aria-labelledby={`tt-day-${day.iso}`}>
+            <div className="tt-day-head">
+              <h3 id={`tt-day-${day.iso}`} className="tt-day-title">
+                {title.name} <span className="tt-day-date">{title.dm}</span>
+              </h3>
+              <p className="tt-day-sum num" data-highlight={flagAttr(flash?.date === day.iso)}>
                 <span className="visually-hidden">Summe </span>{fmtDuration(sumMinutes(list))}
-              </span>
-            </h3>
+              </p>
+            </div>
             {list.length ? (
-              <ul className="tt-entries" role="list">
+              <ul className="list tt-rows" role="list">
                 {list.map(entry =>
                   editing === entry.id ? (
-                    <EntryEditor key={entry.id} entry={entry} onSave={patch => save(entry, patch)} onCancel={() => cancel(entry)} />
+                    <EntryEditor
+                      key={entry.id} entry={entry} taskOf={taskOf}
+                      onSave={patch => save(entry, patch)} onCancel={() => cancel(entry)} onDelete={() => remove(entry)}
+                    />
                   ) : (
                     <EntryRow
-                      key={entry.id} entry={entry} highlight={Boolean(flash?.id) && flash.id === entry.id}
-                      onEdit={() => setEditing(entry.id)} onDelete={() => remove(entry)}
+                      key={entry.id} entry={entry} taskTitle={taskTitle} highlight={Boolean(flash?.id) && flash.id === entry.id}
+                      running={isRunning(entry)}
+                      onResume={() => onResume(entry)} onEdit={() => setEditing(entry.id)} onDelete={() => remove(entry)}
                     />
                   ),
                 )}
               </ul>
             ) : (
-              <p className="tt-empty">Noch nichts erfasst. Timer starten oder Zeit nachtragen.</p>
+              <p className="tt-empty meta">Noch nichts erfasst. Timer starten oder Zeit nachtragen.</p>
             )}
-          </div>
+          </section>
         );
       })}
     </section>

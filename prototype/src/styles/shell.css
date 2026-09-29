@@ -1,4 +1,5 @@
-/* Hülle: Seitenleiste (≥ 1024 px), Kopfleiste + Tab-Leiste (< 1024 px), Umschalter, Dialog. Besitzer: Builder A. */
+/* Hülle: Seitenleiste (≥ 1024 px), Kopfleiste + Tab-Leiste (< 1024 px), Timer-Pille/-Chip, Suchen, Bestätigung, Dialoge.
+   Besitzer: Builder B1. Übergänge nur beim Überfahren und bei Zustandswechsel, höchstens --dur (160 ms). */
 
 .app { min-height: 100dvh; }
 .main { display: block; min-width: 0; padding: var(--s-5) var(--gutter) calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--s-7)); }
@@ -26,51 +27,131 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)
 .wordmark__name { font-size: 2rem; font-weight: 700; line-height: 0.9; letter-spacing: -0.05em; text-transform: uppercase; }
 .wordmark__sub { font-size: 0.875rem; font-weight: 400; color: var(--c-nav-ink-2); }
 
-/* Seitenleiste – volle violette Fläche */
+/* ---------- Seitenleiste: neutral, Haarlinie rechts ---------- */
 .sidebar {
   position: sticky; top: 0; height: 100dvh; overflow-y: auto;
-  display: flex; flex-direction: column; gap: var(--s-6);
-  padding: var(--s-6) var(--s-5) var(--s-5);
-  background: var(--c-nav); color: var(--c-nav-ink);
+  display: flex; flex-direction: column; gap: 20px;
+  padding: 20px var(--s-4) var(--s-4);
+  background: var(--c-nav); color: var(--c-nav-ink); border-right: 1px solid var(--c-nav-line);
   --focus: 0 0 0 2px var(--c-nav), 0 0 0 5px var(--c-nav-focus);
 }
-.sidenav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-1); }
+.sidebar .wordmark { padding: 0 var(--s-3); }
+.sidebar__actions { display: grid; gap: var(--s-2); }
+
+/* Navigation in Gruppen – kleine graue Labels */
+.sidenav { display: grid; gap: var(--s-3); }
+.sidenav__group { display: grid; gap: var(--s-1); }
+.sidenav__label {
+  padding: 0 var(--s-3); font-size: var(--fs-label); font-weight: 600; line-height: 1.3;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-nav-ink-2);
+}
+.sidenav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .sidenav__link {
-  display: flex; align-items: center; gap: var(--s-3); min-height: 48px; padding: 0 var(--s-3) 0 var(--s-4);
-  border-radius: var(--radius); color: inherit; text-decoration: none; font-size: 1.0625rem; font-weight: 400;
+  display: flex; align-items: center; gap: var(--s-3); min-height: var(--tap); padding: 0 var(--s-3);
+  border-radius: var(--radius); color: inherit; text-decoration: none; font-size: var(--fs-body); font-weight: 400;
 }
 /* Übergang nur beim Überfahren – ein Routenwechsel (aria-current) springt ohne Bewegung um */
-.sidenav__link:hover:not([aria-current]) { background: var(--c-nav-hover); transition: background var(--dur) var(--ease); }
-.sidenav__link[aria-current="page"] { background: var(--c-lime); color: var(--c-lime-ink); font-weight: 600; }
+@media (hover: hover) {
+  .sidenav__link:hover:not([aria-current]) { background: var(--c-nav-hover); transition: background-color var(--dur) var(--ease); }
+}
+.sidenav__link[aria-current="page"] { background: var(--c-lime); color: var(--c-lime-ink); font-weight: 600; box-shadow: inset 0 0 0 1px var(--c-line-strong); }
+.sidenav__link[aria-current="page"]:focus-visible { box-shadow: inset 0 0 0 1px var(--c-line-strong), var(--focus); }
 /* Zweites Merkmal neben der Fläche: Marke rechts */
 .sidenav__link[aria-current="page"]::after {
   content: ''; margin-left: auto; width: 10px; height: 10px; border-radius: 2px; background: currentColor;
 }
-.sidebar__foot { margin-top: auto; display: grid; gap: var(--s-4); }
+
+.sidebar__foot { margin-top: auto; display: grid; gap: var(--s-2); padding-top: var(--s-3); border-top: 1px solid var(--c-nav-line); }
+.sidebar .demo-note { padding: 0 var(--s-3); }
 .sidebar .demo-note p { color: var(--c-nav-ink-2); }
-.sidebar .btn { background: var(--c-nav-ink); color: var(--c-nav); border-color: var(--c-nav-ink); }
-.sidebar .btn:hover { background: var(--c-lime); color: var(--c-lime-ink); border-color: var(--c-lime); }
-.sidebar .segmented {
-  --seg-ink: var(--c-nav-ink); --seg-border: var(--c-nav-ink);
-  --seg-on-bg: var(--c-nav-ink); --seg-on-ink: var(--c-nav); --seg-hover: var(--c-nav-hover);
+.sidebar__reset { justify-content: flex-start; padding: 0 var(--s-3); color: var(--c-nav-ink); font-weight: 400; }
+.sidebar .segmented { --seg-ink: var(--c-nav-ink); --seg-border: var(--c-nav-ink); --seg-hover: var(--c-nav-hover); }
+.sidebar .segmented__legend {
+  padding: 0 var(--s-3); margin-bottom: var(--s-1); font-size: var(--fs-label); font-weight: 600; line-height: 1.3;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-nav-ink-2);
 }
+.sidebar .segmented__face { flex-direction: row; gap: 6px; min-height: var(--tap); }
 
 .demo-note { display: grid; gap: var(--s-2); justify-items: start; }
-.demo-note p { font-size: 0.9375rem; line-height: 1.45; color: var(--c-ink-2); }
+.demo-note p { font-size: var(--fs-meta); line-height: 1.45; color: var(--c-ink-2); }
 
-/* Kopfleiste (schmal): Zeile mit Wortmarke, darunter der Hinweis zu den Daten – ohne Menü sichtbar */
+/* ---------- Timer-Pille: Ruhe = schwarze Kontur, Play im violetten Kreis; läuft = violett gefüllt ---------- */
+.timer-pill {
+  display: flex; align-items: center; gap: var(--s-3); width: 100%; min-height: 56px;
+  padding: var(--s-2) var(--s-3) var(--s-2) var(--s-2);
+  border: 1.5px solid var(--c-line-strong); border-radius: 999px;
+  background: var(--c-surface); color: var(--c-ink); text-align: left;
+}
+button.timer-pill { cursor: pointer; transition: background-color var(--dur) var(--ease); }
+.timer-pill__icon {
+  flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
+  background: var(--c-accent); color: var(--c-accent-ink);
+}
+.timer-pill__icon svg { margin-left: 2px; } /* Dreieck optisch mittig */
+.timer-pill__text { flex: 1 1 auto; min-width: 0; display: grid; }
+.timer-pill__title { font-weight: 600; line-height: 1.3; }
+.timer-pill__sub {
+  font-size: var(--fs-meta); line-height: 1.3; color: var(--c-ink-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.timer-pill__key { flex: none; }
+@media (hover: hover) { button.timer-pill:hover { background: var(--c-accent-soft); } }
+
+.timer-pill.is-running {
+  gap: 0; padding: 0 var(--s-2) 0 0; background: var(--c-accent); border-color: var(--c-accent); color: var(--c-accent-ink);
+}
+.timer-pill__main {
+  flex: 1 1 auto; min-width: 0; align-self: stretch; display: grid; align-content: center;
+  padding: var(--s-2) var(--s-2) var(--s-2) var(--s-5); border-radius: 999px 0 0 999px;
+  color: inherit; text-decoration: none;
+}
+.timer-pill__clock { font-size: 1.25rem; font-weight: 600; line-height: 1.2; }
+.is-running .timer-pill__sub { color: var(--c-accent-ink); }
+@media (hover: hover) { .timer-pill__main:hover .timer-pill__sub { text-decoration: underline; text-underline-offset: 0.2em; } }
+
+/* Stopp: weißer Kreis, violettes Quadrat – im Chip wie in der Pille 44 px Trefferfläche */
+.timer-stop {
+  flex: none; display: grid; place-items: center; width: var(--tap); height: var(--tap); padding: 0;
+  border: 0; border-radius: 50%; background: var(--c-accent-ink); color: var(--c-accent); cursor: pointer;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+@media (hover: hover) { .timer-stop:hover { background: var(--c-ink); color: var(--c-bg); } }
+/* Fokus auf Violett: weißer Ring (6,6:1 hell, 5,1:1 dunkel) statt des violetten Standardrings */
+.timer-pill__main:focus-visible, .timer-chip__time:focus-visible { box-shadow: none; outline: 2px solid var(--c-accent-ink); outline-offset: -5px; }
+.timer-pill .timer-stop:focus-visible, .timer-chip .timer-stop:focus-visible {
+  box-shadow: 0 0 0 2px var(--c-accent), 0 0 0 4px var(--c-accent-ink); border-radius: 50%;
+}
+
+/* Laufzeit in festen Ziffernzellen – nichts springt */
+.clock { display: inline-flex; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.clock__cells { display: inline-flex; }
+.clock__digit { display: inline-block; width: 1ch; text-align: center; }
+.clock__sep { display: inline-block; width: 0.5ch; text-align: center; }
+
+/* Suchen: ruhiges Feld mit Tastenkappe */
+.search-btn {
+  display: flex; align-items: center; gap: var(--s-2); width: 100%; min-height: var(--tap);
+  padding: 0 var(--s-2) 0 var(--s-4); border: 1px solid var(--c-nav-line); border-radius: 999px;
+  background: var(--c-surface); color: var(--c-nav-ink-2); text-align: left; cursor: pointer;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.search-btn__label { flex: 1 1 auto; }
+.search-btn__keys { flex: none; display: inline-flex; gap: 3px; }
+@media (hover: hover) { .search-btn:hover { border-color: var(--c-line-strong); color: var(--c-nav-ink); } }
+
+/* ---------- Kopfleiste (schmal): Wortmarke, Timer-Chip, Suchen, Menü ---------- */
 .topbar {
   position: relative; z-index: 20;
   padding: 0 var(--gutter); padding-top: env(safe-area-inset-top);
   background: var(--c-bg); border-bottom: 1px solid var(--c-line);
 }
-.topbar__bar { display: flex; align-items: center; gap: var(--s-3); min-height: 60px; padding-top: var(--s-2); }
+.topbar__bar { display: flex; align-items: center; gap: var(--s-2); min-height: 60px; }
 .topbar .wordmark__name { font-size: 1.625rem; }
-.topbar__badge { white-space: nowrap; }
-.topbar__toggle { margin-left: auto; flex: none; }
-.topbar__toggle[aria-expanded="true"] { background: var(--c-indicator); border-color: var(--c-indicator); color: var(--c-indicator-ink); }
-.topbar__note { padding: 0 0 var(--s-2); font-size: 0.875rem; line-height: 1.35; color: var(--c-ink-2); }
-.topbar__note-demo { display: none; }
+.topbar__actions { margin-left: auto; display: flex; align-items: center; gap: var(--s-1); min-width: 0; }
+/* Offenes Menü = Zustand: Limette mit schwarzer Kontur (Limette auf Weiß allein nur 1,08:1) */
+.topbar__toggle[aria-expanded="true"] { background: var(--c-indicator); border-color: var(--c-line-strong); color: var(--c-indicator-ink); }
+.topbar__note { padding: 0 0 var(--s-2); font-size: 0.875rem; line-height: 1.6; color: var(--c-ink-2); }
+.topbar__note .badge { margin-right: var(--s-1); }
 .topbar__panel {
   position: absolute; top: calc(100% + var(--s-2)); right: var(--gutter); left: var(--gutter); z-index: 40;
   max-width: 360px; margin-left: auto;
@@ -78,10 +159,43 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)
   background: var(--c-surface); border: 1.5px solid var(--c-line-strong); border-radius: var(--radius-l); box-shadow: var(--shadow-2);
 }
 .topbar__panel[hidden] { display: none; }
-/* Sehr schmal: Marke weicht, der Hinweis sagt dann selbst „Beispieldaten“ */
-@media (max-width: 359.98px) { .topbar__badge { display: none; } .topbar__note-demo { display: inline; } }
+.timer-pill--menu .timer-pill__key { display: none; }
 
-/* Tab-Leiste (schmal) */
+/* Start im Kopf (Timer ruht): Pille mit schwarzer Kontur, Play im violetten Kreis wie in der Seitenleiste, 44 px hoch */
+.timer-head {
+  display: inline-flex; align-items: center; gap: var(--s-2); flex: none; min-height: var(--tap); min-width: var(--tap);
+  padding: 0 var(--s-3) 0 5px; border: 1.5px solid var(--c-line-strong); border-radius: 999px;
+  background: var(--c-surface); color: var(--c-ink); font-size: var(--fs-meta); font-weight: 600; line-height: 1.2;
+  white-space: nowrap; cursor: pointer; transition: background-color var(--dur) var(--ease);
+}
+.timer-head__icon {
+  flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--c-accent); color: var(--c-accent-ink);
+}
+.timer-head__icon svg { margin-left: 2px; }
+@media (hover: hover) { .timer-head:hover { background: var(--c-accent-soft); } }
+/* Unter 360 px reicht der Platz nicht für die Beschriftung: nur das Icon (44 px), der Name bleibt für Screenreader */
+@media (max-width: 359.98px) {
+  .timer-head { gap: 0; padding: 0 5px; }
+  .timer-head__label {
+    position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+}
+
+/* Timer-Chip: nur solange der Timer läuft */
+.timer-chip {
+  display: inline-flex; align-items: center; flex: none; height: var(--tap);
+  border-radius: 999px; background: var(--c-accent); color: var(--c-accent-ink);
+}
+.timer-chip__time {
+  display: flex; align-items: center; align-self: stretch; padding: 0 2px 0 var(--s-3);
+  border-radius: 999px 0 0 999px; color: inherit; text-decoration: none; font-size: var(--fs-meta); font-weight: 600;
+}
+/* Im Chip bleibt die Trefferfläche 44 px, der weiße Kreis ist kleiner */
+.timer-chip .timer-stop { background: radial-gradient(circle, var(--c-accent-ink) 0 16px, transparent 16.5px); }
+@media (hover: hover) { .timer-chip .timer-stop:hover { background: radial-gradient(circle, var(--c-ink) 0 16px, transparent 16.5px); color: var(--c-bg); } }
+
+/* ---------- Tab-Leiste (schmal) ---------- */
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
   background: var(--c-surface); border-top: 1px solid var(--c-line);
@@ -96,16 +210,41 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)
 .tabbar__icon { display: grid; place-items: center; width: 52px; height: 30px; border-radius: 999px; }
 .tabbar__label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Übergang nur beim Überfahren, nicht beim Routenwechsel */
-.tabbar__link:hover:not([aria-current]) .tabbar__icon { background: var(--c-accent-soft); transition: background var(--dur) var(--ease); }
+@media (hover: hover) {
+  .tabbar__link:hover:not([aria-current]) .tabbar__icon { background: var(--c-accent-soft); transition: background-color var(--dur) var(--ease); }
+}
 .tabbar__link[aria-current="page"] { color: var(--c-ink); font-weight: 600; }
-.tabbar__link[aria-current="page"] .tabbar__icon { background: var(--c-indicator); color: var(--c-indicator-ink); }
+/* Aktiv = Zustand: Limetten-Pille mit schwarzer Kontur, wie der aktive Punkt der Seitenleiste */
+.tabbar__link[aria-current="page"] .tabbar__icon {
+  background: var(--c-indicator); color: var(--c-indicator-ink); box-shadow: inset 0 0 0 1px var(--c-line-strong);
+}
 .tabbar__link:focus-visible { box-shadow: inset 0 0 0 3px var(--c-accent); border-radius: var(--radius); }
 :root[data-theme="dark"] .tabbar__link:focus-visible { box-shadow: inset 0 0 0 3px var(--c-lime); }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .tabbar__link:focus-visible { box-shadow: inset 0 0 0 3px var(--c-lime); }
 }
 
-/* Umschalter (Radios als Segmente) */
+/* ---------- Bestätigung der Hülle (Timer gebucht, Aufgabe angelegt) – über --dock-bottom ---------- */
+.toast-dock {
+  position: fixed; z-index: 45; left: var(--gutter); right: var(--gutter); bottom: var(--dock-bottom);
+  display: flex; justify-content: center; pointer-events: none;
+}
+@media (min-width: 1024px) { .toast-dock { left: calc(var(--sidebar-w) + var(--s-5)); right: var(--s-5); } }
+.toast.is-visible {
+  pointer-events: auto; display: flex; align-items: center; gap: var(--s-3);
+  max-width: min(560px, 100%); min-height: 56px; padding: var(--s-1) var(--s-1) var(--s-1) var(--s-4);
+  background: var(--c-surface); color: var(--c-ink);
+  border: 1.5px solid var(--c-line-strong); border-radius: var(--radius-l); box-shadow: var(--shadow-2);
+}
+.toast__icon { flex: none; }
+.toast__text { flex: 1 1 auto; min-width: 0; font-weight: 500; line-height: 1.35; }
+.toast__link {
+  flex: none; display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 var(--s-2);
+  font-weight: 600; color: var(--c-accent-text);
+}
+.toast__close { flex: none; }
+
+/* ---------- Umschalter (Radios als Segmente) ---------- */
 .segmented {
   --seg-ink: var(--c-ink); --seg-border: var(--c-line-strong);
   --seg-on-bg: var(--c-indicator); --seg-on-ink: var(--c-indicator-ink); --seg-hover: var(--c-accent-soft);
@@ -122,19 +261,41 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
   min-height: 52px; padding: var(--s-1); border-radius: calc(var(--radius-l) - 4px);
   font-size: 0.875rem; line-height: 1.2; color: var(--seg-ink); pointer-events: none;
-  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
-.segmented__option:hover .segmented__face { background: var(--seg-hover); }
-.segmented__option input:checked + .segmented__face { background: var(--seg-on-bg); color: var(--seg-on-ink); font-weight: 600; }
+@media (hover: hover) { .segmented__option:hover .segmented__face { background: var(--seg-hover); } }
+/* Gewählt = Zustand: Limette mit schwarzer Kontur – in der Seitenleiste wie im Menü */
+.segmented__option input:checked + .segmented__face {
+  background: var(--seg-on-bg); color: var(--seg-on-ink); font-weight: 600; box-shadow: inset 0 0 0 1px var(--c-line-strong);
+}
 .segmented__option input:focus-visible + .segmented__face { box-shadow: var(--focus); }
+.segmented__option input:checked:focus-visible + .segmented__face { box-shadow: inset 0 0 0 1px var(--c-line-strong), var(--focus); }
 
-/* Dialog */
+/* ---------- Dialoge ---------- */
 .dialog {
   width: min(440px, calc(100vw - 2 * var(--gutter))); padding: var(--s-6) var(--s-5) var(--s-5);
   border: 1.5px solid var(--c-line-strong); border-radius: var(--radius-l);
   background: var(--c-surface); color: var(--c-ink); box-shadow: var(--shadow-2);
 }
 .dialog::backdrop { background: var(--c-backdrop); }
-.dialog__title { font-size: 1.5rem; text-transform: uppercase; letter-spacing: -0.03em; }
+.dialog__title { font-size: 1.5rem; line-height: 1.1; color: var(--c-ink); text-transform: uppercase; letter-spacing: -0.03em; }
 .dialog__text { margin-top: var(--s-3); color: var(--c-ink-2); }
 .dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--s-3); margin-top: var(--s-5); }
+
+/* Rückfrage bei langem Timer (StopGuard): Wahl untereinander, volle Breite, empfohlene Wahl violett */
+.stop-guard__text > * + * { margin-top: var(--s-2); }
+.stop-guard__options { display: grid; gap: var(--s-2); margin-top: var(--s-5); }
+.stop-guard__keep { white-space: nowrap; }
+
+/* Übersicht der Tastenkürzel */
+.shortcuts { width: min(520px, calc(100vw - 2 * var(--gutter))); }
+.shortcuts__section { margin-top: var(--s-5); }
+.shortcuts__section .overline { margin-bottom: var(--s-1); }
+.shortcuts__list { margin: 0; }
+.shortcuts__row {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-4);
+  min-height: 44px; border-top: 1px solid var(--c-line);
+}
+.shortcuts__row dd { margin: 0; flex: none; }
+.keys { display: inline-flex; align-items: center; gap: 4px; }
+.keys__word { font-size: var(--fs-label); color: var(--c-ink-2); }

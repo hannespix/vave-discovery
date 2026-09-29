@@ -26,16 +26,19 @@
   --c-lime: #e8ffb9;          /* Limette: Fläche mit schwarzer Schrift 18,2:1 – „jetzt/aktiv“ */
   --c-lime-ink: #0b0b0b;
 
-  /* Markierung „ausgewählt/aktiv“ (Tab-Leiste, Umschalter) – ≥ 3:1 zur Umgebung */
-  --c-indicator: #641dff;
-  --c-indicator-ink: #ffffff;
+  /* Markierung „ausgewählt/aktiv“ (Tab-Leiste, Umschalter) – r07: überall Limette (Zustand), immer mit schwarzer
+     Kontur (--c-line-strong), weil Limette auf Weiß allein nur 1,08:1 hat */
+  --c-indicator: #e8ffb9;
+  --c-indicator-ink: #0b0b0b;
 
-  /* Navigation (Seitenleiste) – volle violette Fläche wie das Menü auf vave.studio */
-  --c-nav: #641dff;
-  --c-nav-ink: #ffffff;       /* 6,6:1 */
-  --c-nav-ink-2: #e0e0e0;     /* 5,0:1 */
-  --c-nav-hover: rgb(255 255 255 / 0.14);
-  --c-nav-focus: #ffffff;
+  /* Navigation (Seitenleiste) – r07: neutral wie in den besten Referenzen, Haarlinie statt Farbfläche.
+     Aktiver Punkt: Limetten-Pille mit schwarzer Kontur (Zustand), Violett bleibt der Aktion vorbehalten. */
+  --c-nav: #f7f7f7;
+  --c-nav-ink: #0b0b0b;       /* 18,5:1 */
+  --c-nav-ink-2: #474747;     /* 8,7:1 */
+  --c-nav-hover: rgb(11 11 11 / 0.06);
+  --c-nav-focus: #641dff;
+  --c-nav-line: #e3e3e3;
 
   /* Budget-Zustände. Keine Ampel: „im Rahmen“ grau, „knapp“ schwarz – getragen von Icon und Wort.
      Nur „überzogen“ hat Farbe: Koralle als Fläche mit schwarzer Schrift, immer mit schwarzer Kontur
@@ -79,8 +82,15 @@
   --shadow-2: 0 8px 24px rgb(11 11 11 / 0.10);
   --focus: 0 0 0 3px var(--c-bg), 0 0 0 6px var(--c-accent);
 
-  --ease: cubic-bezier(.2, .7, .2, 1);
-  --dur: 180ms;
+  /* Schrift – r07: vier Stufen, zwei Gewichte (400/600). Versalien nur für Seitentitel und kleine Labels. */
+  --fs-label: 0.8125rem;      /* 13 px, Versalien, +0,08em: Abschnitte, Tabellenköpfe */
+  --fs-meta: 0.9375rem;       /* 15 px: Nebenangaben */
+  --fs-body: 1rem;            /* 16 px: Text, Zeilen, Felder */
+  --fs-title: clamp(1.75rem, 1.15rem + 2vw, 2.5rem);   /* Seitentitel, große Kennzahlen */
+
+  /* Bewegung – Kurve von vave.studio, kurz: nur Zustandswechsel, nie Deko */
+  --ease: cubic-bezier(.215, .61, .355, 1);
+  --dur: 160ms;
   --dur-change: 240ms;        /* Übergang, wenn sich ein Wert ändert (nie beim Öffnen) */
   --tap: 44px;                /* Mindest-Trefferfläche */
 }
@@ -104,11 +114,12 @@
     --c-accent-soft: #2a1d52;
     --c-indicator: #e8ffb9;
     --c-indicator-ink: #0b0b0b;
-    --c-nav: #1d1438;
-    --c-nav-ink: #ffffff;     /* 17,4:1 */
-    --c-nav-ink-2: #d4d4d4;   /* 11,7:1 */
-    --c-nav-hover: rgb(255 255 255 / 0.10);
+    --c-nav: #121212;
+    --c-nav-ink: #f5f5f5;     /* 17,6:1 */
+    --c-nav-ink-2: #cfcfcf;   /* 12,1:1 */
+    --c-nav-hover: rgb(255 255 255 / 0.07);
     --c-nav-focus: #e8ffb9;
+    --c-nav-line: #262626;
     --c-ok: #cfcfcf;          /* 12,6:1; auf ok-soft 9,7:1 */
     --c-ok-soft: #262626;
     --c-ok-fill: #8c8c8c;     /* 5,9:1 gegen bg, 5,1:1 gegen surface */
@@ -141,11 +152,12 @@
   --c-accent-soft: #2a1d52;
   --c-indicator: #e8ffb9;
   --c-indicator-ink: #0b0b0b;
-  --c-nav: #1d1438;
-  --c-nav-ink: #ffffff;
-  --c-nav-ink-2: #d4d4d4;
-  --c-nav-hover: rgb(255 255 255 / 0.10);
+  --c-nav: #121212;
+  --c-nav-ink: #f5f5f5;
+  --c-nav-ink-2: #cfcfcf;
+  --c-nav-hover: rgb(255 255 255 / 0.07);
   --c-nav-focus: #e8ffb9;
+  --c-nav-line: #262626;
   --c-ok: #cfcfcf;
   --c-ok-soft: #262626;
   --c-ok-fill: #8c8c8c;

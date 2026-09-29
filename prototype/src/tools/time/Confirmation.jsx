@@ -1,12 +1,14 @@
-// Bestätigung nach Stopp und Nachtragen: Pille mit Symbol und Klartext. Der Text ist Live-Region, der Knopf liegt daneben.
-// „Anzeigen“ erscheint nur, wenn der Eintrag außerhalb des Blicks liegt – zum Eintrag gerollt wird erst auf Wunsch.
+// Bestätigung in der Leiste nach Stopp und Nachtragen: Pille mit Symbol und Klartext. Der Text ist Live-Region, der Knopf
+// liegt daneben. „Anzeigen“ erscheint nur, wenn der Eintrag außerhalb des Blicks liegt – gerollt wird erst auf Wunsch.
 import { useLayoutEffect, useRef, useState } from 'react';
-import { CircleCheck, TriangleAlert } from 'lucide-react';
+import { CircleCheck, Info, TriangleAlert } from 'lucide-react';
 
-const ICON = { ok: CircleCheck, warn: TriangleAlert };
+const ICON = { ok: CircleCheck, warn: TriangleAlert, note: Info };
 
 let seq = 0;
-// tone: 'ok' (gespeichert), 'warn' (nichts gebucht), 'info' (leise Zeile); action: { label, run, whenHidden?: Element-ID }
+// tone: 'ok' (gespeichert), 'warn' (nicht gebucht, bitte handeln), 'note' (sachlich, nichts gebucht: „Unter einer
+// Minute – nicht gebucht.“, „Verworfen.“), 'info' (nur für Screenreader – der Zustand ist sichtbar);
+// action: { label, run, whenHidden?: Element-ID } – ohne whenHidden steht der Knopf immer da (Eintrag in anderer Woche)
 export const makeNote = (tone, text, action = null) => ({ key: ++seq, tone, text, action });
 
 export const reducedMotion = () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
@@ -30,7 +32,7 @@ export default function Confirmation({ note }) {
     const target = action?.whenHidden ? document.getElementById(action.whenHidden) : null;
     setShowAction(Boolean(action) && (!action.whenHidden || Boolean(target && !inView(target))));
     if (!note || note.tone === 'info') return undefined;
-    // Die eigene Bestätigung ganz zeigen: höchstens bis zur Pille unter dem Knopf rollen, nie weiter
+    // Die eigene Bestätigung ganz zeigen: höchstens bis zur Pille rollen, nie weiter
     const id = requestAnimationFrame(() => {
       if (boxRef.current && !inView(boxRef.current)) scrollToEl(boxRef.current, 'nearest');
     });
@@ -38,9 +40,10 @@ export default function Confirmation({ note }) {
   }, [note]);
 
   const Icon = note ? ICON[note.tone] : null;
+  const shown = note && note.tone !== 'info' ? note.tone : undefined;
   return (
-    <div ref={boxRef} className="tt-confirm" data-tone={note ? note.tone : undefined}>
-      <p className="tt-confirm-text" role="status">
+    <div ref={boxRef} className="tt-confirm" data-tone={shown}>
+      <p className={shown ? 'tt-confirm-text' : 'visually-hidden'} role="status">
         {note && (
           <span className="tt-confirm-msg" key={note.key}>
             {Icon && <Icon aria-hidden="true" size={20} />}
@@ -48,7 +51,7 @@ export default function Confirmation({ note }) {
           </span>
         )}
       </p>
-      {note?.action && showAction && (
+      {shown && note.action && showAction && (
         <button type="button" className="btn tt-confirm-btn" onClick={note.action.run}>{note.action.label}</button>
       )}
     </div>

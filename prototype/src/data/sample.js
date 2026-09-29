@@ -42,7 +42,7 @@ export const clients = [
 ];
 
 // budget/spent in Stunden; spent = Stand vor den Einträgen der Zeiterfassung (die zählt lib/budget.js dazu);
-// status: 'aktiv' | 'angebot' | 'intern'
+// status: 'aktiv' | 'pitch' | 'intern'
 export const projects = [
   { id: 'pr1', code: 'MDK-24', name: 'Dauerausstellung „Hörräume“', client: 'c1', studio: 'fra', lead: 'p1', status: 'aktiv', phase: 'Ausführungsplanung', budget: 1200, spent: 860, due: day(45) },
   { id: 'pr2', code: 'MIR-07', name: 'Messepavillon Mobility Week', client: 'c2', studio: 'fra', lead: 'p2', status: 'aktiv', phase: 'Produktion', budget: 640, spent: 612, due: day(12) },
@@ -50,7 +50,7 @@ export const projects = [
   { id: 'pr4', code: 'AUR-11', name: 'Brand Space Terminal 3', client: 'c4', studio: 'dxb', lead: 'p5', status: 'aktiv', phase: 'Montage', budget: 900, spent: 948, due: day(5) },
   { id: 'pr5', code: 'TID-02', name: 'Interaktive Lobby-Installation', client: 'c5', studio: 'sin', lead: 'p6', status: 'aktiv', phase: 'Konzept', budget: 300, spent: 96, due: day(90) },
   { id: 'pr6', code: 'HLX-05', name: 'Showroom Shenzhen', client: 'c6', studio: 'szx', lead: 'p4', status: 'aktiv', phase: 'Ausführung', budget: 520, spent: 402, due: day(30) },
-  { id: 'pr7', code: 'PIT-01', name: 'Pitch: Kulturhafen Nord', client: 'c7', studio: 'fra', lead: 'p2', status: 'angebot', phase: 'Pitch', budget: 80, spent: 34, due: day(8) },
+  { id: 'pr7', code: 'PIT-01', name: 'Pitch: Kulturhafen Nord', client: 'c7', studio: 'fra', lead: 'p2', status: 'pitch', phase: 'Pitch', budget: 80, spent: 34, due: day(8) },
   { id: 'pr8', code: 'VAV-00', name: 'Studio-Organisation', client: 'c0', studio: 'fra', lead: 'p1', status: 'intern', phase: 'laufend', budget: 200, spent: 75, due: null },
 ];
 
@@ -105,7 +105,7 @@ export const timeEntries = [
 ];
 
 export const statusLabel = { todo: 'Offen', doing: 'In Arbeit', review: 'Prüfen', done: 'Erledigt' };
-// 'angebot' ist die Pitch-Phase – ohne Angebotslogik; die Oberfläche sagt „Pitch“
-export const projectStatusLabel = { aktiv: 'Aktiv', angebot: 'Pitch', intern: 'Intern' };
+// 'pitch' = Akquisephase, ohne Angebots- oder Preislogik
+export const projectStatusLabel = { aktiv: 'Aktiv', pitch: 'Pitch', intern: 'Intern' };
 
 export const byId = list => Object.fromEntries(list.map(x => [x.id, x]));

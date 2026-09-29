@@ -1,11 +1,10 @@
-// Helfer für das Projekte-Werkzeug (Builder C). Nutzt src/lib, ändert es nicht.
+// Helfer für das Projekte-Werkzeug (Builder C, B5). Nutzt src/lib, ändert es nicht.
 import { CircleCheck, TriangleAlert, OctagonAlert } from 'lucide-react';
 import { pct, budgetState, budgetLabel, fmtDate } from '../../lib/format.js';
-import { studios, people, clients, byId } from '../../data/sample.js';
+import { studios, people, byId } from '../../data/sample.js';
 
 export const studioById = byId(studios);
 export const personById = byId(people);
-export const clientById = byId(clients);
 
 export const STATUSES = ['todo', 'doing', 'review', 'done'];
 
@@ -55,3 +54,59 @@ export const fmtDayShort = iso => fmtDate(parseDay(iso), { weekday: 'short', day
 export const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('de-DE').trim();
 
 export const initials = name => (name || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+
+// Stunden immer mit einer Nachkommastelle („2,0“) – für „gebucht / geschätzt“
+export const fmt1 = h => (Math.round(h * 10) / 10).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+// Rest mit Vorzeichen: „331 h“, „−48 h“ (echtes Minuszeichen) – dieselbe Zahl in Liste, Kopf und Übersicht
+export const fmtRest = rest => `${rest < 0 ? '−' : ''}${fmtH(Math.abs(rest))}`;
+
+// Stundenzahl ohne Einheit, deutsch: 640 → „640“, 1200 → „1.200“, 80.5 → „80,5“
+export const fmtNum = h => (Math.round(h * 10) / 10).toLocaleString('de-DE', { maximumFractionDigits: 1 });
+// Differenz mit Vorzeichen: „+60 h“, „−40 h“ (echtes Minuszeichen)
+export const fmtDelta = d => `${d > 0 ? '+' : d < 0 ? '−' : '±'}${fmtH(Math.abs(d))}`;
+
+// Stunden aus einer Eingabe: „120“, „80,5“, „80.5“, „1.200“ (Tausenderpunkt), „120 h“ → Zahl; leer → null; sonst NaN
+export function parseHours(input) {
+  let t = String(input ?? '').trim().replace(/\s*h$/i, '').replace(/\s+/g, '');
+  if (!t) return null;
+  if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(t)) t = t.replace(/\./g, '');
+  t = t.replace(',', '.');
+  return /^\d+(\.\d+)?$/.test(t) ? Math.round(Number(t) * 10) / 10 : NaN;
+}
+
+// Code-Vorschlag aus dem Kunden: drei Zeichen des Namens + laufende Nummer je Kunde („Kulturhafen Nord“ mit einem
+// Projekt → „KUL-02“); belegte Codes werden übersprungen. Unter zwei Zeichen kein Vorschlag.
+export function suggestCode(clientName, { projects, clients, taken }) {
+  const letters = String(clientName ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ß/g, 'ss')
+    .toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3);
+  if (letters.length < 2) return '';
+  const name = String(clientName).trim().toLowerCase();
+  const client = clients.find(c => c.name.trim().toLowerCase() === name);
+  let n = (client ? projects.filter(p => p.client === client.id).length : 0) + 1;
+  const code = k => `${letters}-${String(k).padStart(2, '0')}`;
+  while (taken(code(n)) && n < 999) n++;
+  return code(n);
+}
+
+// Budgetänderungen aus dem gespeicherten budgetLog: nur gültige Einträge, neueste zuerst
+export function budgetChanges(p) {
+  const log = Array.isArray(p?.budgetLog) ? p.budgetLog : [];
+  return log
+    .map((e, i) => ({ e, i }))
+    .filter(({ e }) => e && typeof e === 'object' && Number.isFinite(Number(e.from)) && Number.isFinite(Number(e.to)) &&
+      typeof e.at === 'string' && !Number.isNaN(Date.parse(e.at)))
+    .map(({ e, i }) => ({ i, at: new Date(e.at), from: Number(e.from), to: Number(e.to), note: typeof e.note === 'string' ? e.note.trim() : '' }))
+    .sort((a, b) => b.at - a.at || b.i - a.i);
+}
+
+// ISO-Kalenderwoche (Montag bis Sonntag; KW 1 enthält den 4. Januar)
+export function isoWeek(date) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + 3); // Donnerstag derselben Woche
+  const year = d.getFullYear();
+  const jan4 = new Date(year, 0, 4);
+  return { week: 1 + Math.round(((d - jan4) / 86400000 - 3 + ((jan4.getDay() + 6) % 7)) / 7), year };
+}
+export const kwKey = kw => kw.year * 100 + kw.week;
+// „KW 41“, im anderen Jahr „KW 2/2027“
+export const fmtKw = (kw, refYear = new Date().getFullYear()) => (kw.year === refYear ? `KW ${kw.week}` : `KW ${kw.week}/${kw.year}`);

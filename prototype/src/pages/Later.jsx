@@ -17,6 +17,8 @@ const modules = [
     text: 'Welche Auswertungen wirklich gelesen werden, zeigt die Umfrage – bis dahin keine Berichte auf Verdacht.' },
 ];
 
+// Ruhige Liste statt Karten (r07): Haarlinien, Titel als h3, Icons neutral. „Offen: ob und wie“ steht einmal über
+// der Liste statt als Marke an jeder Zeile.
 export default function Later() {
   return (
     <>
@@ -24,16 +26,20 @@ export default function Later() {
         <p>Ob und was davon gebaut wird, ist offen: Umfrage und Gespräch entscheiden, ob etwas neu entsteht, zugekauft wird oder beim bisherigen Werkzeug bleibt.</p>
         <p>Deshalb haben diese Bereiche im Prototyp absichtlich keine Funktion.</p>
       </PageHeader>
-      <ul className="later-grid" role="list">
-        {modules.map(({ id, title, Icon, text }) => (
-          <li key={id} className="card later-card">
-            <span className="later-card__icon" aria-hidden="true"><Icon size={22} strokeWidth={1.75} /></span>
-            <h2 className="later-card__title">{title}</h2>
-            <p className="later-card__text">{text}</p>
-            <p className="later-card__state"><span className="badge badge-outline">Offen: ob und wie</span></p>
-          </li>
-        ))}
-      </ul>
+      <section className="later" aria-labelledby="later-title">
+        <h2 id="later-title" className="later__title">Offen: ob und wie</h2>
+        <ul className="list" role="list">
+          {modules.map(({ id, title, Icon, text }) => (
+            <li key={id} className="later__item">
+              <Icon className="later__icon" aria-hidden="true" size={20} strokeWidth={1.75} />
+              <div>
+                <h3 className="later__name">{title}</h3>
+                <p className="later__text">{text}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
     </>
   );
 }

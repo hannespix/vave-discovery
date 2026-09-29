@@ -1,59 +1,76 @@
-/* Zeiterfassung (Builder B) – nur Tokens aus tokens.css, keine eigenen Farbwerte. Präfix .tt-, Handy zuerst. */
+/* Zeiten (r07) – nur Tokens aus tokens.css, Bausteine aus base.css. Präfix .tt-, Handy zuerst.
+   Farbrollen: Violett = Aktion und laufender Timer, Limette = Zustand (Fläche, schwarze Schrift), Schwarz/Grau = Struktur,
+   Koralle = nur „überzogen“, Projektfarbe nur als Punkt. Übergänge ≤ 200 ms, nur bei Zustandswechsel.
+   Schrift (r07-K1): nur --fs-label / --fs-meta / --fs-body / --fs-title, Gewichte nur 400 und 600. */
 
 .tt { display: grid; gap: var(--s-5); min-width: 0; }
-.tt-head { display: grid; gap: var(--s-2); }
-.tt-lead { max-width: 42ch; }
-
-.tt-grid { display: grid; gap: var(--s-5); align-items: start; }
-.tt-col { display: grid; gap: var(--s-5); min-width: 0; }
-@media (min-width: 1024px) {
-  .tt-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
-}
-
-.tt-card { display: grid; gap: var(--s-4); align-content: start; min-width: 0; }
-@media (max-width: 479px) {
-  .tt .tt-card { padding: var(--s-4); }
-}
-.tt-card-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-2) var(--s-3); }
-.tt-card-meta { color: var(--c-ink-2); font-size: 0.9375rem; }
-.tt-optional { font-weight: 350; color: var(--c-ink-2); }
 .tt ::placeholder { color: var(--c-ink-3); opacity: 1; }
-.tt-empty { color: var(--c-ink-2); }
+.tt-optional { font-weight: 400; color: var(--c-ink-2); }
 
-/* Projektauswahl mit Studiofarbe */
-.tt-swatch {
-  display: inline-block; flex: none; width: 12px; height: 12px; border-radius: 50%;
-  border: 1.5px solid var(--c-line-strong);
+/* Seitenkopf: Titel und Ansicht */
+.tt .tt-header { margin-bottom: 0; align-items: center; }
+.tt-header-main { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-5); min-width: 0; }
+
+/* Kopf der gewählten Woche: ‹ KW 39 · 21.09.–27.09. › „Diese Woche“ … Summe von 40 h Soll */
+.tt-range-section { display: grid; gap: var(--s-3); min-width: 0; }
+.tt-range {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3);
+  padding-bottom: var(--s-3); border-bottom: 1px solid var(--c-line);
 }
+.tt-range-nav { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.tt-range-title {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s-2); min-width: 0;
+  font-size: var(--fs-body); font-weight: 600; letter-spacing: normal; text-transform: none; color: var(--c-ink);
+}
+.tt-range-dates { font-weight: 400; color: var(--c-ink-2); white-space: nowrap; }
+.tt-range-kw { white-space: nowrap; }
+@media (hover: hover) {
+  .tt-range-step[aria-disabled="true"]:hover { background: var(--c-surface); border-color: var(--c-line-strong); color: var(--c-ink); }
+}
+.tt-range-figure { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s-2); margin-left: auto; }
+.tt-range-figure strong { font-size: var(--fs-body); font-weight: 600; }
+
+/* Projektpunkt (Farbe nur als Punkt; Kontur, weil Limette auf Weiß sonst verschwindet) */
+.tt-dot { width: 10px; height: 10px; box-shadow: 0 0 0 1px var(--c-line-strong); }
 .tt-select { position: relative; min-width: 0; }
-.tt-select .select { padding-left: 36px; text-overflow: ellipsis; }
-.tt-select-swatch { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.tt-select .select { padding-left: 34px; text-overflow: ellipsis; }
+.tt-select .tt-dot { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
 
-/* Timer */
-.tt-clock-panel {
-  display: grid; gap: var(--s-1); justify-items: center; text-align: center;
-  padding: var(--s-5) var(--s-4); border-radius: var(--radius-l);
-  background: var(--c-bg-2); color: var(--c-ink);
-  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+/* ---------- Leiste ---------- */
+.tt-bar {
+  display: grid; gap: var(--s-4); min-width: 0; padding: var(--s-4);
+  border: 1px solid var(--c-line); border-radius: var(--radius-l); background: var(--c-surface);
+  container-type: inline-size;
 }
-.tt-clock-panel[data-running="true"] { background: var(--c-lime); color: var(--c-lime-ink); }
-.tt-clock {
-  font-size: clamp(3rem, 15vw, 4.75rem); font-weight: 600; line-height: 1; letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
+.tt-bar[data-running="true"][data-mode="timer"] { border-color: var(--c-accent); box-shadow: inset 0 0 0 1px var(--c-accent); }
+.tt-bar-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2) var(--s-3); }
+.tt-bar-running { display: inline-flex; align-items: center; gap: var(--s-2); }
+.tt-live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c-accent); }
+
+/* Timer: Feld, Projekt, Laufzeit, runder Knopf */
+.tt-timer { display: grid; gap: var(--s-3); grid-template-columns: minmax(0, 1fr); align-items: center; }
+.tt-timer-what { display: grid; gap: var(--s-1); min-width: 0; }
+.tt-timer-task { overflow-wrap: anywhere; }
+.tt-timer-run { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
+.tt-clock-box { display: grid; gap: 2px; min-width: 0; }
+.tt-clock { font-size: var(--fs-title); font-weight: 600; line-height: 1; letter-spacing: -0.01em; }
+.tt-clock[data-running="true"] { color: var(--c-accent-text); }
 /* Readex Pro hat keine Tabellenziffern (tnum wirkt nicht) – feste Zelle je Ziffer, die Uhr springt nicht */
 .tt-clock-digits { display: inline-flex; }
 .tt-clock-digit { display: inline-block; width: 1ch; text-align: center; }
-.tt-clock-sub { font-size: 0.9375rem; color: var(--c-ink-2); }
-.tt-clock-panel[data-running="true"] .tt-clock-sub { color: var(--c-lime-ink); }
-
-.tt-bigbtn {
-  width: 100%; min-height: 64px; gap: var(--s-3);
-  font-size: 1.25rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+.tt-go {
+  flex: none; display: inline-grid; place-items: center; width: 60px; height: 60px; padding: 0;
+  border: 0; border-radius: 50%; background: var(--c-accent); color: var(--c-accent-ink); cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
-.tt-bigbtn[data-running="true"] { background: var(--c-ink); border-color: var(--c-ink); color: var(--c-bg); }
-.tt-bigbtn[data-running="true"]:hover { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-accent-ink); }
-/* Timer läuft über 10 h: Hinweis zwischen Uhr und Knopf */
+.tt-go:focus-visible { border-radius: 50%; }
+@media (hover: hover) { .tt-go:hover { background: var(--c-ink); color: var(--c-bg); } }
+@container (min-width: 44rem) {
+  .tt-timer { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto; }
+  .tt-clock-box { justify-items: end; text-align: right; }
+}
+
+/* Timer läuft über 10 h */
 .tt-longrun {
   display: flex; gap: var(--s-2); align-items: flex-start; padding: var(--s-3);
   border-radius: var(--radius); background: var(--c-warn-soft); color: var(--c-warn); line-height: 1.4;
@@ -62,111 +79,199 @@
 .tt-longrun svg { flex: none; margin-top: 1px; }
 .tt-longrun strong { font-weight: 600; }
 
-/* Bestätigung nach Stopp und Nachtragen: Pille mit Symbol und Klartext (Live-Region), daneben „Anzeigen“ */
-.tt-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); min-width: 0; }
-/* Leer bleibt die Live-Region im DOM (sonst keine Ansage), soll aber keinen Abstand erzeugen */
-.tt-confirm:not([data-tone]) { margin-top: calc(-1 * var(--s-4)); }
-.tt-confirm[data-tone="ok"], .tt-confirm[data-tone="warn"] {
-  padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3); border-radius: var(--radius-l);
+/* Ein-Klick-Start: zuletzt genutzte Kombinationen */
+.tt-quick { display: grid; gap: var(--s-2); min-width: 0; }
+.tt-quick-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-2); min-width: 0; }
+.tt-quick-list > li { max-width: 100%; }
+/* Schmal: eine Zeile, die in sich seitlich rollt – die Leiste bleibt kurz (Innenabstand hält den Fokusring frei) */
+@container (max-width: 43.99rem) {
+  .tt-quick-list { flex-wrap: nowrap; overflow-x: auto; margin: -6px; padding: 6px; scrollbar-width: none; }
+  .tt-quick-list > li { flex: none; max-width: 85%; }
 }
-.tt-confirm[data-tone="ok"] { background: var(--c-lime); color: var(--c-lime-ink); box-shadow: inset 0 0 0 1.5px var(--c-lime-ink); }
-.tt-confirm[data-tone="warn"] { background: var(--c-warn-soft); color: var(--c-warn); box-shadow: inset 0 0 0 1.5px var(--c-warn); }
-.tt-confirm[data-tone="info"] { font-size: 0.9375rem; color: var(--c-ink-2); }
-.tt-confirm-text { flex: 1 1 13rem; min-width: 0; }
-.tt-confirm-msg { display: flex; gap: var(--s-2); align-items: flex-start; padding: var(--s-1) 0; line-height: 1.4; overflow-wrap: anywhere; }
-.tt-confirm[data-tone="ok"] .tt-confirm-msg, .tt-confirm[data-tone="warn"] .tt-confirm-msg { font-weight: 500; }
-.tt-confirm-msg svg { flex: none; }
-.tt-confirm-btn { flex: none; margin-left: auto; }
+/* pages.css (Heute/Studios) definiert .chip global als 14-px-Farbfeld und überschreibt damit den Baustein aus base.css –
+   hier lokal zurückgesetzt, bis der Name dort frei wird */
+.tt .tt-chip {
+  display: inline-flex; flex: initial; width: auto; height: auto; min-height: var(--tap); max-width: 100%; min-width: 0;
+  border-radius: 999px; box-shadow: none;
+}
+/* Neutral wie jeder .chip; das kleine Play-Zeichen in Schrift-Grau – Violett bleibt dem runden Knopf und dem laufenden Timer */
+.tt-chip-play { flex: none; color: var(--c-ink-2); }
+.tt-chip-code { font-weight: 600; }
+.tt-chip-label { min-width: 0; max-width: 14rem; overflow: hidden; text-overflow: ellipsis; }
+.tt-quick-list::-webkit-scrollbar { display: none; }
 
-/* Formulare */
-.tt-form { display: grid; gap: var(--s-4); container-type: inline-size; }
-/* Datums- und Zeitfelder schrumpfen in Chrome nicht unter ~160 px: erst ab genug Breite nebeneinander */
-.tt-form-row { display: grid; gap: var(--s-4) var(--s-3); grid-template-columns: minmax(0, 1fr); align-items: start; }
-.tt-submit { width: 100%; }
-@container (min-width: 21rem) {
-  .tt-form-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .tt-form-dur { grid-column: 1 / -1; }
+/* Nachtragen: Datum, Beginn, Dauer, Ende · Projekt, Notiz, Speichern */
+.tt-manual { display: grid; gap: var(--s-3); }
+.tt-manual-when { display: grid; gap: var(--s-3); grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.tt-manual-what { display: grid; gap: var(--s-3); grid-template-columns: minmax(0, 1fr); align-items: end; }
+.tt-manual .input { min-width: 0; }
+.tt-save { width: 100%; }
+@container (min-width: 44rem) {
+  .tt-manual-when { grid-template-columns: minmax(0, 1.25fr) repeat(3, minmax(0, 1fr)); }
+  .tt-manual-what { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) auto; }
+  .tt-save { width: auto; }
 }
-@container (min-width: 26rem) {
-  .tt-submit { width: auto; justify-self: start; }
-}
-@container (min-width: 32rem) {
-  .tt-form-row { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr); }
-  .tt-form-dur { grid-column: auto; }
-}
-.tt-hint { font-size: 0.875rem; color: var(--c-ink-2); }
+/* Echo unter jedem Dauerfeld: „= 1:30 h“ – Zeile ist immer da, damit nichts springt */
+.tt-echo { display: flex; gap: var(--s-1); align-items: flex-start; min-height: 1.4em; font-size: var(--fs-meta); line-height: 1.35; color: var(--c-ink-2); }
+.tt-echo[data-state="echo"] { color: var(--c-ink); font-weight: 600; }
+.tt-echo[data-state="error"] { color: var(--c-danger); font-weight: 600; }
+.tt-echo svg { flex: none; margin-top: 2px; }
 .tt-error {
   display: flex; gap: var(--s-2); align-items: flex-start;
-  font-size: 0.9375rem; font-weight: 500; line-height: 1.35; color: var(--c-danger);
+  font-size: var(--fs-meta); font-weight: 600; line-height: 1.35; color: var(--c-danger);
 }
 .tt-error svg { flex: none; margin-top: 1px; }
 .tt .input[aria-invalid="true"] { border-color: var(--c-danger); }
-/* Datum/Uhrzeit: hat der Kalender-/Uhr-Knopf im Feld den Fokus, greift :focus(-visible) am Feld nicht – Ring trotzdem zeigen */
+/* Datum/Uhrzeit: hat der Kalender-/Uhr-Knopf im Feld den Fokus, greift :focus-visible am Feld nicht – Ring trotzdem */
 .tt input[type="date"]:focus-within, .tt input[type="time"]:focus-within { box-shadow: var(--focus); border-color: var(--c-accent); }
 
-/* Liste der Woche */
-.tt-weeksum { display: flex; align-items: baseline; gap: var(--s-2); }
-.tt-weeksum-label { color: var(--c-ink-2); font-size: 0.9375rem; }
-.tt-weeksum strong { font-size: 1.25rem; font-weight: 600; }
-.tt-day { display: grid; gap: var(--s-1); container-type: inline-size; }
-.tt-day + .tt-day { padding-top: var(--s-4); border-top: 1px solid var(--c-line); }
-.tt-day-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-1) var(--s-2); font-size: 1rem; font-weight: 600; }
-.tt-day-date { color: var(--c-ink-2); font-weight: 400; }
-.tt-day-sum { margin-left: auto; }
-.tt-entries { list-style: none; margin: 0; padding: 0; display: grid; }
+/* Bestätigung in der Leiste */
+.tt-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); min-width: 0; }
+.tt-confirm:not([data-tone]) { margin-top: calc(-1 * var(--s-4)); } /* leer: Live-Region bleibt, ohne Abstand */
+.tt-confirm[data-tone] { padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3); border-radius: var(--radius-l); }
+.tt-confirm[data-tone="ok"] { background: var(--c-lime); color: var(--c-lime-ink); box-shadow: inset 0 0 0 1.5px var(--c-lime-ink); }
+.tt-confirm[data-tone="warn"] { background: var(--c-warn-soft); color: var(--c-warn); box-shadow: inset 0 0 0 1.5px var(--c-warn); }
+.tt-confirm[data-tone="note"] { background: var(--c-bg-2); color: var(--c-ink); box-shadow: inset 0 0 0 1.5px var(--c-line-strong); }
+.tt-confirm-text { flex: 1 1 13rem; min-width: 0; }
+.tt-confirm-msg { display: flex; gap: var(--s-2); align-items: flex-start; padding: var(--s-1) 0; line-height: 1.4; font-weight: 600; overflow-wrap: anywhere; }
+.tt-confirm-msg svg { flex: none; }
+.tt-confirm-btn { flex: none; margin-left: auto; }
 
-.tt-entry {
-  position: relative; isolation: isolate;
-  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas: "dot main dur" "dot main act";
-  column-gap: var(--s-3); align-items: center; padding: var(--s-2) 0;
+/* ---------- Liste ---------- */
+.tt-list { display: grid; gap: var(--s-5); min-width: 0; }
+.tt-day { display: grid; min-width: 0; container-type: inline-size; }
+.tt-day-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3);
+  padding-bottom: var(--s-2); border-bottom: 1px solid var(--c-line-strong);
 }
-.tt-entry + .tt-entry { border-top: 1px solid var(--c-line); }
-.tt-entry-swatch { grid-area: dot; align-self: start; margin-top: 6px; }
-.tt-entry-main { grid-area: main; min-width: 0; }
-.tt-entry-title, .tt-entry-meta { overflow-wrap: anywhere; }
-.tt-entry-title strong { font-weight: 600; }
-.tt-entry-meta { font-size: 0.9375rem; color: var(--c-ink-2); }
-.tt-entry-dur { grid-area: dur; justify-self: end; font-weight: 600; white-space: nowrap; }
-.tt-entry-actions { grid-area: act; justify-self: end; display: flex; }
-.tt-danger:hover { background: var(--c-danger-soft); color: var(--c-danger); }
-@container (min-width: 30rem) {
-  .tt-entry { grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "dot main dur act"; }
+.tt-day-title { font-size: var(--fs-body); font-weight: 600; }
+.tt-day-date { color: var(--c-ink-2); font-weight: 400; }
+.tt-day-sum { font-weight: 600; border-radius: 999px; }
+.tt-empty { padding: var(--s-3) 0; }
+
+.tt-row {
+  position: relative; isolation: isolate; display: grid; min-height: 56px; padding: var(--s-2) 0;
+  grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "main dur" "main act";
+  column-gap: var(--s-3); align-items: center;
 }
-/* Hervorhebung nach dem Speichern: Limette als Fläche (etwas breiter als die Zeile, ohne sie zu verschieben),
-   Schrift in --c-lime-ink; danach ruhig ausblenden (Bewegung unten, ≤ 300 ms). */
-.tt-entry::before {
+.tt-row-main { grid-area: main; min-width: 0; display: grid; gap: 2px; }
+.tt-row-title { overflow-wrap: anywhere; }
+.tt-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--s-2); font-size: var(--fs-meta); color: var(--c-ink-2); }
+.tt-row-code { font-weight: 600; color: var(--c-ink); }
+.tt-row-note { overflow-wrap: anywhere; }
+.tt-row-dur { grid-area: dur; justify-self: end; font-weight: 600; white-space: nowrap; }
+.tt-row-actions { grid-area: act; justify-self: end; display: flex; align-items: center; gap: 2px; }
+@media (hover: hover) { .tt-danger:hover { background: var(--c-danger-soft); color: var(--c-danger); } }
+@container (min-width: 34rem) {
+  .tt-row { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "main dur act"; }
+}
+/* Hervorhebung nach dem Speichern: Limette als Fläche (etwas breiter als die Zeile), danach kurz ausblenden */
+.tt-row::before {
   content: ''; position: absolute; z-index: -1; inset: 0 calc(-1 * var(--s-2)); pointer-events: none;
   border-radius: var(--radius); background: var(--c-lime); box-shadow: inset 0 0 0 1.5px var(--c-lime-ink); opacity: 0;
 }
-.tt-entry[data-highlight]::before { opacity: 1; }
-.tt-entry[data-highlight], .tt-entry[data-highlight] .tt-entry-meta,
-.tt-entry[data-highlight] .btn-ghost:not(:hover) { color: var(--c-lime-ink); }
-.tt-entry[data-highlight] .tt-entry-swatch { border-color: var(--c-lime-ink); } /* Studiopunkt bleibt auf Limette sichtbar */
+.tt-row[data-highlight]::before { opacity: 1; }
+.tt-row[data-highlight], .tt-row[data-highlight] .tt-row-meta, .tt-row[data-highlight] .tt-row-code,
+.tt-row[data-highlight] .btn-ghost { color: var(--c-lime-ink); }
 /* „Anzeigen“ fokussiert die Zeile: mit Tastatur ein Ring um dieselbe Fläche (base.css blendet ihn bei tabindex -1 aus) */
-.tt .tt-entry:focus-visible { box-shadow: none; }
-.tt .tt-entry:focus-visible::before { opacity: 1; background-color: transparent; box-shadow: var(--focus); }
-.tt .tt-entry[data-highlight]:focus-visible::before {
-  background-color: var(--c-lime); box-shadow: inset 0 0 0 1.5px var(--c-lime-ink), var(--focus);
-}
-/* Summen des Tages und der Woche ändern sich sichtbar mit */
-.tt-day-sum, .tt-weeksum strong { border-radius: 999px; }
-.tt-day-sum[data-highlight], .tt-weeksum strong[data-highlight] {
-  background: var(--c-lime); color: var(--c-lime-ink);
-  box-shadow: 0 0 0 4px var(--c-lime), 0 0 0 5.5px var(--c-lime-ink);
+.tt .tt-row:focus-visible { box-shadow: none; }
+.tt .tt-row:focus-visible::before { opacity: 1; background-color: transparent; box-shadow: var(--focus); }
+.tt .tt-row[data-highlight]:focus-visible::before { background-color: var(--c-lime); box-shadow: inset 0 0 0 1.5px var(--c-lime-ink), var(--focus); }
+.tt-day-sum[data-highlight] { background: var(--c-lime); color: var(--c-lime-ink); box-shadow: 0 0 0 4px var(--c-lime), 0 0 0 5.5px var(--c-lime-ink); }
+
+/* Bearbeiten: Panel an der Zeile */
+.tt-row-editing { padding: var(--s-2) 0; }
+.tt-edit { display: grid; gap: var(--s-3); padding: var(--s-4); }
+.tt-edit-grid { display: grid; gap: var(--s-3); grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.tt-edit-grid > .tt-dur { grid-column: 1 / -1; }
+.tt-edit .input { min-width: 0; }
+.tt-edit-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+.tt-edit-delete { margin-right: auto; }
+@container (min-width: 34rem) {
+  .tt-edit-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr); }
+  .tt-edit-grid > .tt-dur { grid-column: auto; }
 }
 
-.tt-entry-editing { display: block; margin: var(--s-2) 0; padding: var(--s-4); border-radius: var(--radius); background: var(--c-bg-2); }
-.tt-edit { display: grid; gap: var(--s-3); }
-.tt-edit-row { display: grid; gap: var(--s-3); }
-@container (min-width: 30rem) {
-  .tt-edit-row { grid-template-columns: minmax(0, 8rem) minmax(0, 1fr); }
+/* ---------- Woche ---------- */
+.tt-week { display: grid; gap: var(--s-3); min-width: 0; }
+.tt-week-tools { display: flex; flex-wrap: wrap; gap: var(--s-2); min-width: 0; }
+.tt-add-row {
+  appearance: none; -webkit-appearance: none; width: 8rem; max-width: 100%; min-height: var(--tap); padding: 0 var(--s-4);
+  border: 1.5px solid var(--c-line-strong); border-radius: 999px; background: var(--c-surface); color: var(--c-ink);
+  font-weight: 400; cursor: pointer;
 }
+.tt-add-row:disabled { opacity: .55; cursor: not-allowed; }
+@media (hover: hover) { .tt-add-row:not(:disabled):hover { background: var(--c-bg-2); } }
 
-/* Hinweis mit Rückgängig – unten im Blick, ohne die Seite zu verschieben */
+/* Die Tabelle scrollt in ihrem Rahmen, nie die Seite; Projektspalte bleibt stehen */
+/* position: relative hält auch versteckte Hilfstexte (visually-hidden, absolut) im Rahmen */
+.tt-grid-scroll { position: relative; overflow-x: auto; min-width: 0; max-width: 100%; overscroll-behavior-x: contain; }
+.tt-grid { min-width: 38rem; }
+.tt-grid th, .tt-grid td { padding: var(--s-1) var(--s-2); }
+.tt-grid thead tr:first-child th { border-bottom: 0; padding-bottom: 0; }
+.tt-grid-sums td { font-weight: 600; border-bottom: 1px solid var(--c-line-strong); }
+.tt-grid-sums td.tt-grid-project { font-weight: 400; }
+.tt-grid-project { position: sticky; left: 0; z-index: 1; background: var(--c-bg); text-align: left; min-width: 8.5rem; max-width: 10rem; }
+.tt-grid-day, .tt-grid td.tt-cell { width: 5.25rem; }
+.tt-grid-sumcol { width: 4.5rem; }
+.tt-grid tbody th {
+  font-size: var(--fs-body); font-weight: 400; letter-spacing: normal; text-transform: none; color: var(--c-ink);
+  white-space: normal; border-bottom-color: var(--c-line);
+}
+.tt-week { container-type: inline-size; }
+@container (min-width: 44rem) { .tt-grid-project { min-width: 12rem; max-width: 20rem; } }
+.tt-grid-name { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.tt-grid-code { font-weight: 600; white-space: nowrap; }
+.tt-grid-pname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tt-rest { display: block; margin-left: calc(10px + var(--s-2)); }
+.tt-over {
+  display: inline-block; margin: 2px 0 0 calc(10px + var(--s-2)); padding: 0 var(--s-2); border-radius: 999px;
+  background: var(--c-danger-fill); color: var(--c-danger-fill-ink); box-shadow: inset 0 0 0 1px var(--c-line-strong);
+  font-size: var(--fs-label); font-weight: 600; line-height: 1.6;
+}
+.tt-grid-day { vertical-align: bottom; }
+.tt-grid-dayname { display: inline-block; padding: 1px var(--s-2); border-radius: 999px; }
+.tt-grid-day[data-today] .tt-grid-dayname { background: var(--c-lime); color: var(--c-lime-ink); box-shadow: inset 0 0 0 1px var(--c-line-strong); }
+.tt-grid-sumcol { font-weight: 600; white-space: nowrap; }
+.tt-cell { position: relative; }
+.tt-grid td.tt-cell { padding: 3px; }
+.tt-cell-input {
+  display: block; width: 100%; min-width: 4.25rem; min-height: var(--tap); padding: 0 var(--s-2);
+  border: 1px solid transparent; border-radius: var(--radius); background: var(--c-bg-2); color: var(--c-ink);
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+@media (hover: hover) { .tt-cell-input:hover { border-color: var(--c-control); } }
+.tt-cell-input:focus { background: var(--c-surface); border-color: var(--c-accent); }
+.tt-cell-input[aria-invalid="true"] { border-color: var(--c-danger); }
+/* „Anzeigen“ aus der Bestätigung: die Zelle des Eintrags kurz in Limette */
+.tt-cell[data-highlight] .tt-cell-input { background: var(--c-lime); color: var(--c-lime-ink); box-shadow: inset 0 0 0 1.5px var(--c-lime-ink); }
+.tt-cell-static { display: block; padding: 0 var(--s-2); color: var(--c-ink-3); }
+/* Echo über der Zelle, während getippt wird */
+.tt-bubble {
+  position: absolute; z-index: 3; bottom: calc(100% - 2px); right: 3px; display: inline-flex; align-items: flex-start; gap: 4px;
+  width: max-content; max-width: 15rem; padding: 2px var(--s-2); border-radius: var(--radius-s);
+  background: var(--c-ink); color: var(--c-bg); font-size: var(--fs-label); font-weight: 600; line-height: 1.4;
+  text-align: left; white-space: normal; pointer-events: none;
+}
+.tt-bubble[data-tone="error"] { background: var(--c-danger-fill); color: var(--c-danger-fill-ink); box-shadow: inset 0 0 0 1px var(--c-line-strong); }
+.tt-bubble svg { flex: none; margin-top: 2px; }
+/* Statuszeile unter dem Raster: Meldung und „Rückgängig“ (bleibt bis zur nächsten Änderung) */
+.tt-grid-statusbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); min-height: 1.4em; }
+.tt-grid-status { flex: 1 1 16rem; min-width: 0; font-size: var(--fs-meta); color: var(--c-ink-2); overflow-wrap: anywhere; }
+.tt-grid-status[data-tone="warn"] { color: var(--c-ink); font-weight: 600; }
+.tt-grid-undo { flex: none; }
+
+/* Woche gegen Soll: schmaler Balken */
+.tt-goal { display: grid; gap: var(--s-2); padding-top: var(--s-3); border-top: 1px solid var(--c-line); }
+.tt-goal-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s-2); }
+.tt-goal-text strong { font-size: var(--fs-body); font-weight: 600; }
+.tt-goal-bar { height: 6px; border-radius: 999px; background: var(--c-bg-2); overflow: hidden; box-shadow: inset 0 0 0 1px var(--c-line); }
+.tt-goal-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--c-ink); }
+
+/* ---------- Hinweis unten (Rückgängig) ---------- */
 .tt-toast-region {
   position: fixed; z-index: 40; left: var(--s-4); right: var(--s-4);
-  bottom: var(--dock-bottom, calc(var(--s-4) + env(safe-area-inset-bottom, 0px))); /* über der Tab-Leiste der Hülle */
+  bottom: var(--dock-bottom, calc(var(--s-4) + env(safe-area-inset-bottom, 0px)));
   display: flex; justify-content: center; pointer-events: none;
 }
 .tt-toast {
@@ -177,42 +282,16 @@
 .tt-toast-msg { display: flex; gap: var(--s-2); align-items: flex-start; padding: var(--s-2) 0; }
 .tt-toast-msg svg { flex: none; margin-top: 2px; }
 .tt-toast-btn { background: transparent; border-color: var(--c-bg); color: var(--c-bg); }
-.tt-toast-btn:hover { background: var(--c-lime); border-color: var(--c-lime); color: var(--c-lime-ink); }
+@media (hover: hover) { .tt-toast-btn:hover { background: var(--c-lime); border-color: var(--c-lime); color: var(--c-lime-ink); } }
 
-/* Wochenblick */
-.tt-chart { display: block; width: 100%; overflow: visible; }
-.tt-axis { stroke: var(--c-control); stroke-width: 1.5; }
-.tt-bar { fill: var(--c-accent-text); }
-.tt-bar.is-today { fill: var(--c-lime); stroke: var(--c-line-strong); stroke-width: 1.5; }
-.tt-chart-value { fill: var(--c-ink); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.tt-chart-day { fill: var(--c-ink-2); font-size: 13px; font-weight: 500; }
-.tt-chart-day.is-future { fill: var(--c-ink-3); }
-.tt-chart-date { fill: var(--c-ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
-.tt-chart-day.is-today, .tt-chart-date.is-today { fill: var(--c-ink); font-weight: 700; }
-
-.tt-sub { font-size: 1rem; font-weight: 600; }
-.tt-projects { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); }
-.tt-project { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px var(--s-3); align-items: center; }
-.tt-project-name { min-width: 0; overflow-wrap: anywhere; }
-.tt-project-name strong { font-weight: 600; }
-.tt-project-value { font-weight: 600; white-space: nowrap; }
-.tt-project-share { font-weight: 400; color: var(--c-ink-2); }
-.tt-project-bar { grid-column: 2 / -1; height: 6px; border-radius: 999px; background: var(--c-bg-2); overflow: hidden; }
-.tt-project-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--c-accent-text); }
-
-/* Bewegung nur bei echter Änderung und nur, wenn erwünscht. Beim Öffnen bewegt sich nichts (Transitions greifen erst,
-   wenn sich ein Wert ändert). Reduziert: keine Übergänge, die Hervorhebung steht statisch rund 2 s (FLASH_MS). */
+/* Bewegung nur bei Zustandswechsel und nur, wenn erwünscht (≤ 200 ms). Beim Öffnen bewegt sich nichts. */
 @media (prefers-reduced-motion: no-preference) {
-  /* Balken und Werte gleiten vom alten zum neuen Wert */
-  .tt-bar, .tt-chart-value { transition: transform 220ms var(--ease); }
-  .tt-project-bar > span { transition: width 220ms var(--ease); }
-  /* Hervorhebung: sofort da, danach 300 ms ausblenden */
-  .tt-entry::before { transition: opacity 300ms var(--ease), background-color 300ms var(--ease); }
-  .tt-entry, .tt-entry-meta { transition: color 300ms var(--ease); }
-  .tt-day-sum, .tt-weeksum strong { transition: background-color 300ms var(--ease), box-shadow 300ms var(--ease), color 300ms var(--ease); }
-  .tt-entry[data-highlight], .tt-entry[data-highlight]::before, .tt-entry[data-highlight] .tt-entry-meta,
-  .tt-day-sum[data-highlight], .tt-weeksum strong[data-highlight] { transition: none; }
-  /* Hinweis mit Rückgängig blendet kurz ein */
+  .tt-row::before { transition: opacity 200ms var(--ease), background-color 200ms var(--ease); }
+  .tt-row, .tt-row-meta { transition: color 200ms var(--ease); }
+  .tt-day-sum { transition: background-color 200ms var(--ease), box-shadow 200ms var(--ease), color 200ms var(--ease); }
+  .tt-row[data-highlight], .tt-row[data-highlight]::before, .tt-row[data-highlight] .tt-row-meta,
+  .tt-day-sum[data-highlight] { transition: none; }
+  .tt-goal-bar > span { transition: width 200ms var(--ease); }
   .tt-toast { animation: tt-fade-in 160ms var(--ease) both; }
 }
 @keyframes tt-fade-in { from { opacity: 0; } to { opacity: 1; } }
