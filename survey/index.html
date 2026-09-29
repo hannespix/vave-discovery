@@ -1395,15 +1395,19 @@ input[type="range"]::-moz-range-thumb {
   const LINE_AMP = [0, 1.5, 3.5, 6, 9];
   const linePath = a => 'M' + LINE_X.map((x, i) => `${x} ${(12 - LINE_JAG[i] * a).toFixed(2)}`).join(' L');
   const lineSvg = a => `<svg class="fline" viewBox="0 0 48 24" aria-hidden="true"><path d="${linePath(a)}"/></svg>`;
+  // Läuft schon eine Animation zum selben Ziel, bleibt sie (Halten auf dem Regler meldet denselben Wert oft).
+  // p nie < 0: Am Handy bekommt der erste rAF-Callback nach einem Zeiger-Ereignis die Startzeit des laufenden Frames,
+  // also etwas vor t0 – mit p < 0 schösse die Kurve über den Startwert hinaus, bei jedem Neustart weiter (r05-Hotfix).
   function animateLine(path, to) {
     const from = path._amp === undefined ? to : path._amp;
-    cancelAnimationFrame(path._raf);
+    if (path._raf && path._to === to) return;
+    cancelAnimationFrame(path._raf); path._raf = 0; path._to = to;
     if (REDUCED || from === to) { path._amp = to; path.setAttribute('d', linePath(to)); return; }
     const t0 = performance.now();
     const frame = t => {
-      const p = Math.min(1, (t - t0) / 220), k = 1 - Math.pow(1 - p, 3);
+      const p = Math.max(0, Math.min(1, (t - t0) / 220)), k = 1 - Math.pow(1 - p, 3);
       path._amp = from + (to - from) * k; path.setAttribute('d', linePath(path._amp));
-      if (p < 1) path._raf = requestAnimationFrame(frame);
+      path._raf = p < 1 ? requestAnimationFrame(frame) : 0;
     };
     path._raf = requestAnimationFrame(frame);
   }
@@ -1430,6 +1434,7 @@ input[type="range"]::-moz-range-thumb {
   // v undefined = Bewertung zurücknehmen: zählt dann nicht, zeigt keinen Wert
   function setFriction(row, v) {
     const id = row.dataset.id;
+    if (v === state.friction[id]) return; // gleicher Wert (Halten, Zittern): nichts neu setzen, nichts neu animieren
     if (v === undefined) delete state.friction[id]; else state.friction[id] = v;
     save();
     const input = $('input[type="range"]', row), text = frictionText(v);
