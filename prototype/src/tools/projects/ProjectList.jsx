@@ -1,5 +1,7 @@
-// Projektliste als Zeilen (r07): Code und Name, Kunde grau, Status als Punkt mit Wort, Lead als Kürzel, Abgabe und rechts
-// die Reststunden mit schmalem Balken. Ab 720 px Inhaltsbreite tabellenartig ausgerichtet (ein Raster für alle Zeilen).
+// Projektliste als Zeilen (r07, r08 luftiger): schmal drei Zeilen – Code und Name | Kunde und Status | Abgabe und Lead
+// (Kürzel mit sichtbarem Namen) –, rechts oben die Reststunden mit schmalem Balken. Ab 720 px Inhaltsbreite
+// tabellenartig ausgerichtet (ein Raster für alle Zeilen; die Zeilen-Container lösen sich dort auf), der Lead-Name ist
+// ab 880 px sichtbar, darunter trägt ihn title und der Screenreader-Text.
 // Jede Zeile ist genau ein Link (Name; die Trefferfläche deckt die ganze Zeile). Schmal liegen Suche, Chips und
 // Sortierung hinter „Filter“, damit die erste Zeile gleich im Bild ist. Im Kopf „Neues Projekt“ (→ #/projekte/neu).
 import { useId, useMemo, useState } from 'react';
@@ -33,13 +35,16 @@ function ProjectRow({ p, b }) {
     <li className={`pj-row is-${b.state}`}>
       <span className="pj-row-code num">{p.code}</span>
       <a className="pj-row-name" href={href('/projekte/' + p.id)} data-project-link={p.id} aria-describedby={descId}>{p.name}</a>
-      <div className="pj-row-sub">
+      <div className="pj-row-line pj-row-l2">
         <span className="pj-row-client">{clientsById()[p.client]?.name}</span>
         <span className="pj-row-status"><StatusDot status={p.status} /></span>
-        <span className="pj-row-lead" title={lead?.name}>
-          <Avatar person={lead} size="is-s" /><span className="visually-hidden">Lead: {lead?.name}</span>
-        </span>
+      </div>
+      <div className="pj-row-line pj-row-l3">
         <span className="pj-row-due"><span className="visually-hidden">Abgabe: </span><DueText iso={p.due} short /></span>
+        <span className="pj-row-lead" title={lead?.name}>
+          <Avatar person={lead} size="is-s" />
+          <span className="visually-hidden">Lead: </span><span className="pj-row-lead-name">{lead?.name}</span>
+        </span>
       </div>
       <div className="pj-row-rest">
         <span className="pj-rest-num num" aria-hidden="true"><StateIcon state={b.state} size={16} />{fmtRest(b.rest)}</span>
@@ -99,7 +104,8 @@ export default function ProjectList({ filters, setFilters }) {
         </div>
         <div id={ids.panel} className="pj-filter-panel" data-open={open}>
           <div className="pj-search">
-            <label htmlFor={ids.search} className="visually-hidden">Suchen</label>
+            {/* Eigener Name – „Suchen“ heißt schon die Befehlspalette der Hülle */}
+            <label htmlFor={ids.search} className="visually-hidden">Projekte filtern</label>
             <Search size={18} aria-hidden="true" className="pj-search-icon" />
             <input id={ids.search} className="input" type="search" value={query} placeholder="Name, Kunde oder Code"
               autoComplete="off" onChange={e => set({ query: e.target.value })} />
@@ -131,10 +137,12 @@ export default function ProjectList({ filters, setFilters }) {
           <div className="pj-row pj-row-head" aria-hidden="true">
             <span className="pj-row-code">Code</span>
             <span className="pj-row-name">Projekt</span>
-            <div className="pj-row-sub">
+            <div className="pj-row-line pj-row-l2">
               <span className="pj-row-status">Status</span>
-              <span className="pj-row-lead">Lead</span>
+            </div>
+            <div className="pj-row-line pj-row-l3">
               <span className="pj-row-due">Abgabe</span>
+              <span className="pj-row-lead">Lead</span>
             </div>
             <span className="pj-row-rest">Rest</span>
           </div>

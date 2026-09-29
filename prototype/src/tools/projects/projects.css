@@ -1,24 +1,28 @@
 /* Projekte und Aufgaben (B3, r07). Handy zuerst; nur Tokens aus src/styles/tokens.css, keine eigenen Farbwerte.
    Farbrollen: Violett = Aktion, Limette = Zustand (Fläche, schwarze Schrift), Schwarz/Grau = Struktur,
-   Koralle nur „überzogen“, Studiofarben nur als Punkt. Übergänge ≤ 200 ms und nur bei Zustandswechsel. */
+   Koralle nur „überzogen“, Studiofarben nur als Punkt. Übergänge ≤ 200 ms und nur bei Zustandswechsel.
+   r08 Weißraum (Hannes: „genügend White Space, Readability, Barrierefreiheit“): Abstände nur über --space-*
+   (Abschnitte --space-section, Blöcke --space-block, Label → Inhalt --space-label, Zeilen --space-row), zwei Gewichte
+   (400 Text, 600 Titel/Bedienelemente), keine Schrift unter 13 px, mehrzeilige Titel mit Zeilenhöhe ≥ 1,4. */
 
 .pj, .pj-page { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; }
-.pj-page { gap: var(--s-5); }
+.pj-page { gap: var(--space-block); }
 .pj h1:focus, .pj h2:focus { box-shadow: none; }          /* Ziele für Fokus nach Ansichtswechsel, keine Bedienelemente */
 .pj-back { justify-self: start; min-height: var(--tap); padding-inline: var(--s-2) var(--s-3); margin-left: calc(-1 * var(--s-2)); font-size: var(--fs-meta); }
 
 .pj-dot { flex: none; display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--c-line-strong); }
 .pj-studio { display: inline-flex; align-items: center; gap: 6px; }
-.pj-status { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.pj-status { display: inline-flex; align-items: center; gap: var(--s-2); white-space: nowrap; }
 .pj-status .dot { width: 8px; height: 8px; color: var(--c-ink); }
 .pj-status.is-pitch .dot { background: transparent; box-shadow: inset 0 0 0 1.5px var(--c-ink); }
 .pj-status.is-intern .dot { color: var(--c-ink-3); }
+/* Kürzel-Avatar: Initialen nie unter 13 px (r08, Barrierefreiheit); der Name steht daneben oder im zugänglichen Namen */
 .pj-avatar {
   flex: none; display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
-  background: var(--c-accent-soft); color: var(--c-accent-text); font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.02em;
+  background: var(--c-accent-soft); color: var(--c-accent-text); font-size: var(--fs-label); font-weight: 600; line-height: 1; letter-spacing: 0.02em;
 }
-.pj-avatar.is-s { width: 28px; height: 28px; font-size: 0.6875rem; }
-.pj-avatar.is-xs { width: 22px; height: 22px; font-size: 0.625rem; }
+.pj-avatar.is-s { width: 30px; height: 30px; }
+.pj-avatar.is-xs { width: 26px; height: 26px; letter-spacing: 0; }
 .pj-rel { color: var(--c-ink-2); }
 .pj-state-icon { flex: none; }
 .pj-state-icon.is-ok { color: var(--c-ok); }
@@ -33,13 +37,15 @@
 .pj-bar.is-l { height: 8px; border-radius: 4px; }
 
 /* ---------- Liste ---------- */
-/* Kopf in einer Zeile: Titel links, „Neues Projekt“ rechts (einzige Hauptaktion der Ansicht) */
+/* Kopf in einer Zeile: Titel links, „Neues Projekt“ rechts (einzige Hauptaktion der Ansicht). Wie der Seitenkopf der
+   Hülle: 24 px bis zur Haarlinie, dann --space-header bis zum Inhalt (Raster-Abstand der Seite + Rest als Rand) */
 .pj-lhead {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2) var(--s-4);
-  padding-bottom: var(--s-3); border-bottom: 1px solid var(--c-line);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-3) var(--s-4);
+  padding-bottom: var(--s-5); border-bottom: 1px solid var(--c-line);
+  margin-bottom: calc(var(--space-header) - var(--space-block));
 }
-.pj-filters { display: grid; gap: var(--s-3); }
-.pj-result { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
+.pj-filters { display: grid; gap: var(--s-4); }
+.pj-result { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-4); }
 .pj-result-text { flex: 1 1 auto; }
 .pj-filter-toggle { gap: 6px; }
 .pj-filter-toggle[aria-expanded="true"] { background: var(--c-lime); border-color: var(--c-line-strong); color: var(--c-lime-ink); }
@@ -47,7 +53,7 @@
   display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px;
   background: var(--c-ink); color: var(--c-bg); font-size: var(--fs-label); font-weight: 600;
 }
-.pj-filter-panel { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
+.pj-filter-panel { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); }
 .pj-search { position: relative; flex: 1 1 14rem; min-width: 0; }
 .pj-search .input { padding-left: 36px; }
 .pj-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--c-ink-2); pointer-events: none; }
@@ -77,23 +83,32 @@
   .pj-search { flex: 0 1 16rem; }
 }
 
-/* Zeilen: ein Raster für Kopf und alle Zeilen – schmal zweizeilig, breit tabellenartig */
+/* Zeilen: ein Raster für Kopf und alle Zeilen. Schmal drei Zeilen – Code und Name | Kunde und Status | Abgabe und Lead
+   (mit Namen) –, rechts oben Rest mit Balken. Breit tabellenartig; ab 880 px Inhaltsbreite mit sichtbarem Lead-Namen. */
 .pj-table { container: pj-table / inline-size; }
 .pj-rows { border-top: 1px solid var(--c-line-strong); border-bottom: 1px solid var(--c-line); }
 .pj-row {
-  position: relative; display: grid; align-items: center; column-gap: var(--s-3); row-gap: 2px; padding: var(--s-3) 0;
+  position: relative; display: grid; align-items: center; column-gap: var(--s-3); row-gap: var(--s-1); padding: var(--space-row) 0;
   grid-template-columns: auto minmax(0, 1fr) 5.25rem;
-  grid-template-areas: "code name rest" "sub sub rest";
+  grid-template-areas: "code name rest" "l2 l2 rest" "l3 l3 l3";
 }
 .pj-row-head { display: none; }
-.pj-row-code { grid-area: code; font-size: var(--fs-meta); color: var(--c-ink-2); letter-spacing: 0.02em; }
-.pj-row-name { grid-area: name; min-width: 0; color: var(--c-ink); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+.pj-row-code { grid-area: code; align-self: baseline; font-size: var(--fs-meta); color: var(--c-ink-2); letter-spacing: 0.02em; }
+.pj-row-name {
+  grid-area: name; align-self: baseline; min-width: 0; color: var(--c-ink); font-weight: 600; line-height: 1.4;
+  text-decoration: none; overflow-wrap: break-word;
+}
 .pj-row-name::after { content: ''; position: absolute; inset: 0; }   /* ganze Zeile klickbar, ein Link */
-.pj-row-sub { grid-area: sub; display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--s-3); min-width: 0; font-size: var(--fs-meta); color: var(--c-ink-2); }
+.pj-row-line {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-4); min-width: 0;
+  font-size: var(--fs-meta); line-height: 1.5; color: var(--c-ink-2);
+}
+.pj-row-l2 { grid-area: l2; }
+.pj-row-l3 { grid-area: l3; }
 .pj-row-client { color: var(--c-ink-2); }
 .pj-row-status { color: var(--c-ink); }
-.pj-row-lead { display: inline-flex; }
-.pj-row-rest { grid-area: rest; display: grid; gap: 6px; justify-items: end; align-self: center; }
+.pj-row-lead { display: inline-flex; align-items: center; gap: var(--s-2); min-width: 0; color: var(--c-ink-2); }
+.pj-row-rest { grid-area: rest; display: grid; gap: var(--s-2); justify-items: end; align-self: start; padding-top: 2px; }
 .pj-rest-num { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; white-space: nowrap; }
 .pj-row-rest .pj-bar { width: 100%; }
 .pj-row.is-danger .pj-rest-num { padding: 0 6px; border-radius: var(--radius-s); background: var(--c-danger-fill); color: var(--c-danger-fill-ink); box-shadow: inset 0 0 0 1px var(--c-line-strong); }
@@ -108,77 +123,101 @@
 
 @container pj-table (min-width: 720px) {
   .pj-row {
-    grid-template-columns: 4.75rem minmax(0, 1fr) 6.5rem 3rem 7.75rem 7.5rem;
+    grid-template-columns: 4.75rem minmax(0, 1fr) 6.5rem 2.5rem 7rem 7.5rem;
     grid-template-areas: "code name status lead due rest" "code client status lead due rest";
-    padding: 6px var(--s-2); column-gap: var(--s-4);
+    padding: var(--space-row) var(--s-2); column-gap: var(--s-4); row-gap: 2px;
   }
   .pj-row-head {
-    display: grid; padding-block: 0 var(--s-2); grid-template-areas: "code name status lead due rest";
-    font-size: var(--fs-label); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-2);
+    display: grid; padding-block: 0 var(--s-3); grid-template-areas: "code name status lead due rest";
+    font-size: var(--fs-label); font-weight: 600; line-height: var(--lh-tight); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-2);
   }
-  .pj-row-head .pj-row-name { font-weight: 600; color: var(--c-ink-2); }
-  .pj-row-head .pj-row-rest { display: block; text-align: right; }
-  .pj-row-sub { display: contents; }
-  .pj-row-client { grid-area: client; font-size: var(--fs-meta); }
+  .pj-row-head .pj-row-name { font-weight: 600; line-height: var(--lh-tight); color: var(--c-ink-2); }
+  .pj-row-head .pj-row-rest { display: block; padding: 0; text-align: right; }
+  .pj-row-line { display: contents; }
+  .pj-row-code, .pj-row-name { align-self: center; }
+  .pj-row-client { grid-area: client; }
   .pj-row-status { grid-area: status; }
   .pj-row-lead { grid-area: lead; }
   .pj-row-due { grid-area: due; }
-  .pj-row-code { align-self: center; }
-  .pj-row-status, .pj-row-lead, .pj-row-due { font-size: var(--fs-meta); }
+  .pj-row-rest { align-self: center; padding-top: 0; }
+  .pj-row-client, .pj-row-status, .pj-row-lead, .pj-row-due { font-size: var(--fs-meta); line-height: 1.5; }
+  /* Kopfzeile: alle Spaltenköpfe gleich – Label 13 px, Versalien, grau */
+  .pj-row-head :is(.pj-row-code, .pj-row-name, .pj-row-status, .pj-row-lead, .pj-row-due, .pj-row-rest) {
+    font-size: var(--fs-label); line-height: var(--lh-tight); color: var(--c-ink-2); letter-spacing: 0.08em;
+  }
+  /* Abgabe zweizeilig: Datum, darunter „in 5 Tagen“ – der Trenner „ · “ bleibt nur für Screenreader */
+  .pj-row-due .num { display: grid; }
+  .pj-row-due .pj-rel-sep { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+/* Mittlere Breite: Lead nur als Kürzel (≥ 13 px, Name im title und für Screenreader); ab 880 px mit sichtbarem Namen */
+@container pj-table (min-width: 720px) and (max-width: 879.98px) {
+  .pj-row-lead-name { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@container pj-table (min-width: 880px) {
+  .pj-row { grid-template-columns: 4.75rem minmax(0, 1fr) 6.5rem 9.5rem 7rem 7.5rem; }
 }
 
 .pj-empty {
-  display: grid; justify-items: start; gap: var(--s-3); padding: var(--s-5); border-top: 1px solid var(--c-line-strong); color: var(--c-ink);
+  display: grid; justify-items: start; gap: var(--s-4); padding: var(--s-6) 0; border-top: 1px solid var(--c-line-strong); color: var(--c-ink);
 }
 
 /* ---------- Detail: Kopf, Eigenschaften, Tabs ---------- */
-.pj-detail { gap: var(--s-4); }
+/* Zurück → Kopf: ein Block; Kopf (mit Tabs) → Inhalt: --space-header wie der Seitenkopf der Hülle */
+.pj-detail { gap: var(--space-block); }
+.pj-detail > .pj-dhead { margin-bottom: calc(var(--space-header) - var(--space-block)); }
 /* „Bearbeiten“ (Nebenaktion, Pille): schmal rechts neben dem Kunden, breit rechts neben dem Titel. Im DOM steht der
-   Knopf nach dem Titel – nach dem Fokus auf die Überschrift ist er der nächste Tab-Stopp. */
-.pj-dhead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s-2) var(--s-4); }
+   Knopf nach dem Titel – nach dem Fokus auf die Überschrift ist er der nächste Tab-Stopp.
+   Abstände: Kunde → Titel eng (gehören zusammen), Titel → Chips → Tabs je ein Block. */
+.pj-dhead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 var(--s-4); }
 .pj-dhead > * { grid-column: 1 / -1; }
 .pj-dhead > .pj-client { grid-column: 1; grid-row: 1; align-self: end; }
 .pj-dhead > .pj-edit { grid-column: 2; grid-row: 1; }
+.pj-dhead > .pj-dtitle { margin-top: var(--s-2); }
 @container content (min-width: 720px) {
   .pj-dhead > .pj-dtitle { grid-column: 1; }
-  .pj-dhead > .pj-edit { grid-row: 2; align-self: start; }
+  .pj-dhead > .pj-edit { grid-row: 2; align-self: start; margin-top: var(--s-2); }
 }
 .pj-dtitle { font-size: clamp(1.625rem, 1.1rem + 2vw, 2.5rem); }
 .pj-dcode { color: var(--c-ink-3); font-weight: 400; letter-spacing: -0.01em; }
-.pj-props { list-style: none; margin: var(--s-2) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-2); }
-.pj-props .chip { white-space: normal; }
-.pj-prop-lead { padding-left: 4px; }
+/* Eigenschaften: ruhige Pillen mit 12 px Luft zueinander */
+.pj-props { list-style: none; margin: var(--space-block) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.pj-props .chip { min-height: 36px; white-space: normal; }
+.pj-prop-lead { padding-left: 5px; }
 .pj-prop-rest.is-danger { background: var(--c-danger-fill); color: var(--c-danger-fill-ink); border-color: var(--c-line-strong); }
 .pj-prop-rest.is-danger .pj-state-icon { color: currentColor; }
 .pj-prop-rest.is-warn { border-color: var(--c-line-strong); font-weight: 600; }
-.pj-tabs { display: flex; gap: var(--s-1); margin-top: var(--s-3); border-bottom: 1px solid var(--c-line); overflow-x: auto; }
+/* Zwischen den Tabs trennt ihr eigener Innenabstand (24 px) – so passen alle drei auch bei 320 px ohne Rollen */
+.pj-tabs { display: flex; gap: 0; margin-top: var(--space-block); border-bottom: 1px solid var(--c-line); overflow-x: auto; }
+/* Tabs sind Bedienelemente: 600 in beiden Zuständen (nichts springt); aktiv = Schwarz mit Unterstrich */
 .pj-tab {
   display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 var(--s-3); margin-bottom: -1px;
-  border-bottom: 2px solid transparent; color: var(--c-ink-2); font-weight: 500; text-decoration: none; white-space: nowrap;
+  border-bottom: 2px solid transparent; color: var(--c-ink-2); font-weight: 600; text-decoration: none; white-space: nowrap;
 }
 .pj-tab[aria-current="page"] { color: var(--c-ink); font-weight: 600; border-bottom-color: var(--c-ink); }
 @media (hover: hover) { .pj-tab:not([aria-current]):hover { color: var(--c-ink); border-bottom-color: var(--c-line); } }
 .pj-tab:focus-visible { border-radius: var(--radius-s) var(--radius-s) 0 0; }
 
 /* ---------- Übersicht ---------- */
-.pj-overview { display: grid; gap: var(--s-6); padding-top: var(--s-2); }
-.pj-health { display: grid; gap: var(--s-3); max-width: 44rem; }
-.pj-health-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-1) var(--s-4); }
+/* Abschnitte (Budget, Burn-up, Budgetänderungen, Team) mit --space-section; Label → Inhalt --space-label */
+.pj-overview { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-section); }
+.pj-health { display: grid; gap: var(--space-label); max-width: 44rem; }
+.pj-health-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-2) var(--s-4); }
 .pj-health-top .meta svg { display: inline-block; vertical-align: -3px; }
+.pj-health > .quiet { max-width: var(--measure); }
 .pj-fig-over { padding: 0 0.12em; border-radius: var(--radius-s); background: var(--c-danger-fill); color: var(--c-danger-fill-ink); box-shadow: inset 0 0 0 1.5px var(--c-line-strong); }
 /* Prognose-Block: ein Satz; bei Warnung (überzogen, reicht nicht bis zur Abgabe) mit Kontur und Symbol. Aus dem
    erfundenen Verlauf der Beispielprojekte: davor das Label „Beispielrechnung“ (gestrichelt = angenommen, nicht gemessen) */
-.pj-forecast-block { display: grid; justify-items: start; gap: var(--s-2); }
-.pj-forecast-block.is-warn { padding: var(--s-3) var(--s-4); border: 1.5px solid var(--c-line-strong); border-radius: var(--radius); }
+.pj-forecast-block { display: grid; justify-items: start; gap: var(--s-3); margin-top: var(--s-2); }
+.pj-forecast-block.is-warn { padding: var(--s-4) var(--s-5) var(--s-5); border: 1.5px solid var(--c-line-strong); border-radius: var(--radius); }
 .pj-sample-tag {
   padding: 1px var(--s-2); border: 1px dashed var(--c-control); border-radius: 999px;
   font-size: var(--fs-label); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-2);
 }
-.pj-forecast, .pj-callout { display: flex; align-items: flex-start; gap: var(--s-2); font-size: var(--fs-body); }
+.pj-forecast, .pj-callout { display: flex; align-items: flex-start; gap: var(--s-2); max-width: var(--measure); font-size: var(--fs-body); }
 .pj-callout { font-weight: 600; }
 .pj-forecast svg, .pj-callout svg { flex: none; margin-top: 3px; }
-.pj-sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-1) var(--s-4); margin-bottom: var(--s-3); }
-.pj-burn-fig { position: relative; margin: 0; display: grid; gap: var(--s-2); } /* hält die versteckte Tabelle in der Figur */
+.pj-sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-2) var(--s-4); margin-bottom: var(--space-label); }
+.pj-burn-fig { position: relative; margin: 0; display: grid; gap: var(--s-4); } /* hält die versteckte Tabelle in der Figur */
 .pj-burn { width: 100%; }
 .pj-burn-svg { display: block; overflow: visible; }
 .pj-burn-base { stroke: var(--c-line-strong); stroke-width: 1; }
@@ -191,31 +230,33 @@
 .pj-burn-today { stroke: var(--c-ink); stroke-width: 1; }
 .pj-burn-cross { fill: var(--c-bg); stroke: var(--c-ink); stroke-width: 2; }
 .pj-burn-pill { fill: var(--c-lime); stroke: var(--c-line-strong); stroke-width: 1; }
-.pj-burn-pill-text { fill: var(--c-lime-ink); font-size: 12px; font-weight: 600; }
-.pj-burn-label { fill: var(--c-ink-2); font-size: 12px; font-weight: 500; paint-order: stroke; stroke: var(--c-bg); stroke-width: 4px; stroke-linejoin: round; }
-.pj-burn-tick { fill: var(--c-ink-2); font-size: 12px; font-variant-numeric: tabular-nums; }
-.pj-burn-legend { display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-4); font-size: var(--fs-meta); color: var(--c-ink-2); }
-.pj-burn-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+/* Beschriftungen im Diagramm wie jede Schrift: nicht unter 13 px (BurnUp.jsx rechnet mit CHAR_W für 13 px) */
+.pj-burn-pill-text { fill: var(--c-lime-ink); font-size: 13px; font-weight: 600; }
+.pj-burn-label { fill: var(--c-ink-2); font-size: 13px; font-weight: 400; paint-order: stroke; stroke: var(--c-bg); stroke-width: 4px; stroke-linejoin: round; }
+.pj-burn-tick { fill: var(--c-ink-2); font-size: 13px; font-variant-numeric: tabular-nums; }
+.pj-burn-legend { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); font-size: var(--fs-meta); color: var(--c-ink-2); }
+.pj-burn-legend > span { display: inline-flex; align-items: center; gap: var(--s-2); }
 .pj-key { display: inline-block; width: 22px; height: 0; border-top: 2.5px solid var(--c-ink); }
 .pj-key.is-prog { border-top: 2px dashed var(--c-ink); }
 .pj-key.is-budget { border-top: 1.5px solid var(--c-ink-2); }
 /* Budgetänderungen: Datum | alt → neu, Grund | Differenz */
-.pj-changes { display: grid; gap: var(--s-2); max-width: 44rem; }
+.pj-changes { display: grid; gap: var(--space-label); max-width: 44rem; }
 .pj-change-day { flex: none; width: 6.25rem; font-size: var(--fs-meta); color: var(--c-ink-2); }
 .pj-change .row__aside { font-weight: 600; }
-.pj-changes-empty { color: var(--c-ink-2); }
-.pj-team .list { margin-top: var(--s-2); }
-.pj-member { min-height: 52px; }
+.pj-changes-empty { max-width: var(--measure); color: var(--c-ink-2); }
+.pj-team .list { margin-top: var(--space-label); }
 .pj-lead-tag { font-weight: 400; color: var(--c-ink-2); }
+/* Mehrzeilige Zeilentitel (Handy) mit Zeilenhöhe ≥ 1,4; Wörter werden getrennt statt mitten im Wort umbrochen */
+.pj-change .row__title, .pj-member .row__title, .pj-entry .row__title { line-height: 1.45; overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; }
 
 /* ---------- Aufgaben ---------- */
-.pj-tasks { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); container: pj-tasks / inline-size; padding-top: var(--s-2); }
-.pj-tasks-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
-.pj-tasks-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px var(--s-3); margin-right: auto; }
+.pj-tasks { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-block); container: pj-tasks / inline-size; }
+.pj-tasks-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); }
+.pj-tasks-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-1) var(--s-3); margin-right: auto; }
 .pj-overdue-sum { color: var(--c-ink); font-weight: 600; }
 
 .pj-add-form {
-  display: grid; gap: var(--s-3); padding: var(--s-4); border: 1px solid var(--c-line); border-radius: var(--radius-l); background: var(--c-bg-2);
+  display: grid; gap: var(--s-4); padding: var(--s-5); border: 1px solid var(--c-line); border-radius: var(--radius-l); background: var(--c-bg-2);
 }
 .pj-add-form[hidden] { display: none; }
 .pj-add-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
@@ -236,7 +277,7 @@
 }
 .pj-board[data-dragging] { scroll-snap-type: none; cursor: grabbing; }
 .pj-col {
-  position: relative; display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; padding: 0 0 var(--s-2);
+  position: relative; display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; padding: 0 0 var(--s-2);
   border-radius: var(--radius); outline: 2px dashed transparent; outline-offset: 4px; scroll-snap-align: start;
   transition: outline-color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
@@ -246,12 +287,13 @@
 .pj-col-title { display: flex; align-items: center; gap: var(--s-2); margin-right: auto; font-size: var(--fs-label); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--c-ink); }
 .pj-count { font-size: var(--fs-label); font-weight: 400; color: var(--c-ink-2); letter-spacing: 0; }
 .pj-col-add { color: var(--c-ink-2); }
-.pj-col-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-2); align-content: start; }
+.pj-col-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); align-content: start; }
 .pj-col-list:empty { display: none; }
-.pj-col-empty { padding: var(--s-3); border: 1px dashed var(--c-control); border-radius: var(--radius); text-align: center; font-size: var(--fs-meta); }
+.pj-col-empty { padding: var(--s-4); border: 1px dashed var(--c-control); border-radius: var(--radius); text-align: center; font-size: var(--fs-meta); }
 
+/* Karte: 16 px Innenabstand, Titel → Meta → Aktionen mit Luft */
 .pj-task {
-  display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; min-width: 0; padding: var(--s-3); background: var(--c-surface); color: var(--c-ink);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-2); min-width: 0; padding: var(--s-4); background: var(--c-surface); color: var(--c-ink);
   border: 1px solid var(--c-line); border-radius: var(--radius); box-shadow: none;
   outline: 3px solid transparent; outline-offset: 2px; transition: outline-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
@@ -269,10 +311,10 @@
 @media (prefers-reduced-motion: reduce) { .pj-task.is-landed { animation: none; } }
 .pj-task-head { display: flex; align-items: flex-start; gap: var(--s-2); }
 /* Titel brechen nur zwischen Wörtern; nur ein einzelnes Wort, das breiter als die Karte ist, wird notfalls geteilt */
-.pj-task-title { flex: 1; min-width: 0; font-weight: 500; line-height: 1.35; overflow-wrap: break-word; -webkit-hyphens: manual; hyphens: manual; }
+.pj-task-title { flex: 1; min-width: 0; font-weight: 600; line-height: 1.45; overflow-wrap: break-word; -webkit-hyphens: manual; hyphens: manual; }
 .pj-grip {
   flex: none; display: grid; place-items: center; width: var(--tap); height: var(--tap);
-  margin: calc(-1 * var(--s-3)) calc(-1 * var(--s-3)) calc(-1 * var(--s-2)) 0; border-radius: var(--radius);
+  margin: calc(-1 * var(--s-4)) calc(-1 * var(--s-4)) calc(-1 * var(--s-2)) 0; border-radius: var(--radius);
   color: var(--c-ink-3); cursor: grab; touch-action: none;
 }
 @media (hover: hover) { .pj-grip:hover { background: var(--c-bg-2); color: var(--c-ink); } }
@@ -284,8 +326,13 @@
   .pj-grip { position: absolute; top: 0; right: 0; margin: 0; opacity: 0; pointer-events: none; transition: opacity var(--dur) var(--ease); }
   .pj-task:hover .pj-grip, .pj-task:focus-within .pj-grip, .pj-task:focus .pj-grip, .pj-task.is-dragging .pj-grip { opacity: 1; color: var(--c-ink); }
 }
-.pj-task-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px var(--s-3); font-size: var(--fs-meta); color: var(--c-ink-2); min-width: 0; }
-.pj-task-person { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+/* Touch-Laptop (Hauptzeiger fein, zusätzlich ein Finger): der Griff ist immer sichtbar und greifbar – der Finger zieht
+   nur am Griff (TaskBoard.jsx), ohne Hover fände er ihn sonst nicht. Position bleibt in der Ecke, nichts springt. */
+@media (hover: hover) and (pointer: fine) and (any-pointer: coarse) {
+  .pj-grip { opacity: 1; pointer-events: auto; }
+}
+.pj-task-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-4); font-size: var(--fs-meta); line-height: 1.5; color: var(--c-ink-2); min-width: 0; }
+.pj-task-person { display: inline-flex; align-items: center; gap: var(--s-2); min-width: 0; }
 .pj-hours { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; color: var(--c-ink); }
 .pj-hours svg { color: var(--c-ink-2); }
 .pj-hours.is-over { padding: 0 6px; border-radius: var(--radius-s); background: var(--c-danger-fill); color: var(--c-danger-fill-ink); box-shadow: inset 0 0 0 1px var(--c-line-strong); }
@@ -295,7 +342,11 @@
 .pj-due.is-overdue { background: var(--c-danger-fill); color: var(--c-danger-fill-ink); }
 .pj-due.is-today { background: var(--c-lime); color: var(--c-lime-ink); }
 /* Status, Timer und Löschen in einer Zeile – die Auswahl gibt Platz ab, die Symbole brechen nie um */
-.pj-task-actions { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--s-1); margin-top: 2px; }
+.pj-task-actions { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--s-1); margin-top: var(--s-1); }
+/* Randloser Löschen-Knopf optisch am Symbol ausgerichtet (wie „Alle Projekte“): die 44-px-Fläche ragt 12 px in den
+   Innenabstand, das Symbol endet an der 16-px-Linie – so bleibt der Status-Auswahl im vierspaltigen Board Platz für
+   „In Arbeit“ */
+.pj-task.is-board .pj-task-actions { margin-right: calc(-1 * var(--s-3)); }
 .pj-task-status { flex: 0 1 auto; width: auto; min-width: 0; max-width: 11rem; padding: 0 2px 0 var(--s-2); font-size: var(--fs-meta); }
 /* Play: .btn-play aus base.css (rund, schwarze Kontur; aria-pressed="true" = läuft, violett) */
 .pj-play { margin-left: auto; }
@@ -303,27 +354,27 @@
 @media (hover: hover) { .pj-del:hover { background: var(--c-bg-2); color: var(--c-ink); } }
 .pj-del { color: var(--c-ink-2); }
 
-/* Liste: nach Status gruppiert, Zeilen mit Haarlinie */
-.pj-tlist { display: grid; gap: var(--s-5); }
+/* Liste: nach Status gruppiert, Zeilen mit Haarlinie und --space-row */
+.pj-tlist { display: grid; gap: var(--space-header); }
 .pj-group { display: grid; gap: 0; }
-.pj-group-list .pj-task { border: 0; border-radius: 0; background: transparent; padding: var(--s-3) 0; }
+.pj-group-list .pj-task { border: 0; border-radius: 0; background: transparent; padding: var(--space-row) 0; }
 .pj-group-list > .pj-task + .pj-task { border-top: 1px solid var(--c-line); }
-.pj-group-empty { padding: var(--s-3) 0; font-size: var(--fs-meta); }
+.pj-group-empty { padding: var(--space-row) 0; font-size: var(--fs-meta); }
 @container pj-tasks (min-width: 40rem) {
-  .pj-board { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; scroll-snap-type: none; padding-bottom: 0; row-gap: var(--s-5); }
+  .pj-board { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; scroll-snap-type: none; padding-bottom: 0; gap: var(--space-header) var(--s-5); }
   .pj-task.is-row { grid-template-columns: minmax(0, 1fr) 15rem; grid-template-areas: "head actions" "meta actions"; column-gap: var(--s-4); align-items: center; }
   .pj-task.is-row .pj-task-head { grid-area: head; }
   .pj-task.is-row .pj-task-meta { grid-area: meta; }
   .pj-task.is-row .pj-task-actions { grid-area: actions; margin: 0; }
 }
 @container pj-tasks (min-width: 52rem) {
-  .pj-board { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: var(--s-3); }
+  .pj-board { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: var(--s-4); }
 }
 
 .pj-ghost {
-  position: fixed; left: 0; top: 0; z-index: 1000; pointer-events: none; padding: var(--s-3) var(--s-4);
+  position: fixed; left: 0; top: 0; z-index: 1000; pointer-events: none; padding: var(--s-4);
   background: var(--c-surface); color: var(--c-ink); border: 1px solid var(--c-line-strong); border-radius: var(--radius);
-  box-shadow: var(--shadow-2); font-family: var(--font); font-weight: 500; line-height: 1.35;
+  box-shadow: var(--shadow-2); font-family: var(--font); font-weight: 600; line-height: 1.45;
 }
 
 /* Rückgängig und Timer-Hinweis: bleiben am unteren Rand sichtbar, solange der Aufgabenbereich im Bild ist */
@@ -333,20 +384,31 @@
   padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4); border-radius: var(--radius-l);
   background: var(--c-ink); color: var(--c-bg); box-shadow: var(--shadow-2);
 }
-.pj-dock-msg { flex: 1 1 12rem; display: flex; align-items: center; gap: var(--s-2); font-weight: 500; overflow-wrap: anywhere; }
+.pj-dock-msg { flex: 1 1 12rem; display: flex; align-items: center; gap: var(--s-2); font-weight: 400; overflow-wrap: anywhere; }
 .pj-dock-msg svg { flex: none; }
 .pj-dock-btn { background: var(--c-lime); color: var(--c-lime-ink); border-color: var(--c-lime-ink); }
 .pj-dock .btn-ghost { color: var(--c-bg); }
 @media (hover: hover) { .pj-dock .btn-ghost:hover { background: var(--c-bg); color: var(--c-ink); } }
 
 /* ---------- Zeiten ---------- */
-.pj-times { display: grid; gap: var(--s-5); padding-top: var(--s-2); }
-.pj-times-empty { padding-top: var(--s-2); color: var(--c-ink-2); }
-.pj-week-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); padding-bottom: var(--s-2); border-bottom: 1px solid var(--c-line-strong); }
+/* Summe → erste Woche ein Block, Wochen untereinander wie Abschnitte (--space-section). minmax(0, 1fr): lange Wörter
+   in Titeln (break-word) dürfen die Spalte nicht über den Inhaltsrand schieben */
+.pj-times { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-block); }
+.pj-times > .meta { max-width: var(--measure); }
+.pj-week + .pj-week { margin-top: calc(var(--space-section) - var(--space-block)); }
+.pj-times-empty { max-width: var(--measure); color: var(--c-ink-2); }
+.pj-week-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); padding-bottom: var(--s-3); border-bottom: 1px solid var(--c-line-strong); }
 .pj-week-range { margin-left: var(--s-2); font-weight: 400; letter-spacing: 0; text-transform: none; }
 .pj-week-sum { font-weight: 600; }
 .pj-entry-day { flex: none; width: 5.5rem; font-size: var(--fs-meta); color: var(--c-ink-2); }
 .pj-entry { position: relative; }
+/* Handy: Tag als leise Zeile über dem Titel – der Titel bekommt die volle Breite und bricht nicht mitten im Wort */
+@container content (max-width: 479.98px) {
+  .pj-entry { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "day aside" "main aside"; gap: var(--s-1) var(--s-4); }
+  .pj-entry-day { grid-area: day; width: auto; line-height: 1.5; }
+  .pj-entry .row__main { grid-area: main; }
+  .pj-entry .row__aside { grid-area: aside; align-self: center; }
+}
 .pj-entry-task { color: var(--c-ink); text-decoration: underline; text-decoration-color: var(--c-line); text-underline-offset: 0.2em; }
 .pj-entry-task::after { content: ''; position: absolute; inset: 0; }   /* ganze Zeile führt zur Aufgabe */
 .pj-entry-task:focus-visible { box-shadow: none; }
@@ -370,18 +432,19 @@ dialog.pj-sheet::backdrop { background: var(--c-backdrop); }
 dialog.pj-sheet[open]:not([data-instant]) { animation: pj-sheet-in 180ms var(--ease); }
 
 .pj-sheet-form { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-.pj-sheet-head { flex: none; display: grid; gap: var(--s-1); padding: var(--s-5) var(--s-5) var(--s-4); border-bottom: 1px solid var(--c-line); }
+.pj-sheet-head { flex: none; display: grid; gap: var(--s-2); padding: var(--s-6) var(--s-6) var(--s-5); border-bottom: 1px solid var(--c-line); }
 .pj-sheet-title { font-size: 1.5rem; line-height: 1.1; letter-spacing: -0.03em; text-transform: uppercase; color: var(--c-ink); }
 .pj-sheet-sub { overflow-wrap: anywhere; }
+/* Feldgruppen mit einem Block Luft; Feldpaare nebeneinander mit 16 px, umbrochen wieder ein Block */
 .pj-sheet-body {
   flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
-  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-4); align-content: start; padding: var(--s-5);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-block); align-content: start; padding: var(--s-6);
 }
 .pj-sheet-foot {
   flex: none; display: flex; justify-content: flex-end; gap: var(--s-3);
-  padding: var(--s-3) var(--s-5) calc(var(--s-3) + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--c-line);
+  padding: var(--s-4) var(--s-6) calc(var(--s-4) + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--c-line);
 }
-.pj-fields-row { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-3); }
+.pj-fields-row { display: flex; flex-wrap: wrap; gap: var(--space-block) var(--s-4); }
 .pj-sheet .field { grid-template-columns: minmax(0, 1fr); }
 .pj-fields-row > .field { flex: 1 1 10rem; min-width: 0; }
 .pj-fields-row > .pj-field-status { flex: none; }
@@ -399,17 +462,17 @@ dialog.pj-sheet[open]:not([data-instant]) { animation: pj-sheet-in 180ms var(--e
 .pj-unit { position: relative; }
 .pj-unit .input { padding-right: 2.25rem; }
 .pj-unit-h { position: absolute; right: var(--s-3); top: 50%; transform: translateY(-50%); color: var(--c-ink-2); pointer-events: none; }
-/* Budget-Echo und Grund als eine Gruppe – ruhige Fläche, keine Signalfarbe */
-.pj-change-box { display: grid; gap: var(--s-3); padding: var(--s-3) var(--s-4) var(--s-4); border-radius: var(--radius); background: var(--c-bg-2); }
-.pj-echo { font-weight: 600; }
+/* Budget-Echo und Grund als eine Gruppe – ruhige Fläche, keine Signalfarbe; 16 px und mehr Innenabstand */
+.pj-change-box { display: grid; gap: var(--s-4); padding: var(--s-4) var(--s-5) var(--s-5); border-radius: var(--radius); background: var(--c-bg-2); }
+.pj-echo { font-weight: 600; line-height: var(--lh-tight); }
 /* Fehler: kräftige schwarze Kontur (kein box-shadow – der gehört dem Fokusring, der sichtbar bleiben muss) */
 .pj-sheet [aria-invalid="true"] { border-color: var(--c-line-strong); border-width: 2px; }
 
 @media (max-width: 599.98px) {
   dialog.pj-sheet { inset: 0; width: 100%; border-left: 0; }
   dialog.pj-sheet[open]:not([data-instant]) { animation-name: pj-sheet-up; }
-  .pj-sheet-head { padding: calc(var(--s-4) + env(safe-area-inset-top, 0px)) var(--gutter) var(--s-3); }
-  .pj-sheet-body { padding: var(--s-4) var(--gutter); }
+  .pj-sheet-head { padding: calc(var(--s-5) + env(safe-area-inset-top, 0px)) var(--gutter) var(--s-4); }
+  .pj-sheet-body { padding: var(--s-5) var(--gutter) var(--s-6); }
   .pj-sheet-foot { padding-inline: var(--gutter); }
   .pj-sheet-foot .btn { flex: 1 1 0; }
 }

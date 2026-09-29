@@ -51,5 +51,6 @@ export function DueText({ iso, short = false }) {
   const n = daysUntil(iso);
   const date = fmtDay(iso, short ? { day: '2-digit', month: '2-digit' } : undefined);
   const near = n !== null && n >= -14 && n <= 14;
-  return <span className="num">{date}{near && <span className="pj-rel"> · {relDays(n)}</span>}</span>;
+  // Trenner als eigenes Element: in der breiten Liste steht „in 5 Tagen“ unter dem Datum, der Trenner nur für Screenreader
+  return <span className="num">{date}{near && <span className="pj-rel"><span className="pj-rel-sep"> · </span>{relDays(n)}</span>}</span>;
 }

@@ -11,8 +11,8 @@ import { addDays, fmtH1, weekStart } from '../../lib/format.js';
 import { fmtKw, isoWeek } from './helpers.js';
 
 const WEEK = 7 * 86400000;
-const CHAR_W = 7; // Schätzung je Zeichen bei 12 px (Readex Pro), eher zu breit
-const DUE_Y = 44; // Grundlinie „Abgabe KW …“; die Schrift reicht bis etwa 47 px
+const CHAR_W = 8; // Schätzung je Zeichen bei 13 px (Readex Pro, r08: keine Schrift unter 13 px), eher zu breit
+const DUE_Y = 44; // Grundlinie „Abgabe KW …“; die Schrift reicht bis etwa 48 px
 
 // Beschriftung der Abgabe: Seite, Anker und ob sie die Heute-Linie (xt) überdeckt
 function dueLabel({ xd, xt, W, pad, text }) {
