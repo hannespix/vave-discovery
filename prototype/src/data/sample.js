@@ -54,31 +54,31 @@ export const projects = [
   { id: 'pr8', code: 'VAV-00', name: 'Studio-Organisation', client: 'c0', studio: 'fra', lead: 'p1', status: 'intern', phase: 'laufend', budget: 200, spent: 75, due: null },
 ];
 
-// status: 'todo' | 'doing' | 'review' | 'done'
+// status: 'todo' | 'doing' | 'review' | 'done'; estimate = geschätzte Stunden (Schätzung gegen gebucht, keine Planung)
 export const tasks = [
-  { id: 't1', project: 'pr1', title: 'Lichtplanung Raum 3 abstimmen', status: 'doing', assignee: 'p7', due: day(3) },
-  { id: 't2', project: 'pr1', title: 'Audio-Guide-Skript freigeben', status: 'review', assignee: 'p1', due: day(1) },
-  { id: 't3', project: 'pr1', title: 'Vitrinen-Details zeichnen', status: 'todo', assignee: 'p7', due: day(10) },
-  { id: 't4', project: 'pr1', title: 'Kostenschätzung aktualisieren', status: 'todo', assignee: 'p1', due: day(6) },
-  { id: 't5', project: 'pr1', title: 'Materialmuster bestellen', status: 'done', assignee: 'p10', due: day(-2) },
-  { id: 't6', project: 'pr2', title: 'Standplan finalisieren', status: 'doing', assignee: 'p2', due: day(2) },
-  { id: 't7', project: 'pr2', title: 'Content für LED-Wand rendern', status: 'doing', assignee: 'p7', due: day(4) },
-  { id: 't8', project: 'pr2', title: 'Aufbau-Crew buchen', status: 'todo', assignee: 'p8', due: day(5) },
-  { id: 't9', project: 'pr2', title: 'Transportlogistik prüfen', status: 'review', assignee: 'p1', due: day(2) },
-  { id: 't10', project: 'pr3', title: 'Moodboard präsentieren', status: 'done', assignee: 'p9', due: day(-3) },
-  { id: 't11', project: 'pr3', title: 'Grundriss Variante B', status: 'doing', assignee: 'p3', due: day(6) },
-  { id: 't12', project: 'pr3', title: 'Materialkonzept', status: 'todo', assignee: 'p3', due: day(14) },
-  { id: 't13', project: 'pr4', title: 'Abnahme mit dem Kunden', status: 'todo', assignee: 'p5', due: day(5) },
-  { id: 't14', project: 'pr4', title: 'Mängelliste abarbeiten', status: 'doing', assignee: 'p8', due: day(2) },
-  { id: 't15', project: 'pr4', title: 'Beschilderung montieren', status: 'doing', assignee: 'p8', due: day(1) },
-  { id: 't16', project: 'pr5', title: 'Workshop Interaktionskonzept', status: 'todo', assignee: 'p6', due: day(9) },
-  { id: 't17', project: 'pr5', title: 'Sensor-Prototyp testen', status: 'doing', assignee: 'p4', due: day(12) },
-  { id: 't18', project: 'pr6', title: 'Möbel-Ausschreibung', status: 'review', assignee: 'p4', due: day(3) },
-  { id: 't19', project: 'pr6', title: 'Medienplanung', status: 'doing', assignee: 'p4', due: day(8) },
-  { id: 't20', project: 'pr7', title: 'Story für das Pitch-Deck', status: 'doing', assignee: 'p2', due: day(3) },
-  { id: 't21', project: 'pr7', title: 'Budgetrahmen schätzen', status: 'todo', assignee: 'p1', due: day(4) },
-  { id: 't22', project: 'pr8', title: 'Onboarding Nina', status: 'done', assignee: 'p1', due: day(-5) },
-  { id: 't23', project: 'pr8', title: 'Tool-Umfrage auswerten', status: 'todo', assignee: 'p1', due: day(7) },
+  { id: 't1', project: 'pr1', title: 'Lichtplanung Raum 3 abstimmen', status: 'doing', assignee: 'p7', due: day(3), estimate: 16 },
+  { id: 't2', project: 'pr1', title: 'Audio-Guide-Skript freigeben', status: 'review', assignee: 'p1', due: day(1), estimate: 6 },
+  { id: 't3', project: 'pr1', title: 'Vitrinen-Details zeichnen', status: 'todo', assignee: 'p7', due: day(10), estimate: 24 },
+  { id: 't4', project: 'pr1', title: 'Kostenschätzung aktualisieren', status: 'todo', assignee: 'p1', due: day(6), estimate: 8 },
+  { id: 't5', project: 'pr1', title: 'Materialmuster bestellen', status: 'done', assignee: 'p10', due: day(-2), estimate: 2 },
+  { id: 't6', project: 'pr2', title: 'Standplan finalisieren', status: 'doing', assignee: 'p2', due: day(2), estimate: 20 },
+  { id: 't7', project: 'pr2', title: 'Content für LED-Wand rendern', status: 'doing', assignee: 'p7', due: day(4), estimate: 32 },
+  { id: 't8', project: 'pr2', title: 'Aufbau-Crew buchen', status: 'todo', assignee: 'p8', due: day(5), estimate: 4 },
+  { id: 't9', project: 'pr2', title: 'Transportlogistik prüfen', status: 'review', assignee: 'p1', due: day(2), estimate: 6 },
+  { id: 't10', project: 'pr3', title: 'Moodboard präsentieren', status: 'done', assignee: 'p9', due: day(-3), estimate: 6 },
+  { id: 't11', project: 'pr3', title: 'Grundriss Variante B', status: 'doing', assignee: 'p3', due: day(6), estimate: 18 },
+  { id: 't12', project: 'pr3', title: 'Materialkonzept', status: 'todo', assignee: 'p3', due: day(14), estimate: 24 },
+  { id: 't13', project: 'pr4', title: 'Abnahme mit dem Kunden', status: 'todo', assignee: 'p5', due: day(5), estimate: 4 },
+  { id: 't14', project: 'pr4', title: 'Mängelliste abarbeiten', status: 'doing', assignee: 'p8', due: day(2), estimate: 16 },
+  { id: 't15', project: 'pr4', title: 'Beschilderung montieren', status: 'doing', assignee: 'p8', due: day(1), estimate: 12 },
+  { id: 't16', project: 'pr5', title: 'Workshop Interaktionskonzept', status: 'todo', assignee: 'p6', due: day(9), estimate: 8 },
+  { id: 't17', project: 'pr5', title: 'Sensor-Prototyp testen', status: 'doing', assignee: 'p4', due: day(12), estimate: 20 },
+  { id: 't18', project: 'pr6', title: 'Möbel-Ausschreibung', status: 'review', assignee: 'p4', due: day(3), estimate: 10 },
+  { id: 't19', project: 'pr6', title: 'Medienplanung', status: 'doing', assignee: 'p4', due: day(8), estimate: 14 },
+  { id: 't20', project: 'pr7', title: 'Story für das Pitch-Deck', status: 'doing', assignee: 'p2', due: day(3), estimate: 12 },
+  { id: 't21', project: 'pr7', title: 'Budgetrahmen schätzen', status: 'todo', assignee: 'p1', due: day(4), estimate: 5 },
+  { id: 't22', project: 'pr8', title: 'Onboarding Nina', status: 'done', assignee: 'p1', due: day(-5), estimate: 6 },
+  { id: 't23', project: 'pr8', title: 'Tool-Umfrage auswerten', status: 'todo', assignee: 'p1', due: day(7), estimate: 8 },
 ];
 
 // Zeiten der angemeldeten Person, letzte fünf Arbeitstage bis heute (Minuten). Arbeitstag 0 = heute, am Wochenende der
@@ -89,21 +89,23 @@ const workday = n => {
   for (let k = 0; k < -n; ) { d.setDate(d.getDate() - 1); if (d.getDay() !== 0 && d.getDay() !== 6) k++; }
   return isoDay(d);
 };
-const entry = (id, d, start, minutes, project, note) => ({ id, date: workday(d), start, minutes, project, note, person: me.id });
+// task: optionale Aufgabe, auf die gebucht wurde (Timer aus der Aufgabe, Schätzung gegen gebucht)
+const entry = (id, d, start, minutes, project, note, task) => ({ id, date: workday(d), start, minutes, project, note, person: me.id, ...(task ? { task } : {}) });
 export const timeEntries = [
   entry('e1', 0, '09:00', 90, 'pr1', 'Abstimmung Lichtplanung'),
-  entry('e2', 0, '10:45', 75, 'pr2', 'Transportlogistik'),
-  entry('e3', -1, '08:30', 120, 'pr1', 'Audio-Guide-Skript'),
+  entry('e2', 0, '10:45', 75, 'pr2', 'Transportlogistik', 't9'),
+  entry('e3', -1, '08:30', 120, 'pr1', 'Audio-Guide-Skript', 't2'),
   entry('e4', -1, '11:00', 60, 'pr7', 'Pitch-Workshop'),
   entry('e5', -1, '13:30', 150, 'pr2', 'Standplan mit Jonas'),
-  entry('e6', -2, '09:15', 210, 'pr1', 'Kostenschätzung'),
-  entry('e7', -2, '14:00', 90, 'pr8', 'Onboarding'),
+  entry('e6', -2, '09:15', 210, 'pr1', 'Kostenschätzung', 't4'),
+  entry('e7', -2, '14:00', 90, 'pr8', 'Onboarding', 't22'),
   entry('e8', -3, '09:00', 240, 'pr2', 'Produktionsbesprechung'),
   entry('e9', -3, '14:30', 120, 'pr1', 'Vitrinen-Details'),
   entry('e10', -4, '10:00', 180, 'pr7', 'Recherche Kulturhafen'),
 ];
 
 export const statusLabel = { todo: 'Offen', doing: 'In Arbeit', review: 'Prüfen', done: 'Erledigt' };
-export const projectStatusLabel = { aktiv: 'Aktiv', angebot: 'Angebot', intern: 'Intern' };
+// 'angebot' ist die Pitch-Phase – ohne Angebotslogik; die Oberfläche sagt „Pitch“
+export const projectStatusLabel = { aktiv: 'Aktiv', angebot: 'Pitch', intern: 'Intern' };
 
 export const byId = list => Object.fromEntries(list.map(x => [x.id, x]));
