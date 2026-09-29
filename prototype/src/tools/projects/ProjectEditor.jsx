@@ -8,7 +8,8 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { CircleAlert, X } from 'lucide-react';
 import { me, people, projectStatusLabel, studios } from '../../data/sample.js';
 import { PROJECT_STATUSES } from '../../lib/projects.js';
-import { fmtDelta, fmtH, parseHours, personById, studioById, suggestCode } from './helpers.js';
+import { fmtH1 } from '../../lib/format.js';
+import { fmtDelta, parseHours, personById, studioById, suggestCode } from './helpers.js';
 
 // Felder mit Prüfung in Bildschirmreihenfolge – der Fokus springt auf das erste fehlerhafte.
 // Reihenfolge wie im Detail-Kopf (Kunde, Code, Name), dann Budget | Abgabe, Status | Phase, Lead | Studio.
@@ -185,7 +186,7 @@ function EditorForm({ mode, project, projects, clients, codeTaken, titleId, onCa
           <div className="pj-change-box">
             <p id={ids.echo} className="pj-echo num">
               <span className="visually-hidden">Budget ändert sich: </span>
-              {fmtH(project.budget)} → {fmtH(budget)} ({fmtDelta(budget - Number(project.budget))})
+              {fmtH1(project.budget)} → {fmtH1(budget)} ({fmtDelta(budget - Number(project.budget))})
             </p>
             <div className="field">
               <label htmlFor={ids.note}>Grund der Änderung <span className="pj-optional">(optional)</span></label>

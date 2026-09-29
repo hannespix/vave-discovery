@@ -166,14 +166,19 @@
 .pj-health-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-1) var(--s-4); }
 .pj-health-top .meta svg { display: inline-block; vertical-align: -3px; }
 .pj-fig-over { padding: 0 0.12em; border-radius: var(--radius-s); background: var(--c-danger-fill); color: var(--c-danger-fill-ink); box-shadow: inset 0 0 0 1.5px var(--c-line-strong); }
-.pj-forecast { font-size: var(--fs-body); font-weight: 500; }
-.pj-callout {
-  display: flex; align-items: flex-start; gap: var(--s-2); padding: var(--s-3) var(--s-4);
-  border: 1.5px solid var(--c-line-strong); border-radius: var(--radius); font-weight: 500;
+/* Prognose-Block: ein Satz; bei Warnung (überzogen, reicht nicht bis zur Abgabe) mit Kontur und Symbol. Aus dem
+   erfundenen Verlauf der Beispielprojekte: davor das Label „Beispielrechnung“ (gestrichelt = angenommen, nicht gemessen) */
+.pj-forecast-block { display: grid; justify-items: start; gap: var(--s-2); }
+.pj-forecast-block.is-warn { padding: var(--s-3) var(--s-4); border: 1.5px solid var(--c-line-strong); border-radius: var(--radius); }
+.pj-sample-tag {
+  padding: 1px var(--s-2); border: 1px dashed var(--c-control); border-radius: 999px;
+  font-size: var(--fs-label); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-2);
 }
-.pj-callout svg { flex: none; margin-top: 2px; }
+.pj-forecast, .pj-callout { display: flex; align-items: flex-start; gap: var(--s-2); font-size: var(--fs-body); }
+.pj-callout { font-weight: 600; }
+.pj-forecast svg, .pj-callout svg { flex: none; margin-top: 3px; }
 .pj-sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-1) var(--s-4); margin-bottom: var(--s-3); }
-.pj-burn-fig { margin: 0; display: grid; gap: var(--s-2); }
+.pj-burn-fig { position: relative; margin: 0; display: grid; gap: var(--s-2); } /* hält die versteckte Tabelle in der Figur */
 .pj-burn { width: 100%; }
 .pj-burn-svg { display: block; overflow: visible; }
 .pj-burn-base { stroke: var(--c-line-strong); stroke-width: 1; }
@@ -208,8 +213,6 @@
 .pj-tasks-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
 .pj-tasks-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px var(--s-3); margin-right: auto; }
 .pj-overdue-sum { color: var(--c-ink); font-weight: 600; }
-.pj-hint { font-size: var(--fs-meta); }
-.pj-hint svg { display: inline-block; vertical-align: -2px; }
 
 .pj-add-form {
   display: grid; gap: var(--s-3); padding: var(--s-4); border: 1px solid var(--c-line); border-radius: var(--radius-l); background: var(--c-bg-2);
@@ -223,9 +226,9 @@
   .pj-add-where, .pj-add-actions { grid-column: 1 / -1; }
 }
 
-/* Board nach eigener Breite: schmal waagerecht wischbare Spalten mit Scroll-Snap, ab 40rem 2 × 2, ab 52rem vier
-   (mit der Maus ist der Griff ausgeblendet, das längste Wort passt dann in die Spalte).
-   Spalten ohne Fläche; Karten weiß mit Haarlinie; Schatten nur am gezogenen Geist. */
+/* Board nach eigener Breite: schmal waagerecht wischbare Spalten mit Scroll-Snap, ab 40rem 2 × 2, ab 52rem vier.
+   Spalten ohne Fläche; Karten weiß mit Haarlinie; Schatten nur am gezogenen Geist. Beim Ziehen zeigen alle Spalten eine
+   feine gestrichelte Kontur, die Zielspalte eine kräftige mit Fläche (r07-Korrektur: keine Anleitungszeile mehr). */
 .pj-board {
   display: grid; grid-auto-flow: column; grid-auto-columns: min(85%, 20rem); gap: var(--s-4);
   overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; padding-bottom: var(--s-3); min-width: 0;
@@ -234,10 +237,11 @@
 .pj-board[data-dragging] { scroll-snap-type: none; cursor: grabbing; }
 .pj-col {
   position: relative; display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; padding: 0 0 var(--s-2);
-  border-radius: var(--radius); outline: 1.5px dashed transparent; outline-offset: 4px; scroll-snap-align: start;
+  border-radius: var(--radius); outline: 2px dashed transparent; outline-offset: 4px; scroll-snap-align: start;
   transition: outline-color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
-.pj-col.is-over { outline-color: var(--c-accent-text); background: var(--c-accent-soft); }
+.pj-board[data-dragging] .pj-col { outline-color: var(--c-control); }
+.pj-board .pj-col.is-over { outline-color: var(--c-line-strong); background: var(--c-bg-2); }
 .pj-col-head { display: flex; align-items: center; gap: var(--s-2); min-height: var(--tap); border-bottom: 1px solid var(--c-line-strong); }
 .pj-col-title { display: flex; align-items: center; gap: var(--s-2); margin-right: auto; font-size: var(--fs-label); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--c-ink); }
 .pj-count { font-size: var(--fs-label); font-weight: 400; color: var(--c-ink-2); letter-spacing: 0; }
@@ -249,10 +253,12 @@
 .pj-task {
   display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; min-width: 0; padding: var(--s-3); background: var(--c-surface); color: var(--c-ink);
   border: 1px solid var(--c-line); border-radius: var(--radius); box-shadow: none;
-  outline: 3px solid transparent; outline-offset: 2px; transition: outline-color var(--dur) var(--ease);
+  outline: 3px solid transparent; outline-offset: 2px; transition: outline-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
 .pj-task.is-board { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 @media (pointer: fine) { .pj-task.is-board { cursor: grab; } .pj-task :is(button, select, label, a) { cursor: pointer; } }
+/* Greifbar: mit der Maus hebt sich die Karte beim Überfahren ab (Kontur), der Griff erscheint */
+@media (hover: hover) { .pj-task.is-board:hover { border-color: var(--c-line-strong); } }
 .pj-task.is-overdue.is-board { border-color: var(--c-line-strong); }
 .pj-task.is-dragging { opacity: 0.5; border-style: dashed; border-color: var(--c-control); }
 .pj-task.is-timing.is-board { border-color: var(--c-line-strong); box-shadow: inset 3px 0 0 var(--c-lime), inset 4px 0 0 var(--c-line-strong); }
@@ -270,7 +276,14 @@
   color: var(--c-ink-3); cursor: grab; touch-action: none;
 }
 @media (hover: hover) { .pj-grip:hover { background: var(--c-bg-2); color: var(--c-ink); } }
-@media (hover: hover) and (pointer: fine) { .pj-grip { display: none; } }   /* Maus zieht die ganze Karte */
+/* Maus zieht die ganze Karte; der Griff zeigt das bei Hover oder Fokus der Karte – in der Ecke über dem Innenabstand,
+   damit der Titel seine Breite behält (nichts springt). Klicks gehen an die Karte. */
+@media (hover: hover) and (pointer: fine) {
+  .pj-task.is-board { position: relative; }
+  .pj-task.is-board .pj-task-title { padding-right: 20px; }
+  .pj-grip { position: absolute; top: 0; right: 0; margin: 0; opacity: 0; pointer-events: none; transition: opacity var(--dur) var(--ease); }
+  .pj-task:hover .pj-grip, .pj-task:focus-within .pj-grip, .pj-task:focus .pj-grip, .pj-task.is-dragging .pj-grip { opacity: 1; color: var(--c-ink); }
+}
 .pj-task-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px var(--s-3); font-size: var(--fs-meta); color: var(--c-ink-2); min-width: 0; }
 .pj-task-person { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
 .pj-hours { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; color: var(--c-ink); }
@@ -284,14 +297,10 @@
 /* Status, Timer und Löschen in einer Zeile – die Auswahl gibt Platz ab, die Symbole brechen nie um */
 .pj-task-actions { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--s-1); margin-top: 2px; }
 .pj-task-status { flex: 0 1 auto; width: auto; min-width: 0; max-width: 11rem; padding: 0 2px 0 var(--s-2); font-size: var(--fs-meta); }
+/* Play: .btn-play aus base.css (rund, schwarze Kontur; aria-pressed="true" = läuft, violett) */
 .pj-play { margin-left: auto; }
 .pj-play, .pj-del { flex: none; }
-.pj-play { border-color: transparent; background: transparent; color: var(--c-accent-text); }
-.pj-play.is-on { background: var(--c-lime); color: var(--c-lime-ink); border-color: var(--c-line-strong); }
-@media (hover: hover) {
-  .pj-play.is-on:hover { background: var(--c-ink); color: var(--c-bg); border-color: var(--c-ink); }
-  .pj-del:hover { background: var(--c-bg-2); color: var(--c-ink); }
-}
+@media (hover: hover) { .pj-del:hover { background: var(--c-bg-2); color: var(--c-ink); } }
 .pj-del { color: var(--c-ink-2); }
 
 /* Liste: nach Status gruppiert, Zeilen mit Haarlinie */

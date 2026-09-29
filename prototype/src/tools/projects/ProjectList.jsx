@@ -9,24 +9,26 @@ import { clientsById, loadProjects } from '../../lib/projects.js';
 import { href, navigate } from '../../lib/router.js';
 import { useStoredState } from '../../lib/store.js';
 import { cleanEntries } from '../../lib/data.js';
-import { spentHours } from '../../lib/budget.js';
-import { budgetInfo, fmtH, fmtRest, norm, personById } from './helpers.js';
+import { restHours } from '../../lib/budget.js';
+import { fmtH1 } from '../../lib/format.js';
+import { budgetInfo, fmtRest, norm, personById } from './helpers.js';
 import { Avatar, BudgetBar, DueText, StateIcon, StatusDot } from './parts.jsx';
 
 export const initialFilters = { query: '', studio: '', statuses: [], sort: 'due' };
 
 const byCode = (a, b) => a.code.localeCompare(b.code);
+// info[id] = budgetInfo (Rest aus restHours, gerundet für die Anzeige); sortiert wird ungerundet
+const used = (p, i) => i.total / (Number(p.budget) || 1);
 const SORTS = {
   due: { label: 'Nach Abgabe', fn: (a, b) => (a.due || '9999').localeCompare(b.due || '9999') || byCode(a, b) },
-  budget: { label: 'Nach Auslastung', fn: (a, b, spent) => spent[b.id] / b.budget - spent[a.id] / a.budget || byCode(a, b) },
-  rest: { label: 'Nach Reststunden', fn: (a, b, spent) => (a.budget - spent[a.id]) - (b.budget - spent[b.id]) || byCode(a, b) },
+  budget: { label: 'Nach Auslastung', fn: (a, b, info) => used(b, info[b.id]) - used(a, info[a.id]) || byCode(a, b) },
+  rest: { label: 'Nach Reststunden', fn: (a, b, info) => info[a.id].rawRest - info[b.id].rawRest || byCode(a, b) },
 };
 
-function ProjectRow({ p, spent }) {
+function ProjectRow({ p, b }) {
   const descId = useId();
   const lead = personById[p.lead];
-  const b = budgetInfo(spent, p.budget);
-  const restText = b.rest < 0 ? `überzogen um ${fmtH(-b.rest)}` : `Rest ${fmtH(b.rest)}`;
+  const restText = b.rest < 0 ? `überzogen um ${fmtH1(-b.rest)}` : `Rest ${fmtH1(b.rest)}`;
   return (
     <li className={`pj-row is-${b.state}`}>
       <span className="pj-row-code num">{p.code}</span>
@@ -43,7 +45,7 @@ function ProjectRow({ p, spent }) {
         <span className="pj-rest-num num" aria-hidden="true"><StateIcon state={b.state} size={16} />{fmtRest(b.rest)}</span>
         <BudgetBar info={b} spent={b.spent} budget={p.budget} />
       </div>
-      <span id={descId} className="visually-hidden">{`${restText} von ${fmtH(p.budget)}, Budget ${b.label}`}</span>
+      <span id={descId} className="visually-hidden">{`${restText} von ${fmtH1(p.budget)}, Budget ${b.label}`}</span>
     </li>
   );
 }
@@ -55,7 +57,7 @@ export default function ProjectList({ filters, setFilters }) {
   // Buchungen nur lesen – der Setter bleibt ungenutzt
   const [entries] = useStoredState('time-entries', sampleEntries, cleanEntries);
   const projects = loadProjects(); // gemeinsame, bearbeitbare Quelle; Projects.jsx zeichnet bei Änderungen neu
-  const spent = useMemo(() => Object.fromEntries(projects.map(p => [p.id, spentHours(p, entries)])), [entries, projects]);
+  const info = useMemo(() => Object.fromEntries(projects.map(p => [p.id, { ...budgetInfo(p, entries), rawRest: restHours(p, entries) }])), [entries, projects]);
   const set = patch => setFilters(f => ({ ...f, ...patch }));
   const toggleStatus = value =>
     setFilters(f => ({ ...f, statuses: f.statuses.includes(value) ? f.statuses.filter(x => x !== value) : [...f.statuses, value] }));
@@ -68,8 +70,8 @@ export default function ProjectList({ filters, setFilters }) {
       .filter(p => !studio || p.studio === studio)
       .filter(p => !filters.statuses.length || filters.statuses.includes(p.status))
       .filter(p => !q || [p.name, p.code, clientsById()[p.client]?.name].some(s => norm(s).includes(q)))
-      .sort((a, b) => (SORTS[sort] || SORTS.due).fn(a, b, spent));
-  }, [query, studio, filters.statuses, sort, spent, projects]);
+      .sort((a, b) => (SORTS[sort] || SORTS.due).fn(a, b, info));
+  }, [query, studio, filters.statuses, sort, info, projects]);
 
   const reset = () => setFilters(f => ({ ...f, query: '', studio: '', statuses: [] }));
 
@@ -137,7 +139,7 @@ export default function ProjectList({ filters, setFilters }) {
             <span className="pj-row-rest">Rest</span>
           </div>
           <ul className="list pj-rows" aria-label="Projekte">
-            {list.map(p => <ProjectRow key={p.id} p={p} spent={spent[p.id]} />)}
+            {list.map(p => <ProjectRow key={p.id} p={p} b={info[p.id]} />)}
           </ul>
         </div>
       ) : (
