@@ -2,7 +2,7 @@
    Besitzer: Builder B1. Übergänge nur beim Überfahren und bei Zustandswechsel, höchstens --dur (160 ms). */
 
 .app { min-height: 100dvh; }
-.main { display: block; min-width: 0; padding: var(--s-5) var(--gutter) calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--s-7)); }
+.main { display: block; min-width: 0; padding: var(--space-page) var(--gutter) calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--s-8)); }
 .content { max-width: var(--content-max); container: content / inline-size; }
 html { scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--s-4)); }
 /* --dock-bottom: Abstand für alles, was unten klebt (Hinweise, Rückgängig) – schmal über der Tab-Leiste */
@@ -13,7 +13,7 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)
     display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
     background: linear-gradient(to right, var(--c-nav) var(--sidebar-w), var(--c-bg) var(--sidebar-w));
   }
-  .main { padding: var(--s-7) var(--s-7) var(--s-8); }
+  .main { padding: var(--space-page) var(--s-7) var(--s-8); }
   .topbar, .tabbar { display: none !important; }
   html { scroll-padding-bottom: var(--s-4); }
   :root { --dock-bottom: var(--s-4); }
@@ -148,6 +148,12 @@ button.timer-pill { cursor: pointer; transition: background-color var(--dur) var
 .topbar__bar { display: flex; align-items: center; gap: var(--s-2); min-height: 60px; }
 .topbar .wordmark__name { font-size: 1.625rem; }
 .topbar__actions { margin-left: auto; display: flex; align-items: center; gap: var(--s-1); min-width: 0; }
+/* Suchen und Menü schrumpfen nie unter 44 px; mit 20 px Seitenrand (r08) rückt der Kopf unter 380 px dafür enger */
+.topbar__search, .topbar__toggle { flex: none; }
+@media (max-width: 379.98px) {
+  .topbar__bar { gap: var(--s-1); }
+  .topbar__actions .timer-head { padding-right: var(--s-2); }
+}
 /* Offenes Menü = Zustand: Limette mit schwarzer Kontur (Limette auf Weiß allein nur 1,08:1) */
 .topbar__toggle[aria-expanded="true"] { background: var(--c-indicator); border-color: var(--c-line-strong); color: var(--c-indicator-ink); }
 .topbar__note { padding: 0 0 var(--s-2); font-size: 0.875rem; line-height: 1.6; color: var(--c-ink-2); }
@@ -237,7 +243,7 @@ button.timer-pill { cursor: pointer; transition: background-color var(--dur) var
   border: 1.5px solid var(--c-line-strong); border-radius: var(--radius-l); box-shadow: var(--shadow-2);
 }
 .toast__icon { flex: none; }
-.toast__text { flex: 1 1 auto; min-width: 0; font-weight: 500; line-height: 1.35; }
+.toast__text { flex: 1 1 auto; min-width: 0; font-weight: 600; line-height: 1.4; }
 .toast__link {
   flex: none; display: inline-flex; align-items: center; min-height: var(--tap); padding: 0 var(--s-2);
   font-weight: 600; color: var(--c-accent-text);
@@ -250,7 +256,7 @@ button.timer-pill { cursor: pointer; transition: background-color var(--dur) var
   --seg-on-bg: var(--c-indicator); --seg-on-ink: var(--c-indicator-ink); --seg-hover: var(--c-accent-soft);
   margin: 0; padding: 0; border: 0; min-width: 0;
 }
-.segmented__legend { padding: 0; margin-bottom: var(--s-2); font-size: 0.9375rem; font-weight: 500; color: var(--seg-ink); }
+.segmented__legend { padding: 0; margin-bottom: var(--s-2); font-size: 0.9375rem; font-weight: 600; color: var(--seg-ink); }
 .segmented__options {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 3px;
   border: 1.5px solid var(--seg-border); border-radius: var(--radius-l);
