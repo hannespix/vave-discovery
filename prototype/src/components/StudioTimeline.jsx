@@ -1,111 +1,119 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
+import OpenBadge, { statusText } from './OpenBadge.jsx';
 import { fmtTime } from '../lib/format.js';
-import { CLOSE_HOUR, HOME_TZ, OPEN_HOUR, commonWindows, fmtHM, minutesOfDay, workWindowInHome } from '../lib/time.js';
+import {
+  CLOSE_HOUR, HOME_TZ, OPEN_HOUR, commonWindows, dayShift, diffToHome, fmtHM, fmtOffset, minutesOfDay, studioStatus, workWindowInHome,
+} from '../lib/time.js';
 
+// Eine Zeile je Studio auf gemeinsamer 24-h-Skala (Frankfurter Zeit): Stadt, Ortszeit groß, Versatz grau, Status,
+// Arbeitsfenster als Balken in der Studiofarbe, gemeinsames Fenster als Band, Linie „jetzt“.
+// Reines HTML/CSS in Prozent – keine Messung, keine Bewegung beim Öffnen. Die Skala ist aria-hidden; dieselben Angaben
+// stehen je Zeile als Text und darunter als Tabelle.
 const DAY = 1440;
+const pad = n => String(n).padStart(2, '0');
 const range = ([a, b]) => `${fmtHM(a)}–${fmtHM(b)}`;
-const shortRange = ([a, b]) => (a % 60 || b % 60 ? range([a, b]) : `${String(a / 60).padStart(2, '0')}–${String(b / 60).padStart(2, '0')}`);
+const shortRange = ([a, b]) => (a % 60 || b % 60 ? range([a, b]) : `${pad(a / 60)}–${pad(b / 60)}`);
+const at = m => `${(m / DAY) * 100}%`;
+const TICKS = [0, 3, 6, 9, 12, 15, 18, 21, 24];
+const dayWord = { '-1': 'gestern', 1: 'morgen' };
 
-// SVG-Zeitleiste über 24 h Frankfurter Zeit: Arbeitszeit je Studio (Mo–Fr), gemeinsames Fenster, Linie „jetzt“.
-// Maße in Pixeln nach gemessener Breite, damit die Schrift auf dem Handy nicht schrumpft.
-// Keine Bewegung beim Öffnen; die Linie springt mit der Uhr (alle 15 s, Bruchteile eines Pixels).
-// Für Screenreader: SVG ist aria-hidden, dieselben Angaben stehen in Satz und Tabelle.
-export default function StudioTimeline({ studios, now }) {
-  const wrapRef = useRef(null);
-  const [width, setWidth] = useState(0);
+const dayNote = r => (dayWord[r.shift] ? `, ${dayWord[r.shift]}` : '');
+const offsetText = r => (r.tz === HOME_TZ ? 'Bezugszeit' : `${fmtOffset(r.diff)}${dayNote(r)}`);
+const offsetLong = r => (r.tz === HOME_TZ ? 'Bezugszeit' : `${fmtOffset(r.diff)} zu Frankfurt${dayNote(r)}`);
+const windowText = segs => (segs.length ? `${segs.map(range).join(' und ')} Uhr` : 'keine (Wochenende)');
 
-  useLayoutEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return undefined;
-    setWidth(Math.floor(el.clientWidth));
-    const ro = new ResizeObserver(([entry]) => setWidth(Math.floor(entry.contentRect.width)));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  const rows = studios.map(s => ({ ...s, segs: workWindowInHome(now, s.tz) }));
+export default function StudioTimeline({ studios, now, legend = null }) {
+  const rows = studios.map(s => ({
+    ...s,
+    segs: workWindowInHome(now, s.tz),
+    status: studioStatus(now, s.tz),
+    diff: diffToHome(now, s.tz),
+    shift: dayShift(now, s.tz),
+  }));
   const common = commonWindows(rows.map(r => r.segs));
   const nowMin = minutesOfDay(now, HOME_TZ);
-
-  const narrow = width < 560;
-  const labelW = narrow ? 84 : 112;
-  const padR = 16;
-  const rowH = narrow ? 36 : 40;
-  const top = 30;
-  const bodyH = rows.length * rowH;
-  const height = top + bodyH + 30;
-  const plotW = Math.max(0, width - labelW - padR);
-  const x = m => labelW + (m / DAY) * plotW;
-  const ticks = narrow ? [0, 6, 12, 18, 24] : [0, 3, 6, 9, 12, 15, 18, 21, 24];
-  const nowX = x(nowMin);
-  const nowAnchor = nowX < labelW + 40 ? 'start' : nowX > width - 48 ? 'end' : 'middle';
+  // „jetzt“-Marke am Rand nicht abschneiden
+  const nowAlign = nowMin < 90 ? ' tl__now-label--start' : nowMin > DAY - 90 ? ' tl__now-label--end' : '';
 
   return (
-    <div className="timeline">
-      <div ref={wrapRef} className="timeline__canvas">
-        {width > 0 && (
-          <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true" focusable="false">
-            {ticks.map(h => (
-              <line key={h} className="tl-grid" x1={x(h * 60)} x2={x(h * 60)} y1={top - 4} y2={top + bodyH + 4} />
-            ))}
-            {common.map(seg => (
-              <rect key={seg[0]} className="tl-band" x={x(seg[0])} y={top - 4} width={x(seg[1]) - x(seg[0])} height={bodyH + 8} />
-            ))}
-            {rows.map((r, i) => {
-              const y = top + i * rowH;
-              return (
-                <g key={r.id}>
-                  <text className="tl-label" x={0} y={y + rowH / 2} dominantBaseline="central">{r.name}</text>
-                  {r.segs.length === 0 && (
-                    <text className="tl-empty" x={labelW + plotW / 2} y={y + rowH / 2} textAnchor="middle" dominantBaseline="central">
-                      Wochenende
-                    </text>
-                  )}
-                  {r.segs.map(seg => {
-                    const w = x(seg[1]) - x(seg[0]);
-                    return (
-                      <g key={seg[0]}>
-                        <rect className="tl-bar" x={x(seg[0])} y={y + 6} width={w} height={rowH - 12} rx={4} style={{ fill: r.color }} />
-                        {w > 44 && (
-                          <text className="tl-bar-text" x={x(seg[0]) + w / 2} y={y + rowH / 2} textAnchor="middle" dominantBaseline="central">
-                            {shortRange(seg)}
-                          </text>
-                        )}
-                      </g>
-                    );
-                  })}
-                </g>
-              );
-            })}
-            {ticks.map(h => (
-              <text key={h} className="tl-tick" x={x(h * 60)} y={height - 8} textAnchor={h === 0 ? 'start' : h === 24 ? 'end' : 'middle'}>
-                {String(h).padStart(2, '0')}
-              </text>
-            ))}
-            <line className="tl-now" x1={nowX} x2={nowX} y1={top - 10} y2={top + bodyH + 6} />
-            <text className="tl-now-label" x={nowX} y={14} textAnchor={nowAnchor}>jetzt {fmtTime(now, HOME_TZ)}</text>
-          </svg>
-        )}
+    <div className="tl">
+      <div className="tl__row tl__row--axis" aria-hidden="true">
+        <span className="tl__axis-gap" />
+        <div className="tl__scale">
+          <span className={`tl__now-label${nowAlign}`} style={{ left: at(nowMin) }}>jetzt {fmtTime(now, HOME_TZ)}</span>
+          {TICKS.map(h => (
+            <span
+              key={h}
+              className={`tl__tick${h % 6 ? ' tl__tick--minor' : ''}${h === 0 ? ' tl__tick--start' : ''}${h === 24 ? ' tl__tick--end' : ''}`}
+              style={{ left: at(h * 60) }}
+            >
+              {pad(h)}
+            </span>
+          ))}
+        </div>
       </div>
 
-      {/* Tabellen ignorieren width: 1px – deshalb versteckt der Container, nicht die Tabelle */}
-      <div className="visually-hidden">
-      <table>
-        <caption>Arbeitszeit der Studios heute (Mo–Fr {OPEN_HOUR}–{CLOSE_HOUR} Uhr Ortszeit), umgerechnet in Frankfurter Zeit</caption>
-        <thead>
-          <tr><th scope="col">Studio</th><th scope="col">Ortszeit jetzt</th><th scope="col">Arbeitszeit in Frankfurter Zeit</th></tr>
-        </thead>
-        <tbody>
-          {rows.map(r => (
-            <tr key={r.id}>
-              <th scope="row">{r.name}</th>
-              <td>{fmtTime(now, r.tz)} Uhr</td>
-              <td>{r.segs.length ? `${r.segs.map(range).join(' und ')} Uhr` : 'keine (Wochenende)'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      </div>
+      <ul className="tl__list" role="list">
+        {rows.map(r => (
+          <li key={r.id} className="tl__row" data-studio={r.id}>
+            <div className="tl__info">
+              <p className="tl__city"><span className="tl__dot" style={{ background: r.color }} aria-hidden="true" />{r.name}</p>
+              <OpenBadge open={r.status.open} workday={r.status.workday} />
+              <p className="tl__clock">
+                <span className="tl__time num">{fmtTime(now, r.tz)}</span>
+                <span className="visually-hidden"> Uhr Ortszeit, </span>
+                <span className="tl__offset" aria-hidden="true">{offsetText(r)}</span>
+                <span className="visually-hidden">{offsetLong(r)}</span>
+              </p>
+              <p className="visually-hidden">Arbeitszeit in Frankfurter Zeit: {windowText(r.segs)}</p>
+            </div>
+            <div className="tl__track" aria-hidden="true">
+              {common.map(seg => (
+                <span key={`c${seg[0]}`} className="tl__common" style={{ left: at(seg[0]), width: at(seg[1] - seg[0]) }} />
+              ))}
+              {r.segs.map(seg => (
+                <span key={seg[0]} className="tl__bar" style={{ left: at(seg[0]), width: at(seg[1] - seg[0]), background: r.color }}>
+                  {seg[1] - seg[0] >= 180 ? shortRange(seg) : ''}
+                </span>
+              ))}
+              <span className="tl__now" style={{ left: at(nowMin) }} />
+            </div>
+          </li>
+        ))}
+      </ul>
+      {legend}
+
+      <details className="tl-table">
+        <summary><ChevronRight aria-hidden="true" size={18} strokeWidth={2} />Als Tabelle anzeigen</summary>
+        {/* Schmal scrollt die Tabelle waagerecht – per Tastatur erreichbar */}
+        <div className="tl-table__scroll" tabIndex={0} role="region" aria-label="Tabelle: Arbeitszeiten der Studios">
+          <table className="table">
+            <caption className="visually-hidden">
+              Studios heute: Ortszeit, Status und Arbeitszeit (Mo–Fr {OPEN_HOUR}–{CLOSE_HOUR} Uhr Ortszeit) in Frankfurter Zeit
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Studio</th>
+                <th scope="col" className="num">Ortszeit</th>
+                <th scope="col">Versatz</th>
+                <th scope="col">Status</th>
+                <th scope="col">Arbeitszeit in Frankfurter Zeit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(r => (
+                <tr key={r.id}>
+                  <th scope="row">{r.name}</th>
+                  <td className="num">{fmtTime(now, r.tz)}</td>
+                  <td>{offsetLong(r)}</td>
+                  <td>{statusText(r.status)}</td>
+                  <td>{windowText(r.segs)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
     </div>
   );
 }
