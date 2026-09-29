@@ -1,20 +1,25 @@
 // Liste „Diese Woche“: nach Tag gruppiert, Summen je Tag und Woche; bearbeiten, löschen, rückgängig.
+// flash = { id, date }: der zuletzt gespeicherte Eintrag und die Summen seines Tages tragen data-highlight (Limette).
 import { useEffect, useRef, useState } from 'react';
-import { Check, Pencil, Trash2, Undo2 } from 'lucide-react';
+import { Check, CircleCheck, Pencil, Trash2, Undo2 } from 'lucide-react';
 import { fmtDuration } from '../../lib/format.js';
 import ProjectSelect, { Swatch, projectInfo } from './ProjectSelect.jsx';
 import { FieldError } from './ManualEntry.jsx';
-import { dayTitle, durationMessage, endOf, parseDuration, sumMinutes, toInputDuration } from './timeUtils.js';
+import { dayTitle, durationMessage, endOf, parseDuration, rowId, sumMinutes, toInputDuration } from './timeUtils.js';
 
 const UNDO_MS = 8000;
 const INFO_MS = 4000;
 const byStart = (a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0);
 const context = e => `${projectInfo(e.project).code}, ${e.start} Uhr, ${fmtDuration(e.minutes)}`;
 
-function EntryRow({ entry, onEdit, onDelete }) {
+// Boolesches Datenattribut: vorhanden oder gar nicht im DOM
+const flagAttr = flag => (flag ? 'true' : undefined);
+
+function EntryRow({ entry, highlight, onEdit, onDelete }) {
   const info = projectInfo(entry.project);
+  // tabIndex -1: „Anzeigen“ in der Bestätigung setzt den Fokus hierher
   return (
-    <li className="tt-entry">
+    <li id={rowId(entry.id)} className="tt-entry" tabIndex={-1} data-highlight={flagAttr(highlight)}>
       <Swatch color={info.color} className="tt-entry-swatch" />
       <div className="tt-entry-main">
         <p className="tt-entry-title"><strong>{info.code}</strong> {info.name}</p>
@@ -45,7 +50,7 @@ function EntryRow({ entry, onEdit, onDelete }) {
 function EntryEditor({ entry, onSave, onCancel }) {
   const [duration, setDuration] = useState(toInputDuration(entry.minutes));
   const [project, setProject] = useState(entry.project);
-  const [note, setNote] = useState(entry.note || '');
+  const [note, setNote] = useState(String(entry.note ?? ''));
   const [error, setError] = useState('');
   const durationRef = useRef(null);
   const base = `tt-e-${entry.id}`;
@@ -111,7 +116,7 @@ function EntryEditor({ entry, onSave, onCancel }) {
   );
 }
 
-export default function EntryList({ entries, days, weekNo, onUpdate, onDelete, onRestore }) {
+export default function EntryList({ entries, days, weekNo, flash, onUpdate, onDelete, onRestore }) {
   const [editing, setEditing] = useState(null);
   const [toast, setToast] = useState(null);
   const [focusId, setFocusId] = useState(null);
@@ -176,6 +181,7 @@ export default function EntryList({ entries, days, weekNo, onUpdate, onDelete, o
   };
 
   const weekMinutes = sumMinutes(entries);
+  const weekFlash = Boolean(flash && days.some(d => d.iso === flash.date));
   const groups = days
     .filter(d => !d.isFuture)
     .reverse()
@@ -188,14 +194,17 @@ export default function EntryList({ entries, days, weekNo, onUpdate, onDelete, o
         <h2 id="tt-list-title" tabIndex={-1}>Diese Woche</h2>
         <p className="tt-weeksum">
           <span className="tt-weeksum-label">KW {weekNo} · Summe</span>
-          <strong className="num">{fmtDuration(weekMinutes)}</strong>
+          <strong className="num" data-highlight={flagAttr(weekFlash)}>{fmtDuration(weekMinutes)}</strong>
         </p>
       </div>
 
       <div className="tt-toast-region" role="status" ref={toastRef} {...toastEvents}>
         {toast && (
           <div className="tt-toast" key={toast.key}>
-            <p>{toast.text}</p>
+            <p className="tt-toast-msg">
+              {!toast.undo && <CircleCheck aria-hidden="true" size={18} />}
+              <span>{toast.text}</span>
+            </p>
             {toast.undo && (
               <button id="tt-undo" type="button" className="btn tt-toast-btn" onClick={undo}>
                 <Undo2 aria-hidden="true" size={18} />
@@ -213,7 +222,9 @@ export default function EntryList({ entries, days, weekNo, onUpdate, onDelete, o
             <h3 className="tt-day-head">
               <span>{title.name}</span>
               <span className="tt-day-date">{title.dm}</span>
-              <span className="tt-day-sum num"><span className="visually-hidden">Summe </span>{fmtDuration(sumMinutes(list))}</span>
+              <span className="tt-day-sum num" data-highlight={flagAttr(flash?.date === day.iso)}>
+                <span className="visually-hidden">Summe </span>{fmtDuration(sumMinutes(list))}
+              </span>
             </h3>
             {list.length ? (
               <ul className="tt-entries" role="list">
@@ -221,7 +232,10 @@ export default function EntryList({ entries, days, weekNo, onUpdate, onDelete, o
                   editing === entry.id ? (
                     <EntryEditor key={entry.id} entry={entry} onSave={patch => save(entry, patch)} onCancel={() => cancel(entry)} />
                   ) : (
-                    <EntryRow key={entry.id} entry={entry} onEdit={() => setEditing(entry.id)} onDelete={() => remove(entry)} />
+                    <EntryRow
+                      key={entry.id} entry={entry} highlight={Boolean(flash?.id) && flash.id === entry.id}
+                      onEdit={() => setEditing(entry.id)} onDelete={() => remove(entry)}
+                    />
                   ),
                 )}
               </ul>
