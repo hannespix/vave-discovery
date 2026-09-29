@@ -3,19 +3,23 @@
    Koralle = nur „überzogen“, Projektfarbe nur als Punkt. Übergänge ≤ 200 ms, nur bei Zustandswechsel.
    Schrift (r07-K1): nur --fs-label / --fs-meta / --fs-body / --fs-title, Gewichte nur 400 und 600. */
 
-.tt { display: grid; gap: var(--s-5); min-width: 0; }
+/* Weißraum (r08): Abstände je Übergang statt eines Sammel-gap – Kopf → Leiste --space-header (aus .page-header, wie auf
+   allen Seiten), Leiste → Wochenkopf --space-section (zwei Abschnitte: erfassen und ansehen), Wochenkopf → Liste/Raster
+   --space-block (gehören zusammen). Innenmaß der Leiste und der Bearbeiten-Fläche: 20 px am Handy, 24 px ab 600 px. */
+.tt { --tt-pad: 1.25rem; --tt-gap: 1.25rem; display: grid; min-width: 0; }
+@media (min-width: 600px) { .tt { --tt-pad: var(--s-5); --tt-gap: var(--s-5); } }
 .tt ::placeholder { color: var(--c-ink-3); opacity: 1; }
 .tt-optional { font-weight: 400; color: var(--c-ink-2); }
 
 /* Seitenkopf: Titel und Ansicht */
-.tt .tt-header { margin-bottom: 0; align-items: center; }
+.tt .tt-header { align-items: center; }
 .tt-header-main { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-5); min-width: 0; }
 
 /* Kopf der gewählten Woche: ‹ KW 39 · 21.09.–27.09. › „Diese Woche“ … Summe von 40 h Soll */
-.tt-range-section { display: grid; gap: var(--s-3); min-width: 0; }
+.tt-range-section { display: grid; gap: var(--space-block); min-width: 0; margin-top: var(--space-section); }
 .tt-range {
-  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3);
-  padding-bottom: var(--s-3); border-bottom: 1px solid var(--c-line);
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-4);
+  padding-bottom: var(--s-4); border-bottom: 1px solid var(--c-line);
 }
 .tt-range-nav { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
 .tt-range-title {
@@ -38,8 +42,9 @@
 .tt-select .select { text-overflow: ellipsis; }
 
 /* ---------- Leiste ---------- */
+/* Innenabstand und Abstand der Blöcke (Umschalter, Felder, Uhr, Zuletzt) gleich groß: 20 px am Handy, 24 px ab 600 px */
 .tt-bar {
-  display: grid; gap: var(--s-4); min-width: 0; padding: var(--s-4);
+  display: grid; gap: var(--tt-gap); min-width: 0; padding: var(--tt-pad);
   border: 1px solid var(--c-line); border-radius: var(--radius-l); background: var(--c-surface);
   container-type: inline-size;
 }
@@ -49,11 +54,11 @@
 .tt-live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c-accent); }
 
 /* Timer: Feld, Projekt, Laufzeit, runder Knopf */
-.tt-timer { display: grid; gap: var(--s-3); grid-template-columns: minmax(0, 1fr); align-items: center; }
-.tt-timer-what { display: grid; gap: var(--s-1); min-width: 0; }
+.tt-timer { display: grid; gap: var(--tt-gap) var(--s-4); grid-template-columns: minmax(0, 1fr); align-items: center; }
+.tt-timer-what { display: grid; gap: var(--s-2); min-width: 0; }
 .tt-timer-task { overflow-wrap: anywhere; }
-.tt-timer-run { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
-.tt-clock-box { display: grid; gap: 2px; min-width: 0; }
+.tt-timer-run { display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); }
+.tt-clock-box { display: grid; gap: var(--s-1); min-width: 0; }
 .tt-clock { font-size: var(--fs-title); font-weight: 600; line-height: 1; letter-spacing: -0.01em; }
 .tt-clock[data-running="true"] { color: var(--c-accent-text); }
 /* Readex Pro hat keine Tabellenziffern (tnum wirkt nicht) – feste Zelle je Ziffer, die Uhr springt nicht */
@@ -73,15 +78,16 @@
 
 /* Timer läuft über 10 h */
 .tt-longrun {
-  display: flex; gap: var(--s-2); align-items: flex-start; padding: var(--s-3);
-  border-radius: var(--radius); background: var(--c-warn-soft); color: var(--c-warn); line-height: 1.4;
+  display: flex; gap: var(--s-2); align-items: flex-start; padding: var(--s-3) var(--s-4);
+  border-radius: var(--radius); background: var(--c-warn-soft); color: var(--c-warn); line-height: 1.5;
   box-shadow: inset 0 0 0 1.5px var(--c-warn);
 }
-.tt-longrun svg { flex: none; margin-top: 1px; }
+.tt-longrun svg { flex: none; margin-top: 2px; }
+.tt-longrun > span { max-width: var(--measure); }
 .tt-longrun strong { font-weight: 600; }
 
 /* Ein-Klick-Start: zuletzt genutzte Kombinationen */
-.tt-quick { display: grid; gap: var(--s-2); min-width: 0; }
+.tt-quick { display: grid; gap: var(--space-label); min-width: 0; }
 .tt-quick-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-2); min-width: 0; }
 .tt-quick-list > li { max-width: 100%; }
 /* Schmal: eine Zeile, die in sich seitlich rollt – die Leiste bleibt kurz. Die Zeile reicht bis an den Rand der Leiste
@@ -89,9 +95,9 @@
 @container (max-width: 43.99rem) {
   .tt-quick-list {
     flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
-    margin: -6px calc(-1 * var(--s-4)); padding: 6px var(--s-4); scroll-padding-inline: var(--s-4);
-    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--s-4)), transparent);
-    mask-image: linear-gradient(to right, #000 calc(100% - var(--s-4)), transparent);
+    margin: -6px calc(-1 * var(--tt-pad)); padding: 6px var(--tt-pad); scroll-padding-inline: var(--tt-pad);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--tt-pad)), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - var(--tt-pad)), transparent);
   }
   .tt-quick-list > li { flex: none; max-width: 85%; }
 }
@@ -107,10 +113,11 @@
 .tt-chip-label { min-width: 0; max-width: 14rem; overflow: hidden; text-overflow: ellipsis; }
 .tt-quick-list::-webkit-scrollbar { display: none; }
 
-/* Nachtragen: Datum, Beginn, Dauer, Ende · Projekt, Notiz, Speichern */
-.tt-manual { display: grid; gap: var(--s-3); }
-.tt-manual-when { display: grid; gap: var(--s-3); grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
-.tt-manual-what { display: grid; gap: var(--s-3); grid-template-columns: minmax(0, 1fr); align-items: end; }
+/* Nachtragen: Datum, Beginn, Dauer, Ende · Projekt, Notiz, Speichern – zwei Feldgruppen, zwischen ihnen mehr Luft
+   (--space-block) als zwischen den Feldern einer Gruppe (16 px) */
+.tt-manual { display: grid; gap: var(--space-block); }
+.tt-manual-when { display: grid; gap: var(--s-4); grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.tt-manual-what { display: grid; gap: var(--s-4); grid-template-columns: minmax(0, 1fr); align-items: end; }
 .tt-manual .input { min-width: 0; }
 .tt-save { width: 100%; }
 @container (min-width: 44rem) {
@@ -118,59 +125,77 @@
   .tt-manual-what { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) auto; }
   .tt-save { width: auto; }
 }
-/* Echo unter jedem Dauerfeld: „= 1:30 h“ – Zeile ist immer da, damit nichts springt */
-.tt-echo { display: flex; gap: var(--s-1); align-items: flex-start; min-height: 1.4em; font-size: var(--fs-meta); line-height: 1.35; color: var(--c-ink-2); }
+/* Echo unter jedem Dauerfeld: „= 1:30 h“ – Zeile ist immer da, damit nichts springt. Hinweise und Fehler lesen sich
+   wie Fließtext: Zeilenhöhe 1,5, höchstens --measure breit (r08) */
+.tt-echo {
+  display: flex; gap: var(--s-1); align-items: flex-start; min-height: 1.5em; max-width: var(--measure);
+  font-size: var(--fs-meta); line-height: 1.5; color: var(--c-ink-2);
+}
 .tt-echo[data-state="echo"] { color: var(--c-ink); font-weight: 600; }
 .tt-echo[data-state="error"] { color: var(--c-danger); font-weight: 600; }
-.tt-echo svg { flex: none; margin-top: 2px; }
+.tt-echo svg { flex: none; margin-top: 3px; }
 .tt-error {
-  display: flex; gap: var(--s-2); align-items: flex-start;
-  font-size: var(--fs-meta); font-weight: 600; line-height: 1.35; color: var(--c-danger);
+  display: flex; gap: var(--s-2); align-items: flex-start; max-width: var(--measure);
+  font-size: var(--fs-meta); font-weight: 600; line-height: 1.5; color: var(--c-danger);
 }
-.tt-error svg { flex: none; margin-top: 1px; }
+.tt-error svg { flex: none; margin-top: 2px; }
 .tt .input[aria-invalid="true"] { border-color: var(--c-danger); }
 /* Datum/Uhrzeit: hat der Kalender-/Uhr-Knopf im Feld den Fokus, greift :focus-visible am Feld nicht – Ring trotzdem */
 .tt input[type="date"]:focus-within, .tt input[type="time"]:focus-within { box-shadow: var(--focus); border-color: var(--c-accent); }
 
 /* Bestätigung in der Leiste */
 .tt-confirm { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); min-width: 0; }
-.tt-confirm:not([data-tone]) { margin-top: calc(-1 * var(--s-4)); } /* leer: Live-Region bleibt, ohne Abstand */
-.tt-confirm[data-tone] { padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3); border-radius: var(--radius-l); }
+/* Leer: Live-Region bleibt, aber ohne eigene Rasterzeile – sonst hängt die Leiste unten einen zweiten Abstand an
+   (r08; der frühere negative margin-top hob den gap nicht auf, Rasterzeilen werden nie negativ). Übrig bleibt nur der
+   visuell versteckte, absolut gesetzte Statustext, der keine Zeile belegt. */
+.tt-confirm:not([data-tone]) { display: contents; }
+.tt-confirm[data-tone] { padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4); border-radius: var(--radius-l); }
 .tt-confirm[data-tone="ok"] { background: var(--c-lime); color: var(--c-lime-ink); box-shadow: inset 0 0 0 1.5px var(--c-lime-ink); }
 .tt-confirm[data-tone="warn"] { background: var(--c-warn-soft); color: var(--c-warn); box-shadow: inset 0 0 0 1.5px var(--c-warn); }
 .tt-confirm[data-tone="note"] { background: var(--c-bg-2); color: var(--c-ink); box-shadow: inset 0 0 0 1.5px var(--c-line-strong); }
-.tt-confirm-text { flex: 1 1 13rem; min-width: 0; }
-.tt-confirm-msg { display: flex; gap: var(--s-2); align-items: flex-start; padding: var(--s-1) 0; line-height: 1.4; font-weight: 600; overflow-wrap: anywhere; }
-.tt-confirm-msg svg { flex: none; }
+.tt-confirm-text { flex: 1 1 13rem; min-width: 0; max-width: var(--measure); }
+.tt-confirm-msg { display: flex; gap: var(--s-2); align-items: flex-start; padding: var(--s-1) 0; line-height: 1.5; font-weight: 600; overflow-wrap: anywhere; }
+.tt-confirm-msg svg { flex: none; margin-top: 2px; }
 .tt-confirm-btn { flex: none; margin-left: auto; }
 
 /* ---------- Liste ---------- */
-.tt-list { display: grid; gap: var(--s-5); min-width: 0; }
+/* r08: Tage mit --space-block Abstand, Zeilen mit --space-row oben und unten. Regel für alle Listen: Zeilentitel 600,
+   Metazeile 400 in ink-2 (Projektcode darin 600), zwischen beiden 4 px. */
+.tt-list { display: grid; gap: var(--space-block); min-width: 0; }
 .tt-day { display: grid; min-width: 0; container-type: inline-size; }
 .tt-day-head {
   display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3);
-  padding-bottom: var(--s-2); border-bottom: 1px solid var(--c-line-strong);
+  padding-bottom: var(--s-3); border-bottom: 1px solid var(--c-line-strong);
 }
 .tt-day-title { font-size: var(--fs-body); font-weight: 600; }
 .tt-day-date { color: var(--c-ink-2); font-weight: 400; }
 .tt-day-sum { font-weight: 600; border-radius: 999px; }
-.tt-empty { padding: var(--s-3) 0; }
+.tt-empty { max-width: var(--measure); padding: var(--space-row) 0; }
 
+/* Schmal: oben Titel und Dauer auf einer Linie, darunter Metazeile und Aktionen – in jeder Zeile an derselben Stelle.
+   Drei Spalten, damit der Titel bis an die Dauer reicht (die Aktionen belegen nur die Zeile darunter): lange Wörter wie
+   „Produktionsbesprechung“ brechen am Handy nicht mehr mitten im Wort. .tt-row-main löst sich dafür auf (contents).
+   Breit: Titel über Metazeile links, Dauer und Aktionen mittig auf einer Linie rechts. */
 .tt-row {
-  position: relative; isolation: isolate; display: grid; min-height: 56px; padding: var(--s-2) 0;
-  grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "main dur" "main act";
-  column-gap: var(--s-3); align-items: center;
+  position: relative; isolation: isolate; display: grid; min-height: 64px; padding: var(--space-row) 0;
+  grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "title title dur" "meta act act";
+  gap: var(--s-1) var(--s-4); align-items: start;
 }
-.tt-row-main { grid-area: main; min-width: 0; display: grid; gap: 2px; }
-.tt-row-title { overflow-wrap: anywhere; }
-.tt-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--s-2); font-size: var(--fs-meta); color: var(--c-ink-2); }
-.tt-row-code { font-weight: 600; color: var(--c-ink); }
+.tt-row-main { display: contents; }
+.tt-row-title { grid-area: title; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.tt-row-meta {
+  grid-area: meta; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--s-2);
+  font-size: var(--fs-meta); font-weight: 400; line-height: 1.5; color: var(--c-ink-2);
+}
+.tt-row-code { font-weight: 600; }
 .tt-row-note { overflow-wrap: anywhere; }
 .tt-row-dur { grid-area: dur; justify-self: end; font-weight: 600; white-space: nowrap; }
-.tt-row-actions { grid-area: act; justify-self: end; display: flex; align-items: center; gap: 2px; }
+.tt-row-actions { grid-area: act; justify-self: end; display: flex; align-items: center; gap: var(--s-1); }
 @media (hover: hover) { .tt-danger:hover { background: var(--c-danger-soft); color: var(--c-danger); } }
 @container (min-width: 34rem) {
-  .tt-row { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "main dur act"; }
+  .tt-row { grid-template-areas: "title dur act" "meta dur act"; column-gap: var(--s-5); align-items: center; }
+  .tt-row-title { align-self: end; }
+  .tt-row-meta { align-self: start; }
 }
 /* Hervorhebung nach dem Speichern: Limette als Fläche (etwas breiter als die Zeile), danach kurz ausblenden */
 .tt-row::before {
@@ -187,9 +212,9 @@
 .tt-day-sum[data-highlight] { background: var(--c-lime); color: var(--c-lime-ink); box-shadow: 0 0 0 4px var(--c-lime), 0 0 0 5.5px var(--c-lime-ink); }
 
 /* Bearbeiten: Panel an der Zeile */
-.tt-row-editing { padding: var(--s-2) 0; }
-.tt-edit { display: grid; gap: var(--s-3); padding: var(--s-4); }
-.tt-edit-grid { display: grid; gap: var(--s-3); grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.tt-row-editing { padding: var(--s-3) 0; }
+.tt-edit { display: grid; gap: var(--s-4); padding: var(--tt-pad); }
+.tt-edit-grid { display: grid; gap: var(--s-4); grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
 .tt-edit-grid > .tt-dur { grid-column: 1 / -1; }
 .tt-edit .input { min-width: 0; }
 .tt-edit-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
@@ -200,8 +225,10 @@
 }
 
 /* ---------- Woche ---------- */
-.tt-week { display: grid; gap: var(--s-3); min-width: 0; }
-.tt-week-tools { display: flex; flex-wrap: wrap; gap: var(--s-2); min-width: 0; }
+/* Werkzeuge → Tabelle --space-block; Statuszeile und Wochensumme hängen an der Tabelle (16 px), auch wenn die
+   Statuszeile leer ist (sie hält ihren Platz, damit nichts springt) */
+.tt-week { display: grid; gap: var(--s-4); min-width: 0; }
+.tt-week-tools { display: flex; flex-wrap: wrap; gap: var(--s-3); min-width: 0; margin-bottom: calc(var(--space-block) - var(--s-4)); }
 .tt-add-row {
   appearance: none; -webkit-appearance: none; width: 8rem; max-width: 100%; min-height: var(--tap); padding: 0 var(--s-4);
   border: 1.5px solid var(--c-line-strong); border-radius: 999px; background: var(--c-surface); color: var(--c-ink);
@@ -209,16 +236,20 @@
 }
 .tt-add-row:disabled { opacity: .55; cursor: not-allowed; }
 @media (hover: hover) { .tt-add-row:not(:disabled):hover { background: var(--c-bg-2); } }
-/* Wie ein .btn beschriftet (r08: vorher dünner als „Vorwoche übernehmen“); schmal beide volle Breite statt zwei
-   ungleich langer Pillen untereinander */
-.tt-add-row { font-weight: 500; text-align: center; text-align-last: center; }
+/* Wie ein .btn beschriftet (r08: vorher dünner als „Vorwoche übernehmen“; .btn ist jetzt 600 – zwei Gewichte); schmal
+   beide volle Breite statt zwei ungleich langer Pillen untereinander */
+.tt-add-row { font-weight: 600; text-align: center; text-align-last: center; }
 @container (max-width: 29.99rem) { .tt-week-tools > * { flex: 1 1 100%; } }
 
 /* Die Tabelle scrollt in ihrem Rahmen, nie die Seite; Projektspalte bleibt stehen */
 /* position: relative hält auch versteckte Hilfstexte (visually-hidden, absolut) im Rahmen */
 .tt-grid-scroll { position: relative; overflow-x: auto; min-width: 0; max-width: 100%; overscroll-behavior-x: contain; }
 .tt-grid { min-width: 38rem; }
-.tt-grid th, .tt-grid td { padding: var(--s-1) var(--s-2); }
+/* Zellen mit Luft (r08): Kopf, Summen und Projektspalte 8 px oben und unten, die Felder 8 px übereinander. Rechts steht
+   jede Zahl auf der Linie der Ziffern im Feld (12 px); Projekt- und Wochenspalte bündig mit der Seite. */
+.tt-grid th, .tt-grid td { padding: var(--s-2) var(--s-3); }
+.tt-grid .tt-grid-project { padding-left: 0; }
+.tt-grid .tt-grid-sumcol { padding-right: 0; }
 .tt-grid thead tr:first-child th { border-bottom: 0; padding-bottom: 0; }
 .tt-grid-sums td { font-weight: 600; border-bottom: 1px solid var(--c-line-strong); }
 .tt-grid-sums td.tt-grid-project { font-weight: 400; }
@@ -234,9 +265,9 @@
 .tt-grid-name { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
 .tt-grid-code { font-weight: 600; white-space: nowrap; }
 .tt-grid-pname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tt-rest { display: block; margin-left: calc(8px + var(--s-2)); }
+.tt-rest { display: block; margin: var(--s-1) 0 0 calc(8px + var(--s-2)); }
 .tt-over {
-  display: inline-block; margin: 2px 0 0 calc(8px + var(--s-2)); padding: 0 var(--s-2); border-radius: 999px;
+  display: inline-block; margin: var(--s-1) 0 0 calc(8px + var(--s-2)); padding: 0 var(--s-2); border-radius: 999px;
   background: var(--c-danger-fill); color: var(--c-danger-fill-ink); box-shadow: inset 0 0 0 1px var(--c-line-strong);
   font-size: var(--fs-label); font-weight: 600; line-height: 1.6;
 }
@@ -245,7 +276,7 @@
 .tt-grid-day[data-today] .tt-grid-dayname { background: var(--c-lime); color: var(--c-lime-ink); box-shadow: inset 0 0 0 1px var(--c-line-strong); }
 .tt-grid-sumcol { font-weight: 600; white-space: nowrap; }
 .tt-cell { position: relative; }
-.tt-grid td.tt-cell { padding: 3px; }
+.tt-grid td.tt-cell { padding: var(--s-1) 3px; }
 .tt-cell-input {
   display: block; width: 100%; min-width: 4.25rem; min-height: var(--tap); padding: 0 var(--s-2);
   border: 1px solid transparent; border-radius: var(--radius); background: var(--c-bg-2); color: var(--c-ink);
@@ -261,19 +292,22 @@
 .tt-bubble {
   position: absolute; z-index: 3; bottom: calc(100% - 2px); right: 3px; display: inline-flex; align-items: flex-start; gap: 4px;
   width: max-content; max-width: 15rem; padding: 2px var(--s-2); border-radius: var(--radius-s);
-  background: var(--c-ink); color: var(--c-bg); font-size: var(--fs-label); font-weight: 600; line-height: 1.4;
+  background: var(--c-ink); color: var(--c-bg); font-size: var(--fs-label); font-weight: 600; line-height: 1.5;
   text-align: left; white-space: normal; pointer-events: none;
 }
 .tt-bubble[data-tone="error"] { background: var(--c-danger-fill); color: var(--c-danger-fill-ink); box-shadow: inset 0 0 0 1px var(--c-line-strong); }
 .tt-bubble svg { flex: none; margin-top: 2px; }
 /* Statuszeile unter dem Raster: Meldung und „Rückgängig“ (bleibt bis zur nächsten Änderung) */
-.tt-grid-statusbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); min-height: 1.4em; }
-.tt-grid-status { flex: 1 1 16rem; min-width: 0; font-size: var(--fs-meta); color: var(--c-ink-2); overflow-wrap: anywhere; }
+.tt-grid-statusbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-4); min-height: 1.5em; }
+.tt-grid-status {
+  flex: 1 1 16rem; min-width: 0; max-width: var(--measure);
+  font-size: var(--fs-meta); line-height: 1.5; color: var(--c-ink-2); overflow-wrap: anywhere;
+}
 .tt-grid-status[data-tone="warn"] { color: var(--c-ink); font-weight: 600; }
 .tt-grid-undo { flex: none; }
 
 /* Woche gegen Soll: schmaler Balken */
-.tt-goal { display: grid; gap: var(--s-2); padding-top: var(--s-3); border-top: 1px solid var(--c-line); }
+.tt-goal { display: grid; gap: var(--s-3); padding-top: var(--s-4); border-top: 1px solid var(--c-line); }
 .tt-goal-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s-2); }
 .tt-goal-text strong { font-size: var(--fs-body); font-weight: 600; }
 .tt-goal-bar { height: 6px; border-radius: 999px; background: var(--c-bg-2); overflow: hidden; box-shadow: inset 0 0 0 1px var(--c-line); }
