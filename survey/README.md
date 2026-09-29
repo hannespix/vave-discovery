@@ -21,9 +21,18 @@ eine Datei mit eingebetteten Daten. Nur die wird weitergegeben.
 - Fortschritt liegt im `localStorage` des Browsers unter `vave-discovery-v1`.
   Reload oder späteres Öffnen setzt an derselben Station fort.
   „Von vorn" am Ende löscht alles.
-- Am Ende: **Daten herunterladen (JSON)** und **Brief herunterladen (Markdown)**.
-  Dateinamen `YYYY-MM-DD_tobias.json` / `.md` – beide nach `../data/results/` legen,
-  dann `npm run check` und `/brief data/results/YYYY-MM-DD_tobias.json`.
+- Am Ende, Block **An Hannes schicken** (Adresse nur in `const HANNES`):
+  - mit Maus oder Trackpad: **E-Mail-Entwurf laden** lädt eine `.eml` mit beiden Dateien im Anhang
+    (Outlook öffnet sie als Entwurf, Apple Mail über „E-Mail" › „Erneut senden");
+  - mit Touch (Handy, Tablet): **Per E-Mail senden** öffnet das Mailprogramm; Brief und Daten stehen
+    im Mailtext zwischen `===== DATEN (…) =====` und `===== ENDE DATEN =====` (mailto kann keine Anhänge).
+- Daneben: **Daten herunterladen (JSON)** und **Brief herunterladen (Markdown)**.
+  Dateinamen `YYYY-MM-DD_tobias.json` / `.md` (Ortsdatum der ersten Ergebnisanzeige) – beide nach
+  `../data/results/` legen; kamen die Daten als Mailtext, den Block zwischen den Markierungen unverändert
+  als `.json` speichern. Dann `npm run check` und `/brief data/results/YYYY-MM-DD_tobias.json`.
+- **Testlauf:** `index.html?test` (auch der Pages-Link) markiert alles als Test – Dateien
+  `YYYY-MM-DD_test.*`, Betreff „[Test] …", `respondent` „Tobias (Test)". Testdateien gehören nicht
+  nach `../data/results/`.
 
 ## Anpassen
 

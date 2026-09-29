@@ -74,31 +74,63 @@ p { margin: 0; }
 .brand { font-weight: 800; letter-spacing: -.01em; }
 .brand span { color: var(--signal); }
 .room { color: var(--ink-2); font-weight: 600; font-size: .95rem; }
-.route { display: block; width: 100%; height: 44px; margin-top: 4px; overflow: visible; }
+/* Route: je Station ein Knopf (eine Spalte, ≥ 44 × 44 px ab 356 px Breite). Die SVG dahinter ist nur Zeichnung:
+   Linie und Punkte in Pixeln, layoutRoute() setzt sie bei jeder Breite neu; --y0/--y1 = Höhe der Punkte (Welle). */
+.route { position: relative; height: 44px; margin-top: 4px; --y0: 10; --y1: 18; }
+.route-line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .route-base { fill: none; stroke: var(--line); stroke-width: 2; }
-.route-done { fill: none; stroke: var(--signal); stroke-width: 2.5; stroke-linecap: round; transition: stroke-dashoffset .6s var(--ease-out); }
-.node { cursor: default; }
-.node circle { fill: var(--bg); stroke: var(--line); stroke-width: 2; transition: fill .3s, stroke .3s; }
-.node.is-done circle { fill: var(--signal); stroke: var(--signal); }
-.node.is-done { cursor: pointer; }
-.node.is-current circle { fill: var(--surface); stroke: var(--signal); stroke-width: 3; }
-.node .pulse { fill: none; stroke: var(--signal); stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; }
-.node.is-current .pulse { animation: pulse 2.2s ease-out infinite; }
-@keyframes pulse {
-  0%   { transform: scale(1);   opacity: .7; }
-  100% { transform: scale(2.6); opacity: 0; }
+.route-done { fill: none; stroke: var(--signal); stroke-width: 2.5; stroke-linecap: round; transition: stroke-dashoffset .3s var(--ease-out); }
+.dot { transform-box: fill-box; transform-origin: center; }
+.dot > * { display: none; }
+.dot .dot-ring { display: inline; fill: var(--surface); stroke: var(--signal); stroke-width: 2; transition: fill .25s, stroke .25s; }
+.dot.is-done .dot-ring { fill: var(--signal); }
+.dot.is-done .dot-check { display: inline; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dot.is-current .dot-ring { stroke-width: 3; }
+.dot.is-current .dot-core { display: inline; fill: var(--signal); }
+.dot.is-locked .dot-ring { fill: var(--bg); stroke: none; } /* Grund unter dem Schloss, verdeckt die Linie */
+.dot.is-locked .dot-lock { display: inline; }
+.dot-lock rect { fill: var(--control); }
+.dot-lock path { fill: none; stroke: var(--control); stroke-width: 1.5; }
+.route-stops { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); height: 100%; }
+.node {
+  display: flex; align-items: flex-end; justify-content: center; width: 100%; min-height: 44px; margin: 0; padding: 0 0 2px;
+  border: 0; border-radius: var(--radius-s); background: none; color: var(--ink-3);
+  font-size: 11px; font-weight: 600; line-height: 1; white-space: nowrap; -webkit-tap-highlight-color: transparent;
 }
-.node text { font-size: 11px; font-weight: 600; fill: var(--ink-3); text-anchor: middle; }
-.node.is-current text, .node.is-done text { fill: var(--ink-2); }
-@media (max-width: 640px) { .node text { display: none; } }
+.node.is-current, .node.is-done, .node.is-open { color: var(--ink-2); }
+.node.is-current { cursor: default; }
+.node.is-locked { cursor: not-allowed; }
+.node:focus-visible { outline-offset: 0; } /* außen am Knopf: der Ring lässt Punkt und Beschriftung frei */
+.node-num { display: none; }
+@media (hover: hover) { .node.is-done:hover, .node.is-open:hover { color: var(--ink); } }
+.route-vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+/* Tipp auf ein Schloss: kurz unter der Route, an der getippten Station, was vorher fehlt (Script: showTip) */
+.route-tip {
+  position: absolute; top: calc(100% + 8px); left: 0; z-index: 1; width: max-content; max-width: min(340px, 100%);
+  margin: 0; padding: 8px 14px; border-radius: var(--radius-s); background: var(--ink); color: var(--bg);
+  font-size: .95rem; font-weight: 600; line-height: 1.3; pointer-events: none;
+  opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity .15s, transform .15s var(--ease-out), visibility 0s .15s;
+}
+.route-tip.is-on { opacity: 1; visibility: visible; transform: none; transition: opacity .15s, transform .15s var(--ease-out); }
+@media (max-width: 640px) {
+  .route { margin-left: -22px; margin-right: -22px; } /* 8 Spalten × 44 px brauchen 352 px */
+  .node-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); }
+  .node-num { display: block; font-size: 12px; } /* statt des Namens die Nummer – passt zu „Station n von 7“ */
+}
+/* Überschrift nach Stationswechsel: Fokus für die Ansage, aber kein Rahmen wie um ein Eingabefeld – nur eine Linie unter dem Text */
+.step h1[tabindex="-1"]:focus, .step h2[tabindex="-1"]:focus { outline: none; }
+.step h1[tabindex="-1"]:focus-visible, .step h2[tabindex="-1"]:focus-visible {
+  text-decoration-line: underline; text-decoration-color: var(--signal); text-decoration-thickness: 3px; text-underline-offset: .14em;
+}
+@media (prefers-reduced-motion: reduce) { .route-done, .dot .dot-ring { transition: none; } }
 
 /* ------------------------------------------------------------------
    Bühne
 ------------------------------------------------------------------- */
 .stage { max-width: 980px; margin: 0 auto; padding: 40px 24px 140px; }
 .step { display: none; }
-.step.is-active { display: block; animation: stepIn .45s var(--ease-out); }
-@keyframes stepIn { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+.step.is-active { display: block; animation: stepIn .24s var(--ease-out); }
+@keyframes stepIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
 .step-head { display: grid; gap: 12px; margin-bottom: 28px; max-width: 46em; }
 
 /* Eingang */
@@ -111,7 +143,7 @@ p { margin: 0; }
   display: inline-flex; align-items: center; gap: 8px;
   min-height: 44px; /* Trefferfläche; .btn.small (Station 1) bleibt kompakt, siehe unten */
   padding: 12px 22px; border-radius: 999px; border: 1.5px solid var(--control);
-  background: var(--surface); font-weight: 700; line-height: 1;
+  background: var(--surface); font-weight: 700; line-height: 1; text-decoration: none; /* auch als Link (mailto) */
   transition: transform .15s var(--ease-out), background .2s, border-color .2s, opacity .2s;
 }
 .btn:hover { transform: translateY(-1px); border-color: var(--ink-3); }
@@ -219,8 +251,8 @@ p { margin: 0; }
 .deck .card-name { font-size: 1.35rem; font-weight: 800; letter-spacing: -.015em; }
 .deck .card-price { font-size: .85rem; padding-top: 6px; }
 .deck .card-desc { font-size: 1rem; margin-top: 8px; }
-.deck .card.is-enter { animation: rise .38s var(--ease-out); }
-@keyframes rise { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+.deck .card.is-enter { animation: rise .24s var(--ease-out); }
+@keyframes rise { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
 /* Flug in die Zone (Script: assign): Die Karte schrumpft auf Zonengröße und liegt über der Zonenleiste, bis sie ankommt. */
 .card.is-flying {
   z-index: 12; pointer-events: none; animation: none;
@@ -550,6 +582,7 @@ input[type="range"]::-moz-range-thumb {
 .result-block { padding: 22px 24px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line); display: grid; gap: 10px; }
 .result-block ul { margin: 0; padding-left: 1.2em; }
 .result-block li { margin: 2px 0; }
+#sendAddr { white-space: nowrap; } /* die Adresse nicht an „-“ umbrechen */
 .hypo { border-color: var(--signal); background: var(--signal-soft); }
 .hypo .target { font-size: 1.15rem; font-weight: 800; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -582,7 +615,23 @@ input[type="range"]::-moz-range-thumb {
   .nav-hint { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: break-word; }
 }
 
-#confetti { position: fixed; inset: 0; z-index: 90; pointer-events: none; display: none; }
+/* Finale (Station 7, Script: finale): Die Linie geht einmal durch alle Räume, jeder leuchtet auf, sobald sie ihn
+   erreicht, zuletzt schließt sie sich zum Rahmen. Ohne .is-playing steht der Endzustand, ohne Bewegung. */
+.finale { display: block; width: min(100%, 280px); height: auto; margin: 0 0 18px; }
+.finale-room { fill: var(--signal-soft); stroke: var(--signal-soft); stroke-width: 1.5; }
+.finale-way { fill: none; stroke: var(--line); stroke-width: 2; }
+.finale-line { fill: none; stroke: var(--signal); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.finale-stop { fill: var(--signal); stroke: var(--surface); stroke-width: 2; transform-box: fill-box; transform-origin: center; }
+.finale.is-playing .finale-line { stroke-dasharray: 100; animation: finaleLine var(--draw) linear var(--at) both; }
+.finale.is-playing .finale-room { animation: finaleRoom .22s var(--ease-out) var(--at) both; }
+.finale.is-playing .finale-stop { animation: finaleStop .22s var(--ease-out) var(--at) both; }
+@keyframes finaleLine { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+@keyframes finaleRoom { from { fill: var(--surface); stroke: var(--line); } }
+@keyframes finaleStop { from { fill: var(--bg); stroke: var(--line); transform: scale(.6); } }
+@media (prefers-reduced-motion: reduce) { /* statt Bewegung ein kurzer Fade; das Finale spielt nicht (Script), es steht sofort */
+  .step.is-active, .deck .card.is-enter { animation: quietIn .2s linear !important; }
+}
+@keyframes quietIn { from { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -597,7 +646,12 @@ input[type="range"]::-moz-range-thumb {
       <div class="brand">VAVE <span>Discovery</span></div>
       <div class="room" id="roomLabel"></div>
     </div>
-    <svg class="route" id="route" viewBox="0 0 800 44" aria-hidden="true"></svg>
+    <nav class="route" id="route" aria-label="Stationen">
+      <svg class="route-line" aria-hidden="true"></svg>
+      <div class="route-stops"></div>
+      <p class="route-tip" id="routeTip" aria-hidden="true"></p>
+    </nav>
+    <p class="route-vh" id="routeLive" aria-live="polite" aria-atomic="true"></p>
   </div>
 </header>
 
@@ -608,16 +662,17 @@ input[type="range"]::-moz-range-thumb {
       <h1 id="h0">Ein paar Minuten für euer Agentur-Tool.</h1>
       <p class="lead">
         Hallo <span data-respondent></span>. Es geht um QuoJob bei VAVE: was ihr davon braucht,
-        was euch bremst und was fehlt. Am Ende bekommst du eine Zusammenfassung,
-        die wir als Grundlage für alles Weitere nehmen.
+        was euch bremst und was fehlt. Alles bleibt auf deinem Gerät; am Ende entsteht eine Datei
+        für Hannes, die du selbst abschickst.
       </p>
       <div class="entry-facts">
         <span><b>7</b> Stationen</span>
         <span><b>ein paar</b> Minuten</span>
         <span><b>0</b> falsche Antworten</span>
       </div>
-      <p class="muted small">
+      <p class="muted">
         Antworte aus dem Bauch. Du kannst jederzeit unterbrechen – der Stand bleibt in diesem Browser gespeichert.
+        Löschen kannst du ihn auf der letzten Seite mit „Von vorn“.
       </p>
     </div>
   </section>
@@ -716,6 +771,7 @@ input[type="range"]::-moz-range-thumb {
   </section>
 
   <section class="step" data-step="7" aria-labelledby="h7">
+    <svg class="finale" id="finale" aria-hidden="true" focusable="false"></svg>
     <div class="result" id="result"></div>
   </section>
 
@@ -730,7 +786,6 @@ input[type="range"]::-moz-range-thumb {
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<canvas id="confetti" aria-hidden="true"></canvas>
 
 <script>
 /* --- eingebettet aus survey/modules.js (npm run bundle) --- */
@@ -870,10 +925,12 @@ window.VAVE_DATA = {
   function freshState() {
     return {
       step: 0,
+      maxStep: 0, // höchste erreichte Station; die Route springt vorwärts höchstens bis dorthin
       startedAt: new Date().toISOString(),
       sort: {}, seq: {}, friction: {}, wishes: {}, customWishes: [], roles: {},
       budget: { current: 3000, currentUnknown: false, max: 3000, buildBuy: 50 },
       budgetTouched: { current: false, max: false, buildBuy: false },
+      resultShown: null, // { at, answers }: erste Ergebnisanzeige zu genau diesen Antworten, siehe resultTime()
       wand: '', noGo: ''
     };
   }
@@ -899,6 +956,14 @@ window.VAVE_DATA = {
     // stufenlosen Fassung, dort hieß z. B. 40 oder 60 „Offen“. Nicht still umdeuten: gilt als nicht eingestellt,
     // Station 5 fragt neu.
     if (![0, 35, 50, 65, 100].includes(s.budget.buildBuy)) { s.budget.buildBuy = f.budget.buildBuy; s.budgetTouched.buildBuy = false; }
+    // Stände vor r04 kennen maxStep nicht: dann gilt die Station, auf der man stand, als höchste erreichte
+    // (vor dem Zurücksetzen auf 5 – die Route sperrt 6 und 7 ohnehin, solange das Budget offen ist).
+    const int = v => (Number.isInteger(v) ? v : 0);
+    s.maxStep = Math.min(STEPS.length - 1, Math.max(0, int(s.maxStep), int(s.step)));
+    // frictionSeenAt = wann Station 2 zuletzt alle behaltenen Karten gezeigt hat (goTo). Stände ohne den Merker
+    // waren schon hinter Station 2: Deren behaltene Karten gelten als gesehen, erst später behaltene öffnen Station 2.
+    if (s.maxStep >= 2 && typeof s.frictionSeenAt !== 'number') s.frictionSeenAt = Date.now();
+    if (s.step > 1 && D.modules.some(m => !s.sort[m.id])) s.step = 1; // offener Stapel nicht ins Ergebnis
     if (s.step > 5 && budgetOpen(s)) s.step = 5; // unbestätigtes Budget nicht ins Ergebnis
     return s;
   }
@@ -907,56 +972,183 @@ window.VAVE_DATA = {
   let state = upgrade(load()) || freshState();
 
   /* ---------------- Route ---------------- */
-  const route = $('#route');
-  const NODE_X = STEPS.map((_, i) => 30 + i * (740 / (STEPS.length - 1)));
-  const NODE_Y = STEPS.map((_, i) => (i % 2 === 0 ? 14 : 24));
-  let routeDone, routeLen = 0;
+  // Jede Station ist ein Knopf. Zurück geht immer; vorwärts höchstens bis maxStep und nie über die erste Station
+  // mit offener Bedingung hinaus – geprüft ab Station 0, nicht erst ab der aktuellen. Die Linie läuft bis dorthin.
+  // Tastatur: Die Route ist höchstens ein Tab-Stopp (die aktuelle Station, und nur wenn es ein Ziel gibt);
+  // Pfeile links/rechts, Pos1 und Ende wechseln zwischen den freien Stationen, Schlösser sind kein Halt.
+  const route = $('#route'), routeLine = $('.route-line', route), routeStops = $('.route-stops', route), routeTip = $('#routeTip');
+  const STATE_TEXT = { done: 'erledigt', current: 'aktuell', open: 'offen', locked: 'gesperrt' };
+  const LOCK_TEXT = { 1: 'Erst alle Karten sortieren.', 2: 'Erst die neuen Karten unter „Reibung“ ansehen.', 5: 'Erst das Budget einstellen.' };
+  const DRAW_MS = 1100; // Einzeichnen beim Öffnen; letzter Punkt und Name sind nach 1,34 s da
+  const TIP_MS = 2200; // so lange steht der Hinweis am Schloss (wie der Toast)
+  let routeBase, routeDone, routeLen = 0, routeW = 0, routeH = 0, nodes = [], dots = [], tipTimer = 0;
 
+  // Offen = „Weiter“-Bedingung nicht erfüllt (1, 5) oder, für Station 2: seit ihrem letzten Besuch sind Karten
+  // unter „Brauchen wir“ dazugekommen (seq jünger als frictionSeenAt), die sie noch nie gezeigt hat.
+  function stepOpen(i) {
+    if (i === 1) return D.modules.some(m => !state.sort[m.id]);
+    if (i === 2) return state.step !== 2 && state.maxStep >= 2 && kept().some(m => ((state.seq || {})[m.id] || 0) > (state.frictionSeenAt || 0));
+    if (i === 5) return budgetOpen(state) > 0;
+    return false;
+  }
+  function firstOpenBefore(n) {
+    for (let i = 0; i < n; i++) if (stepOpen(i)) return i;
+    return -1;
+  }
+  function reachLimit() {
+    let r = 0;
+    while (r < state.maxStep && !stepOpen(r)) r++;
+    return Math.max(r, state.step); // liegt die offene Station hinter der aktuellen, geht es vorwärts gar nicht
+  }
+  function nodeState(i, reach) {
+    if (i === state.step) return 'current';
+    if (i > reach) return 'locked';
+    return i < state.maxStep && !stepOpen(i) ? 'done' : 'open';
+  }
   function buildRoute() {
-    let d = `M${NODE_X[0]} ${NODE_Y[0]}`;
-    for (let i = 1; i < STEPS.length; i++) {
-      const x0 = NODE_X[i - 1], y0 = NODE_Y[i - 1], x1 = NODE_X[i], y1 = NODE_Y[i], mx = (x0 + x1) / 2;
-      d += ` C${mx} ${y0} ${mx} ${y1} ${x1} ${y1}`;
-    }
-    route.innerHTML = `<path class="route-base" d="${d}"/><path class="route-done" d="${d}"/>` +
-      STEPS.map((name, i) => `
-        <g class="node" data-i="${i}">
-          <circle class="pulse" cx="${NODE_X[i]}" cy="${NODE_Y[i]}" r="7"/>
-          <circle cx="${NODE_X[i]}" cy="${NODE_Y[i]}" r="6"/>
-          <text x="${NODE_X[i]}" y="${NODE_Y[i] + 19}">${esc(name)}</text>
-        </g>`).join('');
-    routeDone = $('.route-done', route);
-    routeLen = routeDone.getTotalLength();
-    routeDone.style.strokeDasharray = String(routeLen);
-    route.addEventListener('click', e => {
-      const g = e.target.closest('.node');
-      if (!g) return;
-      const i = Number(g.dataset.i);
-      if (i < state.step) goTo(i);
+    routeStops.innerHTML = STEPS.map((name, i) =>
+      `<button type="button" class="node" data-i="${i}" tabindex="-1"><span class="node-name">${esc(name)}</span><span class="node-num">${i || ''}</span></button>`).join('');
+    // Punkt je Station: Ring (offen), Ring mit Kern (aktuell), gefüllt mit Haken (erledigt), Schloss (gesperrt)
+    routeLine.innerHTML = '<path class="route-base"/><path class="route-done"/>' + STEPS.map(() =>
+      '<g><g class="dot"><circle class="dot-ring" r="7"/><circle class="dot-core" r="3"/><path class="dot-check" d="M-3 .2l2 2 4-4.2"/>' +
+      '<g class="dot-lock"><path d="M-2.4-1v-2.1a2.4 2.4 0 0 1 4.8 0V-1"/><rect x="-4" y="-1" width="8" height="6.5" rx="1.2"/></g></g></g>').join('');
+    nodes = $$('.node', routeStops);
+    dots = $$('.dot', routeLine);
+    routeBase = $('.route-base', routeLine);
+    routeDone = $('.route-done', routeLine);
+    routeStops.addEventListener('click', e => {
+      const b = e.target.closest('.node');
+      if (!b || busy) return; // Kartenflug in Station 1: Tipp verwerfen (siehe navigate)
+      const i = Number(b.dataset.i);
+      if (i === state.step) return;
+      if (i > reachLimit()) showTip(i); else navigate(i);
     });
+    routeStops.addEventListener('keydown', e => {
+      const b = e.target.closest('.node');
+      if (!b || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      const i = Number(b.dataset.i), reach = reachLimit(), last = STEPS.length - 1;
+      let t = -1;
+      if (e.key === 'ArrowRight') { if (i < reach) t = i + 1; else if (i < last) showTip(i + 1); }
+      else if (e.key === 'ArrowLeft') t = Math.min(i - 1, reach);
+      else if (e.key === 'Home') t = 0;
+      else if (e.key === 'End') t = reach;
+      else return;
+      e.preventDefault();
+      if (t < 0 || t === i) return;
+      nodes.forEach((n, k) => { n.tabIndex = k === t ? 0 : -1; });
+      nodes[t].focus();
+    });
+    layoutRoute();
+    window.addEventListener('resize', layoutRoute);
+    drawRoute();
+  }
+  function layoutRoute() {
+    const W = routeStops.clientWidth, H = routeStops.clientHeight, n = STEPS.length;
+    if (!W || !H || (W === routeW && H === routeH)) return; // mobil feuert resize auch beim Scrollen (Browserleiste)
+    routeW = W; routeH = H;
+    const cs = getComputedStyle(route), ys = [parseFloat(cs.getPropertyValue('--y0')) || H / 2, parseFloat(cs.getPropertyValue('--y1')) || H / 2];
+    const X = STEPS.map((_, i) => (i + .5) * W / n), Y = STEPS.map((_, i) => ys[i % 2]);
+    let d = `M${X[0]} ${Y[0]}`;
+    for (let i = 1; i < n; i++) {
+      const mx = (X[i - 1] + X[i]) / 2;
+      d += ` C${mx} ${Y[i - 1]} ${mx} ${Y[i]} ${X[i]} ${Y[i]}`; // gleich lange Bögen: Anteil i/(n-1) endet genau auf Station i
+    }
+    routeLine.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    routeBase.setAttribute('d', d);
+    routeDone.setAttribute('d', d);
+    dots.forEach((g, i) => g.parentNode.setAttribute('transform', `translate(${X[i]} ${Y[i]})`));
+    routeLen = routeDone.getTotalLength();
+    routeBase.style.strokeDasharray = routeDone.style.strokeDasharray = String(routeLen);
+    routeDone.style.transition = 'none'; // neue Breite ohne Nachziehen übernehmen
+    updateRoute();
+    routeDone.getBoundingClientRect();
+    routeDone.style.transition = '';
   }
   function updateRoute() {
-    const frac = state.step / (STEPS.length - 1);
-    routeDone.style.strokeDashoffset = String(routeLen * (1 - frac));
-    $$('.node', route).forEach(g => {
-      const i = Number(g.dataset.i);
-      g.classList.toggle('is-done', i < state.step);
-      g.classList.toggle('is-current', i === state.step);
+    if (!routeDone) return;
+    const last = STEPS.length - 1, reach = reachLimit();
+    routeDone.style.strokeDashoffset = String(routeLen * (1 - reach / last));
+    // Tab-Stopp: der fokussierte freie Knopf, sonst die aktuelle Station – aber nur, wenn es ein zweites freies Ziel gibt
+    // (am Start ist alles außer dem Eingang gesperrt: dann ist „Los geht’s“ der erste Tab-Stopp).
+    const f = nodes.indexOf(document.activeElement), rover = reach === 0 ? -1 : f >= 0 && f <= reach ? f : state.step;
+    nodes.forEach((b, i) => {
+      b.tabIndex = i === rover ? 0 : -1;
+      const s = nodeState(i, reach);
+      if (b.dataset.state === s) return;
+      b.dataset.state = s;
+      b.className = 'node is-' + s;
+      dots[i].setAttribute('class', 'dot is-' + s);
+      // beginnt mit dem sichtbaren Namen (breit) und enthält die sichtbare Nummer (schmal)
+      b.setAttribute('aria-label', `${STEPS[i]}, ${i ? `Station ${i}, ` : ''}${STATE_TEXT[s]}`);
+      if (s === 'current') b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+      if (s === 'locked') b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
     });
-    $('#roomLabel').textContent = state.step === 0 ? '' : `Station ${state.step} von ${STEPS.length - 1}: ${STEPS[state.step]}`;
+    const room = state.step === 0 ? '' : `Station ${state.step} von ${last}: ${STEPS[state.step]}`, roomEl = $('#roomLabel');
+    if (roomEl.textContent !== room) roomEl.textContent = room;
+  }
+  // Einmal beim Öffnen: Linie zeichnet sich durch die Stationen, der Fortschritt läuft mit ihr bis zur Reichweite.
+  function drawRoute() {
+    if (REDUCED || !routeBase || !routeBase.animate || !routeLen) return;
+    const last = STEPS.length - 1, reach = reachLimit(), px = v => v + 'px';
+    routeBase.animate([{ strokeDashoffset: px(routeLen) }, { strokeDashoffset: '0px' }], { duration: DRAW_MS, easing: 'linear' });
+    if (reach) routeDone.animate([{ strokeDashoffset: px(routeLen) }, { strokeDashoffset: px(routeLen * (1 - reach / last)) }], { duration: DRAW_MS * reach / last, easing: 'linear' });
+    dots.forEach((g, i) => g.animate([{ opacity: 0, transform: 'scale(.3)' }, { opacity: 1, transform: 'scale(1)' }],
+      { duration: 240, delay: Math.max(0, DRAW_MS * i / last - 80), easing: 'ease-out', fill: 'backwards' }));
+    nodes.forEach((b, i) => $$('.node-name, .node-num', b).forEach(el =>
+      el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, delay: DRAW_MS * i / last, fill: 'backwards' })));
+  }
+  // Tipp (oder Pfeil) auf ein Schloss: kurz sagen, was vorher fehlt – sichtbar unter der Station, angesagt über #routeLive.
+  function showTip(i) {
+    const o = firstOpenBefore(i);
+    const text = o >= 0 && LOCK_TEXT[o] ? LOCK_TEXT[o] : `Der Reihe nach – weiter mit „${nextBtn.textContent}“.`;
+    routeTip.textContent = text;
+    $('#routeLive').textContent = text;
+    routeTip.style.left = '0px';
+    routeTip.classList.add('is-on');
+    const w = routeTip.offsetWidth, rw = route.clientWidth, nb = nodes[i].getBoundingClientRect();
+    const x = nb.left - route.getBoundingClientRect().left + nb.width / 2 - w / 2;
+    routeTip.style.left = Math.max(0, Math.min(rw - w, x)) + 'px';
+    clearTimeout(tipTimer);
+    tipTimer = setTimeout(hideTip, TIP_MS);
+    highlightNode(i);
+  }
+  function hideTip() { clearTimeout(tipTimer); routeTip.classList.remove('is-on'); }
+  // Einmaliges Hervorheben der neuen Station (280 ms), kein Dauerpuls.
+  function highlightNode(i) {
+    const g = dots[i];
+    if (REDUCED || !g || !g.animate) return;
+    g.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.35)' }, { transform: 'scale(1)' }], { duration: 280, easing: 'ease-out' });
   }
 
   /* ---------------- Navigation ---------------- */
   const backBtn = $('#back'), nextBtn = $('#next'), hint = $('#hint');
 
-  function goTo(n) {
-    state.step = Math.max(0, Math.min(STEPS.length - 1, n));
+  // quiet: nur beim Start – dann kein Fokuswechsel, keine Ansage, kein Hervorheben.
+  // Vorwärts endet jeder Wechsel spätestens auf der ersten offenen Station (ab 0 geprüft), auch wenn die Anzeige
+  // noch einen älteren Stand zeigte. Wäre das die aktuelle Station, bleibt alles, wie es ist.
+  function goTo(n, quiet) {
+    n = Math.max(0, Math.min(STEPS.length - 1, n));
+    if (n > state.step) {
+      const o = firstOpenBefore(n);
+      if (o === state.step) { updateNav(); return; }
+      if (o >= 0) n = o;
+    }
+    state.step = n;
+    state.maxStep = Math.max(state.maxStep, state.step);
+    if (state.step === 2) state.frictionSeenAt = Date.now(); // Station 2 zeigt jetzt alle behaltenen Karten
     save();
+    hideTip();
     $$('.step').forEach(s => s.classList.toggle('is-active', Number(s.dataset.step) === state.step));
     updateRoute();
     render();
     updateNav();
-    window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
+    window.scrollTo(0, 0); // sofort oben, kein Nachgleiten; den Wechsel zeigt stepIn (0,24 s)
+    if (quiet) return;
+    // Fokus auf die Überschrift der neuen Station, nicht am Seitenende (Weiter/Zurück) oder in der Route
+    const head = $(`.step[data-step="${state.step}"]`).querySelector('h1, h2');
+    if (head) { head.setAttribute('tabindex', '-1'); head.focus({ preventScroll: true }); }
+    $('#routeLive').textContent = state.step === 0 ? STEPS[0] : `Station ${state.step} von ${STEPS.length - 1}: ${STEPS[state.step]}`;
+    highlightNode(state.step);
   }
   function updateNav() {
     const s = state.step;
@@ -982,9 +1174,13 @@ window.VAVE_DATA = {
     }
     nextBtn.disabled = !ok;
     hint.textContent = msg;
+    updateRoute(); // offene Bedingung sperrt Stationen dahinter, erledigte gibt sie frei
   }
-  backBtn.addEventListener('click', () => goTo(state.step - 1));
-  nextBtn.addEventListener('click', () => goTo(state.step + 1));
+  // Wechsel durch den Nutzer (Weiter, Zurück, Route): nicht, solange in Station 1 eine Karte fliegt (busy, 240 ms).
+  // Der Tipp wird verworfen – sonst landet die Karte erst nach dem Wechsel und Station 1 bliebe unbemerkt offen.
+  function navigate(n) { if (!busy) goTo(n); }
+  backBtn.addEventListener('click', () => navigate(state.step - 1));
+  nextBtn.addEventListener('click', () => navigate(state.step + 1));
 
   function kept() { return ORDER.filter(m => state.sort[m.id] === 'keep'); }
   function render() {
@@ -1557,7 +1753,7 @@ window.VAVE_DATA = {
     const h = hypothesis();
     return {
       schema: 'vave-discovery/1',
-      exportedAt: new Date().toISOString(),
+      exportedAt: resultTime().toISOString(),
       startedAt: state.startedAt,
       respondent: D.respondent,
       sort: state.sort, friction: state.friction, wishes: state.wishes, customWishes: state.customWishes,
@@ -1574,10 +1770,10 @@ window.VAVE_DATA = {
     const musts = [...D.wishes.filter(w => state.wishes[w.id] === 'must').map(w => w.text), ...state.customWishes.filter(w => w.level === 'must').map(w => w.text)];
     const nices = [...D.wishes.filter(w => state.wishes[w.id] === 'nice').map(w => w.text), ...state.customWishes.filter(w => w.level === 'nice').map(w => w.text)];
     const freq = Object.fromEntries(D.frequency.map(f => [f.id, f.label]));
-    const dur = Math.max(1, Math.round((Date.now() - new Date(state.startedAt).getTime()) / 60000));
+    const at = resultTime(), dur = Math.max(1, Math.round((at.getTime() - new Date(state.startedAt).getTime()) / 60000));
     const top = keep.filter(m => (state.friction[m.id] ?? 0) >= 3).map(m => m.name);
     const L = [];
-    L.push(`# VAVE Discovery – Brief`, ``, `Datum: ${new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}  `, `Person: ${D.respondent}  `, `Dauer: ~${dur} ${dur === 1 ? 'Minute' : 'Minuten'}`, ``);
+    L.push(`# VAVE Discovery – Brief`, ``, `Datum: ${deDate(at)}  `, `Person: ${WHO}  `, `Dauer: ~${dur} ${dur === 1 ? 'Minute' : 'Minuten'}`, ``);
     L.push(`## Behalten (${keep.length})`, ``, `| Baustein | Reibung 0–4 | Preis |`, `|---|---|---|`);
     keep.forEach(m => L.push(`| ${m.name} | ${state.friction[m.id] === undefined ? '–' : state.friction[m.id] + ' – ' + D.frictionLabels[state.friction[m.id]]} | ${m.price ? m.price + ' €' : 'in Lizenz'} |`));
     L.push(``, `## Weg damit (${byZone('drop').length})`, ``, ...byZone('drop').map(m => `- ${m.name}`));
@@ -1598,15 +1794,22 @@ window.VAVE_DATA = {
 
   /* ---------------- Station 7: Ergebnis ---------------- */
   const resultEl = $('#result');
+  const HANNES = 'hannes@pix-el.de'; // Empfänger der Ergebnisse, einzige Stelle der Adresse
+  // Testlauf über den öffentlichen Link (index.html?test): Dateiname, Betreff, Mailtext, Brief und respondent tragen „Test“
+  const TEST = new URLSearchParams(location.search).has('test');
+  const WHO = TEST ? D.respondent + ' (Test)' : D.respondent;
+  // Touch als Hauptzeiger (Handy, Tablet): mailto – dort öffnet sich eine .eml nicht als Entwurf. Maus/Trackpad: die .eml.
+  const TOUCH = matchMedia('(pointer: coarse)').matches;
   function renderResult() {
     const h = hypothesis();
     const keep = kept();
     const top = keep.filter(m => state.friction[m.id] !== undefined).sort((a, b) => state.friction[b.id] - state.friction[a.id]).slice(0, 3);
     const musts = [...D.wishes.filter(w => state.wishes[w.id] === 'must').map(w => w.text), ...state.customWishes.filter(w => w.level === 'must').map(w => w.text)];
+    const out = resultFiles(), send = sendData(out), addr = `<b id="sendAddr">${esc(HANNES)}</b>`;
     resultEl.innerHTML = `
       <div class="step-head">
         <h2>Danke, ${esc(D.respondent)}.</h2>
-        <p class="lead">Das ist deine Zusammenfassung. Lad beide Dateien herunter und schick sie mir – damit legen wir los.</p>
+        <p class="lead">Das ist deine Zusammenfassung. Schick sie unten per E-Mail an Hannes – damit legen wir los.</p>
       </div>
       <div class="stats">
         <div class="stat" data-k="keep"><b>${keep.length}</b>Bausteine behalten</div>
@@ -1631,24 +1834,46 @@ window.VAVE_DATA = {
         <h3>Budget</h3>
         <p>Heute ${state.budget.currentUnknown ? 'unbekannt' : eur(state.budget.current) + '/Monat'}, Schmerzgrenze ${eur(state.budget.max)}/Monat, Haltung: ${bbLabel(state.budget.buildBuy)}.</p>
       </div>
+      <section class="result-block" aria-labelledby="sendHead">
+        <h3 id="sendHead">An Hannes schicken</h3>
+        <p>${send.mailto ? `Öffnet dein Mailprogramm mit fertiger Mail an ${addr} – ${send.mailto.brief ? 'Brief und Daten stehen' : 'die Daten stehen'} im Text, nur noch senden.`
+          : TOUCH ? `Zu lang für eine Mail direkt aus dem Browser: Lade unten beide Dateien und häng sie an eine Mail an ${addr}.`
+          : `Lädt einen Mail-Entwurf an ${addr} mit beiden Dateien im Anhang – öffnen und senden, in Apple Mail über „E-Mail“ › „Erneut senden“.`}</p>
+        <div class="actions">
+          ${send.mailto ? `<a class="btn primary" id="sendMail" href="${esc(send.mailto.href)}">Per E-Mail senden</a>`
+            : TOUCH ? '' : '<button type="button" class="btn primary" id="sendMail">E-Mail-Entwurf laden</button>'}
+          <button type="button" class="btn" id="copyAddr">Adresse kopieren</button>
+        </div>
+      </section>
       <div class="actions">
-        <button type="button" class="btn primary" id="dlJson">Daten herunterladen (JSON)</button>
+        <button type="button" class="btn" id="dlJson">Daten herunterladen (JSON)</button>
         <button type="button" class="btn" id="dlMd">Brief herunterladen (Markdown)</button>
         <button type="button" class="btn" id="copyMd">Brief kopieren</button>
         <button type="button" class="btn quiet" id="restart">Von vorn</button>
       </div>`;
-    const stamp = new Date().toISOString().slice(0, 10) + '_' + D.respondent.toLowerCase();
-    $('#dlJson').addEventListener('click', () => download(stamp + '.json', JSON.stringify(exportData(), null, 2), 'application/json'));
-    $('#dlMd').addEventListener('click', () => download(stamp + '.md', buildBrief(), 'text/markdown'));
+    if (!TOUCH) $('#sendMail').addEventListener('click', () => {
+      download(out.stamp + '.eml', buildEml([out.json, out.md], send.subject, send.body, out.at), 'message/rfc822');
+      toast('Entwurf geladen – öffnen und senden.');
+    });
+    $('#copyAddr').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(HANNES); toast('Adresse kopiert.'); }
+      catch (e) {
+        const r = document.createRange(), sel = getSelection();
+        r.selectNodeContents($('#sendAddr')); sel.removeAllRanges(); sel.addRange(r);
+        toast('Adresse markiert – jetzt kopieren.');
+      }
+    });
+    $('#dlJson').addEventListener('click', () => download(out.json.name, out.json.text, out.json.type));
+    $('#dlMd').addEventListener('click', () => download(out.md.name, out.md.text, out.md.type));
     $('#copyMd').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(buildBrief()); toast('Brief kopiert.'); }
-      catch (e) { download(stamp + '.md', buildBrief(), 'text/markdown'); toast('Zwischenablage nicht verfügbar – Datei geladen.'); }
+      try { await navigator.clipboard.writeText(out.md.text); toast('Brief kopiert.'); }
+      catch (e) { download(out.md.name, out.md.text, out.md.type); toast('Zwischenablage nicht verfügbar – Datei geladen.'); }
     });
     $('#restart').addEventListener('click', () => {
       if (!confirm('Alle Antworten löschen und von vorn beginnen?')) return;
       state = freshState(); save(); goTo(0);
     });
-    if (!REDUCED) confetti();
+    finale();
   }
   function download(name, text, type) {
     const a = document.createElement('a');
@@ -1656,41 +1881,137 @@ window.VAVE_DATA = {
     a.download = name; document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
+
+  /* ---------------- Versand an Hannes ---------------- */
+  // Eine Uhr: Zeitpunkt der ersten Ergebnisanzeige zu genau diesen Antworten. Bleibt über Reloads; ändert sich eine
+  // Antwort, gilt die nächste Anzeige. Dateiname, Betreff, Brief (Datum, Dauer), Date: und exportedAt lesen nur ihn.
+  function resultTime() {
+    const answers = JSON.stringify([state.startedAt, state.sort, state.friction, state.wishes, state.customWishes, state.roles, state.budget, state.wand, state.noGo]);
+    const r = state.resultShown;
+    if (!r || r.answers !== answers || isNaN(Date.parse(r.at))) { state.resultShown = { at: new Date().toISOString(), answers }; save(); }
+    return new Date(state.resultShown.at);
+  }
+  const pad2 = n => String(n).padStart(2, '0');
+  const isoDay = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); // Ortszeit, nicht UTC
+  const deDate = d => pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1) + '.' + d.getFullYear();
+  // Dateien einmal je Ergebnis erzeugen: Einzel-Download, E-Mail-Anhang und mailto tragen denselben Text.
+  // Namen: YYYY-MM-DD_<vorname>.json/.md, im Testlauf YYYY-MM-DD_test.json/.md
+  function resultFiles() {
+    const at = resultTime(), stamp = isoDay(at) + '_' + (TEST ? 'test' : D.respondent.toLowerCase());
+    const data = exportData();
+    data.respondent = WHO; // Testlauf: „Tobias (Test)“; exportData() selbst bleibt bis auf exportedAt unverändert
+    return {
+      at, stamp,
+      json: { name: stamp + '.json', type: 'application/json', text: JSON.stringify(data, null, 2) },
+      md: { name: stamp + '.md', type: 'text/markdown', text: buildBrief() }
+    };
+  }
+  // Betreff und Begleittext der .eml; bei Touch dazu der mailto-Link (null, wenn er zu lang wird)
+  function sendData(out) {
+    const subject = `${TEST ? '[Test] ' : ''}VAVE Discovery – Ergebnis von ${WHO}, ${deDate(out.at)}`;
+    const what = TEST ? 'ein Testlauf der VAVE-Discovery-Umfrage, keine echte Antwort' : 'mein Ergebnis aus der VAVE-Discovery-Umfrage';
+    const body = ['Hallo Hannes,', '', `anbei ${what}:`,
+      `- ${out.json.name} (Daten)`, `- ${out.md.name} (Brief)`, '', 'Viele Grüße', WHO].join('\r\n');
+    return { subject, body, mailto: TOUCH ? mailto(out, subject, what) : null };
+  }
+  // Handy, Tablet: mailto kann keine Anhänge, also stehen Brief und Daten im Text, je zwischen Anfang- und Ende-Markierung
+  // (fehlt „ENDE DATEN“, ist die Mail abgeschnitten). Zeilenenden CRLF, alles prozentkodiert (RFC 6068).
+  // Gemessen (r04-K1, alle 28 Bausteine, alle Wünsche und Rollen, 3 eigene Wünsche à 120 Zeichen, Zauberstab und
+  // No-Go à 400 Zeichen): 15 585 Zeichen, nur mit Daten 7 284. Grenze 16 000: darüber nur die Daten (der Brief
+  // entsteht aus ihnen neu), passen auch die nicht, gibt es kein mailto und die Seite verweist auf die Einzel-Downloads.
+  const MAILTO_MAX = 16000;
+  const uri = s => encodeURIComponent(s.replace(/[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udfff]/g, m => (m.length === 2 ? m : '\ufffd')));
+  function mailto(out, subject, what) {
+    const block = (label, f) => [`===== ${label} (${f.name}) =====`, f.text, `===== ENDE ${label} =====`, ''];
+    for (const brief of [true, false]) {
+      const body = ['Hallo Hannes,', '', `hier ${what}. ${brief ? 'Brief und Daten stehen' : 'Die Daten stehen'} unten.`, '',
+        ...(brief ? block('BRIEF', out.md) : []), ...block('DATEN', out.json), 'Viele Grüße', WHO].join('\n').replace(/\r?\n/g, '\r\n');
+      const href = `mailto:${HANNES}?subject=${uri(subject)}&body=${uri(body)}`;
+      if (href.length <= MAILTO_MAX) return { href, brief };
+    }
+    return null;
+  }
+  // Base64 von UTF-8-Text; für MIME in Zeilen zu höchstens 76 Zeichen (RFC 2045)
+  function b64(text) {
+    const bytes = new TextEncoder().encode(text);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  const b64Lines = text => (b64(text).match(/.{1,76}/g) || []).join('\r\n');
+  // Header-Text als RFC-2047-Wörter (UTF-8, B): je Wort höchstens 36 Bytes (60 Zeichen), kein Zeichen geteilt
+  function encodeWords(text) {
+    const enc = new TextEncoder(), words = [];
+    let cur = '';
+    for (const ch of text) {
+      if (cur && enc.encode(cur + ch).length > 36) { words.push(cur); cur = ''; }
+      cur += ch;
+    }
+    if (cur) words.push(cur);
+    return words.map(w => '=?UTF-8?B?' + b64(w) + '?=').join('\r\n ');
+  }
+  // Datum nach RFC 5322 in Ortszeit mit Zonenversatz, z. B. „Tue, 29 Sep 2026 14:03:12 +0200“
+  function mailDate(d) {
+    const p = n => String(n).padStart(2, '0'), off = -d.getTimezoneOffset(), a = Math.abs(off);
+    return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()] + ', ' + p(d.getDate()) + ' ' +
+      ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()] + ' ' + d.getFullYear() + ' ' +
+      p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) + ' ' + (off < 0 ? '-' : '+') + p(Math.floor(a / 60)) + p(a % 60);
+  }
+  // Dateiname als MIME-Parameter: druckbares ASCII in Anführungszeichen, sonst RFC 2231 (UTF-8, prozentkodiert)
+  function mimeParam(key, value) {
+    if (/^[\x20-\x7e]*$/.test(value) && !/["\\]/.test(value)) return `${key}="${value}"`;
+    return `${key}*=UTF-8''` + encodeURIComponent(value).replace(/['()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
+  }
+  // Sendefertiger Entwurf (.eml): X-Unsent: 1 öffnet ihn in Outlook zum Senden; multipart/mixed, CRLF, Anhänge base64
+  function buildEml(files, subject, body, at) {
+    const boundary = 'vave-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    const L = ['MIME-Version: 1.0', 'Date: ' + mailDate(at), `To: Hannes <${HANNES}>`, 'Subject: ' + encodeWords(subject),
+      'X-Unsent: 1', `Content-Type: multipart/mixed; boundary="${boundary}"`, '',
+      '--' + boundary, 'Content-Type: text/plain; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', b64Lines(body)];
+    files.forEach(f => L.push('--' + boundary,
+      `Content-Type: ${f.type}${f.type.startsWith('text/') ? '; charset=UTF-8' : ''}; ${mimeParam('name', f.name)}`,
+      'Content-Transfer-Encoding: base64', `Content-Disposition: attachment; ${mimeParam('filename', f.name)}`, '', b64Lines(f.text)));
+    L.push('--' + boundary + '--', '');
+    return L.join('\r\n');
+  }
   let toastTimer;
   function toast(msg) {
     const t = $('#toast'); t.textContent = msg; t.classList.add('is-on');
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('is-on'), 2200);
   }
 
-  /* ---------------- Konfetti ---------------- */
-  function confetti() {
-    const c = $('#confetti'), ctx = c.getContext('2d');
-    c.width = innerWidth; c.height = innerHeight; c.style.display = 'block';
-    const colors = ['#2D3BFF', '#E9EBFF', '#FFD9A8', '#B9E4D8', '#F3C1E1', '#171A21'];
-    const P = Array.from({ length: 140 }, () => ({
-      x: Math.random() * c.width, y: -20 - Math.random() * c.height * 0.4,
-      vx: (Math.random() - .5) * 2.2, vy: 2 + Math.random() * 3.5,
-      r: 4 + Math.random() * 6, a: Math.random() * Math.PI, va: (Math.random() - .5) * .2,
-      col: colors[Math.floor(Math.random() * colors.length)]
-    }));
-    const t0 = performance.now();
-    (function frame(t) {
-      const el = t - t0;
-      ctx.clearRect(0, 0, c.width, c.height);
-      P.forEach(p => {
-        p.x += p.vx; p.y += p.vy; p.a += p.va; p.vy += .03;
-        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a);
-        ctx.globalAlpha = Math.max(0, 1 - Math.max(0, el - 1800) / 900);
-        ctx.fillStyle = p.col; ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); ctx.restore();
-      });
-      if (el < 2700) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, c.width, c.height); c.style.display = 'none'; }
-    })(t0);
+  /* ---------------- Finale: der Rundgang schließt sich ---------------- */
+  // Grundriss mit einem Raum je Station, unten 0–3 von links nach rechts, oben 4–7 zurück. Die Linie geht einmal von
+  // Raum zu Raum, jeder Raum leuchtet auf, sobald sie ihn erreicht, zuletzt schließt sie sich zum Rahmen (CSS: .finale).
+  // Spielt einmal je Seitenaufruf, ≤ 1,5 s; danach, bei jedem weiteren Besuch und bei reduzierter Bewegung steht der Endzustand.
+  const FINALE_WAIT = 100, FINALE_DRAW = 1000, FINALE_MS = FINALE_WAIT + FINALE_DRAW + 220; // 220 = Dauer .finale-room/-stop
+  let finaleShown = false, finaleTimer = 0;
+  function finale() {
+    const svg = $('#finale');
+    if (!svg.firstChild) {
+      const W = 76, H = 60, n = STEPS.length, cols = Math.ceil(n / 2); // Raster je Raum, Räume 6 Einheiten auseinander
+      const pts = STEPS.map((_, i) => i < cols ? [i, 1] : [n - 1 - i, 0]).map(([c, r]) => [W * c + W / 2, H * r + H / 2]);
+      const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+      let run = 0;
+      const at = pts.map((p, i) => (run += i ? dist(p, pts[i - 1]) : 0));
+      const len = run + dist(pts[0], pts[n - 1]);
+      const when = i => `style="--at:${FINALE_WAIT + Math.round(at[i] / len * FINALE_DRAW)}ms"`;
+      const d = 'M' + pts.map(p => p.join(' ')).join(' L') + ' Z';
+      svg.setAttribute('viewBox', `2 2 ${W * cols - 4} ${2 * H - 4}`); // Raumkante bündig mit dem Text, 1 Einheit für die Kontur
+      svg.innerHTML = pts.map(([x, y], i) => `<rect class="finale-room" x="${x - W / 2 + 3}" y="${y - H / 2 + 3}" width="${W - 6}" height="${H - 6}" rx="8" ${when(i)}/>`).join('')
+        + `<path class="finale-way" d="${d}"/><path class="finale-line" d="${d}" pathLength="100" style="--at:${FINALE_WAIT}ms; --draw:${FINALE_DRAW}ms"/>`
+        + pts.map(([x, y], i) => `<circle class="finale-stop" cx="${x}" cy="${y}" r="5" ${when(i)}/>`).join('');
+    }
+    clearTimeout(finaleTimer); svg.classList.remove('is-playing');
+    if (finaleShown || REDUCED) return;
+    finaleShown = true; svg.classList.add('is-playing');
+    finaleTimer = setTimeout(() => svg.classList.remove('is-playing'), FINALE_MS);
   }
 
   /* ---------------- Start ---------------- */
   $$('[data-respondent]').forEach(el => { el.textContent = D.respondent; });
   buildRoute();
-  goTo(state.step);
+  goTo(state.step, true);
 })();
 </script>
 </body>
