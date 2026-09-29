@@ -6,9 +6,9 @@ import { tasks as seedTasks, timeEntries as sampleEntries } from '../../data/sam
 import { clientsById, projectsById } from '../../lib/projects.js';
 import { useStoredState } from '../../lib/store.js';
 import { cleanEntries, cleanTasks } from '../../lib/data.js';
-import { spentHours } from '../../lib/budget.js';
+import { fmtH1 } from '../../lib/format.js';
 import { href, navigate } from '../../lib/router.js';
-import { budgetInfo, fmtDay, fmtH, fmtKw, isDay, isoWeek, parseDay, personById, studioById } from './helpers.js';
+import { budgetInfo, fmtDay, fmtKw, isDay, isoWeek, parseDay, personById, studioById } from './helpers.js';
 import { Avatar, StateIcon, StatusDot } from './parts.jsx';
 import TaskBoard from './TaskBoard.jsx';
 import Overview from './Overview.jsx';
@@ -34,7 +34,7 @@ function RestChip({ info }) {
     <li className={`chip pj-prop-rest is-${info.state}`}>
       <StateIcon state={info.state} size={16} />
       <span className="visually-hidden">Budget: </span>
-      <span className="num">{over ? `${fmtH(-info.rest)} überzogen` : `${fmtH(info.rest)} Rest`}</span>
+      <span className="num">{over ? `${fmtH1(-info.rest)} überzogen` : `${fmtH1(info.rest)} Rest`}</span>
       {info.state === 'warn' && <span>· knapp</span>}
     </li>
   );
@@ -56,7 +56,7 @@ export default function ProjectDetail({ id, tab = 'aufgaben', taskId }) {
     );
   }
 
-  const info = budgetInfo(spentHours(p, entries), p.budget);
+  const info = budgetInfo(p, entries); // Rest aus restHours, angezeigt mit fmtH1 – wie Heute und Wochenraster
   const lead = personById[p.lead];
   const studio = studioById[p.studio];
   const due = isDay(p.due) ? parseDay(p.due) : null;

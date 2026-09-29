@@ -1,9 +1,9 @@
 // Zeiten-Tab: Einträge der Zeiterfassung für dieses Projekt, nach Kalenderwoche gruppiert (neueste zuerst) mit Summen.
 // Aufgabentitel, wo der Eintrag eine Aufgabe hat (Link auf die Karte). Leerzustand als ein Satz.
 import { useId } from 'react';
-import { fmtDate, fmtDuration, weekStart } from '../../lib/format.js';
+import { fmtDate, fmtDuration, fmtH1, weekStart } from '../../lib/format.js';
 import { href } from '../../lib/router.js';
-import { fmtH, fmtKw, isoWeek, parseDay, personById } from './helpers.js';
+import { fmtKw, isoWeek, parseDay, personById } from './helpers.js';
 
 function WeekGroup({ week, tasksById, projectId, year }) {
   const headId = useId();
@@ -67,8 +67,8 @@ export default function ProjectTimes({ project, entries, tasks }) {
   return (
     <div className="pj-times">
       <p className="meta num">
-        {fmtDuration(total)} in {mine.length} {mine.length === 1 ? 'Eintrag' : 'Einträgen'}. Dazu kommen {fmtH(project.spent)} aus der
-        Zeit vor der Zeiterfassung (Beispieldaten, nicht einzeln aufgeführt).
+        {fmtDuration(total)} in {mine.length} {mine.length === 1 ? 'Eintrag' : 'Einträgen'}.
+        {project.spent > 0 && ` Dazu kommen ${fmtH1(project.spent)} aus der Zeit vor der Zeiterfassung (Beispieldaten, nicht einzeln aufgeführt).`}
       </p>
       {weeks.map(w => <WeekGroup key={w.monday.getTime()} week={w} tasksById={tasksById} projectId={project.id} year={year} />)}
     </div>

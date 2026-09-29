@@ -16,7 +16,7 @@ flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 vers
 ## Nebenstrang Prototyp (Wunsch Hannes, vor G2; Ausnahme zu D-001, Eintrag fehlt)
 - Live `/prototyp/` (#9 15:12, #11 16:16, r07 #12): Beispieldaten, kein Backend, Budgets nur in Stunden. Die Umfrage
   verlinkt ihn erst nach dem Senden (E11). r07 live: Timer-Pille, Palette ⌘K, Wochenraster, Projekt bearbeiten mit
-  Budget-Verlauf; Kritik FIX/FIX, Korrekturen K1/K3 drin, K2 (Projekte) folgt. Hannes: öfter mergen und deployen.
+  Budget-Verlauf; Kritik FIX/FIX, Korrekturen K1–K3 live (#12 19:39, #13). Hannes: öfter mergen und deployen.
 - **Vorschlag D-006 · Hannes · UI-Entwurf vor G2** — *Entscheidung:* Ein UI-Entwurf mit erfundenen Daten, ohne Backend,
   ohne Rechnungs-, Buchhaltungs- und Mandantenlogik darf vor G2 entstehen und unter `/prototyp/` live sein; die Umfrage
   verlinkt ihn erst nach dem Senden. *Grund:* Gesprächsgrundlage, zeigt Stil und Bedienidee, legt das Zielbild nicht

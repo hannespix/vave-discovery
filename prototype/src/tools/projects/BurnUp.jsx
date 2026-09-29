@@ -4,11 +4,28 @@
 // links vor dem letzten Sprung.
 // Das SVG ist aria-hidden: dieselbe Aussage steht im Satz darüber, als Tabelle (mit Budget je Woche) und in der Liste
 // „Budgetänderungen“ (Overview.jsx).
+// „Abgabe KW …“ steht auf der von „heute“ abgewandten Seite der Abgabe-Linie, wo Platz ist; überdeckt sie die
+// Heute-Linie trotzdem (Abgabe kurz nach heute, schmal), beginnt die Heute-Linie erst unter der Beschriftung (r07).
 import { useId, useLayoutEffect, useRef, useState } from 'react';
-import { addDays, weekStart } from '../../lib/format.js';
-import { fmtH, fmtKw, isoWeek } from './helpers.js';
+import { addDays, fmtH1, weekStart } from '../../lib/format.js';
+import { fmtKw, isoWeek } from './helpers.js';
 
 const WEEK = 7 * 86400000;
+const CHAR_W = 7; // Schätzung je Zeichen bei 12 px (Readex Pro), eher zu breit
+const DUE_Y = 44; // Grundlinie „Abgabe KW …“; die Schrift reicht bis etwa 47 px
+
+// Beschriftung der Abgabe: Seite, Anker und ob sie die Heute-Linie (xt) überdeckt
+function dueLabel({ xd, xt, W, pad, text }) {
+  const w = text.length * CHAR_W + 4;
+  const roomR = xd + 4 + w <= W - pad.r;
+  const roomL = xd - 4 - w >= pad.l;
+  const right = xt <= xd ? roomR || !roomL : !roomL; // weg von „heute“, sonst wo Platz ist
+  let x = right ? xd + 4 : xd - 4;
+  let anchor = right ? 'start' : 'end';
+  if (right && !roomR) { x = W - pad.r; anchor = 'end'; } // nirgends Platz: rechtsbündig im Bild
+  const x0 = anchor === 'start' ? x : x - w;
+  return { text, x, anchor, hitsToday: xt >= x0 - 4 && xt <= x0 + w + 4 };
+}
 
 function useWidth(ref) {
   const [width, setWidth] = useState(0);
@@ -83,8 +100,8 @@ export default function BurnUp({ f }) {
       const cx = x(addDays(mon, 3.5));
       if (cx > pad.l + 18 && cx < W - pad.r - 18) ticks.push({ cx, kw: fmtKw(isoWeek(mon), year) });
     }
-    const anchor = (px, room) => (px > W - room ? 'end' : px < room ? 'start' : 'middle');
-    const labelX = (px, a, dx = 0) => (a === 'end' ? px - dx : a === 'start' ? px + dx : px);
+    const due = xd !== null ? dueLabel({ xd, xt, W, pad, text: `Abgabe ${fmtKw(f.dueKw, year)}` }) : null;
+    const todayTop = due?.hitsToday ? DUE_Y + 8 : 22; // Linie kürzen statt die Schrift durchzustreichen
 
     chart = (
       <svg className="pj-burn-svg" width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true" focusable="false">
@@ -95,17 +112,17 @@ export default function BurnUp({ f }) {
         <path className="pj-burn-area" d={area} />
         {f.total > f.budget && <path className="pj-burn-over" d={area} clipPath={`url(#over-${clipId})`} />}
         <path className="pj-burn-budget" d={budgetPath} />
-        <text className="pj-burn-label" x={budgetLabelX} y={yb - 7} textAnchor={budgetLabelEnd ? 'end' : 'start'}>Budget {fmtH(f.budget)}</text>
-        {xd !== null && (
+        <text className="pj-burn-label" x={budgetLabelX} y={yb - 7} textAnchor={budgetLabelEnd ? 'end' : 'start'}>Budget {fmtH1(f.budget)}</text>
+        {due && (
           <g>
             <line className="pj-burn-due" x1={xd} x2={xd} y1={34} y2={base} />
-            <text className="pj-burn-label" x={labelX(xd, anchor(xd, 70), 4)} y={44} textAnchor={anchor(xd, 70)}>Abgabe {fmtKw(f.dueKw, year)}</text>
+            <text className="pj-burn-label pj-burn-due-label" x={due.x} y={DUE_Y} textAnchor={due.anchor}>{due.text}</text>
           </g>
         )}
         {prog && <path className="pj-burn-prog" d={`M${xt.toFixed(1)},${y(f.total).toFixed(1)}L${x(prog[1]).toFixed(1)},${y(prog[2]).toFixed(1)}`} />}
         <path className="pj-burn-line" d={line} />
         {f.cross && f.cross <= end && <circle className="pj-burn-cross" cx={x(f.cross)} cy={yb} r="4.5" />}
-        <line className="pj-burn-today" x1={xt} x2={xt} y1={22} y2={base} />
+        <line className="pj-burn-today" x1={xt} x2={xt} y1={todayTop} y2={base} />
         <g transform={`translate(${Math.min(Math.max(xt - 26, 0), W - 52)},2)`}>
           <rect className="pj-burn-pill" width="52" height="20" rx="10" />
           <text className="pj-burn-pill-text" x="26" y="14" textAnchor="middle">Heute</text>

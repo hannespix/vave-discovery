@@ -1,7 +1,11 @@
 // Aufgaben (r07): Board | Liste als zwei Ansichten derselben Daten. Karten und Zeilen zeigen Person und „gebucht /
-// geschätzt“ (gebucht = Einträge mit task = Aufgabe), dazu ein Play-Knopf für den gemeinsamen Timer (lib/timer.js).
+// geschätzt“ (gebucht = Einträge mit task = Aufgabe), dazu ein Play-Knopf für den gemeinsamen Timer (lib/timer.js):
+// .btn-play wie überall, aria-pressed="true" = läuft auf dieser Aufgabe. Stopp meldet das Ergebnis (gebucht, unter einer
+// Minute nicht gebucht, verworfen); über 10 h fragt die Hülle (TIMER_GUARD) – hier dann keine Meldung.
 // Aus r06 bleibt: Ziehen (Maus: ganze Karte, Finger/Stift: Griff), gleichwertig die Status-Auswahl jeder Karte,
 // Löschen mit Rückgängig, Ansage per aria-live, Landemarkierung, tiefer Link (taskId) mit Fokus.
+// r07-Korrektur (ui-critic #5): keine Anleitungszeile mehr – die Karten sehen greifbar aus (Griff bei Hover/Fokus,
+// cursor: grab), die Zielspalte hebt sich beim Ziehen ab; der Hinweis bleibt für Screenreader an der Status-Auswahl.
 // Daten: Schlüssel 'tasks' (useStoredState im Elternteil) – { id, project, title, status, assignee, due, estimate }.
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AlarmClock, CircleAlert, Clock, GripVertical, Play, Plus, Square, Timer, Trash2, Undo2, X } from 'lucide-react';
@@ -57,7 +61,7 @@ function Hours({ booked, estimate }) {
   );
 }
 
-function TaskItem({ task, layout, booked, timerOn, onPlay, dragging, landed, onStatus, onDelete, pointer }) {
+function TaskItem({ task, layout, booked, timerOn, onPlay, dragging, landed, onStatus, onDelete, pointer, hintId }) {
   const selectId = useId();
   const person = personById[task.assignee];
   const n = daysUntil(task.due);
@@ -83,13 +87,13 @@ function TaskItem({ task, layout, booked, timerOn, onPlay, dragging, landed, onS
       <div className="pj-task-actions">
         <label className="visually-hidden" htmlFor={selectId}>Status von „{task.title}“</label>
         <select id={selectId} className="select pj-task-status" data-ctl="status" value={task.status}
-          onChange={e => onStatus(task, e.target.value)}>
+          aria-describedby={board ? hintId : undefined} onChange={e => onStatus(task, e.target.value)}>
           {STATUSES.map(s => <option key={s} value={s}>{statusLabel[s]}</option>)}
         </select>
-        <button type="button" className={`btn btn-icon pj-play${timerOn ? ' is-on' : ''}`} data-ctl="play"
-          aria-label={timerOn ? `Timer stoppen: ${task.title}` : `Timer starten: ${task.title}`}
-          title={timerOn ? 'Timer stoppen' : 'Timer starten'} onClick={() => onPlay(task)}>
-          {timerOn ? <Square size={14} fill="currentColor" aria-hidden="true" /> : <Play size={16} aria-hidden="true" />}
+        {/* Umschalter: gleicher Name in beiden Zuständen, der Zustand steckt in aria-pressed */}
+        <button type="button" className="btn-play pj-play" data-ctl="play" aria-pressed={timerOn}
+          aria-label={`Timer: ${task.title}`} title={timerOn ? 'Timer stoppen' : 'Timer starten'} onClick={() => onPlay(task)}>
+          {timerOn ? <Square size={18} strokeWidth={0} fill="currentColor" aria-hidden="true" /> : <Play size={18} fill="currentColor" aria-hidden="true" />}
         </button>
         <button type="button" className="btn btn-ghost btn-icon pj-del" data-ctl="delete" title="Löschen"
           aria-label={`„${task.title}“ löschen`} onClick={() => onDelete(task)}>
@@ -215,7 +219,7 @@ export default function TaskBoard({ project, tasks, setTasks, entries, taskId })
   const [view, setView] = useStoredState('project-task-view', 'board', cleanView);
   const [live, setLive] = useState('');
   const [undo, setUndo] = useState(null); // { task, index } – nur die letzte Löschung
-  const [notice, setNotice] = useState(null); // Hinweis „Timer läuft schon“
+  const [notice, setNotice] = useState(null); // Hinweis im Dock: { msg, task?, link? } – „Timer läuft schon“, Stopp-Ergebnis
   const [adding, setAdding] = useState(null); // Status, in dem angelegt wird; null = Formular zu
   const [overCol, setOverCol] = useState(null);
   const [dragId, setDragId] = useState(null);
@@ -230,10 +234,12 @@ export default function TaskBoard({ project, tasks, setTasks, entries, taskId })
   const headingId = useId();
   const undoMsgId = useId();
   const noticeMsgId = useId();
+  const hintId = useId();
 
   const mine = tasks.filter(t => t.project === project.id);
   const groups = STATUSES.map(status => ({ status, list: mine.filter(t => t.status === status).sort(byDue) }));
   const open = mine.filter(t => t.status !== 'done');
+  const done = mine.length - open.length;
   const overdue = open.filter(t => t.due && daysUntil(t.due) < 0).length;
   const booked = useMemo(() => {
     const m = {};
@@ -343,13 +349,21 @@ export default function TaskBoard({ project, tasks, setTasks, entries, taskId })
     mark(task.id);
   };
 
+  // Hinweis im Dock (sichtbar) und als Ansage
+  const tell = (msg, extra = {}) => { setNotice({ msg, ...extra }); announce(msg); };
+
   // Buchen aus der Aufgabe: ein Timer für die ganze App. Läuft schon einer (andere Aufgabe), sagt ein Hinweis das klar.
+  // Stopp-Ergebnisse aus lib/timer.js: entry (gebucht – die Stunden der Karte ändern sich sichtbar, dazu die Ansage),
+  // tooShort, discarded, overlong (Hinweis); pending = über 10 h, die Hülle fragt nach – hier nichts melden.
   const play = task => {
     if (running && timer?.task === task.id) {
       const r = stop();
+      if (!r || r.pending) return;
       setNotice(null);
-      if (r?.entry) announce(`Timer gestoppt, ${fmtDuration(r.entry.minutes)} auf „${task.title}“ gebucht.`);
-      else if (r?.overlong) announce('Timer gestoppt. Mehr als 24 Stunden – bitte unter Zeiten nachtragen.');
+      if (r.entry) announce(`Timer gestoppt, ${fmtDuration(r.entry.minutes)} auf „${task.title}“ gebucht.`);
+      else if (r.tooShort) tell('Unter einer Minute – nicht gebucht.');
+      else if (r.discarded) tell('Verworfen.');
+      else if (r.overlong) tell('Timer gestoppt. Mehr als 24 Stunden – bitte unter Zeiten nachtragen.', { link: true });
       return;
     }
     const r = start({ project: project.id, task: task.id });
@@ -357,9 +371,7 @@ export default function TaskBoard({ project, tasks, setTasks, entries, taskId })
       const tp = projectsById()[r.timer.project];
       const tt = tasks.find(x => x.id === r.timer.task);
       const what = [tp?.code, tt?.title || r.timer.note].filter(Boolean).join(' · ') || 'ohne Angabe';
-      const msg = `Es läuft schon ein Timer (${what}). Erst stoppen, dann hier starten.`;
-      setNotice({ msg, task: task.id });
-      announce(msg);
+      tell(`Es läuft schon ein Timer (${what}). Erst stoppen, dann hier starten.`, { task: task.id, link: true });
       return;
     }
     setNotice(null);
@@ -451,7 +463,7 @@ export default function TaskBoard({ project, tasks, setTasks, entries, taskId })
 
   const item = (t, layout) => (
     <TaskItem key={t.id} task={t} layout={layout} booked={booked[t.id] || 0} timerOn={running && timer?.task === t.id}
-      onPlay={play} dragging={dragId === t.id} landed={landed?.id === t.id} pointer={pointerProps(t)}
+      onPlay={play} dragging={dragId === t.id} landed={landed?.id === t.id} pointer={pointerProps(t)} hintId={hintId}
       onStatus={(task, to) => setStatus(task, to, 'status')} onDelete={remove} />
   );
 
@@ -460,8 +472,9 @@ export default function TaskBoard({ project, tasks, setTasks, entries, taskId })
       <div className="pj-tasks-bar">
         <div className="pj-tasks-title">
           <h2 id={headingId} tabIndex={-1}>Aufgaben</h2>
+          {/* Zählung ohne „offen“ – das Wort gehört der Spalte „Offen“ */}
           <p className="meta num">
-            {open.length} offen von {mine.length}
+            {mine.length ? `${mine.length} ${mine.length === 1 ? 'Aufgabe' : 'Aufgaben'} · ${done} erledigt` : 'Keine Aufgaben'}
             {overdue > 0 && <> · <span className="pj-overdue-sum">{overdue} überfällig</span></>}
           </p>
         </div>
@@ -479,9 +492,9 @@ export default function TaskBoard({ project, tasks, setTasks, entries, taskId })
 
       {view === 'board' ? (
         <>
-          <p className="quiet pj-hint">
-            Karten mit der Maus ziehen, mit dem Finger am Griff <GripVertical size={14} aria-hidden="true" />.
-            Ohne Ziehen: Status in der Karte wählen.
+          {/* Nur für Screenreader, an jeder Status-Auswahl des Boards (aria-describedby) */}
+          <p id={hintId} className="visually-hidden">
+            Ohne Ziehen: Status wählen, die Karte wandert in die Spalte. Mit der Maus lässt sich die ganze Karte ziehen, mit dem Finger der Griff.
           </p>
           <div className="pj-board" ref={viewRef}>
             {groups.map(({ status, list }) => (
@@ -506,7 +519,7 @@ export default function TaskBoard({ project, tasks, setTasks, entries, taskId })
           {notice && (
             <div className="pj-dock-item" role="group" aria-labelledby={noticeMsgId}>
               <p id={noticeMsgId} className="pj-dock-msg"><Timer size={18} aria-hidden="true" /> {notice.msg}</p>
-              <a className="btn pj-dock-btn" href={href('/zeit')}>Zum Timer</a>
+              {notice.link && <a className="btn pj-dock-btn" href={href('/zeit')}>Zum Timer</a>}
               <button type="button" className="btn btn-ghost btn-icon" aria-label="Hinweis schließen" title="Schließen" onClick={() => setNotice(null)}>
                 <X size={18} aria-hidden="true" />
               </button>
