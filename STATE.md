@@ -14,14 +14,14 @@ flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 vers
   keinen Stand, `respondent` ist fest „Tobias“: Fassung und Person zeigen nur `startedAt` und der Absender der Mail.
 
 ## Nebenstrang Prototyp (Wunsch Hannes, vor G2; Ausnahme zu D-001, Eintrag fehlt)
-- Live `/prototyp/` (#9 15:12 … #13 19:51), Link erst nach dem Senden (E11). **Seit r07** (Hannes: „öfter merge &
+- Live `/prototyp/` (#9 15:12 … #13 19:51, r08 Knöpfe), Link erst nach dem Senden (E11). **Seit r07** (Hannes: „öfter merge &
   deploy“): jeder fertige Baustein geht sofort live (PR, Merge, Deploy), Kritik prüft parallel und hält nichts auf.
 - **Vorschlag D-006 · Hannes · UI-Entwurf vor G2** — *Entscheidung:* Ein Entwurf mit erfundenen Daten, ohne Backend,
   Rechnungs-, Buchhaltungs- und Mandantenlogik darf vor G2 unter `/prototyp/` live sein, verlinkt erst nach dem Senden.
   *Grund:* Gesprächsgrundlage ohne Zielbild. *Kippt, wenn:* G2 anders wählt oder der Entwurf Antworten nachweislich prägt.
 - **Nächste Bausteine** (Vorschlag; je einer = ein Deploy, P3 läuft parallel und ohne Tor):
-  - **P2 · Feinschliff (r07-Kritik)** — zwei Gewichte statt 21× `500`, Projektliste „Projekte filtern“ statt zweitem
-    „Suchen“, „läuft“ violett statt Limette, Board-Griff bei `any-pointer: coarse`. DoD: beide Checks, Smoke 32/32.
+  - **P2 · Feinschliff** — Knöpfe erledigt (r08, Hannes' Handy-Screenshot): Umschalter, Play, Pfeile, Chips, Punkte. Offen:
+    zwei Gewichte (21× `500`), „Projekte filtern“ statt zweitem „Suchen“, „läuft“ violett, Board-Griff auf Touch-Laptops.
   - **P3 · Nachprüfung am Live-Stand** (ui-critic + red-team, nur lesen) — holt das fehlende P1-Urteil nach (≥ 8; vor
     der Korrektur 7/6/7/8/6/9/8/8). DoD: 8 Dimensionen, 390 × 844 und 1280 × 800, hell/dunkel; Befunde als Bausteine.
   - **P4 · Workflow-Tests ins Repo** (`prototype/tests/`, `check.yml`) — die Builder-Suiten liegen nur im Scratchpad.
@@ -133,12 +133,13 @@ flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 vers
   (400-ms-Sperre, Scroll nach Reload) → Timings als Konstanten in den Auftrag, nach dem Merge alle Tests gemeinsam.
 - r05: Zwei Runden ohne Fortschritt → Zeitprobe gestrichen, Versandprobe halbiert. Entscheidungen fallen im Chat,
   nicht in `DECISIONS.md` → fertige Absätze anbieten, Auslöser nennen.
-- r05: Export ohne Stand, fester `respondent` → Fassung und Person nur über `startedAt` und Absender (E7a).
 - r06: Parallele Builder mergen konfliktfrei, wenn der Orchestrator gemeinsame Verträge vorab committet (Speicher,
   Prüfer, Budget) und Dateien strikt verteilt; Kind-Effekte laufen vor dem App-Effekt (Fokus-Vertrag). Headless-Chromium
   vertraut dem Proxy nicht (nicht umgehen) → Designrecherche über Bild-Download mit curl, Bilder nur im Scratchpad.
 - r07: Große Runde mit Kritik als Tor → Hannes sah stundenlang nichts Neues. Seitdem ein Baustein = ein Deploy, Kritik
   parallel. Beispieldaten erzeugen Schein-Fakten (Prognose aus erfundenem Verlauf) → kennzeichnen. SHAs per `git rev-parse`.
+- r08: Uneinheitliche Knöpfe (Umschalter, Play, Pfeile) fand erst ein Handy-Screenshot → ui-critic zählt Knopfformen je
+  Ansicht. Kontrastprüfer sehen keine Pseudo-Elemente → Zustandsfarbe auf den Knopf selbst, Abstand als innerer Schatten.
 - UI-Lehren r02–r05 (Layout, Timing, Kopfzeile) für eine zweite Erhebung und den Prototyp: `git show 5568d47:STATE.md`.
 - Versand ohne Server: mailto hat keine Anhänge, `.eml` öffnet am Handy nicht als Entwurf, `canShare` prüft keine
   Dateitypen; headless prüft nur die URL → echte Geräte. Eine Uhr je Export; Markierungen in den Zustand, nicht die URL.
@@ -146,5 +147,4 @@ flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 vers
   Menschen-Aufgaben brauchen Datum oder Auslöser. Ergebnisse immer in Git committen.
 
 ## Nächste Runde startet mit
-r08 = P2 (Feinschliff, ein Deploy) mit P3 parallel; P4 als zweiter Builder (Dateien getrennt), jeder Baustein sofort live.
-Umfrage: ZZ 1 (Testmail, `ingest`) und ZZ 2 bleiben offen; kommt Tobias' Mail vorher: unverändert sichern, dann ZZ 4.
+r08 läuft: P2-Rest und P4 je ein Deploy, P3 parallel. Umfrage: ZZ 1/ZZ 2 offen; kommt Tobias' Mail: sichern, dann ZZ 4.

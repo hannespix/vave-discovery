@@ -10,7 +10,7 @@ import { LONG_RUN_MS, MAX_BOOK_MS, clockOf, useElapsed } from '../../lib/timer.j
 import { fmtClock, fmtDuration, isoDay } from '../../lib/format.js';
 import { uid } from '../../lib/store.js';
 import { me } from '../../data/sample.js';
-import ProjectSelect, { Dot, projectInfo } from './ProjectSelect.jsx';
+import ProjectSelect, { projectInfo } from './ProjectSelect.jsx';
 import Confirmation, { makeNote } from './Confirmation.jsx';
 import { DurationField, FieldError } from './fields.jsx';
 import { parseDuration, toInputDuration } from './duration.js';
@@ -126,7 +126,6 @@ function TimerMode({ timer, shownProject, draft, setDraft, recent, combos, taskT
                     aria-label={`Timer starten: ${info.code}, ${label}`}
                   >
                     <Play aria-hidden="true" size={12} fill="currentColor" className="tt-chip-play" />
-                    <Dot color={info.color} />
                     <span className="tt-chip-code">{info.code}</span>
                     <span className="tt-chip-label">{label}</span>
                   </button>

@@ -32,7 +32,7 @@ export function TimerStart({ project, onStart, buttonRef, className = '' }) {
   return (
     <button ref={buttonRef} type="button" className={`timer-pill ${className}`} onClick={onStart} aria-keyshortcuts="t"
       data-timer-start="">
-      <span className="timer-pill__icon" aria-hidden="true"><Play size={16} strokeWidth={2.25} /></span>
+      <span className="timer-pill__icon" aria-hidden="true"><Play size={16} fill="currentColor" /></span>
       <span className="timer-pill__text">
         <span className="timer-pill__title">Timer starten</span>
         <span className="timer-pill__sub"><span className="visually-hidden">mit </span>{p.code} · {p.name}</span>
@@ -98,7 +98,7 @@ export function TimerHeadStart({ project, onStart, buttonRef }) {
   const p = projectInfo(project);
   return (
     <button ref={buttonRef} type="button" className="timer-head" onClick={onStart} aria-keyshortcuts="t" data-timer-start="">
-      <span className="timer-head__icon" aria-hidden="true"><Play size={14} strokeWidth={2.25} /></span>
+      <span className="timer-head__icon" aria-hidden="true"><Play size={14} fill="currentColor" /></span>
       <span className="timer-head__label">Timer starten</span>
       <span className="visually-hidden"> mit {p.code} · {p.name}</span>
     </button>

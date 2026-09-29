@@ -235,7 +235,7 @@ export default function WeekGrid({ all, mine, days, weekNo, rows, prevRows, flas
                 <tr key={id}>
                   <th scope="row" className="tt-grid-project">
                     <span className="tt-grid-name">
-                      <Dot color={info.color} />
+                      <Dot />
                       <span className="tt-grid-code">{info.code}</span>
                       <span className="tt-grid-pname">{info.name}</span>
                     </span>

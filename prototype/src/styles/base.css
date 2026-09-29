@@ -117,31 +117,49 @@ button.chip, a.chip { min-height: var(--tap); cursor: pointer; }
 @media (hover: hover) { button.chip:hover, a.chip:hover { border-color: var(--c-line-strong); } }
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
 
-/* Umschalter für Ansichten (Liste | Woche …): Knöpfe mit aria-pressed, aktiv schwarz */
-.switch { display: inline-flex; border: 1px solid var(--c-line-strong); border-radius: 999px; overflow: hidden; }
-.switch > button {
-  min-height: var(--tap); padding: 0 var(--s-4); border: 0; background: var(--c-surface); color: var(--c-ink);
-  font-weight: 500; cursor: pointer; transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+/* Umschalter für Ansichten (Liste | Woche …): Knöpfe mit aria-pressed. Gleich breite Segmente in einer Pille, das gewählte
+   als eigene Limetten-Pille 3 px eingerückt – wie „Darstellung“ im Menü (r08, Hannes: vorher eckige Innenkontur in der
+   runden Pille). Zustand = Limette (Farbrollen §2), die schwarze Kontur trägt die Abgrenzung (Limette auf Weiß 1,08:1).
+   Trefferfläche bleibt 44 px: der Knopf füllt die Pille, der 3-px-Abstand ist ein innerer Schatten in Flächenfarbe – so
+   bleibt die Limette die echte Hintergrundfarbe des Knopfs (Kontrastprüfung). Gleiches Gewicht in beiden Zuständen. */
+.switch {
+  --switch-gap: inset 0 0 0 3px var(--c-surface);
+  display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; max-width: 100%;
+  border: 1.5px solid var(--c-line-strong); border-radius: 999px; background: var(--c-surface);
 }
-.switch > button + button { border-left: 1px solid var(--c-line-strong); }
-/* Zustand = Limette (Farbrollen §2), die schwarze Innenkontur trägt die Abgrenzung (Limette auf Weiß nur 1,08:1) */
+.switch > button {
+  min-height: var(--tap); min-width: 0; padding: 0 var(--s-4); border: 0; border-radius: 999px;
+  background: transparent; color: var(--c-ink-2); font-weight: 500; white-space: nowrap; cursor: pointer;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
 .switch > button[aria-pressed="true"] {
-  background: var(--c-lime); color: var(--c-lime-ink); font-weight: 600; box-shadow: inset 0 0 0 2px var(--c-line-strong);
+  background: var(--c-lime); color: var(--c-lime-ink);
+  box-shadow: var(--switch-gap), inset 0 0 0 4.5px var(--c-line-strong);
 }
 
-/* Play/Stopp – ein Zeichen für „Timer auf diesem Eintrag/dieser Aufgabe starten“ überall (r07-Korrektur):
-   rund, schwarze Kontur; läuft der Timer darauf (aria-pressed="true"), violett gefüllt (Violett = laufender Timer) */
+/* Play/Stopp – ein Zeichen für „Timer auf diesem Eintrag/dieser Aufgabe starten“ überall (r07-Korrektur): rund, gefülltes
+   Dreieck. r08 (Hannes: „Button sind teilweise komisch“): leise Haarlinie statt schwarzer Kontur, damit er neben den
+   randlosen Stift/Papierkorb-Knöpfen nicht schwerer wirkt als die Zeile. Läuft der Timer darauf (aria-pressed="true"):
+   violett gefüllt (Violett = laufender Timer). */
 .btn-play {
   display: inline-grid; place-items: center; flex: none; width: var(--tap); height: var(--tap); padding: 0;
-  border: 1.5px solid var(--c-line-strong); border-radius: 50%; background: var(--c-surface); color: var(--c-ink);
+  border: 1px solid var(--c-line); border-radius: 50%; background: var(--c-surface); color: var(--c-ink);
   cursor: pointer; transition: background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
-.btn-play svg { width: 18px; height: 18px; }
+.btn-play svg { width: 16px; height: 16px; }
+.btn-play:not([aria-pressed="true"]) > svg { margin-left: 2px; } /* Dreieck optisch mittig */
 .btn-play[aria-pressed="true"] { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-accent-ink); }
 @media (hover: hover) {
   .btn-play:hover { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-accent-ink); }
 }
-@media (hover: hover) { .switch > button:not([aria-pressed="true"]):hover { background: var(--c-bg-2); } }
+@media (hover: hover) {
+  .switch > button:not([aria-pressed="true"]):hover { background: var(--c-bg-2); color: var(--c-ink); box-shadow: var(--switch-gap); }
+}
+/* Fokusring auch auf dem gewählten Segment (dessen Schatten sonst den Ring aus :focus-visible überdeckt) */
+.switch > button:not([aria-pressed="true"]):focus-visible { box-shadow: var(--focus); }
+.switch > button[aria-pressed="true"]:focus-visible {
+  box-shadow: var(--switch-gap), inset 0 0 0 4.5px var(--c-line-strong), var(--focus);
+}
 
 /* Tastenkappe für Kürzel (ergänzend, nie einzige Beschriftung) */
 .kbd {

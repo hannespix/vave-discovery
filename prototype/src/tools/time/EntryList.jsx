@@ -32,7 +32,7 @@ function EntryRow({ entry, taskTitle, highlight, running, onResume, onEdit, onDe
       <div className="tt-row-main">
         <p className="tt-row-title">{title}</p>
         <p className="tt-row-meta">
-          <Dot color={info.color} />
+          <Dot />
           <span className="tt-row-code">{info.code}</span>
           <span className="num">{entry.start}–{endOf(entry)}</span>
           {task && note && note !== task ? <span className="tt-row-note">{note}</span> : null}

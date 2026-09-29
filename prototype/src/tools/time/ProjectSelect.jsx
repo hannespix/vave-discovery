@@ -1,5 +1,5 @@
 // Projektauswahl der Zeiterfassung: oben „Zuletzt“ (bis zu 3), dann aktive und interne Projekte, mit Code und Studio.
-// Farbe nur als Punkt (Studiofarbe), dekorativ – Code und Studio stehen immer im Text.
+// Code und Studio stehen im Text (r08: ohne Farbpunkt im Feld).
 import { studios, byId } from '../../data/sample.js';
 import { loadProjects, projectsById } from '../../lib/projects.js';
 
@@ -19,9 +19,10 @@ export function projectInfo(id) {
   return { id, code: p.code, name: p.name, studio: s ? s.name : '', color: s ? s.color : 'var(--c-bg-2)', budget: p.budget, project: p };
 }
 
-// Projektpunkt – rein dekorativ, mit Kontur (Limette wäre auf Weiß sonst kaum sichtbar)
-export function Dot({ color }) {
-  return <span className="dot tt-dot" style={{ background: color }} aria-hidden="true" />;
+// Projektpunkt – rein dekorativ und neutral wie auf „Heute“ (r08: die Studiofarbe Limette brauchte eine Kontur und sah
+// dann aus wie ein Auswahlknopf). Studiofarben zeigt die Seite „Studios“.
+export function Dot() {
+  return <span className="dot tt-dot" aria-hidden="true" />;
 }
 
 const optionLabel = p => `${p.code} · ${p.name} · ${projectInfo(p.id).studio}`;
@@ -41,7 +42,6 @@ export default function ProjectSelect({ id, value, onChange, recent = [], label,
   const extra = value && !ids.includes(value) ? projectInfo(value) : null;
   return (
     <div className="tt-select">
-      <Dot color={projectInfo(value).color} />
       <select
         id={id} className="select" value={value ?? ''} onChange={e => onChange(e.target.value)}
         aria-label={label} aria-describedby={describedBy}
