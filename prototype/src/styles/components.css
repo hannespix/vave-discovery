@@ -41,3 +41,66 @@
 /* Marker hinter der Zahl: Limette = heute, Koralle = überzogen (Fläche, schwarze Schrift) */
 .stat__mark { padding: 0 0.1em; margin-left: -0.1em; border-radius: var(--radius-s); background: var(--c-lime); color: var(--c-lime-ink); }
 .stat__mark--alert { background: var(--c-danger-fill); color: var(--c-danger-fill-ink); }
+
+/* ---------- Befehlspalette (⌘K / Strg K, „/“, Suchen) – oben verankert, ohne Einblenden. Besitzer: B1 ---------- */
+.palette {
+  width: min(640px, calc(100vw - 2 * var(--s-3))); max-width: calc(100vw - 2 * var(--s-2));
+  max-height: min(600px, calc(100dvh - 2 * var(--s-3)));
+  margin: max(var(--s-3), 12vh) auto auto; padding: 0; overflow: hidden;
+  color: var(--c-ink); border: 1.5px solid var(--c-line-strong);
+}
+.palette[open] { display: flex; flex-direction: column; }
+.palette::backdrop { background: var(--c-backdrop); }
+
+.palette__bar { flex: none; display: flex; align-items: center; gap: var(--s-3); padding: 0 var(--s-4); border-bottom: 1px solid var(--c-line); }
+/* Fokus im Suchfeld: violette Linie unter dem Balken statt Ring um das Feld */
+.palette__bar:focus-within { border-bottom-color: var(--c-accent); box-shadow: inset 0 -1px 0 var(--c-accent); }
+.palette__glass { flex: none; color: var(--c-ink-2); }
+.palette__input {
+  flex: 1 1 auto; min-width: 0; min-height: 56px; padding: 0; border: 0; background: transparent;
+  font-size: var(--fs-body); color: var(--c-ink);
+}
+.palette__input::placeholder { color: var(--c-ink-3); opacity: 1; }
+.palette__input:focus-visible { box-shadow: none; }
+.palette__esc { flex: none; }
+
+.palette__list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--s-2); }
+.palette__group + .palette__group { margin-top: var(--s-2); }
+.palette__group-label {
+  padding: var(--s-2) var(--s-3) var(--s-1); font-size: var(--fs-label); font-weight: 600; line-height: 1.3;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-2);
+}
+.palette__option {
+  display: flex; align-items: center; gap: var(--s-3); min-height: 48px; padding: var(--s-1) var(--s-3);
+  border-radius: var(--radius); cursor: pointer;
+}
+/* Ausgewählt = Zustand: Limette als Fläche, schwarze Schrift und Kontur (wie der aktive Menüpunkt) */
+.palette__option[aria-selected="true"] { background: var(--c-lime); color: var(--c-lime-ink); box-shadow: inset 0 0 0 1px var(--c-line-strong); }
+.palette__icon { flex: none; color: var(--c-ink-2); }
+.palette__text { flex: 1 1 auto; min-width: 0; display: flex; align-items: baseline; gap: var(--s-2); }
+.palette__label { flex: 0 1 auto; min-width: 0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.palette__meta { flex: 0 1000 auto; min-width: 0; font-size: var(--fs-meta); color: var(--c-ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.palette__keys { flex: none; display: inline-flex; gap: 3px; }
+.palette__option[aria-selected="true"] :is(.palette__icon, .palette__meta) { color: var(--c-lime-ink); }
+.palette__option[aria-selected="true"] .kbd { background: transparent; color: var(--c-lime-ink); border-color: var(--c-lime-ink); }
+.palette__empty { padding: var(--s-4) var(--s-5) var(--s-5); color: var(--c-ink-2); }
+.palette__hint {
+  flex: none; display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-4); padding: var(--s-2) var(--s-4);
+  border-top: 1px solid var(--c-line); font-size: var(--fs-label); color: var(--c-ink-2);
+}
+.palette__hint .kbd { margin-right: 3px; }
+
+/* Zweiter Schritt „Neue Aufgabe“ */
+.palette__form { display: grid; gap: var(--s-4); padding: var(--s-5); overflow-y: auto; }
+.palette__form-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--s-3); }
+.palette__error { font-size: var(--fs-meta); font-weight: 500; color: var(--c-ink); }
+.palette__form .input[aria-invalid="true"] { border-color: var(--c-line-strong); border-width: 2px; }
+
+/* Handy: oben andocken, Treffer zweizeilig, keine Tastatur-Hinweise */
+@media (max-width: 599.98px) {
+  .palette { margin-top: var(--s-2); max-height: calc(100dvh - 2 * var(--s-2)); }
+  .palette__text { flex-direction: column; align-items: stretch; gap: 0; }
+}
+@media (max-width: 599.98px), (hover: none) {
+  .palette__hint, .palette__esc, .palette__keys { display: none; }
+}
