@@ -100,12 +100,27 @@ p { margin: 0; }
 .node.is-current, .node.is-done, .node.is-open { color: var(--ink-2); }
 .node.is-current { cursor: default; }
 .node.is-locked { cursor: not-allowed; }
-.node:focus-visible { outline-offset: -3px; } /* innen, die Spalten liegen dicht */
+.node:focus-visible { outline-offset: 0; } /* außen am Knopf: der Ring lässt Punkt und Beschriftung frei */
+.node-num { display: none; }
 @media (hover: hover) { .node.is-done:hover, .node.is-open:hover { color: var(--ink); } }
 .route-vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+/* Tipp auf ein Schloss: kurz unter der Route, an der getippten Station, was vorher fehlt (Script: showTip) */
+.route-tip {
+  position: absolute; top: calc(100% + 8px); left: 0; z-index: 1; width: max-content; max-width: min(340px, 100%);
+  margin: 0; padding: 8px 14px; border-radius: var(--radius-s); background: var(--ink); color: var(--bg);
+  font-size: .95rem; font-weight: 600; line-height: 1.3; pointer-events: none;
+  opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity .15s, transform .15s var(--ease-out), visibility 0s .15s;
+}
+.route-tip.is-on { opacity: 1; visibility: visible; transform: none; transition: opacity .15s, transform .15s var(--ease-out); }
 @media (max-width: 640px) {
-  .route { margin-left: -22px; margin-right: -22px; --y0: 17; --y1: 27; } /* 8 Spalten × 44 px brauchen 352 px */
+  .route { margin-left: -22px; margin-right: -22px; } /* 8 Spalten × 44 px brauchen 352 px */
   .node-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); }
+  .node-num { display: block; font-size: 12px; } /* statt des Namens die Nummer – passt zu „Station n von 7“ */
+}
+/* Überschrift nach Stationswechsel: Fokus für die Ansage, aber kein Rahmen wie um ein Eingabefeld – nur eine Linie unter dem Text */
+.step h1[tabindex="-1"]:focus, .step h2[tabindex="-1"]:focus { outline: none; }
+.step h1[tabindex="-1"]:focus-visible, .step h2[tabindex="-1"]:focus-visible {
+  text-decoration-line: underline; text-decoration-color: var(--signal); text-decoration-thickness: 3px; text-underline-offset: .14em;
 }
 @media (prefers-reduced-motion: reduce) { .route-done, .dot .dot-ring { transition: none; } }
 
@@ -633,6 +648,7 @@ input[type="range"]::-moz-range-thumb {
     <nav class="route" id="route" aria-label="Stationen">
       <svg class="route-line" aria-hidden="true"></svg>
       <div class="route-stops"></div>
+      <p class="route-tip" id="routeTip" aria-hidden="true"></p>
     </nav>
     <p class="route-vh" id="routeLive" aria-live="polite" aria-atomic="true"></p>
   </div>
@@ -845,6 +861,10 @@ input[type="range"]::-moz-range-thumb {
     // (vor dem Zurücksetzen auf 5 – die Route sperrt 6 und 7 ohnehin, solange das Budget offen ist).
     const int = v => (Number.isInteger(v) ? v : 0);
     s.maxStep = Math.min(STEPS.length - 1, Math.max(0, int(s.maxStep), int(s.step)));
+    // frictionSeenAt = wann Station 2 zuletzt alle behaltenen Karten gezeigt hat (goTo). Stände ohne den Merker
+    // waren schon hinter Station 2: Deren behaltene Karten gelten als gesehen, erst später behaltene öffnen Station 2.
+    if (s.maxStep >= 2 && typeof s.frictionSeenAt !== 'number') s.frictionSeenAt = Date.now();
+    if (s.step > 1 && D.modules.some(m => !s.sort[m.id])) s.step = 1; // offener Stapel nicht ins Ergebnis
     if (s.step > 5 && budgetOpen(s)) s.step = 5; // unbestätigtes Budget nicht ins Ergebnis
     return s;
   }
@@ -854,21 +874,32 @@ input[type="range"]::-moz-range-thumb {
 
   /* ---------------- Route ---------------- */
   // Jede Station ist ein Knopf. Zurück geht immer; vorwärts höchstens bis maxStep und nie über die erste Station
-  // mit offener „Weiter“-Bedingung hinaus (dieselben Bedingungen wie in updateNav). Die Linie läuft bis dorthin.
-  const route = $('#route'), routeLine = $('.route-line', route), routeStops = $('.route-stops', route);
+  // mit offener Bedingung hinaus – geprüft ab Station 0, nicht erst ab der aktuellen. Die Linie läuft bis dorthin.
+  // Tastatur: Die Route ist höchstens ein Tab-Stopp (die aktuelle Station, und nur wenn es ein Ziel gibt);
+  // Pfeile links/rechts, Pos1 und Ende wechseln zwischen den freien Stationen, Schlösser sind kein Halt.
+  const route = $('#route'), routeLine = $('.route-line', route), routeStops = $('.route-stops', route), routeTip = $('#routeTip');
   const STATE_TEXT = { done: 'erledigt', current: 'aktuell', open: 'offen', locked: 'gesperrt' };
+  const LOCK_TEXT = { 1: 'Erst alle Karten sortieren.', 2: 'Erst die neuen Karten unter „Reibung“ ansehen.', 5: 'Erst das Budget einstellen.' };
   const DRAW_MS = 1100; // Einzeichnen beim Öffnen; letzter Punkt und Name sind nach 1,34 s da
-  let routeBase, routeDone, routeLen = 0, routeW = 0, routeH = 0, nodes = [], dots = [];
+  const TIP_MS = 2200; // so lange steht der Hinweis am Schloss (wie der Toast)
+  let routeBase, routeDone, routeLen = 0, routeW = 0, routeH = 0, nodes = [], dots = [], tipTimer = 0;
 
+  // Offen = „Weiter“-Bedingung nicht erfüllt (1, 5) oder, für Station 2: seit ihrem letzten Besuch sind Karten
+  // unter „Brauchen wir“ dazugekommen (seq jünger als frictionSeenAt), die sie noch nie gezeigt hat.
   function stepOpen(i) {
     if (i === 1) return D.modules.some(m => !state.sort[m.id]);
+    if (i === 2) return state.step !== 2 && state.maxStep >= 2 && kept().some(m => ((state.seq || {})[m.id] || 0) > (state.frictionSeenAt || 0));
     if (i === 5) return budgetOpen(state) > 0;
     return false;
   }
+  function firstOpenBefore(n) {
+    for (let i = 0; i < n; i++) if (stepOpen(i)) return i;
+    return -1;
+  }
   function reachLimit() {
-    let r = state.step;
+    let r = 0;
     while (r < state.maxStep && !stepOpen(r)) r++;
-    return r;
+    return Math.max(r, state.step); // liegt die offene Station hinter der aktuellen, geht es vorwärts gar nicht
   }
   function nodeState(i, reach) {
     if (i === state.step) return 'current';
@@ -877,7 +908,7 @@ input[type="range"]::-moz-range-thumb {
   }
   function buildRoute() {
     routeStops.innerHTML = STEPS.map((name, i) =>
-      `<button type="button" class="node" data-i="${i}"><span class="node-name">${esc(name)}</span></button>`).join('');
+      `<button type="button" class="node" data-i="${i}" tabindex="-1"><span class="node-name">${esc(name)}</span><span class="node-num">${i || ''}</span></button>`).join('');
     // Punkt je Station: Ring (offen), Ring mit Kern (aktuell), gefüllt mit Haken (erledigt), Schloss (gesperrt)
     routeLine.innerHTML = '<path class="route-base"/><path class="route-done"/>' + STEPS.map(() =>
       '<g><g class="dot"><circle class="dot-ring" r="7"/><circle class="dot-core" r="3"/><path class="dot-check" d="M-3 .2l2 2 4-4.2"/>' +
@@ -888,9 +919,25 @@ input[type="range"]::-moz-range-thumb {
     routeDone = $('.route-done', routeLine);
     routeStops.addEventListener('click', e => {
       const b = e.target.closest('.node');
-      if (!b) return;
+      if (!b || busy) return; // Kartenflug in Station 1: Tipp verwerfen (siehe navigate)
       const i = Number(b.dataset.i);
-      if (i !== state.step && i <= reachLimit()) goTo(i);
+      if (i === state.step) return;
+      if (i > reachLimit()) showTip(i); else navigate(i);
+    });
+    routeStops.addEventListener('keydown', e => {
+      const b = e.target.closest('.node');
+      if (!b || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      const i = Number(b.dataset.i), reach = reachLimit(), last = STEPS.length - 1;
+      let t = -1;
+      if (e.key === 'ArrowRight') { if (i < reach) t = i + 1; else if (i < last) showTip(i + 1); }
+      else if (e.key === 'ArrowLeft') t = Math.min(i - 1, reach);
+      else if (e.key === 'Home') t = 0;
+      else if (e.key === 'End') t = reach;
+      else return;
+      e.preventDefault();
+      if (t < 0 || t === i) return;
+      nodes.forEach((n, k) => { n.tabIndex = k === t ? 0 : -1; });
+      nodes[t].focus();
     });
     layoutRoute();
     window.addEventListener('resize', layoutRoute);
@@ -922,13 +969,18 @@ input[type="range"]::-moz-range-thumb {
     if (!routeDone) return;
     const last = STEPS.length - 1, reach = reachLimit();
     routeDone.style.strokeDashoffset = String(routeLen * (1 - reach / last));
+    // Tab-Stopp: der fokussierte freie Knopf, sonst die aktuelle Station – aber nur, wenn es ein zweites freies Ziel gibt
+    // (am Start ist alles außer dem Eingang gesperrt: dann ist „Los geht’s“ der erste Tab-Stopp).
+    const f = nodes.indexOf(document.activeElement), rover = reach === 0 ? -1 : f >= 0 && f <= reach ? f : state.step;
     nodes.forEach((b, i) => {
+      b.tabIndex = i === rover ? 0 : -1;
       const s = nodeState(i, reach);
       if (b.dataset.state === s) return;
       b.dataset.state = s;
       b.className = 'node is-' + s;
       dots[i].setAttribute('class', 'dot is-' + s);
-      b.setAttribute('aria-label', `${STEPS[i]}, ${STATE_TEXT[s]}`); // beginnt mit dem sichtbaren Namen
+      // beginnt mit dem sichtbaren Namen (breit) und enthält die sichtbare Nummer (schmal)
+      b.setAttribute('aria-label', `${STEPS[i]}, ${i ? `Station ${i}, ` : ''}${STATE_TEXT[s]}`);
       if (s === 'current') b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
       if (s === 'locked') b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
     });
@@ -943,8 +995,25 @@ input[type="range"]::-moz-range-thumb {
     if (reach) routeDone.animate([{ strokeDashoffset: px(routeLen) }, { strokeDashoffset: px(routeLen * (1 - reach / last)) }], { duration: DRAW_MS * reach / last, easing: 'linear' });
     dots.forEach((g, i) => g.animate([{ opacity: 0, transform: 'scale(.3)' }, { opacity: 1, transform: 'scale(1)' }],
       { duration: 240, delay: Math.max(0, DRAW_MS * i / last - 80), easing: 'ease-out', fill: 'backwards' }));
-    nodes.forEach((b, i) => $('.node-name', b).animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, delay: DRAW_MS * i / last, fill: 'backwards' }));
+    nodes.forEach((b, i) => $$('.node-name, .node-num', b).forEach(el =>
+      el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240, delay: DRAW_MS * i / last, fill: 'backwards' })));
   }
+  // Tipp (oder Pfeil) auf ein Schloss: kurz sagen, was vorher fehlt – sichtbar unter der Station, angesagt über #routeLive.
+  function showTip(i) {
+    const o = firstOpenBefore(i);
+    const text = o >= 0 && LOCK_TEXT[o] ? LOCK_TEXT[o] : `Der Reihe nach – weiter mit „${nextBtn.textContent}“.`;
+    routeTip.textContent = text;
+    $('#routeLive').textContent = text;
+    routeTip.style.left = '0px';
+    routeTip.classList.add('is-on');
+    const w = routeTip.offsetWidth, rw = route.clientWidth, nb = nodes[i].getBoundingClientRect();
+    const x = nb.left - route.getBoundingClientRect().left + nb.width / 2 - w / 2;
+    routeTip.style.left = Math.max(0, Math.min(rw - w, x)) + 'px';
+    clearTimeout(tipTimer);
+    tipTimer = setTimeout(hideTip, TIP_MS);
+    highlightNode(i);
+  }
+  function hideTip() { clearTimeout(tipTimer); routeTip.classList.remove('is-on'); }
   // Einmaliges Hervorheben der neuen Station (280 ms), kein Dauerpuls.
   function highlightNode(i) {
     const g = dots[i];
@@ -956,15 +1025,25 @@ input[type="range"]::-moz-range-thumb {
   const backBtn = $('#back'), nextBtn = $('#next'), hint = $('#hint');
 
   // quiet: nur beim Start – dann kein Fokuswechsel, keine Ansage, kein Hervorheben.
+  // Vorwärts endet jeder Wechsel spätestens auf der ersten offenen Station (ab 0 geprüft), auch wenn die Anzeige
+  // noch einen älteren Stand zeigte. Wäre das die aktuelle Station, bleibt alles, wie es ist.
   function goTo(n, quiet) {
-    state.step = Math.max(0, Math.min(STEPS.length - 1, n));
+    n = Math.max(0, Math.min(STEPS.length - 1, n));
+    if (n > state.step) {
+      const o = firstOpenBefore(n);
+      if (o === state.step) { updateNav(); return; }
+      if (o >= 0) n = o;
+    }
+    state.step = n;
     state.maxStep = Math.max(state.maxStep, state.step);
+    if (state.step === 2) state.frictionSeenAt = Date.now(); // Station 2 zeigt jetzt alle behaltenen Karten
     save();
+    hideTip();
     $$('.step').forEach(s => s.classList.toggle('is-active', Number(s.dataset.step) === state.step));
     updateRoute();
     render();
     updateNav();
-    window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
+    window.scrollTo(0, 0); // sofort oben, kein Nachgleiten; den Wechsel zeigt stepIn (0,24 s)
     if (quiet) return;
     // Fokus auf die Überschrift der neuen Station, nicht am Seitenende (Weiter/Zurück) oder in der Route
     const head = $(`.step[data-step="${state.step}"]`).querySelector('h1, h2');
@@ -998,8 +1077,11 @@ input[type="range"]::-moz-range-thumb {
     hint.textContent = msg;
     updateRoute(); // offene Bedingung sperrt Stationen dahinter, erledigte gibt sie frei
   }
-  backBtn.addEventListener('click', () => goTo(state.step - 1));
-  nextBtn.addEventListener('click', () => goTo(state.step + 1));
+  // Wechsel durch den Nutzer (Weiter, Zurück, Route): nicht, solange in Station 1 eine Karte fliegt (busy, 240 ms).
+  // Der Tipp wird verworfen – sonst landet die Karte erst nach dem Wechsel und Station 1 bliebe unbemerkt offen.
+  function navigate(n) { if (!busy) goTo(n); }
+  backBtn.addEventListener('click', () => navigate(state.step - 1));
+  nextBtn.addEventListener('click', () => navigate(state.step + 1));
 
   function kept() { return ORDER.filter(m => state.sort[m.id] === 'keep'); }
   function render() {
