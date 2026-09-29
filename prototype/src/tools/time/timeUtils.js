@@ -1,58 +1,21 @@
-// Reine Hilfsfunktionen der Zeiterfassung (ohne React) – Dauer lesen, Uhrzeiten rechnen, Woche aufbauen.
+// Reine Hilfsfunktionen der Zeiterfassung (ohne React) – Uhrzeiten rechnen, Woche aufbauen, Zuletzt-Kombinationen.
+// Dauer lesen: duration.js. Timer-Regeln (10 h, 24 h): lib/timer.js.
 import { addDays, isoDay, weekStart } from '../../lib/format.js';
+import { GRID_NOTE } from './grid.js';
 
 const pad = n => String(n).padStart(2, '0');
 export const DAY_MIN = 24 * 60;
-const HOUR_MS = 3600000;
-export const LONG_RUN_MS = 10 * HOUR_MS; // Timer läuft länger: Hinweis „vergessen?“
-export const MAX_BOOK_MS = 24 * HOUR_MS; // darüber bucht Stopp nichts (Nachtragen und Bearbeiten erlauben höchstens 24 h)
-
-// Dauer aus freier Eingabe: „1:30“, „90“, „90 min“, „1,5“, „1.5“, „1,5 h“, „2 h“, „1 h 30“ → { minutes } oder { error }.
-// Ganze Zahl ohne Einheit = Minuten, Komma-/Punktzahl ohne Einheit = Stunden.
-export function parseDuration(input) {
-  const s = String(input ?? '')
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .replace(/stunden|stunde|std\.?/g, 'h')
-    .replace(/minuten|minute|min\.?/g, 'm');
-  if (!s) return { error: 'empty' };
-  const ok = min => (min < 1 ? { error: 'zero' } : min > DAY_MIN ? { error: 'max' } : { minutes: min });
-  let m = s.match(/^(\d{1,2}):(\d{1,2})\s?h?$/);
-  if (m) return +m[2] > 59 ? { error: 'minutes' } : ok(+m[1] * 60 + +m[2]);
-  m = s.match(/^(\d*)[.,](\d+)\s?h?$/);
-  if (m) return ok(Math.round(parseFloat(`${m[1] || '0'}.${m[2]}`) * 60));
-  m = s.match(/^(\d+)\s?h$/);
-  if (m) return ok(+m[1] * 60);
-  m = s.match(/^(\d+)\s?h\s?(\d{1,2})\s?m?$/);
-  if (m) return +m[2] > 59 ? { error: 'minutes' } : ok(+m[1] * 60 + +m[2]);
-  m = s.match(/^(\d+)\s?m?$/);
-  if (m) return ok(+m[1]);
-  return { error: 'format' };
-}
-
-export const durationMessage = {
-  empty: 'Bitte eine Dauer eingeben, zum Beispiel 1:30.',
-  format: 'Diese Dauer verstehe ich nicht. Möglich sind 1:30, 90, 1,5 oder 1,5 h.',
-  minutes: 'Nach dem Doppelpunkt höchstens 59 Minuten, zum Beispiel 1:45.',
-  zero: 'Die Dauer muss mindestens 1 Minute betragen.',
-  max: 'Ein Eintrag darf höchstens 24 Stunden lang sein.',
-};
-
-// Minuten → „1:30“ (für Eingabefelder)
-export const toInputDuration = min => `${Math.floor(min / 60)}:${pad(min % 60)}`;
 
 // „HH:MM“ ↔ Minuten seit Mitternacht
 export const toMinutes = hhmm => {
   const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || '');
-  return m ? +m[1] * 60 + +m[2] : null;
+  return m && +m[1] < 24 && +m[2] < 60 ? +m[1] * 60 + +m[2] : null;
 };
 export const fromMinutes = min => {
   const x = ((Math.round(min) % DAY_MIN) + DAY_MIN) % DAY_MIN;
   return `${pad(Math.floor(x / 60))}:${pad(x % 60)}`;
 };
 export const endOf = e => fromMinutes((toMinutes(e.start) ?? 0) + (Number(e.minutes) || 0));
-export const clockOf = date => `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
 // „YYYY-MM-DD“ als lokales Datum (new Date('YYYY-MM-DD') wäre UTC und verrutscht westlich von Greenwich)
 export const parseDay = iso => {
@@ -60,6 +23,8 @@ export const parseDay = iso => {
   return new Date(y, (m || 1) - 1, d || 1);
 };
 export const todayIso = () => isoDay(new Date());
+// Echtes Kalenderdatum im Format YYYY-MM-DD (für Routen wie #/zeit/nachtragen/2026-09-28)
+export const isDayIso = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && isoDay(parseDay(s)) === s;
 
 // Kalenderwoche nach ISO 8601
 export function isoWeek(date) {
@@ -81,7 +46,7 @@ export function weekDays(now = new Date()) {
   return SHORT.map((short, i) => {
     const date = addDays(monday, i);
     const iso = isoDay(date);
-    return { iso, date, short, long: LONG[i], dm: dm(date), isToday: iso === today, isFuture: iso > today };
+    return { iso, date, short, long: LONG[i], dm: dm(date), weekend: i > 4, isToday: iso === today, isFuture: iso > today };
   });
 }
 
@@ -90,13 +55,13 @@ export function dayTitle(iso, now = new Date()) {
   const date = parseDay(iso);
   const today = isoDay(now);
   const name = iso === today ? 'Heute' : iso === isoDay(addDays(now, -1)) ? 'Gestern' : LONG[(date.getDay() + 6) % 7];
-  return { name, dm: dm(date), long: `${LONG[(date.getDay() + 6) % 7]}, ${dm(date)}` };
+  return { name, dm: dm(date), long: `${LONG[(date.getDay() + 6) % 7]}, ${dm(date)}`, short: SHORT[(date.getDay() + 6) % 7] };
 }
 
 // Für Bestätigungen: „heute“ oder mit Datum „Montag, 28.09.“
 export const dayPhrase = (iso, now = new Date()) => (iso === isoDay(now) ? 'heute' : dayTitle(iso, now).long);
 
-// Zeile eines Eintrags in der Wochenliste (Hervorhebung, „Anzeigen“)
+// Zeile eines Eintrags in der Liste (Hervorhebung, „Anzeigen“)
 export const rowId = id => `tt-entry-${id}`;
 
 export const sumMinutes = list => list.reduce((s, e) => s + (Number(e.minutes) || 0), 0);
@@ -109,9 +74,38 @@ export function suggestStart(entries, date) {
   return last >= DAY_MIN ? '23:59' : fromMinutes(last);
 }
 
+const newestFirst = list => [...list].sort((a, b) => (a.date + a.start < b.date + b.start ? 1 : a.date + a.start > b.date + b.start ? -1 : 0));
+
 // Zuletzt verwendetes Projekt (neuester Eintrag), das noch wählbar ist
 export function lastProject(entries, allowedIds) {
-  const sorted = [...entries].sort((a, b) => (a.date + a.start < b.date + b.start ? 1 : -1));
-  const hit = sorted.find(e => allowedIds.includes(e.project));
+  const hit = newestFirst(entries).find(e => allowedIds.includes(e.project));
   return hit ? hit.project : allowedIds[0];
+}
+
+// Die zuletzt gebuchten Projekte (für die Gruppe „Zuletzt“ in der Projektwahl)
+export function recentProjects(entries, allowedIds, max = 3) {
+  const out = [];
+  for (const e of newestFirst(entries)) {
+    if (allowedIds.includes(e.project) && !out.includes(e.project)) out.push(e.project);
+    if (out.length === max) break;
+  }
+  return out;
+}
+
+// Bis zu fünf zuletzt genutzte Kombinationen (Projekt, Aufgabe, Notiz) für den Ein-Klick-Start.
+// Sammeleinträge aus dem Wochenraster zählen nicht – das ist keine Arbeit, die man „fortsetzt“.
+export function recentCombos(entries, allowedIds, max = 5) {
+  const out = [];
+  const seen = new Set();
+  for (const e of newestFirst(entries)) {
+    if (!allowedIds.includes(e.project) || e.note === GRID_NOTE) continue;
+    const note = String(e.note ?? '').trim();
+    const task = typeof e.task === 'string' && e.task ? e.task : null;
+    const key = `${e.project}|${task ?? ''}|${note.toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ key, project: e.project, task, note });
+    if (out.length === max) break;
+  }
+  return out;
 }
