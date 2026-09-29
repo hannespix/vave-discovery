@@ -1,6 +1,6 @@
 # STATE — lebender Zustand (max. 150 Zeilen, wird jede Runde fortgeschrieben)
 
-Stand: Ende r06 → **r07** (Prototyp ausbauen, Wunsch Hannes) · 2026-09-29 · **M1** · **verschickt, Antwort ausstehend**
+Stand: Ende r07 → **r08** (Prototyp in kleinen Deploys) · 2026-09-29 · **M1** · **verschickt, Antwort ausstehend**
 
 ## Aktueller Meilenstein
 M1 — Umfrage, **live und eingefroren**. Hannes (Chat, 2026-09-29): „Jetzt mach mal fertig! Ich will es abschicken!“
@@ -14,18 +14,19 @@ flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 vers
   keinen Stand, `respondent` ist fest „Tobias“: Fassung und Person zeigen nur `startedAt` und der Absender der Mail.
 
 ## Nebenstrang Prototyp (Wunsch Hannes, vor G2; Ausnahme zu D-001, Eintrag fehlt)
-- Live `/prototyp/` (#9 15:12, #11 16:16, r07 #12): Beispieldaten, kein Backend, Budgets nur in Stunden. Die Umfrage
-  verlinkt ihn erst nach dem Senden (E11). r07 live: Timer-Pille, Palette ⌘K, Wochenraster, Projekt bearbeiten mit
-  Budget-Verlauf; Kritik FIX/FIX, Korrekturen K1–K3 live (#12 19:39, #13). Hannes: öfter mergen und deployen.
-- **Vorschlag D-006 · Hannes · UI-Entwurf vor G2** — *Entscheidung:* Ein UI-Entwurf mit erfundenen Daten, ohne Backend,
-  ohne Rechnungs-, Buchhaltungs- und Mandantenlogik darf vor G2 entstehen und unter `/prototyp/` live sein; die Umfrage
-  verlinkt ihn erst nach dem Senden. *Grund:* Gesprächsgrundlage, zeigt Stil und Bedienidee, legt das Zielbild nicht
-  fest. *Kippt, wenn:* G2 ein anderes Zielbild wählt oder der Entwurf Antworten nachweislich prägt.
-- **P1 · r07 Kern-Workflows** (Auswahl aus der Recherche, Abschnitt 3): klares Gestaltungssystem (neutrale Leiste,
-  Farbrollen), ein Timer überall + Buchen aus der Aufgabe, Zeiten mit Timer/Nachtragen in einer Leiste und Wochenraster,
-  Befehlspalette ⌘K, Projekte als Zeilen mit Burn-up und „reicht bis KW“, Heute als eine Spalte. DoD: je Workflow ein
-  Playwright-Test (390/1280, hell/dunkel), ui-critic ≥ 8 in allen Dimensionen, red-team ohne „hoch“, kein Geld.
-- Offene Frage an Tobias (nach der Antwort): Freigabe von Stundenzetteln nötig? Kalender-Anbindung?
+- Live `/prototyp/` (#9 15:12 … #13 19:51), Link erst nach dem Senden (E11). **Seit r07** (Hannes: „öfter merge &
+  deploy“): jeder fertige Baustein geht sofort live (PR, Merge, Deploy), Kritik prüft parallel und hält nichts auf.
+- **Vorschlag D-006 · Hannes · UI-Entwurf vor G2** — *Entscheidung:* Ein Entwurf mit erfundenen Daten, ohne Backend,
+  Rechnungs-, Buchhaltungs- und Mandantenlogik darf vor G2 unter `/prototyp/` live sein, verlinkt erst nach dem Senden.
+  *Grund:* Gesprächsgrundlage ohne Zielbild. *Kippt, wenn:* G2 anders wählt oder der Entwurf Antworten nachweislich prägt.
+- **Nächste Bausteine** (Vorschlag; je einer = ein Deploy, P3 läuft parallel und ohne Tor):
+  - **P2 · Feinschliff (r07-Kritik)** — zwei Gewichte statt 21× `500`, Projektliste „Projekte filtern“ statt zweitem
+    „Suchen“, „läuft“ violett statt Limette, Board-Griff bei `any-pointer: coarse`. DoD: beide Checks, Smoke 32/32.
+  - **P3 · Nachprüfung am Live-Stand** (ui-critic + red-team, nur lesen) — holt das fehlende P1-Urteil nach (≥ 8; vor
+    der Korrektur 7/6/7/8/6/9/8/8). DoD: 8 Dimensionen, 390 × 844 und 1280 × 800, hell/dunkel; Befunde als Bausteine.
+  - **P4 · Workflow-Tests ins Repo** (`prototype/tests/`, `check.yml`) — die Builder-Suiten liegen nur im Scratchpad.
+    DoD: `npm run test:e2e` (Playwright als devDependency): Smoke und je Workflow ein Ablauf, 390/1280, im CI < 3 min.
+- **Später:** Recherche 07 §4 (nach Tobias/G2). An Tobias: Stundenzettel-Freigabe? Kalender? Soll je Land (fix 8/40 h)?
 
 ## Offene Gates
 - **G0** — Kriterien 3/3 erfüllt, Freigabe durch Hannes ausstehend (seit r03; M1 ging ohne Eintrag raus). Belege am
@@ -101,22 +102,22 @@ flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 vers
    Konfidenz (±1 Reibung, ±10 `bb`, ±1 Stufe), Kipppunkt, Abgleich mit `hypothesis.target`; gleich mit `hypothesis()` in
    ≥ 200 Zufallsprofilen und allen Schwellen; Probe an `example.json` mit Kopf „Probe, erfundene Daten“.
 
-**Gestrichen (durch den Versand überholt):** Alt 2 → ZZ 2 · 3a Zeitprobe (Tobias' Dauer ersetzt sie) · 3b, 4C → ZZ 1 ·
-4A/4B (ändern, was Tobias sieht) · 5 → Regeln ZZ 2/5, Abnahme ZZ 3. Details: `git show 5568d47:STATE.md`.
+**Gestrichen (Versand):** alt 2 → ZZ 2 · 3a · 3b, 4C → ZZ 1 · 4A/4B · 5 → ZZ 2/3/5 · Details `git show 5568d47:STATE.md`.
 
 ## Erledigt (letzte 5 Runden, älteres → git log)
-- r06 (Prototyp, #9–#11): UI-Entwurf in 3 Buildern (Hülle/Heute/Studios, Zeiten, Projekte). Kritik ui-critic FIX
-  (7/6/7/5/8/8/8/5), red-team FIX („mittel“: Vorprägung, Budget ohne Buchungen). Vorarbeit (Speicher-Abgleich,
-  Prüfer, Budget aus Buchungen, Ampel ungerundet, Wochenende) + Korrektur K1–K3 (Board-Rückmeldung, tiefer Link,
-  kurze Wege, Bestätigung am Eintrag, Timer > 24 h bucht nicht, 3 Farben, keine Lade-Animation), CI gehärtet
-  (Prüfsumme Umfrage, `check:prototype`). E11: Ankündigung im Vorwort, Link nach dem Senden (#10). Nachprüfung am r07-Stand.
+- r07 = P1 (Prototyp, #12 19:39, #13 19:51): Recherche `docs/research/07-saas-muster.md`, Vorarbeit Gestaltungssystem,
+  `lib/timer.js`, `lib/projects.js`; 4 Builder + B5 „Projekt bearbeiten“ (Hannes). Kritik am Merge `1de6612`: ui-critic
+  FIX (7/6/7/8/6/9/8/8), red-team FIX („mittel“). Korrektur Basis + K1–K3: Speicher-Wettlauf, Timer-Regeln (unter 1 min
+  keine Buchung, ab 10 h Rückfrage), eine Rundung, Farbrollen, Wochen blättern, Raster mit Rückgängig, Prognose ehrlich.
+- r06 (Prototyp, #9–#11): UI-Entwurf in 3 Buildern; Kritik ui-critic FIX (7/6/7/5/8/8/8/5), red-team FIX („mittel“).
+  Vorarbeit (Speicher-Abgleich, Prüfer, Budget aus Buchungen) + K1–K3 (Board-Rückmeldung, tiefer Link, Timer über 24 h
+  bucht nicht, 3 Farben); CI mit Prüfsumme der Umfrage und `check:prototype`. E11 (#10): Ankündigung, Link nach Senden.
 - r05 (#5–#8): Hotfix Reibungslinie (p ∈ [0,1]), Station 1 (Sperre 400 ms, Zonen-Knöpfe, Anleitung sichtbar), Vorwort,
   Test-Merker, `noindex`. Kritik FIX/FIX (7/7/8/8/8/8/9/7). Nachprüfung K1/K2 auf Hannes' Wunsch entfallen (ZZ 3).
 - r04 (PR #4): Route als Knöpfe, Versand an `hannes@pix-el.de` (Desktop `.eml` mit Anhängen, Touch mailto bis 16 000
   Zeichen), eine Uhr `resultTime()`, `?test`, SVG-Finale. ui-critic FIX (8/5/7/8/7/7/8/7), red-team FIX („mittel“, E7).
 - r03 (PR #3 mit r02): B2–B4 behoben (Karte + drei Zonen bei 360–430 px, wischsicher, Rest-Knopf fragt nach), Reibung
   ohne Anker, Kaufen-oder-Bauen in 5 Stufen, Ziele ≥ 44 px, Schrift ≥ 16 px, Kontrast ≥ 4,5:1. Kritik FIX/FIX.
-- r02/r01: Namen generisch, `FRONT` = ROADMAP, BLOCK → B2–B4; Basiswechsel (PR #2); r01 BLOCK (B1 „hoch“).
 
 ## Gelernt (kurz, was künftige Runden wissen müssen)
 - QuoJob-Kritik ist fast nur UX/Starrheit → A ist Arbeitshypothese, entschieden wird in G2. VAVE ist eine Gruppe
@@ -125,19 +126,19 @@ flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 vers
   Reibungswert → A, ohne `keep` → C); „vollständig“ an den Regel-Größen festmachen, nicht an der Schema-Gültigkeit.
 - r05: Was vor dem Versand entschieden sein sollte, wird danach Auswertungsregel und muss vor dem Öffnen der Daten
   stehen, sonst wird sie am Ergebnis ausgerichtet.
-- r05: Erst r05 bewertete alle 8 Dimensionen über alle 7 Stationen (Teil-Nachprüfungen zählen nicht). Dann ließ
-  Versanddruck die Nachprüfung von K1/K2 ausfallen; belegt sind sie nur durch Builder- und Orchestrator-Tests, ein
-  unentdeckter Fehler trifft genau die eine Antwort, um die es geht → Urteil nachholen (ZZ 3).
-- r05: Am Handy kann der erste rAF-Zeitstempel nach einem Zeiger-Ereignis vor t0 liegen (p < 0) → auf [0,1] klemmen,
-  zum selben Ziel nicht neu starten. Gefunden hat das nur ein echtes Gerät.
-- r05: Tests paralleler Builder kollidieren beim Merge über Timing (400-ms-Sperre, wachsende Zonen, Scroll nach Reload)
-  → Timings als Konstanten in den Auftrag, nach dem Merge alle Tests gemeinsam.
+- r05: Erst r05 bewertete alle 8 Dimensionen über alle 7 Stationen (Teil-Nachprüfungen zählen nicht). K1/K2 fielen dem
+  Versanddruck zum Opfer, belegt nur durch Builder-Tests; ein Fehler trifft genau die eine Antwort → Urteil (ZZ 3).
+- r05: Am Handy liegt der erste rAF-Zeitstempel nach einem Zeiger-Ereignis teils vor t0 (p < 0) → auf [0,1] klemmen,
+  zum selben Ziel nicht neu starten (fand nur ein echtes Gerät). Tests paralleler Builder kollidieren über Timing
+  (400-ms-Sperre, Scroll nach Reload) → Timings als Konstanten in den Auftrag, nach dem Merge alle Tests gemeinsam.
 - r05: Zwei Runden ohne Fortschritt → Zeitprobe gestrichen, Versandprobe halbiert. Entscheidungen fallen im Chat,
   nicht in `DECISIONS.md` → fertige Absätze anbieten, Auslöser nennen.
 - r05: Export ohne Stand, fester `respondent` → Fassung und Person nur über `startedAt` und Absender (E7a).
 - r06: Parallele Builder mergen konfliktfrei, wenn der Orchestrator gemeinsame Verträge vorab committet (Speicher,
   Prüfer, Budget) und Dateien strikt verteilt; Kind-Effekte laufen vor dem App-Effekt (Fokus-Vertrag). Headless-Chromium
   vertraut dem Proxy nicht (nicht umgehen) → Designrecherche über Bild-Download mit curl, Bilder nur im Scratchpad.
+- r07: Große Runde mit Kritik als Tor → Hannes sah stundenlang nichts Neues. Seitdem ein Baustein = ein Deploy, Kritik
+  parallel. Beispieldaten erzeugen Schein-Fakten (Prognose aus erfundenem Verlauf) → kennzeichnen. SHAs per `git rev-parse`.
 - UI-Lehren r02–r05 (Layout, Timing, Kopfzeile) für eine zweite Erhebung und den Prototyp: `git show 5568d47:STATE.md`.
 - Versand ohne Server: mailto hat keine Anhänge, `.eml` öffnet am Handy nicht als Entwurf, `canShare` prüft keine
   Dateitypen; headless prüft nur die URL → echte Geräte. Eine Uhr je Export; Markierungen in den Zustand, nicht die URL.
@@ -145,6 +146,5 @@ flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 vers
   Menschen-Aufgaben brauchen Datum oder Auslöser. Ergebnisse immer in Git committen.
 
 ## Nächste Runde startet mit
-r07 = P1 (Prototyp, Wunsch Hannes): Vorarbeit Gestaltungssystem + `lib/timer.js`, dann 3 Builder (Hülle/Palette/Heute,
-Zeiten, Projekte), Kritik, eine Korrektur. Umfrage: ZZ 1 (Testmail, `ingest`) und ZZ 2 bleiben offen; kommt Tobias'
-Mail vorher: unverändert sichern, dann ZZ 4.
+r08 = P2 (Feinschliff, ein Deploy) mit P3 parallel; P4 als zweiter Builder (Dateien getrennt), jeder Baustein sofort live.
+Umfrage: ZZ 1 (Testmail, `ingest`) und ZZ 2 bleiben offen; kommt Tobias' Mail vorher: unverändert sichern, dann ZZ 4.
