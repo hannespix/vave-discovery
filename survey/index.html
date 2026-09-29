@@ -690,6 +690,12 @@ input[type="range"]::-moz-range-thumb {
 .send-status:empty { position: absolute; padding: 0; }
 .hypo { border-color: var(--signal); background: var(--signal-soft); }
 .hypo .target { font-size: 1.15rem; font-weight: 800; }
+/* Entwurf (r06, Wunsch Hannes): erst nach dem Senden sichtbar, damit er keine Antwort färbt; im Vorwort angekündigt */
+.proto { border-color: var(--ink); }
+.proto[hidden] { display: none; } /* .result-block setzt display: grid – sonst stünde die Karte schon vor dem Senden da */
+.proto.is-new { animation: rise .3s var(--ease-out) both; }
+.proto .btn, .proto .btn:visited { color: var(--ink); } /* Link als Knopf: nicht Browser-Blau */
+.proto .btn svg { flex: none; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .toast {
   position: fixed; left: 50%; bottom: 96px; transform: translate(-50%, 20px); z-index: 60;
@@ -794,6 +800,10 @@ input[type="range"]::-moz-range-thumb {
           Ehrlich zum Risiko: Kleine, schicke Tools entstehen mit KI-Agenten heute schnell. Große Systeme mit
           personenbezogenen Daten, Schnittstellen und vielen Nutzern brauchen viele Schleifen und Zeit&nbsp;– ein Rest
           Blackbox bleibt. Die Aufgabe reizt mich trotzdem.
+        </p>
+        <p>
+          Als kleines Extra kannst du nach dem Absenden einen ersten groben UI-Entwurf durchklicken&nbsp;– bewusst erst
+          dann, damit er deine Antworten nicht beeinflusst.
         </p>
         <p class="note-sign">Hannes</p>
       </div>
@@ -931,6 +941,8 @@ input[type="range"]::-moz-range-thumb {
 
   const D = window.VAVE_DATA;
   const KEY = 'vave-discovery-v1';
+  // Entwurf (r06): erst nach dem Senden frei. Merker nur im Browser – nicht im Zustand, nicht im Export; „Von vorn“ löscht ihn
+  const PROTO_KEY = KEY + ':entwurf', PROTO_URL = 'https://hannespix.github.io/vave-discovery/prototyp/';
   const STEPS = ['Eingang', 'Sortieren', 'Reibung', 'Wünsche', 'Rollen', 'Budget', 'Zauberstab', 'Ergebnis'];
   const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const BACKOFFICE = new Set(['finanzen', 'gruppe']);
@@ -1025,6 +1037,12 @@ input[type="range"]::-moz-range-thumb {
     return s;
   }
   function load() { try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+  function protoOpen() { try { return localStorage.getItem(PROTO_KEY) === '1'; } catch (e) { return false; } }
+  function unlockProto() {
+    const card = $('#protoCard');
+    if (card && card.hidden) { card.hidden = false; card.classList.add('is-new'); }
+    try { localStorage.setItem(PROTO_KEY, '1'); } catch (e) { /* ohne Speicher weiter */ }
+  }
   // Erste gespeicherte Antwort: Test-Merker aus der URL dieses Aufrufs festschreiben (danach zählt nur er)
   function save() {
     if (typeof state.test !== 'boolean' && hasAnswer(state)) { state.test = TEST_URL; syncTest(); }
@@ -2064,6 +2082,14 @@ input[type="range"]::-moz-range-thumb {
         </div>
         <div class="send-status" id="sendStatus" role="status"></div>
       </section>
+      <section class="result-block proto" id="protoCard" aria-labelledby="protoHead"${protoOpen() ? '' : ' hidden'}>
+        <h3 id="protoHead">Wie angekündigt: ein erster Entwurf</h3>
+        <p>Grober UI-Entwurf zum Durchklicken, mit erfundenen Beispieldaten und ohne Backend. Nichts davon ist entschieden&nbsp;– was wirklich gebraucht wird, klären wir im Gespräch.</p>
+        <div class="actions">
+          <a class="btn" href="${PROTO_URL}" target="_blank" rel="noopener">Entwurf ansehen<span class="route-vh"> (öffnet in neuem Tab)</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 11 11 5M6.5 5H11v4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </div>
+      </section>
       <div class="actions">
         <button type="button" class="btn" id="dlJson">Daten herunterladen (JSON)</button>
         <button type="button" class="btn" id="dlMd">Brief herunterladen (Markdown)</button>
@@ -2071,7 +2097,7 @@ input[type="range"]::-moz-range-thumb {
         <button type="button" class="btn quiet" id="restart">Von vorn</button>
       </div>`;
     // Nach dem Tipp auf Senden bleibt eine Zeile stehen: fertig machen – oder, wenn sich nichts geöffnet hat, die Einzel-Downloads
-    const sent = () => { $('#sendStatus').innerHTML = `Mailprogramm offen? Dann nur noch senden. Wenn nichts passiert ist: unten beide Dateien laden und an <b>${esc(HANNES)}</b> schicken.`; };
+    const sent = () => { $('#sendStatus').innerHTML = `Mailprogramm offen? Dann nur noch senden. Wenn nichts passiert ist: unten beide Dateien laden und an <b>${esc(HANNES)}</b> schicken.`; unlockProto(); };
     if (send.mailto) $('#sendMail').addEventListener('click', sent); // der Link öffnet danach das Mailprogramm
     else if (!TOUCH) $('#sendMail').addEventListener('click', () => {
       download(out.stamp + '.eml', buildEml([out.json, out.md], send.subject, send.body, out.at), 'message/rfc822');
@@ -2086,14 +2112,17 @@ input[type="range"]::-moz-range-thumb {
         toast('Adresse markiert – jetzt kopieren.');
       }
     });
-    $('#dlJson').addEventListener('click', () => download(out.json.name, out.json.text, out.json.type));
-    $('#dlMd').addEventListener('click', () => download(out.md.name, out.md.text, out.md.type));
+    // Auch die Einzel-Downloads und das Kopieren sind ein Weg, das Ergebnis zu schicken: danach ist der Entwurf frei
+    $('#dlJson').addEventListener('click', () => { download(out.json.name, out.json.text, out.json.type); unlockProto(); });
+    $('#dlMd').addEventListener('click', () => { download(out.md.name, out.md.text, out.md.type); unlockProto(); });
     $('#copyMd').addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(out.md.text); toast('Brief kopiert.'); }
       catch (e) { download(out.md.name, out.md.text, out.md.type); toast('Zwischenablage nicht verfügbar – Datei geladen.'); }
+      unlockProto();
     });
     $('#restart').addEventListener('click', () => {
       if (!confirm('Alle Antworten löschen und von vorn beginnen?')) return;
+      try { localStorage.removeItem(PROTO_KEY); } catch (e) { /* ohne Speicher weiter */ }
       state = freshState(); syncTest(); save(); goTo(0);
     });
     finale();
