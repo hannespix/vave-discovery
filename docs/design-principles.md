@@ -25,7 +25,7 @@ PASS ab 8 in **allen** Dimensionen.
 ## 4 · Bewegung — Animation dient, lenkt nicht ab
 - **4:** Animationen > 400 ms, Elemente hüpfen ohne Grund, kein `prefers-reduced-motion`
 - **7:** Bewegung erklärt Zustände (Karte landet, Zone reagiert), aber eine Animation ist Dekoration
-- **10:** Jede Bewegung beantwortet eine Frage („Wo ist meine Karte hin?“, „Zählt das?“); Dauer 150–300 ms, Easing konsistent; animierte SVG-Zonen reagieren auf Nähe; `prefers-reduced-motion` schaltet auf Fades; Confetti genau einmal, am Ende
+- **10:** Jede Bewegung beantwortet eine Frage („Wo ist meine Karte hin?“, „Zählt das?“); Dauer 150–300 ms, Easing konsistent; animierte SVG-Zonen reagieren auf Nähe; `prefers-reduced-motion` schaltet auf Fades; eine Abschluss-Animation als SVG genau einmal, am Ende
 
 ## 5 · Mobil & Touch
 - **4:** Drag funktioniert nur mit Maus; Texte < 16 px; horizontales Scrollen
@@ -46,6 +46,12 @@ PASS ab 8 in **allen** Dimensionen.
 - **4:** Kein Feedback beim Ablegen; Ende ist ein nackter Download-Button
 - **7:** Karten reagieren, Ende feiert, aber die Mitte ist Fließbandarbeit
 - **10:** Jede Karte, die landet, gibt ein kleines haptisches/visuelles „Ja“; Zwischenstände werden bemerkt („Halbzeit. Läuft.“); Ende belohnt mit Zusammenfassung in drei Sätzen, dann Download; Ton der Texte: knapp, warm, nie kumpelhaft
+
+## Stilvorgabe von Hannes (Chat, 2026-09-28)
+Animierte SVG-Animationen findet er schick; Emojis und ähnliches Zeug überall nicht. Daraus folgt für alle Dimensionen:
+- Bewegung als animierte SVG-Linien und -Formen, passend und sparsam: Sie erklärt einen Zustand, sie schmückt nicht.
+- Keine Emojis, keine Emoji-artigen Gesichter, kein Konfetti.
+- Der Einstieg nennt keine Minutenzahl, sondern „ein paar Minuten“.
 
 ## Nicht verhandelbar (BLOCK, unabhängig vom Score)
 - Externe Referenzen oder Datenabfluss
