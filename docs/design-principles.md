@@ -53,6 +53,19 @@ Animierte SVG-Animationen findet er schick; Emojis und ähnliches Zeug überall 
 - Keine Emojis, keine Emoji-artigen Gesichter, kein Konfetti.
 - Der Einstieg nennt keine Minutenzahl, sondern „ein paar Minuten“.
 
+## Stilvorgabe von Hannes (Chat, 2026-09-29): Weißraum, Lesbarkeit, Barrierefreiheit
+„Bitte achte im UI-Design auf genügend White Space, um die Readability zu gewährleisten. Barrierefreiheit. Clean
+Design, das typische VAVE-CD beibehalten.“ Gilt für den Prototyp; die eingefrorene Umfrage nur bei Fehlerkorrekturen.
+Messbar, jede Unterschreitung deckelt Dimension 3 (Klarheit) bzw. 6 (Zugänglichkeit) bei 7:
+- **Weißraum:** Seitenrand ≥ 20 px am Handy; Abschnitte ≥ 56 px auseinander (Desktop ≥ 64 px); Listenzeilen ≥ 12 px
+  oben und unten; Abstände nur über die `--space-*`-Tokens in `prototype/src/styles/tokens.css`.
+- **Lesbarkeit:** Fließtext ≤ ~65 Zeichen je Zeile, Zeilenhöhe 1,5 (mehrzeilig nie unter 1,4); keine Schrift unter
+  13 px; zwei Gewichte (400/600); Versalien nur für Seitentitel und kurze Labels, nie für Sätze.
+- **Barrierefreiheit (WCAG 2.2 AA):** Kontrast ≥ 4,5:1 hell und dunkel, sichtbarer Fokus, Ziele ≥ 44 px, Reflow bei
+  320 px ohne seitliches Rollen, Textabstände nach 1.4.12 ohne Abschneiden, Farbe nie allein.
+- **VAVE-CD:** Schwarz/Weiß, Violett = Aktion und laufender Timer, Limette = Zustand mit schwarzer Kontur, Koralle nur
+  „überzogen“; Readex Pro; Pillen mit schwarzer Kontur; Haarlinien statt Kästen; keine Deko, keine neuen Farben.
+
 ## Nicht verhandelbar (BLOCK, unabhängig vom Score)
 - Externe Referenzen oder Datenabfluss
 - Fremdes Branding, kopierte UI-Texte
