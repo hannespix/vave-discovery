@@ -6,10 +6,10 @@ import { fmtClock, fmtDuration, isoDay } from '../../lib/format.js';
 import { me } from '../../data/sample.js';
 import ProjectSelect, { projectInfo } from './ProjectSelect.jsx';
 import { clockOf } from './timeUtils.js';
+import { validTimer } from '../../lib/data.js';
 
-// Nur ein Objekt mit gültigem startedAt gilt als laufender Timer
-export const validTimer = t =>
-  t && typeof t === 'object' && typeof t.startedAt === 'string' && !Number.isNaN(Date.parse(t.startedAt)) ? t : null;
+// Nur ein Objekt mit gültigem startedAt gilt als laufender Timer (gemeinsamer Prüfer, auch für „Heute“)
+export { validTimer };
 
 export default function TimerCard({ timer: stored, setTimer, onBook, defaultProject, todayMinutes }) {
   const timer = validTimer(stored);

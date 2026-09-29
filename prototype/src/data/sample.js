@@ -41,7 +41,8 @@ export const clients = [
   { id: 'c0', name: 'VAVE intern', sector: 'Intern' },
 ];
 
-// budget/spent in Stunden; status: 'aktiv' | 'angebot' | 'intern'
+// budget/spent in Stunden; spent = Stand vor den Einträgen der Zeiterfassung (die zählt lib/budget.js dazu);
+// status: 'aktiv' | 'angebot' | 'intern'
 export const projects = [
   { id: 'pr1', code: 'MDK-24', name: 'Dauerausstellung „Hörräume“', client: 'c1', studio: 'fra', lead: 'p1', status: 'aktiv', phase: 'Ausführungsplanung', budget: 1200, spent: 860, due: day(45) },
   { id: 'pr2', code: 'MIR-07', name: 'Messepavillon Mobility Week', client: 'c2', studio: 'fra', lead: 'p2', status: 'aktiv', phase: 'Produktion', budget: 640, spent: 612, due: day(12) },
@@ -80,8 +81,15 @@ export const tasks = [
   { id: 't23', project: 'pr8', title: 'Tool-Umfrage auswerten', status: 'todo', assignee: 'p1', due: day(7) },
 ];
 
-// Zeiten der angemeldeten Person, letzte fünf Arbeitstage bis heute (Minuten)
-const entry = (id, d, start, minutes, project, note) => ({ id, date: day(d), start, minutes, project, note, person: me.id });
+// Zeiten der angemeldeten Person, letzte fünf Arbeitstage bis heute (Minuten). Arbeitstag 0 = heute, am Wochenende der
+// Freitag davor; -1 der Arbeitstag davor usw. – keine Einträge an Samstag oder Sonntag.
+const workday = n => {
+  const d = new Date(today);
+  while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1);
+  for (let k = 0; k < -n; ) { d.setDate(d.getDate() - 1); if (d.getDay() !== 0 && d.getDay() !== 6) k++; }
+  return isoDay(d);
+};
+const entry = (id, d, start, minutes, project, note) => ({ id, date: workday(d), start, minutes, project, note, person: me.id });
 export const timeEntries = [
   entry('e1', 0, '09:00', 90, 'pr1', 'Abstimmung Lichtplanung'),
   entry('e2', 0, '10:45', 75, 'pr2', 'Transportlogistik'),
