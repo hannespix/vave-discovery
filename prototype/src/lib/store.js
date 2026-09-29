@@ -34,10 +34,15 @@ export function useStoredState(key, initial, clean) {
     return check.current ? check.current(value, fallback) : value;
   };
   const [value, setValue] = useState(read);
+  // Rohtext, den diese Instanz zuletzt geschrieben oder übernommen hat. Geschrieben wird nur eine eigene Änderung –
+  // so überschreibt eine veraltete Instanz nie den neueren Wert einer anderen (Wettlauf bei schnellen Klicks, r07).
+  const synced = useRef(null);
 
-  // Schreiben nur bei echter Änderung – sonst schaukeln sich Komponenten über den Bescheid gegenseitig auf
+  // Schreiben nur bei echter eigener Änderung – sonst schaukeln sich Komponenten über den Bescheid gegenseitig auf
   useEffect(() => {
     const raw = JSON.stringify(value);
+    if (raw === synced.current) return;
+    synced.current = raw;
     let stored = null;
     try { stored = localStorage.getItem(NS + key); } catch (e) { /* ohne Speicher */ }
     if (stored === raw) return;
@@ -49,7 +54,9 @@ export function useStoredState(key, initial, clean) {
   useEffect(() => {
     const sync = () => setValue(prev => {
       const next = read();
-      return JSON.stringify(next) === JSON.stringify(prev) ? prev : next;
+      const raw = JSON.stringify(next);
+      synced.current = raw; // übernommen, nicht selbst geändert – nicht zurückschreiben
+      return JSON.stringify(prev) === raw ? prev : next;
     });
     const onLocal = e => { if (e.detail === key) sync(); };
     const onStorage = e => { if (e.key === null || e.key === NS + key) sync(); };

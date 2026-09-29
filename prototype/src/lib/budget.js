@@ -7,3 +7,6 @@ export const bookedMinutes = (projectId, entries) =>
 
 // Stunden, ungerundet – gerundet wird erst in der Anzeige (sonst kippt die Ampel an der Grenze falsch)
 export const spentHours = (project, entries) => project.spent + bookedMinutes(project.id, entries) / 60;
+
+// Rest in Stunden (negativ = überzogen), ungerundet; Anzeige mit fmtH1 aus format.js
+export const restHours = (project, entries) => project.budget - spentHours(project, entries);

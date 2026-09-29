@@ -3,6 +3,9 @@ const pad = n => String(n).padStart(2, '0');
 
 // Minuten → „3:45 h“
 export const fmtDuration = min => `${Math.floor(min / 60)}:${pad(Math.round(min % 60))} h`;
+// Stunden → „20,3 h“: eine Nachkommastelle, kaufmännisch gerundet – für alle Budget-, Rest- und Gebucht-Anzeigen
+// (r07: vorher rundeten Seiten verschieden, MIR-07 zeigte 20,2 h und 20,3 h)
+export const fmtH1 = h => `${(Math.round(Number(h) * 10) / 10).toLocaleString('de-DE', { maximumFractionDigits: 1 })} h`;
 // Minuten → „3,8 h“ (für Summen und Budgets)
 export const fmtHours = min => `${(min / 60).toLocaleString('de-DE', { maximumFractionDigits: 1 })} h`;
 // Sekunden → „01:23:45“ (laufende Uhr)

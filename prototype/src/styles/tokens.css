@@ -26,9 +26,10 @@
   --c-lime: #e8ffb9;          /* Limette: Fläche mit schwarzer Schrift 18,2:1 – „jetzt/aktiv“ */
   --c-lime-ink: #0b0b0b;
 
-  /* Markierung „ausgewählt/aktiv“ (Tab-Leiste, Umschalter) – ≥ 3:1 zur Umgebung */
-  --c-indicator: #641dff;
-  --c-indicator-ink: #ffffff;
+  /* Markierung „ausgewählt/aktiv“ (Tab-Leiste, Umschalter) – r07: überall Limette (Zustand), immer mit schwarzer
+     Kontur (--c-line-strong), weil Limette auf Weiß allein nur 1,08:1 hat */
+  --c-indicator: #e8ffb9;
+  --c-indicator-ink: #0b0b0b;
 
   /* Navigation (Seitenleiste) – r07: neutral wie in den besten Referenzen, Haarlinie statt Farbfläche.
      Aktiver Punkt: Limetten-Pille mit schwarzer Kontur (Zustand), Violett bleibt der Aktion vorbehalten. */
