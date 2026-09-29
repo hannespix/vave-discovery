@@ -379,20 +379,25 @@ body.is-dragging * { cursor: grabbing !important; }
 .friction-scale { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; margin-bottom: 12px; color: var(--ink-2); font-weight: 600; }
 .friction-scale span { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
 .friction-list { display: grid; gap: 10px; }
-/* Mobil: Name / Zustand / Regler untereinander; breit: Regler rechts daneben. Der Zustand ist so hoch wie
-   der Rücksetzknopf – ein längeres Label verschiebt den Regler nicht. */
+/* Mobil: Name / Zustand / Regler mit Rücksetzknopf daneben, ohne Leerraum dazwischen. Die Zustandszeile hat feste
+   Höhe (ein längeres Label verschiebt den Regler nicht); der Regler reicht mit seiner Trefferfläche 4 px in sie
+   hinein, dort liegt nichts Bedienbares. Zwischen Spurende und Rücksetzknopf bleiben 16 px frei. Breit: Regler rechts. */
 .friction-row {
-  display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "name" "state" "slider"; gap: 2px 24px;
-  padding: 12px 16px 8px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line);
+  display: grid; grid-template-columns: minmax(0, 1fr) 44px; grid-template-areas: "name name" "state state" "slider reset"; gap: 0 8px;
+  padding: 10px 12px 4px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line);
 }
 @media (min-width: 641px) {
-  .friction-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-template-areas: "name slider" "state slider"; align-items: center; padding: 10px 20px; }
+  .friction-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) 44px; grid-template-areas: "name slider reset" "state slider reset"; gap: 2px 24px; align-items: center; padding: 10px 20px; }
+  .friction-row .slider, .friction-row .reset { margin-top: 0; }
+  .friction-state { height: auto; min-height: 44px; } /* Platz für ein zweizeiliges Label, der Regler springt nicht */
+  .friction-state .label { white-space: normal; }
 }
-.friction-row .name { grid-area: name; font-weight: 700; overflow-wrap: break-word; }
-.friction-state { grid-area: state; display: flex; align-items: center; gap: 10px; min-height: 44px; min-width: 0; }
-.friction-state .label { flex: 1; min-width: 0; color: var(--ink); font-weight: 600; line-height: 1.2; }
+.friction-row .name { grid-area: name; font-weight: 700; letter-spacing: -.01em; overflow-wrap: break-word; }
+.friction-state { grid-area: state; display: flex; align-items: center; gap: 10px; height: 24px; min-width: 0; }
+.friction-state .label { flex: 1; min-width: 0; color: var(--ink); font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .friction-row[data-rated="false"] .label { color: var(--ink-2); }
-.friction-row .slider { grid-area: slider; }
+.friction-row .slider { grid-area: slider; margin-top: -4px; }
+.friction-row .reset { grid-area: reset; justify-self: end; margin-top: -4px; }
 /* Reibung als Linie: glatt bei 0, gezackter bis 4; unbewertet gepunktet (kein Wert) */
 .fline { flex: none; width: 48px; height: 24px; overflow: visible; }
 .fline path { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
@@ -480,17 +485,24 @@ input[type="range"]::-moz-range-thumb {
 }
 @media (max-width: 640px) { .role-row { grid-template-columns: minmax(0, 1fr); padding: 12px 14px; } }
 .role-name { font-weight: 700; }
-/* Alle Stufen gleich gewichtet: gewählt = gefüllt, unabhängig vom Wert */
-.seg { display: inline-grid; grid-auto-flow: column; gap: 2px; padding: 3px; border-radius: 26px; background: var(--graphite-soft); border: 1.5px solid var(--control); }
+/* Häufigkeit als eine Leiste von „nie“ bis „täglich“: jede Stufe ein eigenes Feld, getrennt durch Linien (die Lücken
+   zeigen den Leistengrund). Alle Stufen gleich gewichtet: gewählt = gefüllt, unabhängig vom Wert. Mobil sitzt die
+   Leiste randbündig am Fuß der Karte – so passen die vier Stufen ab 360 px in eine Reihe. */
+.seg { display: inline-flex; gap: 1.5px; border-radius: 999px; overflow: hidden; background: var(--control); border: 1.5px solid var(--control); }
 .seg button {
-  min-height: 44px; padding: 8px 16px; border: 0; border-radius: 999px; background: transparent;
+  flex: 1 1 0; min-width: max-content; min-height: 44px; padding: 8px 16px; border: 0; border-radius: 0; background: var(--surface);
   font-weight: 600; font-size: 1rem; line-height: 1.2; color: var(--ink);
-  transition: background .18s, color .18s, transform .15s var(--ease-out);
+  transition: background .18s, color .18s;
 }
-.seg button:hover { background: var(--surface); }
-.seg button[aria-pressed="true"] { background: var(--signal); color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
-@media (max-width: 640px) { .seg { display: grid; grid-auto-flow: row; grid-template-columns: repeat(4, minmax(0, 1fr)); } .seg button { padding: 8px 4px; } }
-@media (max-width: 540px) { .seg { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.seg button:hover { background: var(--graphite-soft); }
+.seg button[aria-pressed="true"] { background: var(--signal); color: #fff; }
+.seg button:focus-visible { outline-offset: -3px; border-radius: 0; } /* innen, sonst schneidet overflow den Ring ab */
+.seg button[aria-pressed="true"]:focus-visible { outline-color: #fff; }
+@media (max-width: 640px) {
+  .role-row { padding-bottom: 0; }
+  .seg { display: flex; margin: 0 -14px; border-width: 1.5px 0 0; border-radius: 0 0 calc(var(--radius) - 1.5px) calc(var(--radius) - 1.5px); }
+  .seg button { padding: 8px 4px; } /* Breite verteilt die Leiste; ab 360 px ist auch „nie“ breiter als 44 px */
+}
 
 /* ------------------------------------------------------------------
    Station 5 – Budget
@@ -650,7 +662,7 @@ input[type="range"]::-moz-range-thumb {
 
   <section class="step" data-step="2" aria-labelledby="h2">
     <div class="step-head">
-      <h2 id="h2">Wie gut läuft jeder Baustein?</h2>
+      <h2 id="h2">Wie oft bremst euch jeder Baustein?</h2>
       <p class="lead">Setz bei jedem Baustein, den ihr behaltet, den Regler: links läuft rund, rechts bremst täglich – was du auslässt, zählt nicht.</p>
     </div>
     <div class="friction-scale" id="frictionScale"></div>
@@ -786,6 +798,10 @@ input[type="range"]::-moz-range-thumb {
     Object.keys(f).forEach(k => { if (s[k] === undefined || s[k] === null) s[k] = f[k]; });
     s.budget = Object.assign({}, f.budget, s.budget);
     s.budgetTouched = Object.assign({}, f.budgetTouched, s.budgetTouched);
+    // Kaufen/Bauen kennt fünf Stufen (Werte wie BB_STAGES[].v, Station 5). Ein Wert dazwischen stammt aus der
+    // stufenlosen Fassung, dort hieß z. B. 40 oder 60 „Offen“. Nicht still umdeuten: gilt als nicht eingestellt,
+    // Station 5 fragt neu.
+    if (![0, 35, 50, 65, 100].includes(s.budget.buildBuy)) { s.budget.buildBuy = f.budget.buildBuy; s.budgetTouched.buildBuy = false; }
     if (s.step > 5 && budgetOpen(s)) s.step = 5; // unbestätigtes Budget nicht ins Ergebnis
     return s;
   }
@@ -1127,8 +1143,14 @@ input[type="range"]::-moz-range-thumb {
   // Zeiger-Eingaben laufen über .slider (touch-action: pan-y), das native Feld hat pointer-events: none.
   // Tippen setzt den Wert an der Stelle, waagerecht ziehen verstellt ihn, senkrecht wischen scrollt die
   // Seite und setzt nichts. Tastatur und Screenreader bedienen das native Feld wie gewohnt.
+  // Ein Finger, der eine laufende Scrollbewegung anhält, landet irgendwo – oft auf einem Regler. Darum zählt ein
+  // Tipp per Touch oder Stift nicht, wenn es ab 250 ms vor dem Aufsetzen gescrollt hat. Waagerechtes Ziehen zählt
+  // immer, die Maus hält keinen Schwung an.
   const THUMB = 26; // Daumenbreite in px, siehe CSS input[type="range"]
   const SLOP = 8;   // ab so vielen px Bewegung ist es kein Tipp mehr
+  const SETTLE = 250; // ms nach dem letzten Scroll-Ereignis, in denen ein Tipp keinen Wert setzt
+  let lastScroll = -Infinity;
+  window.addEventListener('scroll', () => { lastScroll = performance.now(); }, { capture: true, passive: true });
   const RESET_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4.5H9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const trackHtml = stops => `<span class="slider-track" aria-hidden="true">${'<i></i>'.repeat(stops)}</span>`;
   const resetHtml = what => `<button type="button" class="reset" aria-label="Zurücksetzen: ${esc(what)}" title="Zurücksetzen">${RESET_SVG}</button>`;
@@ -1144,7 +1166,7 @@ input[type="range"]::-moz-range-thumb {
     root.addEventListener('pointerdown', e => {
       const box = e.target.closest('.slider'), input = box && $('input[type="range"]', box);
       if (!input || input.disabled || e.button !== 0) return;
-      g = { box, input, id: e.pointerId, x0: e.clientX, y0: e.clientY, drag: false, mouse: e.pointerType === 'mouse' };
+      g = { box, input, id: e.pointerId, x0: e.clientX, y0: e.clientY, t0: performance.now(), drag: false, mouse: e.pointerType === 'mouse' };
       if (g.mouse) e.preventDefault(); // keine Textauswahl beim Ziehen mit der Maus
     });
     root.addEventListener('pointermove', e => {
@@ -1162,6 +1184,7 @@ input[type="range"]::-moz-range-thumb {
       if (!g || e.pointerId !== g.id) return;
       const d = g; end();
       if (!d.drag && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) > SLOP) return;
+      if (!d.drag && !d.mouse && lastScroll > d.t0 - SETTLE) return; // Tipp hat nur den Schwung angehalten
       setAt(d.input, e.clientX);
       if (d.mouse) d.input.focus({ preventScroll: true });
     });
@@ -1201,8 +1224,9 @@ input[type="range"]::-moz-range-thumb {
       const v = state.friction[m.id];
       return `<div class="friction-row" data-id="${m.id}" data-rated="${v !== undefined}">
         <span class="name">${esc(m.name)}</span>
-        <div class="friction-state">${lineSvg(v === undefined ? 0 : LINE_AMP[v])}<span class="label">${esc(frictionText(v))}</span>${resetHtml('Reibung ' + m.name)}</div>
+        <div class="friction-state">${lineSvg(v === undefined ? 0 : LINE_AMP[v])}<span class="label">${esc(frictionText(v))}</span></div>
         <div class="slider">${trackHtml(5)}<input type="range" min="0" max="4" step="1" value="${v === undefined ? 2 : v}" aria-label="Reibung: ${esc(m.name)}" aria-valuetext="${esc(frictionText(v))}"></div>
+        ${resetHtml('Reibung ' + m.name)}
       </div>`;
     }).join('');
     $$('.fline path', frictionList).forEach((p, i) => { p._amp = LINE_AMP[state.friction[keep[i].id]] || 0; });
@@ -1315,7 +1339,8 @@ input[type="range"]::-moz-range-thumb {
   const BUDGET_NAME = { current: 'heutige Kosten', max: 'Schmerzgrenze', buildBuy: 'Kaufen/Bauen' }; // kurz: passt mobil in #hint
   // Kaufen oder bauen in fünf benannten Stufen. Die Bereiche folgen den Regelgrenzen in hypothesis():
   // ≤ 40 (Regel 2), 41–59 (keine), 60–69 (Regel 3), ≥ 70 (Regel 1 und 3). Jede Stufe liegt ganz in einem
-  // Bereich; die Anzeige leitet sich aus dem Bereich ab, auch für Werte älterer Fassungen (z. B. 45, 80).
+  // Bereich; die Anzeige leitet sich aus dem Bereich ab. Werte älterer Fassungen außerhalb der fünf v setzt
+  // upgrade() auf „nicht eingestellt“ – dort stehen die v ein zweites Mal, bei Änderung beide anpassen.
   const BB_STAGES = [
     { v: 0,   upTo: 20,  label: 'Klar kaufen' },
     { v: 35,  upTo: 40,  label: 'Eher kaufen' },
