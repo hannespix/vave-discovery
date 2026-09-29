@@ -1,7 +1,10 @@
 /* Seiten „Heute“, „Studios“, „Nach Klärung“ (r07). Bausteine aus base.css (.list, .row, .badge, .dot, .table),
    hier nur Anordnung und seitenbezogene Teile – keine globalen Klassen aus base.css überschreiben.
-   Farbrollen: Violett = Aktion (Links, Fokus), Limette = Zustand (Fläche mit schwarzer Schrift), Schwarz/Grau = Struktur,
-   Koralle nur „überzogen“, Studiofarben nur auf #/studios und dort nur als Punkt am Zeilenanfang.
+   Weißraum (r08): Abstände nur über die Tokens – --space-section zwischen Abschnitten, --space-block für Blöcke in einem
+   Abschnitt, --space-label vom Label zum Inhalt, --space-row in Listenzeilen; Notizen und Einleitungen höchstens --measure.
+   Farbrollen: Violett = Aktion (Links, Fokus) und laufender Timer, Limette = Zustand (Fläche mit schwarzer Schrift),
+   Schwarz/Grau = Struktur, Koralle nur „überzogen“, Studiofarben nur auf #/studios und dort nur als Punkt am Zeilenanfang.
+   Zwei Gewichte: 600 für Bedienelemente, Links als Knopf, Labels und Zeilentitel; 400 für Fließtext.
    Bewegung: keine beim Öffnen; Übergänge nur beim Überfahren (base.css, 160 ms). */
 
 .today-code { font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -18,13 +21,14 @@
 .today-goal__bar { position: relative; display: block; height: 4px; border-radius: 999px; background: var(--c-line); overflow: hidden; }
 .today-goal__bar > span { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--c-ink); }
 
-/* Eine Spalte; ab 1024 px schmale Leiste rechts. Darunter steht die Leiste unter dem Inhalt. */
-.today { display: grid; gap: var(--s-7); grid-template-columns: minmax(0, 1fr); }
+/* Eine Spalte; ab 1024 px schmale Leiste rechts. Darunter steht die Leiste unter dem Inhalt. Zwischen Spalten und
+   Abschnitten derselbe Abschnittsabstand (56–80 px) – in beiden Spalten gleich. */
+.today { display: grid; gap: var(--space-section); grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 1024px) {
-  .today { grid-template-columns: minmax(0, 1fr) clamp(15rem, 30%, 19rem); column-gap: var(--s-7); align-items: start; }
+  .today { grid-template-columns: minmax(0, 1fr) clamp(15rem, 30%, 19rem); align-items: start; }
 }
-.today__main, .today__aside { display: grid; gap: var(--s-7); align-content: start; min-width: 0; }
-.today__aside { gap: var(--s-6); }
+.today__main, .today__aside { min-width: 0; }
+.today-sect + .today-sect { margin-top: var(--space-section); }
 
 /* Abschnittskopf: Label links, Summe/Link rechts, schwarze Linie darunter */
 .today-sect { min-width: 0; }
@@ -34,18 +38,22 @@
 }
 .today-sect__sum { font-size: var(--fs-meta); font-weight: 600; font-variant-numeric: tabular-nums; }
 
-/* Zeilen: zwei Zeilen links, Zahl und Play rechts */
+/* Zeilen: zwei Zeilen links, Zahl und Play rechts. Titel, die umbrechen, mit Fließtext-Zeilenhöhe (schmal oft zweizeilig) */
 .today-row { gap: var(--s-3); }
-.today-row .row__title { overflow-wrap: anywhere; }
+.today-row .row__title { line-height: var(--lh-text); overflow-wrap: anywhere; }
 .today-row .row__meta .dot { margin-right: 2px; vertical-align: 0.1em; }
 .today-row__aside { display: flex; flex: none; align-items: center; gap: var(--s-2); margin-left: auto; white-space: nowrap; }
 .today-row__num { font-weight: 600; font-variant-numeric: tabular-nums; }
 .today-row__num--quiet { font-weight: 400; color: var(--c-ink-2); }
 .today-play { flex: none; }
 
-/* Hinweis an der Zeile (Timer läuft schon): klar, ohne Alarmfarbe */
+/* Timer läuft auf dieser Zeile: violetter Punkt + Wort wie „● Timer läuft“ in Zeiten (Violett = laufender Timer) */
+.today-live { display: inline-flex; align-items: center; gap: var(--s-2); font-size: var(--fs-meta); font-weight: 600; color: var(--c-ink); }
+.today-live__dot { color: var(--c-accent); }
+
+/* Hinweis an der Zeile (Timer läuft schon): klar, ohne Alarmfarbe, mit Luft zur nächsten Zeile */
 .today-hint {
-  margin: 0 0 var(--s-3); padding: var(--s-2) var(--s-3); border-left: 3px solid var(--c-line-strong);
+  max-width: var(--measure); margin: 0 0 var(--space-row); padding: var(--s-3) var(--s-4); border-left: 3px solid var(--c-line-strong);
   background: var(--c-bg-2); color: var(--c-ink); font-size: var(--fs-meta);
 }
 
@@ -59,42 +67,45 @@
   .today-task:hover .today-task__link { text-decoration: underline; text-decoration-color: var(--c-accent-text); }
 }
 
-/* Gruppen nach Fälligkeit: kleiner Titel, Zähler grau */
+/* Gruppen nach Fälligkeit: kleiner Titel, Zähler grau. Label → erste Zeile 16 px; zwischen Gruppen ein Block Abstand,
+   damit jede Gruppe für sich steht (Zeile 28 px < Gruppe ≈ 54 px < Abschnitt 56–80 px) */
+.today-group + .today-group { margin-top: var(--space-block); }
 .today-group__title {
-  display: flex; align-items: baseline; gap: var(--s-2); padding: var(--s-4) 0 var(--s-1);
+  display: flex; align-items: baseline; gap: var(--s-2); padding: var(--space-label) 0 var(--s-1);
   font-size: var(--fs-meta); font-weight: 600; color: var(--c-ink);
 }
 .today-group__count { font-weight: 400; color: var(--c-ink-2); }
 
-/* Lückenhinweis: eine ruhige Zeile, ganz klickbar */
+/* Lückenhinweis: eine ruhige Zeile, ganz klickbar. Gehört zu „Heute gebucht“ und steht einen Block darüber. */
 .today-gap {
-  display: flex; align-items: center; gap: var(--s-3); min-height: var(--tap); padding: var(--s-2) var(--s-3);
-  border-radius: var(--radius); background: var(--c-bg-2); color: var(--c-ink); text-decoration: none;
+  display: flex; align-items: center; gap: var(--s-3); min-height: var(--tap); margin-bottom: var(--space-block);
+  padding: var(--s-3); border-radius: var(--radius); background: var(--c-bg-2); color: var(--c-ink); text-decoration: none;
 }
 .today-gap svg { flex: none; color: var(--c-ink-2); }
 .today-gap__cta { color: var(--c-accent-text); text-decoration: underline; text-underline-offset: 0.2em; }
 
-.today-empty { padding-top: var(--s-3); color: var(--c-ink-2); }
-.today-empty__link { display: inline-flex; align-items: center; min-height: var(--tap); font-weight: 500; }
+.today-empty { max-width: var(--measure); padding-top: var(--space-label); color: var(--c-ink-2); }
+.today-empty__link { display: inline-flex; align-items: center; min-height: var(--tap); font-weight: 600; }
 
-/* Rechte Leiste */
+/* Rechte Leiste: Zeilen mit derselben Luft wie links (--space-row), Notiz mit Label-Abstand */
 .today-more {
   display: inline-flex; align-items: center; gap: var(--s-1); min-height: var(--tap); min-width: var(--tap);
-  justify-content: flex-end; color: var(--c-accent-text); font-size: var(--fs-meta); font-weight: 500; text-decoration: none;
+  justify-content: flex-end; color: var(--c-accent-text); font-size: var(--fs-meta); font-weight: 600; text-decoration: none;
 }
 @media (hover: hover) { .today-more:hover { text-decoration: underline; } }
 .today-side__hint { font-size: var(--fs-meta); color: var(--c-ink-2); }
-.today-side__note { margin-top: var(--s-2); font-size: var(--fs-meta); color: var(--c-ink-2); }
+.today-side__note { max-width: var(--measure); margin-top: var(--space-label); font-size: var(--fs-meta); color: var(--c-ink-2); }
 
 .today-studio {
   display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--s-3);
-  min-height: var(--tap); padding: var(--s-1) 0;
+  min-height: var(--tap); padding: var(--space-row) 0;
 }
 .today-studio__name { overflow-wrap: anywhere; }
 .today-studio__time { font-weight: 600; }
 
-.today-budget { display: grid; gap: 6px; min-height: var(--tap); padding: var(--s-3) 0; color: var(--c-ink); text-decoration: none; }
-.today-budget__name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* Budget: Name (bricht um statt abgeschnitten zu werden), Balken, Rest – mit 8 px zwischen den drei Teilen */
+.today-budget { display: grid; gap: var(--s-2); min-height: var(--tap); padding: var(--space-row) 0; color: var(--c-ink); text-decoration: none; }
+.today-budget__name { overflow-wrap: break-word; }
 .today-budget__bar { position: relative; display: block; height: 4px; border-radius: 999px; background: var(--c-line); }
 .today-budget__bar > span { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--c-warn-fill); }
 /* Überzogen: Koralle; hell mit schwarzer Kontur (Koralle auf Weiß nur 2,6:1), dunkel reicht die Fläche (7,5:1) */
@@ -105,20 +116,23 @@
 }
 
 /* ---------- Studios ---------- */
-.studios-now { display: grid; gap: var(--s-2); margin-bottom: var(--s-6); }
+/* Satz „Gemeinsam heute“ und Umstellungshinweis als ein Block; danach Abschnittsabstand zur Skala */
+.studios-now { display: grid; gap: var(--s-3); margin-bottom: var(--space-section); }
 .studios-now__line { font-size: var(--fs-body); }
 .studios-now__line strong { font-weight: 600; }
-.studios-now__change { display: flex; align-items: flex-start; gap: var(--s-2); max-width: 70ch; font-size: var(--fs-meta); }
+.studios-now__change { display: flex; align-items: flex-start; gap: var(--s-2); max-width: var(--measure); font-size: var(--fs-meta); }
 .studios-now__change svg { flex: none; margin-top: 2px; color: var(--c-ink-2); }
 .studios__label { padding-bottom: var(--s-1); border-bottom: 1px solid var(--c-line-strong); }
-.studios__legend { margin-top: var(--s-3); max-width: 70ch; font-size: var(--fs-meta); color: var(--c-ink-2); }
+.studios__legend { max-width: var(--measure); margin-top: var(--s-2); font-size: var(--fs-meta); color: var(--c-ink-2); }
 
-/* Skala: Info links (ab 640 px Inhaltsbreite), Spur rechts; schmal steht die Spur unter der Info */
+/* Skala: Info links (ab 640 px Inhaltsbreite), Spur rechts; schmal steht die Spur unter der Info.
+   Zeilen mit Blockabstand (24 px): große Uhrzeit, Status und Spur lesen sich je Studio für sich. Label → Achse 16 px;
+   die erste Zeile (ohne Linie) nur 12 px unter der Achse, damit die Stundenmarken bei den Spuren bleiben. */
 .tl { --tl-info: 15rem; }
 .tl__list { list-style: none; margin: 0; padding: 0; }
-.tl__row { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-2); padding: var(--s-3) 0; border-top: 1px solid var(--c-line); }
-.tl__list > .tl__row:first-child { border-top: 0; }
-.tl__row--axis { padding: var(--s-2) 0 var(--s-1); border-top: 0; }
+.tl__row { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); padding: var(--space-block) 0; border-top: 1px solid var(--c-line); }
+.tl__list > .tl__row:first-child { border-top: 0; padding-top: var(--s-3); }
+.tl__row--axis { padding: var(--space-label) 0 var(--s-1); border-top: 0; }
 .tl__axis-gap { display: none; }
 @container content (min-width: 640px) {
   .tl__row { grid-template-columns: var(--tl-info) minmax(0, 1fr); column-gap: var(--s-5); align-items: center; }
@@ -167,21 +181,23 @@
 .tl-table { margin-top: var(--s-4); }
 .tl-table > summary {
   display: inline-flex; align-items: center; gap: var(--s-2); min-height: var(--tap); padding-right: var(--s-2);
-  list-style: none; cursor: pointer; color: var(--c-accent-text); font-weight: 500;
+  list-style: none; cursor: pointer; color: var(--c-accent-text); font-weight: 600;
 }
 .tl-table > summary::-webkit-details-marker { display: none; }
 .tl-table[open] > summary svg { transform: rotate(90deg); }
 @media (hover: hover) { .tl-table > summary:hover { text-decoration: underline; } }
 .tl-table__scroll { overflow-x: auto; margin-top: var(--s-2); }
+/* Zeilenkopf (Studio) wie ein Zeilentitel: 600, ohne Versalien */
 .tl-table tbody th {
-  font-size: var(--fs-body); font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--c-ink);
+  font-size: var(--fs-body); font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--c-ink);
   border-bottom: 1px solid var(--c-line);
 }
 
 /* ---------- Nach Klärung ---------- */
+/* Einträge mit Blockabstand (24 px) und 16 px zwischen Icon und Text; Titel → Text 8 px, Text höchstens --measure */
 .later { max-width: 48rem; }
 .later__title { padding-bottom: var(--s-1); border-bottom: 1px solid var(--c-line-strong); }
-.later__item { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: var(--s-3); padding: var(--s-4) 0; }
+.later__item { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: var(--s-4); padding: var(--space-block) 0; }
 .later__icon { margin-top: 1px; color: var(--c-ink-2); }
 .later__name { font-size: var(--fs-body); font-weight: 600; }
-.later__text { margin-top: var(--s-1); max-width: 65ch; font-size: var(--fs-meta); color: var(--c-ink-2); }
+.later__text { max-width: var(--measure); margin-top: var(--s-2); font-size: var(--fs-meta); color: var(--c-ink-2); }
