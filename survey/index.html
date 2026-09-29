@@ -137,6 +137,32 @@ p { margin: 0; }
 .entry-grid { display: grid; gap: 28px; max-width: 46em; }
 .entry-facts { display: flex; flex-wrap: wrap; gap: 10px 22px; color: var(--ink-2); font-weight: 600; }
 .entry-facts b { color: var(--ink); font-weight: 800; }
+/* Notiz von Hannes: ruhige Karte, Text ≥ 16 px. Darin der Pfad Bedarf, Technik, Zusage im Stil der Route (Linie, Ring,
+   Punkt; Signalfarbe nur für „jetzt“). Breit nebeneinander, schmal untereinander; .intro-mark ist der Platz des Punkts,
+   Linie und Punkte legt das Script dorthin (Station 0: Einstieg). Bewegung nur per Script, nie bei reduzierter Bewegung. */
+.note { display: grid; gap: 14px; padding: 22px 24px 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.note-head { font-size: 1.05rem; letter-spacing: -.01em; }
+.note p { max-width: 40em; }
+.note-sign { font-weight: 800; }
+.intro-path { position: relative; margin: 6px 0 8px; }
+.intro-line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.intro-way { fill: none; stroke: var(--control); stroke-width: 2; stroke-dasharray: 100; } /* pathLength 100: Einzeichnen über stroke-dashoffset */
+.intro-dot { transform-box: fill-box; transform-origin: center; }
+.intro-ring { fill: var(--surface); stroke: var(--control); stroke-width: 2; }
+.intro-dot.is-now .intro-ring { stroke: var(--signal); stroke-width: 3; }
+.intro-core { fill: var(--signal); }
+.intro-path ol { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+.intro-path li { position: relative; padding-top: 30px; font-size: 1rem; line-height: 1.4; color: var(--ink-2); }
+.intro-path li > span, .intro-path strong { display: block; }
+.intro-path strong { color: var(--ink); font-weight: 800; }
+.intro-here { color: var(--signal); font-weight: 700; }
+.intro-mark { position: absolute; left: 0; top: 0; width: 18px; height: 18px; }
+@media (max-width: 640px) {
+  .note { padding: 18px 18px 20px; }
+  .intro-path ol { grid-template-columns: none; gap: 14px; }
+  .intro-path li { padding: 0 0 0 32px; }
+  .intro-mark { top: calc(.7em - 9px); } /* Mitte der ersten Zeile (line-height 1.4) */
+}
 
 /* Buttons */
 .btn {
@@ -707,6 +733,36 @@ input[type="range"]::-moz-range-thumb {
         was euch bremst und was fehlt. Alles bleibt auf deinem Gerät; am Ende entsteht eine Datei
         für Hannes, die du selbst abschickst.
       </p>
+      <div class="note">
+        <h2 class="note-head">Vorab von Hannes</h2>
+        <div class="intro-path" id="introPath">
+          <svg class="intro-line" aria-hidden="true">
+            <path class="intro-way" pathLength="100"/>
+            <g><g class="intro-dot is-now"><circle class="intro-ring" r="7"/><circle class="intro-core" r="3"/></g></g>
+            <g><g class="intro-dot"><circle class="intro-ring" r="7"/></g></g>
+            <g><g class="intro-dot"><circle class="intro-ring" r="7"/></g></g>
+          </svg>
+          <ol role="list">
+            <li><span class="intro-mark"></span><strong>1 Bedarf</strong> <span>diese Umfrage</span> <span class="intro-here">du bist hier</span></li>
+            <li><span class="intro-mark"></span><strong>2 Technik</strong> <span>Server, Daten, Sicherheit, Tempo</span></li>
+            <li><span class="intro-mark"></span><strong>3 Zusage</strong> <span>wenn der Zeitrahmen steht</span></li>
+          </ol>
+        </div>
+        <p>
+          Die Umfrage kostet dich nichts und verpflichtet zu nichts. Solche Aufgaben packe ich gern an&nbsp;– fest zusagen
+          kann ich aber erst, wenn mein Zeitrahmen steht und die Nebentätigkeit mit meinem Arbeitgeber geklärt ist.
+        </p>
+        <p>
+          Ehrlich zum Risiko: Kleine, schicke Tools entstehen mit KI-Agenten heute schnell. Ein großes System mit
+          personenbezogenen Daten, Schnittstellen, eigenem Backend und vielen Nutzern braucht viele Schleifen und viel
+          Zeit&nbsp;– ein Rest Blackbox bleibt.
+        </p>
+        <p>
+          Die Aufgabe reizt mich trotzdem. Darum zuerst: Was braucht ihr wirklich? Das klärt diese Umfrage. Danach die
+          Technik: wo Server und Datenbank stehen, was gespeichert wird, wie sicher und wie schnell es sein muss.
+        </p>
+        <p class="note-sign">Hannes</p>
+      </div>
       <div class="entry-facts">
         <span><b>7</b> Stationen</span>
         <span><b>ein paar</b> Minuten</span>
@@ -1146,6 +1202,38 @@ input[type="range"]::-moz-range-thumb {
       case 6: renderWand(); break;
       case 7: renderResult(); break;
     }
+  }
+
+  /* ---------------- Station 0: Einstieg ---------------- */
+  // Pfad in der Notiz von Hannes: Bedarf, Technik, Zusage. CSS stellt die drei Schritte nebeneinander oder untereinander
+  // und markiert je Schritt den Platz des Punkts (.intro-mark); Linie und Punkte liegen in Pixeln darauf, bei jeder Größe
+  // neu (auch wenn der Eingang wieder sichtbar wird). Einzeichnen genau einmal je Seitenaufruf, nur wenn er auf dem Eingang
+  // beginnt, sobald die Seite sichtbar ist: Die Linie läuft durch, jeder Punkt steht, sobald sie ihn erreicht (≤ 1,5 s).
+  // Zurück über Route oder „Zurück“ und bei reduzierter Bewegung steht der Pfad fertig da.
+  const INTRO_WAIT = 250, INTRO_DRAW = 900, INTRO_DOT = 240; // erst nach stepIn (0,24 s); letzter Punkt steht nach 1,31 s
+  function introPath() {
+    const wrap = $('#introPath'), way = $('.intro-way', wrap), dots = $$('.intro-dot', wrap), marks = $$('.intro-mark', wrap);
+    let pts = [], anims = [];
+    function layoutIntro() {
+      const box = wrap.getBoundingClientRect();
+      if (!box.width) { anims.forEach(a => a.finish()); anims = []; return; } // Eingang verlassen: bei Rückkehr fertig
+      pts = marks.map(m => { const r = m.getBoundingClientRect(); return [r.left + r.width / 2 - box.left, r.top + r.height / 2 - box.top]; });
+      way.setAttribute('d', 'M' + pts.map(p => p.join(' ')).join(' L'));
+      dots.forEach((g, i) => g.parentNode.setAttribute('transform', `translate(${pts[i].join(' ')})`));
+    }
+    function drawIntro() {
+      if (state.step !== 0 || !pts.length) return;
+      const seg = pts.slice(1).map((p, i) => Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1])), len = seg.reduce((a, b) => a + b, 0) || 1;
+      let run = 0;
+      const at = [0].concat(seg.map(s => (run += s) / len)); // Anteil der Linie bis zum Punkt
+      anims = [way.animate([{ strokeDashoffset: '100' }, { strokeDashoffset: '0' }], { duration: INTRO_DRAW, delay: INTRO_WAIT, easing: 'linear', fill: 'backwards' })]
+        .concat(dots.map((g, i) => g.animate([{ opacity: 0, transform: 'scale(.3)' }, { opacity: 1, transform: 'scale(1)' }],
+          { duration: INTRO_DOT, delay: INTRO_WAIT + Math.max(0, INTRO_DRAW * at[i] - 80), easing: 'ease-out', fill: 'backwards' })));
+    }
+    layoutIntro();
+    if (window.ResizeObserver) new ResizeObserver(layoutIntro).observe(wrap); else window.addEventListener('resize', layoutIntro);
+    if (state.step !== 0 || REDUCED || !way.animate) return;
+    if (document.hidden) document.addEventListener('visibilitychange', drawIntro, { once: true }); else drawIntro();
   }
 
   /* ---------------- Station 1: Sortieren ---------------- */
@@ -2004,6 +2092,7 @@ input[type="range"]::-moz-range-thumb {
   $$('[data-respondent]').forEach(el => { el.textContent = D.respondent; });
   buildRoute();
   goTo(state.step, true);
+  introPath();
 })();
 </script>
 </body>
