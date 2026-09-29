@@ -7,10 +7,10 @@ M1 — Umfrage, **live und eingefroren**. Hannes (Chat, 2026-09-29): „Jetzt ma
 Live auf https://hannespix.github.io/vave-discovery/ (`noindex`); Hannes schickt Tobias den Link per E-Mail (kennt ihn
 flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 verschickt: sie werden Auswertungsregeln.
 - **Eingefroren bis zu Tobias' Antwort:** Texte, Skalen, Regeln, Export. Erlaubt sind nur Fehlerkorrekturen ohne
-  Messwirkung, jede mit Deploy-Zeit hier. In r05 Beobachtetes bleibt liegen, bis ZZ 3 es einordnet.
+  Messwirkung, jede mit Deploy-Zeit hier. In r05 Beobachtetes bleibt liegen, bis ZZ 3 es einordnet. **Ausnahme E11**
+  (Hannes, 2026-09-29): Vorwort kündigt den UI-Entwurf an, der Link erscheint erst nach dem Senden (Station 7).
 - **Live-Stände** (Merge auf `main` ≈ Deploy, 2026-09-29, +02:00): #5 Hotfix 06:49 · #6 08:24 · #7 (K2) 09:02 · #8 (K1:
-  Bedienung Station 1, „Halbzeit.“, Fix `.stage` `overflow-x: clip` – K2-Notiz ragte beim Einblenden 0,3 s über
-  den Rand, Handy zoomte, „Los geht’s“ sprang) 10:03; Zustand und Export gleich. Der Export trägt
+  Station 1, „Halbzeit.“, `.stage` `overflow-x: clip` gegen Zoom-Sprung) 10:03 · #10 (E11) folgt. Der Export trägt
   keinen Stand, `respondent` ist fest „Tobias“: Fassung und Person zeigen nur `startedAt` und der Absender der Mail.
 
 ## Offene Gates
@@ -54,6 +54,7 @@ flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 vers
 - **E7** Export ohne Stand, Nachsteuern ohne Spur: nicht mehr einbaubar → Einschränkung im Brief, Frage im Gespräch.
   **E8** `hannes@pix-el.de` (diktiert „Hannes at pics-el.de“) bestätigt die Testmail (ZZ 1). **E10** Nebentätigkeit
   öffentlich im Vorwort: bis zur Antwort hinnehmen, danach Seite abschalten, außer Tobias will mehr Personen befragen?
+- **E11** Ab #10 kennt jede Antwort die Ankündigung (Entwurf erst nach dem Senden): Einschränkung für `bb` im Brief.
 - **Formal:** G0-Freigabe · D-004 Basiswechsel und Versand 2026-09-29 (im Chat entschieden, ohne Eintrag). E1, E4–E6,
   Preise, Budget-Neutraloption, Rollen: durch den Versand gemessen „wie heute“, mit einem Ja erledigt.
 
@@ -145,6 +146,5 @@ Alt 5 (in der Umfrage umsetzen, einfrieren, abnehmen) → gestrichen: Regeln →
   Menschen-Aufgaben brauchen Datum oder Auslöser. Ergebnisse immer in Git committen.
 
 ## Nächste Runde startet mit
-K1-PR mergen, Deploy-Zeit unter „Live-Stände“ eintragen (ist der Link noch nicht raus: erst danach schicken). Dann
-r06 = ZZ 1: Hannes' Testmail sofort, parallel ein Builder für `ingest` (Basis-SHA = K1 auf `main`); ZZ 2 mit den
-Absätzen aus der Gatekeeper-Ausgabe r05 an Hannes. Kommt Tobias' Mail vorher: unverändert sichern, dann ZZ 4.
+r06 zu Ende führen (Korrekturschleife Prototyp, Gatekeeper). Danach ZZ 1: Hannes' Testmail, Builder für `ingest`;
+ZZ 2 mit den Absätzen aus der Gatekeeper-Ausgabe r05. Kommt Tobias' Mail vorher: unverändert sichern, dann ZZ 4.
