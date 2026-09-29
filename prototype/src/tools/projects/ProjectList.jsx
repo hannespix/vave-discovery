@@ -18,7 +18,7 @@ const SORTS = {
   due: { label: 'Fälligkeit (nächste zuerst)', fn: (a, b) => (a.due || '9999').localeCompare(b.due || '9999') || byCode(a, b) },
   budget: { label: 'Budgetauslastung (höchste zuerst)', fn: (a, b, spent) => spent[b.id] / b.budget - spent[a.id] / a.budget || byCode(a, b) },
 };
-const statusBadge = { aktiv: 'badge-accent', angebot: 'badge-lime', intern: '' };
+const statusBadge = { aktiv: 'badge-accent', pitch: 'badge-lime', intern: '' };
 
 function Chip({ checked, onChange, children }) {
   return (

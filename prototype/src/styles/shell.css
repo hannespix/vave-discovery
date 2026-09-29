@@ -31,7 +31,7 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)
   position: sticky; top: 0; height: 100dvh; overflow-y: auto;
   display: flex; flex-direction: column; gap: var(--s-6);
   padding: var(--s-6) var(--s-5) var(--s-5);
-  background: var(--c-nav); color: var(--c-nav-ink);
+  background: var(--c-nav); color: var(--c-nav-ink); border-right: 1px solid var(--c-nav-line);
   --focus: 0 0 0 2px var(--c-nav), 0 0 0 5px var(--c-nav-focus);
 }
 .sidenav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-1); }
@@ -41,15 +41,13 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)
 }
 /* Übergang nur beim Überfahren – ein Routenwechsel (aria-current) springt ohne Bewegung um */
 .sidenav__link:hover:not([aria-current]) { background: var(--c-nav-hover); transition: background var(--dur) var(--ease); }
-.sidenav__link[aria-current="page"] { background: var(--c-lime); color: var(--c-lime-ink); font-weight: 600; }
+.sidenav__link[aria-current="page"] { background: var(--c-lime); color: var(--c-lime-ink); font-weight: 600; box-shadow: inset 0 0 0 1px var(--c-line-strong); }
 /* Zweites Merkmal neben der Fläche: Marke rechts */
 .sidenav__link[aria-current="page"]::after {
   content: ''; margin-left: auto; width: 10px; height: 10px; border-radius: 2px; background: currentColor;
 }
 .sidebar__foot { margin-top: auto; display: grid; gap: var(--s-4); }
 .sidebar .demo-note p { color: var(--c-nav-ink-2); }
-.sidebar .btn { background: var(--c-nav-ink); color: var(--c-nav); border-color: var(--c-nav-ink); }
-.sidebar .btn:hover { background: var(--c-lime); color: var(--c-lime-ink); border-color: var(--c-lime); }
 .sidebar .segmented {
   --seg-ink: var(--c-nav-ink); --seg-border: var(--c-nav-ink);
   --seg-on-bg: var(--c-nav-ink); --seg-on-ink: var(--c-nav); --seg-hover: var(--c-nav-hover);

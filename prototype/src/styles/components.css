@@ -1,20 +1,20 @@
 /* Wiederverwendbare Muster: Seitenkopf, Abschnitt, Kennzahl, Link-Zeile. Besitzer: Builder A – B und C dürfen sie nutzen. */
 
 /* Seitenkopf */
+/* Seitenkopf (r07): eine Zeile – Titel links, Kennzahl/Hauptaktion rechts, darunter eine Haarlinie. Kein Banner. */
 .page-header {
   display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
-  gap: var(--s-5) var(--s-6); margin-bottom: var(--s-6);
+  gap: var(--s-4) var(--s-5); padding-bottom: var(--s-4); margin-bottom: var(--s-6); border-bottom: 1px solid var(--c-line);
 }
-.page-header__main { min-width: 0; flex: 1 1 28rem; }
-.page-header__eyebrow { margin-bottom: var(--s-3); }
+.page-header__main { min-width: 0; flex: 1 1 18rem; }
+.page-header__eyebrow { margin-bottom: var(--s-2); }
 .page-header__title {
-  font-size: clamp(2.25rem, 5.5vw, 3.75rem); line-height: 1; letter-spacing: -0.04em; text-transform: uppercase;
+  font-size: var(--fs-title); line-height: 1.02; letter-spacing: -0.035em; text-transform: uppercase;
   overflow-wrap: break-word; hyphens: auto;
 }
-.page-header__lead { margin-top: var(--s-4); max-width: 62ch; font-size: 1.0625rem; color: var(--c-ink-2); }
-.page-header__lead > * + * { margin-top: var(--s-2); }
-.page-header__actions { display: flex; flex-wrap: wrap; gap: var(--s-3); }
-@media (min-width: 1024px) { .page-header { margin-bottom: var(--s-7); } }
+.page-header__lead { margin-top: var(--s-2); max-width: 62ch; font-size: var(--fs-meta); color: var(--c-ink-2); }
+.page-header__lead > * + * { margin-top: var(--s-1); }
+.page-header__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); }
 
 /* Abschnitt in einer Karte: Kopf mit Titel links, Link rechts */
 .section__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-2) var(--s-4); margin-bottom: var(--s-3); }
