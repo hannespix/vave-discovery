@@ -816,6 +816,7 @@ input[type="range"]::-moz-range-thumb {
       sort: {}, seq: {}, friction: {}, wishes: {}, customWishes: [], roles: {},
       budget: { current: 3000, currentUnknown: false, max: 3000, buildBuy: 50 },
       budgetTouched: { current: false, max: false, buildBuy: false },
+      resultShown: null, // { at, answers }: erste Ergebnisanzeige zu genau diesen Antworten, siehe resultTime()
       wand: '', noGo: ''
     };
   }
@@ -1572,7 +1573,7 @@ input[type="range"]::-moz-range-thumb {
     const h = hypothesis();
     return {
       schema: 'vave-discovery/1',
-      exportedAt: new Date().toISOString(),
+      exportedAt: resultTime().toISOString(),
       startedAt: state.startedAt,
       respondent: D.respondent,
       sort: state.sort, friction: state.friction, wishes: state.wishes, customWishes: state.customWishes,
@@ -1589,10 +1590,10 @@ input[type="range"]::-moz-range-thumb {
     const musts = [...D.wishes.filter(w => state.wishes[w.id] === 'must').map(w => w.text), ...state.customWishes.filter(w => w.level === 'must').map(w => w.text)];
     const nices = [...D.wishes.filter(w => state.wishes[w.id] === 'nice').map(w => w.text), ...state.customWishes.filter(w => w.level === 'nice').map(w => w.text)];
     const freq = Object.fromEntries(D.frequency.map(f => [f.id, f.label]));
-    const dur = Math.max(1, Math.round((Date.now() - new Date(state.startedAt).getTime()) / 60000));
+    const at = resultTime(), dur = Math.max(1, Math.round((at.getTime() - new Date(state.startedAt).getTime()) / 60000));
     const top = keep.filter(m => (state.friction[m.id] ?? 0) >= 3).map(m => m.name);
     const L = [];
-    L.push(`# VAVE Discovery – Brief`, ``, `Datum: ${new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}  `, `Person: ${D.respondent}  `, `Dauer: ~${dur} ${dur === 1 ? 'Minute' : 'Minuten'}`, ``);
+    L.push(`# VAVE Discovery – Brief`, ``, `Datum: ${deDate(at)}  `, `Person: ${WHO}  `, `Dauer: ~${dur} ${dur === 1 ? 'Minute' : 'Minuten'}`, ``);
     L.push(`## Behalten (${keep.length})`, ``, `| Baustein | Reibung 0–4 | Preis |`, `|---|---|---|`);
     keep.forEach(m => L.push(`| ${m.name} | ${state.friction[m.id] === undefined ? '–' : state.friction[m.id] + ' – ' + D.frictionLabels[state.friction[m.id]]} | ${m.price ? m.price + ' €' : 'in Lizenz'} |`));
     L.push(``, `## Weg damit (${byZone('drop').length})`, ``, ...byZone('drop').map(m => `- ${m.name}`));
@@ -1614,12 +1615,17 @@ input[type="range"]::-moz-range-thumb {
   /* ---------------- Station 7: Ergebnis ---------------- */
   const resultEl = $('#result');
   const HANNES = 'hannes@pix-el.de'; // Empfänger der Ergebnisse, einzige Stelle der Adresse
+  // Testlauf über den öffentlichen Link (index.html?test): Dateiname, Betreff, Mailtext, Brief und respondent tragen „Test“
+  const TEST = new URLSearchParams(location.search).has('test');
+  const WHO = TEST ? D.respondent + ' (Test)' : D.respondent;
+  // Handy = Touch als Hauptzeiger und kurze Bildschirmseite unter 700 px: mailto. Sonst (Desktop, Tablet) die .eml.
+  const PHONE = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 700;
   function renderResult() {
     const h = hypothesis();
     const keep = kept();
     const top = keep.filter(m => state.friction[m.id] !== undefined).sort((a, b) => state.friction[b.id] - state.friction[a.id]).slice(0, 3);
     const musts = [...D.wishes.filter(w => state.wishes[w.id] === 'must').map(w => w.text), ...state.customWishes.filter(w => w.level === 'must').map(w => w.text)];
-    const out = resultFiles(), send = sendData(out);
+    const out = resultFiles(), send = sendData(out), addr = `<b id="sendAddr" style="white-space: nowrap">${esc(HANNES)}</b>`;
     resultEl.innerHTML = `
       <div class="step-head">
         <h2>Danke, ${esc(D.respondent)}.</h2>
@@ -1650,18 +1656,14 @@ input[type="range"]::-moz-range-thumb {
       </div>
       <section class="result-block" aria-labelledby="sendHead">
         <h3 id="sendHead">An Hannes schicken</h3>
-        <p>An <b id="sendAddr">${esc(HANNES)}</b>, mit Daten (JSON) und Brief (Markdown) im Anhang.</p>
+        <p>${send.mailto ? `Öffnet dein Mailprogramm mit fertiger Mail an ${addr} – ${send.mailto.brief ? 'Brief und Daten stehen' : 'die Daten stehen'} im Text, nur noch senden.`
+          : PHONE ? `Für eine Mail vom Handy zu lang: Lade unten beide Dateien und häng sie an eine Mail an ${addr}.`
+          : `Lädt einen Mail-Entwurf an ${addr} mit beiden Dateien im Anhang – öffnen und senden, in Apple Mail über „E-Mail“ › „Erneut senden“.`}</p>
         <div class="actions">
-          <button type="button" class="btn primary" id="sendMail">Per E-Mail an Hannes senden</button>
+          ${send.mailto ? `<a class="btn primary" id="sendMail" href="${esc(send.mailto.href)}" style="text-decoration: none">Per E-Mail senden</a>`
+            : PHONE ? '' : '<button type="button" class="btn primary" id="sendMail">E-Mail-Entwurf laden</button>'}
           <button type="button" class="btn" id="copyAddr">Adresse kopieren</button>
-          ${send.canShare ? '<button type="button" class="btn" id="shareFiles">Teilen</button>' : ''}
         </div>
-        <ul class="muted">
-          <li>Outlook öffnet die Datei als Entwurf – nur noch senden.</li>
-          <li>Apple Mail: Datei öffnen, dann im Menü „E-Mail“ „Erneut senden“.</li>
-          ${send.canShare ? '<li>Am Handy: Adresse kopieren, „Teilen“, Mail wählen, Adresse einfügen.</li>' : ''}
-          <li>Sonst: beide Dateien unten einzeln laden und an eine Mail hängen.</li>
-        </ul>
       </section>
       <div class="actions">
         <button type="button" class="btn" id="dlJson">Daten herunterladen (JSON)</button>
@@ -1669,11 +1671,10 @@ input[type="range"]::-moz-range-thumb {
         <button type="button" class="btn" id="copyMd">Brief kopieren</button>
         <button type="button" class="btn quiet" id="restart">Von vorn</button>
       </div>`;
-    $('#sendMail').addEventListener('click', () => {
-      download(out.stamp + '.eml', buildEml([out.json, out.md], send.subject, send.body), 'message/rfc822');
-      toast('E-Mail-Datei geladen.');
+    if (!PHONE) $('#sendMail').addEventListener('click', () => {
+      download(out.stamp + '.eml', buildEml([out.json, out.md], send.subject, send.body, out.at), 'message/rfc822');
+      toast('Entwurf geladen – öffnen und senden.');
     });
-    if (send.canShare) $('#shareFiles').addEventListener('click', () => shareFiles(send.share));
     $('#copyAddr').addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(HANNES); toast('Adresse kopiert.'); }
       catch (e) {
@@ -1702,32 +1703,53 @@ input[type="range"]::-moz-range-thumb {
   }
 
   /* ---------------- Versand an Hannes ---------------- */
-  // Dateien einmal je Ergebnis erzeugen: Einzel-Download, E-Mail-Anhang und Teilen tragen dieselben Bytes
-  // (exportData() setzt exportedAt bei jedem Aufruf neu). Namen wie bisher: YYYY-MM-DD_<vorname>.json/.md
+  // Eine Uhr: Zeitpunkt der ersten Ergebnisanzeige zu genau diesen Antworten. Bleibt über Reloads; ändert sich eine
+  // Antwort, gilt die nächste Anzeige. Dateiname, Betreff, Brief (Datum, Dauer), Date: und exportedAt lesen nur ihn.
+  function resultTime() {
+    const answers = JSON.stringify([state.startedAt, state.sort, state.friction, state.wishes, state.customWishes, state.roles, state.budget, state.wand, state.noGo]);
+    const r = state.resultShown;
+    if (!r || r.answers !== answers || isNaN(Date.parse(r.at))) { state.resultShown = { at: new Date().toISOString(), answers }; save(); }
+    return new Date(state.resultShown.at);
+  }
+  const pad2 = n => String(n).padStart(2, '0');
+  const isoDay = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); // Ortszeit, nicht UTC
+  const deDate = d => pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1) + '.' + d.getFullYear();
+  // Dateien einmal je Ergebnis erzeugen: Einzel-Download, E-Mail-Anhang und mailto tragen denselben Text.
+  // Namen: YYYY-MM-DD_<vorname>.json/.md, im Testlauf YYYY-MM-DD_test.json/.md
   function resultFiles() {
-    const day = new Date().toISOString().slice(0, 10), stamp = day + '_' + D.respondent.toLowerCase();
+    const at = resultTime(), stamp = isoDay(at) + '_' + (TEST ? 'test' : D.respondent.toLowerCase());
+    const data = exportData();
+    data.respondent = WHO; // Testlauf: „Tobias (Test)“; exportData() selbst bleibt bis auf exportedAt unverändert
     return {
-      day, stamp,
-      json: { name: stamp + '.json', type: 'application/json', text: JSON.stringify(exportData(), null, 2) },
+      at, stamp,
+      json: { name: stamp + '.json', type: 'application/json', text: JSON.stringify(data, null, 2) },
       md: { name: stamp + '.md', type: 'text/markdown', text: buildBrief() }
     };
   }
+  // Betreff und Begleittext der .eml; am Handy dazu der mailto-Link (null, wenn er zu lang wird)
   function sendData(out) {
-    const subject = `VAVE Discovery – Ergebnis von ${D.respondent}, ${out.day.split('-').reverse().join('.')}`;
-    const body = ['Hallo Hannes,', '', 'anbei mein Ergebnis aus der VAVE-Discovery-Umfrage:',
-      `- ${out.json.name} (Daten)`, `- ${out.md.name} (Brief)`, '', 'Viele Grüße', D.respondent].join('\r\n');
-    const share = {
-      files: [out.json, out.md].map(f => new File([f.text], f.name, { type: f.type })),
-      title: subject,
-      text: `An ${HANNES}: ${subject}. Im Anhang Daten (JSON) und Brief (Markdown).`
-    };
-    let canShare = false;
-    try { canShare = !!(navigator.canShare && navigator.canShare({ files: share.files })); } catch (e) { /* ohne Teilen */ }
-    return { subject, body, share, canShare };
+    const subject = `${TEST ? '[Test] ' : ''}VAVE Discovery – Ergebnis von ${WHO}, ${deDate(out.at)}`;
+    const what = TEST ? 'ein Testlauf der VAVE-Discovery-Umfrage, keine echte Antwort' : 'mein Ergebnis aus der VAVE-Discovery-Umfrage';
+    const body = ['Hallo Hannes,', '', `anbei ${what}:`,
+      `- ${out.json.name} (Daten)`, `- ${out.md.name} (Brief)`, '', 'Viele Grüße', WHO].join('\r\n');
+    return { subject, body, mailto: PHONE ? mailto(out, subject, what) : null };
   }
-  async function shareFiles(data) {
-    try { await navigator.share(data); }
-    catch (e) { if (!e || e.name !== 'AbortError') toast('Teilen ging nicht – Dateien einzeln laden.'); }
+  // Handy: mailto kann keine Anhänge, also stehen Brief und Daten im Text, je zwischen Anfang- und Ende-Markierung
+  // (fehlt „ENDE DATEN“, ist die Mail abgeschnitten). Zeilenenden CRLF, alles prozentkodiert (RFC 6068).
+  // Gemessen (r04-K1, alle 28 Bausteine, alle Wünsche und Rollen, 3 eigene Wünsche à 120 Zeichen, Zauberstab und
+  // No-Go à 400 Zeichen): 15 585 Zeichen, nur mit Daten 7 284. Grenze 16 000: darüber nur die Daten (der Brief
+  // entsteht aus ihnen neu), passen auch die nicht, gibt es kein mailto und die Seite verweist auf die Einzel-Downloads.
+  const MAILTO_MAX = 16000;
+  const uri = s => encodeURIComponent(s.replace(/[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udfff]/g, m => (m.length === 2 ? m : '\ufffd')));
+  function mailto(out, subject, what) {
+    const block = (label, f) => [`===== ${label} (${f.name}) =====`, f.text, `===== ENDE ${label} =====`, ''];
+    for (const brief of [true, false]) {
+      const body = ['Hallo Hannes,', '', `hier ${what}. ${brief ? 'Brief und Daten stehen' : 'Die Daten stehen'} unten.`, '',
+        ...(brief ? block('BRIEF', out.md) : []), ...block('DATEN', out.json), 'Viele Grüße', WHO].join('\n').replace(/\r?\n/g, '\r\n');
+      const href = `mailto:${HANNES}?subject=${uri(subject)}&body=${uri(body)}`;
+      if (href.length <= MAILTO_MAX) return { href, brief };
+    }
+    return null;
   }
   // Base64 von UTF-8-Text; für MIME in Zeilen zu höchstens 76 Zeichen (RFC 2045)
   function b64(text) {
@@ -1761,9 +1783,9 @@ input[type="range"]::-moz-range-thumb {
     return `${key}*=UTF-8''` + encodeURIComponent(value).replace(/['()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
   }
   // Sendefertiger Entwurf (.eml): X-Unsent: 1 öffnet ihn in Outlook zum Senden; multipart/mixed, CRLF, Anhänge base64
-  function buildEml(files, subject, body) {
+  function buildEml(files, subject, body, at) {
     const boundary = 'vave-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
-    const L = ['MIME-Version: 1.0', 'Date: ' + mailDate(new Date()), `To: Hannes <${HANNES}>`, 'Subject: ' + encodeWords(subject),
+    const L = ['MIME-Version: 1.0', 'Date: ' + mailDate(at), `To: Hannes <${HANNES}>`, 'Subject: ' + encodeWords(subject),
       'X-Unsent: 1', `Content-Type: multipart/mixed; boundary="${boundary}"`, '',
       '--' + boundary, 'Content-Type: text/plain; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', b64Lines(body)];
     files.forEach(f => L.push('--' + boundary,
