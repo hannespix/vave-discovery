@@ -1,16 +1,34 @@
 /* Zeiten (r07) – nur Tokens aus tokens.css, Bausteine aus base.css. Präfix .tt-, Handy zuerst.
    Farbrollen: Violett = Aktion und laufender Timer, Limette = Zustand (Fläche, schwarze Schrift), Schwarz/Grau = Struktur,
-   Koralle = nur „überzogen“, Projektfarbe nur als Punkt. Übergänge ≤ 200 ms, nur bei Zustandswechsel. */
+   Koralle = nur „überzogen“, Projektfarbe nur als Punkt. Übergänge ≤ 200 ms, nur bei Zustandswechsel.
+   Schrift (r07-K1): nur --fs-label / --fs-meta / --fs-body / --fs-title, Gewichte nur 400 und 600. */
 
 .tt { display: grid; gap: var(--s-5); min-width: 0; }
 .tt ::placeholder { color: var(--c-ink-3); opacity: 1; }
 .tt-optional { font-weight: 400; color: var(--c-ink-2); }
 
-/* Seitenkopf: Titel und Ansicht links, Kennzahl rechts */
+/* Seitenkopf: Titel und Ansicht */
 .tt .tt-header { margin-bottom: 0; align-items: center; }
 .tt-header-main { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-5); min-width: 0; }
-.tt-header-figure { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s-2); }
-.tt-header-figure strong { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; }
+
+/* Kopf der gewählten Woche: ‹ KW 39 · 21.09.–27.09. › „Diese Woche“ … Summe von 40 h Soll */
+.tt-range-section { display: grid; gap: var(--s-3); min-width: 0; }
+.tt-range {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3);
+  padding-bottom: var(--s-3); border-bottom: 1px solid var(--c-line);
+}
+.tt-range-nav { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.tt-range-title {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s-2); min-width: 0;
+  font-size: var(--fs-body); font-weight: 600; letter-spacing: normal; text-transform: none; color: var(--c-ink);
+}
+.tt-range-dates { font-weight: 400; color: var(--c-ink-2); white-space: nowrap; }
+.tt-range-kw { white-space: nowrap; }
+@media (hover: hover) {
+  .tt-range-step[aria-disabled="true"]:hover { background: var(--c-surface); border-color: var(--c-line-strong); color: var(--c-ink); }
+}
+.tt-range-figure { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s-2); margin-left: auto; }
+.tt-range-figure strong { font-size: var(--fs-body); font-weight: 600; }
 
 /* Projektpunkt (Farbe nur als Punkt; Kontur, weil Limette auf Weiß sonst verschwindet) */
 .tt-dot { width: 10px; height: 10px; box-shadow: 0 0 0 1px var(--c-line-strong); }
@@ -35,7 +53,7 @@
 .tt-timer-task { overflow-wrap: anywhere; }
 .tt-timer-run { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
 .tt-clock-box { display: grid; gap: 2px; min-width: 0; }
-.tt-clock { font-size: 1.75rem; font-weight: 600; line-height: 1.1; letter-spacing: -0.01em; }
+.tt-clock { font-size: var(--fs-title); font-weight: 600; line-height: 1; letter-spacing: -0.01em; }
 .tt-clock[data-running="true"] { color: var(--c-accent-text); }
 /* Readex Pro hat keine Tabellenziffern (tnum wirkt nicht) – feste Zelle je Ziffer, die Uhr springt nicht */
 .tt-clock-digits { display: inline-flex; }
@@ -76,7 +94,8 @@
   display: inline-flex; flex: initial; width: auto; height: auto; min-height: var(--tap); max-width: 100%; min-width: 0;
   border-radius: 999px; box-shadow: none;
 }
-.tt-chip-play { flex: none; color: var(--c-accent-text); }
+/* Neutral wie jeder .chip; das kleine Play-Zeichen in Schrift-Grau – Violett bleibt dem runden Knopf und dem laufenden Timer */
+.tt-chip-play { flex: none; color: var(--c-ink-2); }
 .tt-chip-code { font-weight: 600; }
 .tt-chip-label { min-width: 0; max-width: 14rem; overflow: hidden; text-overflow: ellipsis; }
 .tt-quick-list::-webkit-scrollbar { display: none; }
@@ -112,6 +131,7 @@
 .tt-confirm[data-tone] { padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3); border-radius: var(--radius-l); }
 .tt-confirm[data-tone="ok"] { background: var(--c-lime); color: var(--c-lime-ink); box-shadow: inset 0 0 0 1.5px var(--c-lime-ink); }
 .tt-confirm[data-tone="warn"] { background: var(--c-warn-soft); color: var(--c-warn); box-shadow: inset 0 0 0 1.5px var(--c-warn); }
+.tt-confirm[data-tone="note"] { background: var(--c-bg-2); color: var(--c-ink); box-shadow: inset 0 0 0 1.5px var(--c-line-strong); }
 .tt-confirm-text { flex: 1 1 13rem; min-width: 0; }
 .tt-confirm-msg { display: flex; gap: var(--s-2); align-items: flex-start; padding: var(--s-1) 0; line-height: 1.4; font-weight: 600; overflow-wrap: anywhere; }
 .tt-confirm-msg svg { flex: none; }
@@ -140,7 +160,7 @@
 .tt-row-code { font-weight: 600; color: var(--c-ink); }
 .tt-row-note { overflow-wrap: anywhere; }
 .tt-row-dur { grid-area: dur; justify-self: end; font-weight: 600; white-space: nowrap; }
-.tt-row-actions { grid-area: act; justify-self: end; display: flex; }
+.tt-row-actions { grid-area: act; justify-self: end; display: flex; align-items: center; gap: 2px; }
 @media (hover: hover) { .tt-danger:hover { background: var(--c-danger-soft); color: var(--c-danger); } }
 @container (min-width: 34rem) {
   .tt-row { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "main dur act"; }
@@ -174,12 +194,11 @@
 
 /* ---------- Woche ---------- */
 .tt-week { display: grid; gap: var(--s-3); min-width: 0; }
-.tt-week-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-3); }
 .tt-week-tools { display: flex; flex-wrap: wrap; gap: var(--s-2); min-width: 0; }
 .tt-add-row {
   appearance: none; -webkit-appearance: none; width: 8rem; max-width: 100%; min-height: var(--tap); padding: 0 var(--s-4);
   border: 1.5px solid var(--c-line-strong); border-radius: 999px; background: var(--c-surface); color: var(--c-ink);
-  font-weight: 500; cursor: pointer;
+  font-weight: 400; cursor: pointer;
 }
 .tt-add-row:disabled { opacity: .55; cursor: not-allowed; }
 @media (hover: hover) { .tt-add-row:not(:disabled):hover { background: var(--c-bg-2); } }
@@ -224,6 +243,8 @@
 @media (hover: hover) { .tt-cell-input:hover { border-color: var(--c-control); } }
 .tt-cell-input:focus { background: var(--c-surface); border-color: var(--c-accent); }
 .tt-cell-input[aria-invalid="true"] { border-color: var(--c-danger); }
+/* „Anzeigen“ aus der Bestätigung: die Zelle des Eintrags kurz in Limette */
+.tt-cell[data-highlight] .tt-cell-input { background: var(--c-lime); color: var(--c-lime-ink); box-shadow: inset 0 0 0 1.5px var(--c-lime-ink); }
 .tt-cell-static { display: block; padding: 0 var(--s-2); color: var(--c-ink-3); }
 /* Echo über der Zelle, während getippt wird */
 .tt-bubble {
@@ -234,13 +255,16 @@
 }
 .tt-bubble[data-tone="error"] { background: var(--c-danger-fill); color: var(--c-danger-fill-ink); box-shadow: inset 0 0 0 1px var(--c-line-strong); }
 .tt-bubble svg { flex: none; margin-top: 2px; }
-.tt-grid-status { min-height: 1.4em; font-size: var(--fs-meta); color: var(--c-ink-2); }
+/* Statuszeile unter dem Raster: Meldung und „Rückgängig“ (bleibt bis zur nächsten Änderung) */
+.tt-grid-statusbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); min-height: 1.4em; }
+.tt-grid-status { flex: 1 1 16rem; min-width: 0; font-size: var(--fs-meta); color: var(--c-ink-2); overflow-wrap: anywhere; }
 .tt-grid-status[data-tone="warn"] { color: var(--c-ink); font-weight: 600; }
+.tt-grid-undo { flex: none; }
 
 /* Woche gegen Soll: schmaler Balken */
 .tt-goal { display: grid; gap: var(--s-2); padding-top: var(--s-3); border-top: 1px solid var(--c-line); }
 .tt-goal-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s-2); }
-.tt-goal-text strong { font-size: 1.25rem; font-weight: 600; }
+.tt-goal-text strong { font-size: var(--fs-body); font-weight: 600; }
 .tt-goal-bar { height: 6px; border-radius: 999px; background: var(--c-bg-2); overflow: hidden; box-shadow: inset 0 0 0 1px var(--c-line); }
 .tt-goal-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--c-ink); }
 

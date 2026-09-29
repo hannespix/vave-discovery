@@ -1,13 +1,15 @@
-// Ansicht „Liste“: Einträge dieser Woche nach Tag, mit Tagessumme. Zeilen zweizeilig (Notiz bzw. Aufgabe, darunter
-// Projektpunkt, Code und Zeit). Aktionen: Fortsetzen, Bearbeiten (Panel an der Zeile), Löschen mit Rückgängig.
+// Ansicht „Liste“: Einträge der gewählten Woche nach Tag, mit Tagessumme. Zeilen zweizeilig (Notiz bzw. Aufgabe, darunter
+// Projektpunkt, Code und Zeit). Aktionen: Fortsetzen (.btn-play – gedrückt und violett, solange der Timer auf genau
+// dieser Kombination läuft; dann stoppt ein Klick), Bearbeiten (Panel an der Zeile), Löschen mit Rückgängig.
 // flash = { id, date }: der zuletzt gespeicherte Eintrag und die Summe seines Tages tragen data-highlight (Limette).
 import { useEffect, useRef, useState } from 'react';
-import { Pencil, Play, Trash2 } from 'lucide-react';
+import { Pencil, Play, Square, Trash2 } from 'lucide-react';
 import { fmtDuration } from '../../lib/format.js';
 import ProjectSelect, { Dot, projectInfo } from './ProjectSelect.jsx';
 import { DurationField, FieldError } from './fields.jsx';
 import { parseDuration, toInputDuration } from './duration.js';
 import { dayTitle, endOf, rowId, sumMinutes, toMinutes, todayIso } from './timeUtils.js';
+import { RANGE_TITLE_ID } from './WeekNav.jsx';
 
 const byStart = (a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0);
 const context = e => `${projectInfo(e.project).code}, ${e.start} Uhr, ${fmtDuration(e.minutes)}`;
@@ -18,7 +20,7 @@ export function entryTitle(entry, taskTitle) {
   return taskTitle(entry.task) || String(entry.note ?? '').trim() || projectInfo(entry.project).name;
 }
 
-function EntryRow({ entry, taskTitle, highlight, onResume, onEdit, onDelete }) {
+function EntryRow({ entry, taskTitle, highlight, running, onResume, onEdit, onDelete }) {
   const info = projectInfo(entry.project);
   const title = entryTitle(entry, taskTitle);
   const task = taskTitle(entry.task);
@@ -38,8 +40,11 @@ function EntryRow({ entry, taskTitle, highlight, onResume, onEdit, onDelete }) {
       </div>
       <p className="tt-row-dur num">{fmtDuration(entry.minutes)}</p>
       <div className="tt-row-actions">
-        <button type="button" className="btn btn-ghost btn-icon" title="Fortsetzen" aria-label={`Fortsetzen: ${label}`} onClick={onResume}>
-          <Play aria-hidden="true" size={18} />
+        <button
+          type="button" className="btn-play" aria-pressed={running} title={running ? 'Läuft – stoppen' : 'Fortsetzen'}
+          aria-label={`Fortsetzen: ${label}`} onClick={onResume}
+        >
+          {running ? <Square aria-hidden="true" fill="currentColor" /> : <Play aria-hidden="true" fill="currentColor" />}
         </button>
         <button
           id={`tt-edit-${entry.id}`} type="button" className="btn btn-ghost btn-icon" title="Bearbeiten"
@@ -152,7 +157,9 @@ function EntryEditor({ entry, taskOf, onSave, onCancel, onDelete }) {
   );
 }
 
-export default function EntryList({ entries, days, flash, taskOf, taskTitle, onResume, onUpdate, onDelete, notify }) {
+export default function EntryList({
+  entries, days, weekNo, flash, taskOf, taskTitle, isRunning, onResume, onUpdate, onDelete, notify,
+}) {
   const [editing, setEditing] = useState(null);
   const [focusId, setFocusId] = useState(null);
 
@@ -167,8 +174,8 @@ export default function EntryList({ entries, days, flash, taskOf, taskTitle, onR
     onUpdate(entry.id, patch);
     setEditing(null);
     const moved = patch.date !== entry.date && !days.some(d => d.iso === patch.date);
-    notify({ text: `Geändert: ${context({ ...entry, ...patch })}.${moved ? ' Der Tag liegt außerhalb dieser Woche.' : ''}` });
-    setFocusId(moved ? 'tt-list-title' : `tt-edit-${entry.id}`);
+    notify({ text: `Geändert: ${context({ ...entry, ...patch })}.${moved ? ` Der Tag liegt nicht in KW ${weekNo}.` : ''}` });
+    setFocusId(moved ? RANGE_TITLE_ID : `tt-edit-${entry.id}`);
   };
   const cancel = entry => {
     setEditing(null);
@@ -186,8 +193,8 @@ export default function EntryList({ entries, days, flash, taskOf, taskTitle, onR
     .filter(g => g.list.length || g.day.isToday);
 
   return (
-    <section className="tt-list" aria-labelledby="tt-list-title">
-      <h2 id="tt-list-title" tabIndex={-1} className="visually-hidden">Einträge dieser Woche</h2>
+    <section className="tt-list" aria-labelledby={RANGE_TITLE_ID}>
+      {!groups.length && <p className="tt-empty meta">In KW {weekNo} ist nichts erfasst.</p>}
       {groups.map(({ day, list }) => {
         const title = dayTitle(day.iso);
         return (
@@ -211,6 +218,7 @@ export default function EntryList({ entries, days, flash, taskOf, taskTitle, onR
                   ) : (
                     <EntryRow
                       key={entry.id} entry={entry} taskTitle={taskTitle} highlight={Boolean(flash?.id) && flash.id === entry.id}
+                      running={isRunning(entry)}
                       onResume={() => onResume(entry)} onEdit={() => setEditing(entry.id)} onDelete={() => remove(entry)}
                     />
                   ),

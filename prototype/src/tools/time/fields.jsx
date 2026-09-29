@@ -1,7 +1,8 @@
 // Felder der Zeiterfassung: Fehlermeldung am Feld und das Dauerfeld mit Echo („= 1:30 h“).
 import { useState } from 'react';
 import { CircleAlert } from 'lucide-react';
-import { DURATION_HINT, durationMessage, echoOf, parseDuration } from './duration.js';
+import { fmtDuration } from '../../lib/format.js';
+import { DURATION_HINT, durationError, echoOf, parseDuration } from './duration.js';
 
 export function FieldError({ id, children }) {
   if (!children) return null;
@@ -21,8 +22,9 @@ export function DurationField({ id, label, value, onChange, inputRef, forceError
   const parsed = parseDuration(value);
   const echo = typed ? echoOf(parsed) : null;
   const definite = parsed.error === 'max' || parsed.error === 'minutes';
-  const error = parsed.error && (forceError || (typed && (left || definite))) ? durationMessage[parsed.error] : '';
-  const readAs = parsed.error === 'max' && parsed.minutes ? `Gelesen: ${echoOf({ minutes: parsed.minutes })}. ` : '';
+  const error = parsed.error && (forceError || (typed && (left || definite))) ? durationError(parsed) : '';
+  // Über 24 h mit Einheit: die gelesene Dauer vorweg („Gelesen: 25:00 h.“); ohne Einheit nennt der Text sie selbst
+  const readAs = parsed.error === 'max' && parsed.minutes && !parsed.plain ? `Gelesen: ${fmtDuration(parsed.minutes)}. ` : '';
   return (
     <div className={`field tt-dur ${className}`}>
       <label htmlFor={id}>{label}</label>
