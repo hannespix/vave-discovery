@@ -137,6 +137,32 @@ p { margin: 0; }
 .entry-grid { display: grid; gap: 28px; max-width: 46em; }
 .entry-facts { display: flex; flex-wrap: wrap; gap: 10px 22px; color: var(--ink-2); font-weight: 600; }
 .entry-facts b { color: var(--ink); font-weight: 800; }
+/* Notiz von Hannes: ruhige Karte, Text ≥ 16 px. Darin der Pfad Bedarf, Technik, Zusage im Stil der Route (Linie, Ring,
+   Punkt; Signalfarbe nur für „jetzt“). Breit nebeneinander, schmal untereinander; .intro-mark ist der Platz des Punkts,
+   Linie und Punkte legt das Script dorthin (Station 0: Einstieg). Bewegung nur per Script, nie bei reduzierter Bewegung. */
+.note { display: grid; gap: 14px; padding: 22px 24px 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.note-head { font-size: 1.05rem; letter-spacing: -.01em; }
+.note p { max-width: 40em; }
+.note-sign { font-weight: 800; }
+.intro-path { position: relative; margin: 6px 0 8px; }
+.intro-line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.intro-way { fill: none; stroke: var(--control); stroke-width: 2; stroke-dasharray: 100; } /* pathLength 100: Einzeichnen über stroke-dashoffset */
+.intro-dot { transform-box: fill-box; transform-origin: center; }
+.intro-ring { fill: var(--surface); stroke: var(--control); stroke-width: 2; }
+.intro-dot.is-now .intro-ring { stroke: var(--signal); stroke-width: 3; }
+.intro-core { fill: var(--signal); }
+.intro-path ol { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+.intro-path li { position: relative; padding-top: 30px; font-size: 1rem; line-height: 1.4; color: var(--ink-2); }
+.intro-path li > span, .intro-path strong { display: block; }
+.intro-path strong { color: var(--ink); font-weight: 800; }
+.intro-here { color: var(--signal); font-weight: 700; }
+.intro-mark { position: absolute; left: 0; top: 0; width: 18px; height: 18px; }
+@media (max-width: 640px) {
+  .note { padding: 18px 18px 20px; }
+  .intro-path ol { grid-template-columns: none; gap: 14px; }
+  .intro-path li { padding: 0 0 0 32px; }
+  .intro-mark { top: calc(.7em - 9px); } /* Mitte der ersten Zeile (line-height 1.4) */
+}
 
 /* Buttons */
 .btn {
@@ -159,13 +185,16 @@ p { margin: 0; }
 /* ------------------------------------------------------------------
    Station 1 – Sortieren: ein Kartenstapel, drei Zonen, immer im Blick.
 ------------------------------------------------------------------- */
-/* Sortier-Einheit: Stapelkarte, Zonen und „Rest“-Knopf gehören zusammen. Reicht die Höhe nicht, klebt die Einheit
-   direkt über der Navigation (--dock-bottom misst das Script) und schiebt sich über den Einleitungstext – so bleiben
-   Kartenname, Beschreibung und alle drei Zonen für jede Karte ohne Scrollen im Blick, nichts davon unter der Navigation. */
+/* Sortier-Einheit: Anleitung, Stapelkarte, Zonen und „Rest“-Knopf gehören zusammen. Breit steht sie im Fluss, die Zonen
+   wachsen mit ihren Karten. In der Leiste (siehe unten) klebt sie bei Bedarf direkt über der Navigation (--dock-bottom
+   misst das Script) und schiebt sich über den Einleitungstext – so bleiben Anleitung, Karte und alle drei Zonen ohne
+   Scrollen im Blick, nichts davon unter der Navigation. */
 .sorter {
-  position: sticky; bottom: var(--dock-bottom, 72px); z-index: 10;
+  position: relative; z-index: 10;
   display: grid; grid-template-columns: minmax(0, 1fr); background: var(--bg);
 }
+/* Die Anleitung steht in der Einheit, nicht im Einleitungstext: Sie bleibt sichtbar, wenn die Einheit darüber rückt. */
+.sort-how { grid-area: 1 / 1; justify-self: center; margin: 0 0 6px; text-align: center; font-size: 1rem; font-weight: 600; line-height: 1.35; color: var(--ink); }
 /* Klebend rückt die Einheit höchstens bis an den Anfang ihres Abschnitts. Damit sie bis an den Kopf darf, beginnt der
    Abschnitt von Station 1 schon im oberen Innenabstand der Bühne (40 px) – sichtbar bleibt alles, wo es war. */
 .step[data-step="1"] { margin-top: -40px; }
@@ -176,7 +205,7 @@ p { margin: 0; }
   background: linear-gradient(transparent, var(--bg));
 }
 .deck {
-  grid-area: 1 / 1; position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  grid-area: 2 / 1; position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px;
   padding: 6px 0 22px; border-radius: var(--radius); transition: background .2s;
 }
 .deck.is-over { background: var(--graphite-soft); }
@@ -286,12 +315,13 @@ p { margin: 0; }
 body.is-dragging { cursor: grabbing; }
 body.is-dragging * { cursor: grabbing !important; }
 
-/* Breit: drei Spalten mit fester Höhe – die Einheit passt über die Navigation, lange Listen scrollen in der Zone. */
-.zones { grid-area: 2 / 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+/* Breit: drei Spalten, die mit ihren Karten wachsen – keine feste Höhe, keine Scrollleiste in der Zone. Stapelkarte und
+   Zonenköpfe bleiben dabei stehen; lange Listen reichen nach unten, die Seite scrollt. */
+.zones { grid-area: 3 / 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .zone {
   --zone: var(--graphite); --zone-soft: var(--graphite-soft);
   position: relative; display: flex; flex-direction: column; gap: 8px; min-width: 0;
-  height: clamp(200px, calc(100vh - 570px), 320px); padding: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; /* Rückmeldung gibt die Zone selbst */
+  padding: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; /* Rückmeldung gibt die Zone selbst */
   border-radius: var(--radius); border: 1.5px solid var(--line); background: var(--surface);
   transition: border-color .2s, background .2s, transform .2s var(--ease-out);
 }
@@ -309,10 +339,11 @@ body.is-dragging * { cursor: grabbing !important; }
 @media (hover: hover) and (min-width: 760px) { .zone-head kbd { display: inline-block; } }
 .zone-count { font-weight: 800; color: var(--zone); font-variant-numeric: tabular-nums; }
 .zone-hint { font-size: .85rem; color: var(--ink-2); }
-.zone-list { display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; overflow-y: auto; padding-right: 2px; }
+.zone-list { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+/* Leere Zone: so hoch wie die Nachbarn (Grid), der Text bleibt oben im Blick */
 .zone-list:empty::after {
-  content: "Hier ablegen oder antippen"; display: grid; place-items: center; flex: 1; min-height: 72px;
-  color: var(--ink-3); font-weight: 600; font-size: .85rem; text-align: center; padding: 0 8px;
+  content: "Hier ablegen oder antippen"; display: grid; place-items: start center; flex: 1; min-height: 72px;
+  color: var(--ink-3); font-weight: 600; font-size: .85rem; text-align: center; padding: 25px 8px 0;
   border: 1.5px dashed var(--line); border-radius: var(--radius-s);
 }
 .zone.is-over .zone-list:empty::after { border-color: var(--zone); color: var(--zone); }
@@ -335,12 +366,21 @@ body.is-dragging * { cursor: grabbing !important; }
 /* „Rest zu ‚Kenne ich nicht‘“ steht hinter den Zonen (nicht erster Tab-Stopp), fragt vor dem Verschieben nach und gehört
    zur Sortier-Einheit. Breit: rechts neben dem Stapel, direkt über „Kenne ich nicht“. */
 .sort-tools {
-  position: relative; z-index: 1; grid-area: 1 / 1; align-self: end; justify-self: end; width: calc(50% - 238px); margin-bottom: 12px;
+  position: relative; z-index: 1; grid-area: 2 / 1; align-self: end; justify-self: end; width: calc(50% - 238px); margin-bottom: 12px;
   display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px 10px; text-align: right;
 }
 .sort-tools:empty { display: none; }
 .sort-tools .btn { min-height: 44px; white-space: nowrap; }
 .rest-q { flex-basis: 100%; font-weight: 700; }
+
+/* r05-A: Karten in der Zone – ein Tipp auf die Karte gilt der Zone (legt die aktuelle Karte ab), zurück holt nur der
+   Knopf „ד (.recall): 44 px breit, so hoch wie die Karte, das Kreuz sitzt, wo es war. Hover zeigt nur der Knopf. */
+.zone .card { padding-right: 44px; }
+.zone .card:hover { border-color: var(--line); }
+.zone .card:hover .unassign { background: none; color: var(--ink-3); }
+.card .recall { position: absolute; top: 0; right: 0; bottom: 0; width: 44px; padding: 0; border: 0; border-radius: 0 var(--radius-s) var(--radius-s) 0; background: none; }
+.card .recall:hover .unassign { background: var(--graphite-soft); color: var(--ink); }
+.card .recall:focus-visible { outline-offset: -3px; }
 
 /* Sortierte Karten in der Leiste: unter den Zonen in voller Breite, antippen holt zurück. */
 .sorted { display: none; }
@@ -356,53 +396,81 @@ body.is-dragging * { cursor: grabbing !important; }
    liegen die drei Zonen kompakt nebeneinander unter der Karte; sortierte Karten stehen darunter in voller Breite (#sorted),
    so bricht kein Name mitten im Wort. Gilt für Handy, Tablet hochkant und Querformat (Script: BAR). */
 @media (max-width: 940px), (max-height: 520px) {
-  .sorter { padding-bottom: 8px; }
-  .zones { grid-area: 2 / 1; gap: 6px; padding-top: 8px; }
-  .zone { height: auto; min-height: 64px; padding: 8px 4px; gap: 0; justify-content: center; }
+  .sorter { position: sticky; bottom: var(--dock-bottom, 72px); padding-bottom: 8px; }
+  .zones { grid-area: 3 / 1; gap: 6px; padding-top: 8px; }
+  .zone { min-height: 64px; padding: 8px 4px; gap: 0; justify-content: center; }
   .zone-head { flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; }
   .zone-head h3 { font-size: 1rem; line-height: 1.15; overflow-wrap: normal; }
   .zone-count { font-size: .9rem; line-height: 1.1; }
   .zone-hint, .zone .zone-list { display: none; }
   .zone::after { left: 10px; right: 10px; bottom: 4px; }
-  .sort-tools { grid-area: 3 / 1; width: auto; justify-self: stretch; justify-content: flex-start; text-align: left; margin: 8px 0 0; }
+  .sort-tools { grid-area: 4 / 1; width: auto; justify-self: stretch; justify-content: flex-start; text-align: left; margin: 8px 0 0; }
   /* Rückfrage „Rest“: steht so lange an Stelle der Zonen – die Einheit wird nicht höher. */
   .sorter.is-asking .zones { visibility: hidden; }
-  .sorter.is-asking .sort-tools { grid-area: 2 / 1; align-self: center; margin: 0; padding-top: 8px; }
+  .sorter.is-asking .sort-tools { grid-area: 3 / 1; align-self: center; margin: 0; padding-top: 8px; }
   .sorted { display: grid; gap: 16px; margin-top: 18px; }
 }
-/* Handy: Stapelkarte kompakt, Zähler darüber. */
+/* Handy: Anleitung linksbündig über dem Zähler, Stapelkarte kompakt (so hoch wie ihr Inhalt), Abstände knapp –
+   so passt die Einheit mit Anleitung auch bei 375 × 553 (iPhone SE mit Leisten) und der höchsten Karte über die Navigation. */
 @media (max-width: 640px) {
-  .deck { padding: 0 0 14px; gap: 8px; }
+  .sorter { padding-bottom: 6px; }
+  .sort-how { justify-self: stretch; text-align: left; margin-bottom: 2px; line-height: 1.25; }
+  .deck { padding: 0 0 10px; gap: 4px; }
   .deck-meta { order: -1; }
-  .deck .card { padding: 16px 18px 16px 22px; grid-template-columns: minmax(0, 1fr); } /* Preis unter den Namen */
+  .deck-stack { min-height: 0; }
+  .deck-ghost.g1 { transform: translateY(6px) scale(.97); }
+  .deck-ghost.g2 { transform: translateY(12px) scale(.94); }
+  .deck .card { padding: 14px 18px 14px 22px; grid-template-columns: minmax(0, 1fr); } /* Preis unter den Namen */
   .deck .card::after { left: 22px; right: 18px; bottom: 7px; }
   .deck .card-name { font-size: 1.15rem; }
   .deck .card-price { padding-top: 2px; }
-  .deck .card-desc { margin-top: 6px; }
+  .deck .card-desc { margin-top: 4px; }
+  .zones { padding-top: 6px; }
+  .zone { padding: 6px 4px; }
+  .sort-tools { margin-top: 4px; }
 }
-/* Querformat (wenig Höhe): Karte links, Zonen und „Rest“-Knopf rechts daneben – so passt alles über die Navigation.
-   Überschrift und Einleitung hätten keinen Platz (die Einheit schnitte sie an); sie bleiben nur für Screenreader,
-   den Ort nennt der Kopf („Station 1 von 7: Sortieren“), das Ziehen erklärt der Hinweis an der Karte. */
+/* Querformat (wenig Höhe): drei Spalten – Karte | Anleitung und „Rest“-Knopf | Zonen untereinander. Alle Spalten beginnen
+   oben: Ist eine Karte höher als der Platz, reicht nur sie tiefer, Zonen und „Rest“ bleiben über der Navigation.
+   Überschrift, Einleitung und Zähler hätten keinen Platz; sie bleiben für Screenreader. Den Ort nennt der Kopf
+   („Station 1 von 7: Sortieren“), die übrigen Karten die Navigation („Noch … Karten im Stapel“). */
 @media (max-height: 520px) and (min-width: 560px) {
-  .step[data-step="1"] > .step-head { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .step[data-step="1"] > .step-head, .deck-meta { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .step[data-step="1"]::before { content: ""; display: block; height: 12px; } /* Luft unter dem Kopf, die Einheit darf darüber rücken */
-  .sorter { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); column-gap: 14px; align-items: start; padding-bottom: 4px; }
-  .deck { grid-area: 1 / 1 / 3 / 2; padding: 0 0 10px; gap: 6px; }
-  .deck-meta { order: -1; width: 100%; }
+  .sorter { grid-template-columns: minmax(0, 1fr) minmax(0, 10.5rem) auto; grid-template-rows: auto 1fr; column-gap: 12px; align-items: start; padding-bottom: 4px; }
+  .sort-how { grid-area: 1 / 2; justify-self: stretch; margin: 0; text-align: left; line-height: 1.3; }
+  .deck { grid-area: 1 / 1 / 3 / 2; padding: 0 0 10px; gap: 0; }
   .deck-stack { width: 100%; min-height: 0; }
   .deck-ghost.g1 { transform: translateY(5px) scale(.98); }
   .deck-ghost.g2 { transform: translateY(10px) scale(.96); }
-  .deck .card { padding: 12px 16px 12px 20px; }
+  .deck .card { padding: 12px 16px 12px 20px; grid-template-columns: minmax(0, 1fr); } /* Preis unter dem Namen: der Name hat die volle Breite */
   .deck .card::before { top: 12px; bottom: 12px; }
   .deck .card::after { left: 20px; right: 16px; bottom: 5px; }
   .deck .card-name { font-size: 1.1rem; }
-  .deck .card-price { padding-top: 3px; }
+  .deck .card-price { padding-top: 1px; }
   .deck .card-desc { font-size: .95rem; line-height: 1.3; margin-top: 4px; }
-  .zones { grid-area: 1 / 2; grid-template-columns: minmax(0, 1fr); padding-top: 0; }
+  .zones { grid-area: 1 / 3 / 3 / 4; grid-template-columns: minmax(0, 1fr); gap: 4px; padding-top: 0; }
   .zone { min-height: 44px; padding: 6px 12px; }
-  .zone-head { flex-direction: row; justify-content: space-between; align-items: baseline; }
-  .sort-tools { grid-area: 2 / 2; margin-top: 6px; }
-  .sorter.is-asking .sort-tools { grid-area: 1 / 2 / 3 / 3; align-self: start; padding-top: 0; }
+  .zone-head { flex-direction: row; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .zone-head h3 { white-space: nowrap; }
+  .sort-tools { grid-area: 2 / 2; align-self: start; margin-top: 8px; }
+  .sort-tools .btn { white-space: normal; text-align: left; line-height: 1.2; }
+  .sorter.is-asking .sort-how { visibility: hidden; }
+  /* width 0 + min-width 100 %: Die Rückfrage füllt ihre Fläche, macht die Zonenspalte (auto) aber nicht breiter */
+  .sorter.is-asking .sort-tools { grid-area: 1 / 2 / 3 / 4; align-self: start; width: 0; min-width: 100%; margin: 0; padding-top: 0; }
+}
+/* Schmales Querformat (unter 660 px): Für drei Spalten wäre die Karte zu schmal – Karte links, Zonen und „Rest“ rechts
+   untereinander wie bisher; die Anleitung bleibt hier nur für Screenreader (das Ziehen erklärt der Hinweis an der Karte). */
+@media (max-height: 520px) and (min-width: 560px) and (max-width: 659px) {
+  .sort-how { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .deck-meta { position: static; order: -1; width: 100%; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+  .sorter { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+  .deck { gap: 6px; }
+  .deck .card { grid-template-columns: 1fr auto; }
+  .deck .card-price { padding-top: 3px; }
+  .zones { grid-area: 1 / 2; }
+  .sort-tools { grid-area: 2 / 2; }
+  .sort-tools .btn { white-space: nowrap; }
+  .sorter.is-asking .sort-tools { grid-area: 1 / 2 / 3 / 3; }
 }
 
 /* ------------------------------------------------------------------
@@ -665,6 +733,36 @@ input[type="range"]::-moz-range-thumb {
         was euch bremst und was fehlt. Alles bleibt auf deinem Gerät; am Ende entsteht eine Datei
         für Hannes, die du selbst abschickst.
       </p>
+      <div class="note">
+        <h2 class="note-head">Vorab von Hannes</h2>
+        <div class="intro-path" id="introPath">
+          <svg class="intro-line" aria-hidden="true">
+            <path class="intro-way" pathLength="100"/>
+            <g><g class="intro-dot is-now"><circle class="intro-ring" r="7"/><circle class="intro-core" r="3"/></g></g>
+            <g><g class="intro-dot"><circle class="intro-ring" r="7"/></g></g>
+            <g><g class="intro-dot"><circle class="intro-ring" r="7"/></g></g>
+          </svg>
+          <ol role="list">
+            <li><span class="intro-mark"></span><strong>1 Bedarf</strong> <span>diese Umfrage</span> <span class="intro-here">du bist hier</span></li>
+            <li><span class="intro-mark"></span><strong>2 Technik</strong> <span>Server, Daten, Sicherheit, Tempo</span></li>
+            <li><span class="intro-mark"></span><strong>3 Zusage</strong> <span>wenn der Zeitrahmen steht</span></li>
+          </ol>
+        </div>
+        <p>
+          Die Umfrage kostet dich nichts und verpflichtet zu nichts. Solche Aufgaben packe ich gern an&nbsp;– fest zusagen
+          kann ich aber erst, wenn mein Zeitrahmen steht und die Nebentätigkeit mit meinem Arbeitgeber geklärt ist.
+        </p>
+        <p>
+          Ehrlich zum Risiko: Kleine, schicke Tools entstehen mit KI-Agenten heute schnell. Ein großes System mit
+          personenbezogenen Daten, Schnittstellen, eigenem Backend und vielen Nutzern braucht viele Schleifen und viel
+          Zeit&nbsp;– ein Rest Blackbox bleibt.
+        </p>
+        <p>
+          Die Aufgabe reizt mich trotzdem. Darum zuerst: Was braucht ihr wirklich? Das klärt diese Umfrage. Danach die
+          Technik: wo Server und Datenbank stehen, was gespeichert wird, wie sicher und wie schnell es sein muss.
+        </p>
+        <p class="note-sign">Hannes</p>
+      </div>
       <div class="entry-facts">
         <span><b>7</b> Stationen</span>
         <span><b>ein paar</b> Minuten</span>
@@ -680,25 +778,23 @@ input[type="range"]::-moz-range-thumb {
   <section class="step" data-step="1" aria-labelledby="h1">
     <div class="step-head">
       <h2 id="h1">Sortier die Bausteine.</h2>
-      <p class="lead">
-        Das sind die Module, aus denen QuoJob besteht – eins nach dem anderen.
-        Tipp die passende Zone an – oder halt die Karte kurz fest und zieh sie hinein.
-      </p>
+      <p class="lead">Das sind die Module, aus denen QuoJob besteht – eins nach dem anderen.</p>
     </div>
     <div class="sorter">
+    <p class="sort-how">Zone antippen oder Karte halten und ziehen.</p>
     <div class="deck" data-zone="pool" id="deck" aria-live="polite"></div>
     <div class="zones" id="zones">
-      <section class="zone" data-zone="keep" tabindex="0" aria-label="Zone: Brauchen wir">
+      <section class="zone" data-zone="keep" role="button" tabindex="0" aria-label="Brauchen wir, 0 Karten">
         <div class="zone-head"><h3><kbd>1</kbd>Brauchen wir</h3><span class="zone-count">0</span></div>
         <p class="zone-hint">Ohne das läuft der Laden nicht.</p>
         <div class="zone-list"></div>
       </section>
-      <section class="zone" data-zone="drop" tabindex="0" aria-label="Zone: Brauchen wir nicht">
+      <section class="zone" data-zone="drop" role="button" tabindex="0" aria-label="Brauchen wir nicht, 0 Karten">
         <div class="zone-head"><h3><kbd>2</kbd>Brauchen wir nicht</h3><span class="zone-count">0</span></div>
         <p class="zone-hint">Ballast. Weg damit.</p>
         <div class="zone-list"></div>
       </section>
-      <section class="zone" data-zone="unknown" tabindex="0" aria-label="Zone: Kenne ich nicht">
+      <section class="zone" data-zone="unknown" role="button" tabindex="0" aria-label="Kenne ich nicht, 0 Karten">
         <div class="zone-head"><h3><kbd>3</kbd>Kenne ich nicht</h3><span class="zone-count">0</span></div>
         <p class="zone-hint">Nie gesehen oder nie benutzt.</p>
         <div class="zone-list"></div>
@@ -707,12 +803,12 @@ input[type="range"]::-moz-range-thumb {
     <div class="sort-tools" id="sortTools"></div>
     </div>
     <section class="sorted" id="sorted" aria-label="Sortierte Karten">
-      <p class="small muted sorted-note">Antippen holt eine Karte zurück in den Stapel.</p>
+      <p class="small muted sorted-note">Eine Karte in dieser Liste antippen holt sie zurück in den Stapel.</p>
       <section class="sorted-group" data-list="keep" hidden><h3 class="sorted-head">Brauchen wir <span class="sorted-count">0</span></h3><div class="sorted-list"></div></section>
       <section class="sorted-group" data-list="drop" hidden><h3 class="sorted-head">Brauchen wir nicht <span class="sorted-count">0</span></h3><div class="sorted-list"></div></section>
       <section class="sorted-group" data-list="unknown" hidden><h3 class="sorted-head">Kenne ich nicht <span class="sorted-count">0</span></h3><div class="sorted-list"></div></section>
     </section>
-    <p class="small muted deck-help">Tasten 1, 2, 3 sortieren die aktuelle Karte. Eine Karte in einer Zone antippen holt sie zurück in den Stapel.</p>
+    <p class="small muted deck-help">Tasten 1, 2, 3 sortieren die aktuelle Karte. Das × an einer sortierten Karte holt sie zurück in den Stapel.</p>
   </section>
 
   <section class="step" data-step="2" aria-labelledby="h2">
@@ -922,11 +1018,15 @@ window.VAVE_DATA = {
 
   /* ---------------- Zustand ---------------- */
   // Budget-Werte sind Platzhalter (Reglermitte); sie zählen erst, wenn der Regler berührt wurde.
+  // Testlauf: test hält fest, ob der Stand unter index.html?test begonnen wurde (Start oder „Von vorn“). Danach zählt
+  // nur der Merker, nicht die URL beim Öffnen (siehe TEST, Station 7). Er bleibt im Browser, nicht im Export.
+  const TEST_URL = new URLSearchParams(location.search).has('test');
   function freshState() {
     return {
       step: 0,
       maxStep: 0, // höchste erreichte Station; die Route springt vorwärts höchstens bis dorthin
       startedAt: new Date().toISOString(),
+      test: TEST_URL,
       sort: {}, seq: {}, friction: {}, wishes: {}, customWishes: [], roles: {},
       budget: { current: 3000, currentUnknown: false, max: 3000, buildBuy: 50 },
       budgetTouched: { current: false, max: false, buildBuy: false },
@@ -943,19 +1043,25 @@ window.VAVE_DATA = {
   function upgrade(s) {
     if (!s || typeof s !== 'object') return null;
     const f = freshState();
-    if (!s.budgetTouched || typeof s.budgetTouched !== 'object') {
+    const legacy = !s.budgetTouched || typeof s.budgetTouched !== 'object'; // Fassung vor r02
+    if (legacy) {
       // Ohne Merker gilt ein Regler nur als bewegt, wenn er von der alten Vorgabe abweicht.
       const b = s.budget || {};
       s.budgetTouched = {};
       Object.keys(LEGACY_BUDGET).forEach(k => { s.budgetTouched[k] = typeof b[k] === 'number' && b[k] !== LEGACY_BUDGET[k]; });
     }
+    const marked = typeof s.test === 'boolean';
     Object.keys(f).forEach(k => { if (s[k] === undefined || s[k] === null) s[k] = f[k]; });
+    // Stände vor r05 kennen den Test-Merker nicht: null = unbekannt, dann gilt die URL beim Öffnen (die sichere Seite).
+    if (!marked) s.test = null;
     s.budget = Object.assign({}, f.budget, s.budget);
     s.budgetTouched = Object.assign({}, f.budgetTouched, s.budgetTouched);
     // Kaufen/Bauen kennt fünf Stufen (Werte wie BB_STAGES[].v, Station 5). Ein Wert dazwischen stammt aus der
     // stufenlosen Fassung, dort hieß z. B. 40 oder 60 „Offen“. Nicht still umdeuten: gilt als nicht eingestellt,
-    // Station 5 fragt neu.
-    if (![0, 35, 50, 65, 100].includes(s.budget.buildBuy)) { s.budget.buildBuy = f.budget.buildBuy; s.budgetTouched.buildBuy = false; }
+    // Station 5 fragt neu. Ohne budgetTouched (Fassung vor r02) gilt das auch für 35 und 65 – dort hieß alles von
+    // 35 bis 65 „Offen“; nur 0 und 100 meinen dasselbe wie heute, 50 ist die alte Vorgabe und bleibt offen.
+    const stages = legacy ? [0, 50, 100] : [0, 35, 50, 65, 100];
+    if (!stages.includes(s.budget.buildBuy)) { s.budget.buildBuy = f.budget.buildBuy; s.budgetTouched.buildBuy = false; }
     // Stände vor r04 kennen maxStep nicht: dann gilt die Station, auf der man stand, als höchste erreichte
     // (vor dem Zurücksetzen auf 5 – die Route sperrt 6 und 7 ohnehin, solange das Budget offen ist).
     const int = v => (Number.isInteger(v) ? v : 0);
@@ -1195,6 +1301,38 @@ window.VAVE_DATA = {
     }
   }
 
+  /* ---------------- Station 0: Einstieg ---------------- */
+  // Pfad in der Notiz von Hannes: Bedarf, Technik, Zusage. CSS stellt die drei Schritte nebeneinander oder untereinander
+  // und markiert je Schritt den Platz des Punkts (.intro-mark); Linie und Punkte liegen in Pixeln darauf, bei jeder Größe
+  // neu (auch wenn der Eingang wieder sichtbar wird). Einzeichnen genau einmal je Seitenaufruf, nur wenn er auf dem Eingang
+  // beginnt, sobald die Seite sichtbar ist: Die Linie läuft durch, jeder Punkt steht, sobald sie ihn erreicht (≤ 1,5 s).
+  // Zurück über Route oder „Zurück“ und bei reduzierter Bewegung steht der Pfad fertig da.
+  const INTRO_WAIT = 250, INTRO_DRAW = 900, INTRO_DOT = 240; // erst nach stepIn (0,24 s); letzter Punkt steht nach 1,31 s
+  function introPath() {
+    const wrap = $('#introPath'), way = $('.intro-way', wrap), dots = $$('.intro-dot', wrap), marks = $$('.intro-mark', wrap);
+    let pts = [], anims = [];
+    function layoutIntro() {
+      const box = wrap.getBoundingClientRect();
+      if (!box.width) { anims.forEach(a => a.finish()); anims = []; return; } // Eingang verlassen: bei Rückkehr fertig
+      pts = marks.map(m => { const r = m.getBoundingClientRect(); return [r.left + r.width / 2 - box.left, r.top + r.height / 2 - box.top]; });
+      way.setAttribute('d', 'M' + pts.map(p => p.join(' ')).join(' L'));
+      dots.forEach((g, i) => g.parentNode.setAttribute('transform', `translate(${pts[i].join(' ')})`));
+    }
+    function drawIntro() {
+      if (state.step !== 0 || !pts.length) return;
+      const seg = pts.slice(1).map((p, i) => Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1])), len = seg.reduce((a, b) => a + b, 0) || 1;
+      let run = 0;
+      const at = [0].concat(seg.map(s => (run += s) / len)); // Anteil der Linie bis zum Punkt
+      anims = [way.animate([{ strokeDashoffset: '100' }, { strokeDashoffset: '0' }], { duration: INTRO_DRAW, delay: INTRO_WAIT, easing: 'linear', fill: 'backwards' })]
+        .concat(dots.map((g, i) => g.animate([{ opacity: 0, transform: 'scale(.3)' }, { opacity: 1, transform: 'scale(1)' }],
+          { duration: INTRO_DOT, delay: INTRO_WAIT + Math.max(0, INTRO_DRAW * at[i] - 80), easing: 'ease-out', fill: 'backwards' })));
+    }
+    layoutIntro();
+    if (window.ResizeObserver) new ResizeObserver(layoutIntro).observe(wrap); else window.addEventListener('resize', layoutIntro);
+    if (state.step !== 0 || REDUCED || !way.animate) return;
+    if (document.hidden) document.addEventListener('visibilitychange', drawIntro, { once: true }); else drawIntro();
+  }
+
   /* ---------------- Station 1: Sortieren ---------------- */
   const deck = $('#deck'), zonesEl = $('#zones'), stepSort = $('.step[data-step="1"]');
   const sortTools = $('#sortTools'), sortedEl = $('#sorted');
@@ -1205,14 +1343,23 @@ window.VAVE_DATA = {
 
   function unsorted() { return ORDER.filter(m => !state.sort[m.id]); }
   function currentCard() { return unsorted()[0] || null; }
-  function cardHtml(m, inZone) {
-    return `<div class="card${inZone ? ' is-placed' : ' is-enter'}${inZone && m.id === lastMoved ? ' is-new' : ''}" role="${inZone ? 'button' : 'group'}" tabindex="${inZone ? 0 : -1}" data-id="${m.id}" data-group="${m.group}" aria-label="${esc(m.name)}${inZone ? ', zurück in den Stapel' : ''}">
-      <span class="card-name">${esc(m.name)}</span>
+  // Karte im Stapel ('deck'), in einer Zone ('zone', breit) oder in der Liste „Sortierte Karten“ ('list', Leiste).
+  // Zurückholen hat ein eigenes Ziel: in der Zone nur der Knopf „ד (ein Tipp auf die Karte selbst gilt der Zone),
+  // in der Liste die ganze Karte.
+  function cardHtml(m, where) {
+    const placed = where !== 'deck', name = esc(m.name), x = '<span class="unassign" aria-hidden="true">×</span>';
+    const attrs = where === 'deck' ? `role="group" tabindex="-1" aria-label="${name}"`
+      : where === 'list' ? `role="button" tabindex="0" aria-label="${name}, zurück in den Stapel"` : '';
+    return `<div class="card${placed ? ' is-placed' : ' is-enter'}${placed && m.id === lastMoved ? ' is-new' : ''}" ${attrs} data-id="${m.id}" data-group="${m.group}">
+      <span class="card-name">${name}</span>
       <span class="card-price">${m.price ? m.price + ' €/Monat' : 'in Lizenz'}</span>
       <span class="card-desc">${esc(m.desc)}</span>
-      ${inZone ? '<span class="unassign" aria-hidden="true">×</span>' : ''}
+      ${where === 'list' ? x : where === 'zone' ? `<button type="button" class="recall" aria-label="${name} zurückholen" title="Zurück in den Stapel">${x}</button>` : ''}
     </div>`;
   }
+  // Zonen sind Knöpfe: Name (Überschrift ohne Tastenhinweis) und Anzahl, z. B. „Brauchen wir, 3 Karten“.
+  const zoneName = z => Array.from($('h3', z).childNodes).filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
+  const zoneLabel = (z, n) => `${zoneName(z)}, ${n} ${n === 1 ? 'Karte' : 'Karten'}`;
   // „Rest zu ‚Kenne ich nicht‘“ fragt erst nach und nennt die Anzahl; Enter auf „Abbrechen“ verschiebt nichts.
   function renderTools(left) {
     if (left < 2) confirmRest = false;
@@ -1231,20 +1378,20 @@ window.VAVE_DATA = {
         <div class="deck-stack">
           ${rest[2] ? '<div class="deck-ghost g2"></div>' : ''}
           ${rest[1] ? '<div class="deck-ghost g1"></div>' : ''}
-          ${cardHtml(cur, false)}
+          ${cardHtml(cur, 'deck')}
           <p class="drag-hint" aria-hidden="true">Kurz halten, dann ziehen</p>
         </div>
         <div class="deck-meta"><span>Karte ${D.modules.length - rest.length + 1} von ${D.modules.length}, Bereich ${esc(D.groups[cur.group])}</span></div>`;
     } else {
-      deck.innerHTML = '<div class="deck-empty">Alles sortiert. Zum Umschichten eine sortierte Karte antippen – sie kommt zurück in den Stapel.</div>';
+      deck.innerHTML = `<div class="deck-empty">Alles sortiert. Zum Umschichten ${bar ? 'unten in der Liste eine Karte antippen' : 'bei einer Karte auf × tippen'} – sie kommt zurück in den Stapel.</div>`;
     }
     $$('.zone', zonesEl).forEach(z => {
       const key = z.dataset.zone, group = $(`.sorted-group[data-list="${key}"]`, sortedEl);
       const items = ORDER.filter(m => state.sort[m.id] === key).sort((a, b) => (state.seq[b.id] || 0) - (state.seq[a.id] || 0));
-      const html = items.map(m => cardHtml(m, true)).join('');
-      $('.zone-list', z).innerHTML = bar ? '' : html;
-      $('.sorted-list', group).innerHTML = bar ? html : '';
+      $('.zone-list', z).innerHTML = bar ? '' : items.map(m => cardHtml(m, 'zone')).join('');
+      $('.sorted-list', group).innerHTML = bar ? items.map(m => cardHtml(m, 'list')).join('') : '';
       $('.zone-count', z).textContent = $('.sorted-count', group).textContent = items.length;
+      z.setAttribute('aria-label', zoneLabel(z, items.length));
       group.hidden = !items.length;
     });
     $('.sorted-note', sortedEl).hidden = rest.length === D.modules.length;
@@ -1320,25 +1467,45 @@ window.VAVE_DATA = {
     if (f) f.focus({ preventScroll: true });
   }
 
+  // Doppeltipp (Finger oder Maus): Höchstens TAP_GAP ms nach einem Tipp auf „Rest“, „Ja“ oder „Abbrechen“ verschiebt kein
+  // Tipp eine Karte – die Rückfrage erscheint unter dem Finger, die Liste darunter rückt nach („Ja“, Zone, Zurückholen
+  // zählen nicht; „Abbrechen“ schon). Ein Tipp auf eine Zone zählt nicht, wenn der vorige auf eine Zone höchstens TAP_GAP ms
+  // zurückliegt – er sortierte sonst die nächste, noch ungelesene Karte mit. Auch ein verworfener Tipp zählt als voriger.
+  // Tastatur und Screenreader lösen Klicks ohne Zählung aus (detail 0) und sind ausgenommen.
+  const TAP_GAP = 400, lastTap = { zone: -Infinity, rest: -Infinity };
+  const quickAfter = (kind, e, now) => e.detail > 0 && now - lastTap[kind] <= TAP_GAP;
   let suppressClick = false;
   stepSort.addEventListener('click', e => {
     if (suppressClick) { suppressClick = false; return; }
+    const now = performance.now(), afterRest = quickAfter('rest', e, now);
     const tool = e.target.closest('#restUnknown, #restYes, #restNo');
-    if (tool) { restTool(tool.id); return; }
-    const card = e.target.closest('.card');
-    if (card && card.classList.contains('is-placed')) { assign(card.dataset.id, 'pool', card); return; }
-    if (card) return; // Stapelkarte: ziehen oder Zone antippen
-    const zone = e.target.closest('.zone');
-    const cur = currentCard();
-    if (zone && cur) assign(cur.id, zone.dataset.zone, $('.deck .card'));
+    if (tool) {
+      if (e.detail) lastTap.rest = now;
+      if (!afterRest || tool.id !== 'restYes') restTool(tool.id);
+      return;
+    }
+    const recall = e.target.closest('.recall, #sorted .card.is-placed'); // eigenes Ziel: „ד an der Karte oder Karte in der Liste
+    if (recall) {
+      const card = recall.closest('.card');
+      if (!afterRest) assign(card.dataset.id, 'pool', card);
+      return;
+    }
+    const zone = e.target.closest('.zone'); // irgendwo in der Zone, auch auf einer dort liegenden Karte
+    if (!zone) return;
+    const afterZone = quickAfter('zone', e, now), cur = currentCard();
+    if (e.detail) lastTap.zone = now;
+    if (cur && !afterZone && !afterRest) assign(cur.id, zone.dataset.zone, $('.deck .card'));
   });
+  // Enter und Leertaste: auf der Zone wie ein Tipp, auf einer Karte der Liste „Sortierte Karten“ zurückholen.
+  // Echte Knöpfe (×, „Rest“) lösen selbst einen Klick aus.
   stepSort.addEventListener('keydown', e => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    const card = e.target.closest('.card');
-    if (card && card.classList.contains('is-placed')) { e.preventDefault(); assign(card.dataset.id, 'pool', card); return; }
-    const zone = e.target.closest('.zone');
+    const t = e.target;
+    if (t.matches('#sorted .card.is-placed')) { e.preventDefault(); assign(t.dataset.id, 'pool', t); return; }
+    if (!t.classList.contains('zone')) return;
+    e.preventDefault();
     const cur = currentCard();
-    if (zone && cur) { e.preventDefault(); assign(cur.id, zone.dataset.zone, $('.deck .card')); }
+    if (cur) assign(cur.id, t.dataset.zone, $('.deck .card'));
   });
   document.addEventListener('keydown', e => {
     if (state.step !== 1 || e.target.matches('input, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -1351,7 +1518,7 @@ window.VAVE_DATA = {
   // Halten (LIFT_MS) – die Karte gibt dabei sofort nach und zeigt eine Halte-Linie (.is-pressing). Bewegt sich der
   // Finger vorher, ist es ein Wisch: Die Seite scrollt, nichts wird zugeordnet, die Karte sagt „Kurz halten, dann ziehen“.
   // Angehoben schwebt die Karte kompakt über dem Finger und nie über den Zonen; die Zone darunter zeigt, wo sie landet.
-  // Sortierte Karten werden per Touch nur angetippt (zurückholen), nie gezogen.
+  // Sortierte Karten werden per Touch nie gezogen; der Knopf „ד ist nie Griff zum Ziehen.
   const LIFT_MS = 220;
   let drag = null, hintTimer = 0;
   function dragHint() {
@@ -1379,7 +1546,7 @@ window.VAVE_DATA = {
   }
   stepSort.addEventListener('pointerdown', e => {
     const card = e.target.closest('.card');
-    if (!card || e.button !== 0 || busy) return;
+    if (!card || e.button !== 0 || busy || e.target.closest('.recall')) return;
     const mouse = e.pointerType === 'mouse';
     if (!mouse && card.classList.contains('is-placed')) return;
     if (drag) endDrag(null, false);
@@ -1800,9 +1967,14 @@ window.VAVE_DATA = {
   /* ---------------- Station 7: Ergebnis ---------------- */
   const resultEl = $('#result');
   const HANNES = 'hannes@pix-el.de'; // Empfänger der Ergebnisse, einzige Stelle der Adresse
-  // Testlauf über den öffentlichen Link (index.html?test): Dateiname, Betreff, Mailtext, Brief und respondent tragen „Test“
-  const TEST = new URLSearchParams(location.search).has('test');
-  const WHO = TEST ? D.respondent + ' (Test)' : D.respondent;
+  // Testlauf über den öffentlichen Link (index.html?test): Dateiname, Betreff, Mailtext, Brief und respondent tragen „Test“.
+  // Maßgeblich ist der Merker des Stands (Zustand), die URL nur bei Ständen ohne Merker. Neu gesetzt beim Laden und nach „Von vorn“.
+  let TEST, WHO;
+  function syncTest() {
+    TEST = typeof state.test === 'boolean' ? state.test : TEST_URL;
+    WHO = TEST ? D.respondent + ' (Test)' : D.respondent;
+  }
+  syncTest();
   // Touch als Hauptzeiger (Handy, Tablet): mailto – dort öffnet sich eine .eml nicht als Entwurf. Maus/Trackpad: die .eml.
   const TOUCH = matchMedia('(pointer: coarse)').matches;
   function renderResult() {
@@ -1876,7 +2048,7 @@ window.VAVE_DATA = {
     });
     $('#restart').addEventListener('click', () => {
       if (!confirm('Alle Antworten löschen und von vorn beginnen?')) return;
-      state = freshState(); save(); goTo(0);
+      state = freshState(); syncTest(); save(); goTo(0);
     });
     finale();
   }
@@ -2017,6 +2189,7 @@ window.VAVE_DATA = {
   $$('[data-respondent]').forEach(el => { el.textContent = D.respondent; });
   buildRoute();
   goTo(state.step, true);
+  introPath();
 })();
 </script>
 </body>

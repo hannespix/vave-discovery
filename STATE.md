@@ -1,11 +1,11 @@
 # STATE — lebender Zustand (max. 150 Zeilen, wird jede Runde fortgeschrieben)
 
-Stand: Runde r04 · 2026-09-29 · Meilenstein **M1 Umfrage** · nächstes Gate **G0** (Freigabe), danach **G1**
+Stand: Runde r05 (Korrekturschleife K1/K2 läuft) · 2026-09-29 · Meilenstein **M1 Umfrage** · **Versand an Tobias: jetzt**
 
 ## Aktueller Meilenstein
-M1 — Umfrage (7 Stationen). PR #4 (r04) wird im Auftrag von Hannes gemergt (pauschal: nach jedem Update PR, Merge,
-Pages-Deploy); danach zeigt https://hannespix.github.io/vave-discovery/ den Stand r04. Link nur als `…/?test` an
-Testpersonen (ZZ 3), **noch nicht an Tobias**: B1, ZZ 2 (D-005, E3, E7, E8) und das Einfrieren (ZZ 5) sind offen.
+M1 — Umfrage. **Hannes (Chat, 2026-09-29): „Jetzt mach mal fertig! Ich will es abschicken!“** → r05 (`2354545`) wird
+gemergt und deployt, der Link https://hannespix.github.io/vave-discovery/ (ohne `?test`) geht an Tobias. Bewusst vor
+B1/D-005, E3, E7, E9: die Auswertung (M2/G2) berücksichtigt sie. K1/K2 folgen als eigener PR. Eintrag in `DECISIONS.md`: Hannes.
 
 ## Offene Gates
 - **G0** — Kriterien 3/3 erfüllt, Freigabe durch Hannes ausstehend (seit r03, kein Eintrag in `DECISIONS.md`).
@@ -25,7 +25,7 @@ Testpersonen (ZZ 3), **noch nicht an Tobias**: B1, ZZ 2 (D-005, E3, E7, E8) und 
 - **B1 · Regel 1 schlägt Zielbild C bei Unwissen vor** (Nr. 1, seit r02). `keptBack` zählt nur `keep`; „Kenne ich
   nicht“ senkt es wie „weg“ (ROADMAP M2, Regel 1: `bb ≥ 70` und `keptBack ≤ 2` von 14 Finanz-/Gruppen-Karten).
   Verschärft durch die Doppeltipp-Falle am Rest-Knopf (ZZ 1): 25 Karten können ungelesen in „Kenne ich nicht“ landen.
-  Lösung D-005 (ZZ 2), Umsetzung ZZ 5. Blockiert den Versand an Tobias, nicht r05/r06. Kein neuer Blocker aus r04.
+  Lösung D-005 (ZZ 2). Hannes verschickt trotzdem (2026-09-29): die Auswertung wendet D-005 an, Rohdaten bleiben.
 
 ## Offene Entscheidungen (Hannes; Entwürfe D-004/D-005 in PR #2)
 Seit Ende r02 offen, r03 und r04 ohne Eintrag → halbiert. **Vor dem Einfrieren nötig** (legen fest, was gemessen wird):
@@ -39,6 +39,9 @@ Seit Ende r02 offen, r03 und r04 ohne Eintrag → halbiert. **Vor dem Einfrieren
   Vorschlag red-team: Zeile in Brief und Mailtext „nach erster Ergebnisanzeige geändert: … (A → C)“, ohne Schemafeld.
 - **E8 · Versandweg** (neu r04) — Adresse `hannes@pix-el.de` bestätigen (diktiert „Hannes at pics-el.de“) und annehmen,
   dass an Handy und Tablet Brief und Daten im Mailtext stehen statt im Anhang (mailto kann keine Anhänge).
+- **E9 · Vorwort vor der Messung** (neu r05, red-team „mittel“) — Risiko-Absatz rahmt `bb`/`keptBack` vor Station 1–5;
+  (a) nur Satz 1 + Pfad vorn, Rest vor „An Hannes schicken“ · (b) Zusatzsatz + Station 5 „egal von wem“ · (c) Text bleibt,
+  Brief/G2 werten `bb` ±1 Stufe. Mit dem Versand jetzt gilt faktisch (c). **E10** · Nebentätigkeit öffentlich ok? (noindex kommt mit K2)
 - **„Vollständig“ in G1** — Vorschlag: (1) Kaufen-oder-Bauen eingestellt, (2) Mindestzahl aus D-005 an sortierten
   Finanz-/Gruppen-Karten erreicht, (3) ist mindestens eine davon behalten, hat mindestens die Hälfte der behaltenen
   einen Reibungswert, (4) Export besteht `npm run check`. Sonst Zweig „unvollständig“ (Runde „Umfrage kürzen“).
@@ -144,6 +147,4 @@ Seit Ende r02 offen, r03 und r04 ohne Eintrag → halbiert. **Vor dem Einfrieren
 - Output-Ordner sind nicht exklusiv: Ergebnisse immer in Git committen.
 
 ## Nächste Runde startet mit
-`/loop 1` (Station 1 absichern, Zustand und Test-Markierung) als r05 auf einem neuen Branch von `main`, erst nach dem
-Merge von PR #4 und `git fetch` (Worktrees starten auf `origin/main`). Parallel bei Hannes: G0 freigeben, ZZ 2,
-ZZ 3 mit https://hannespix.github.io/vave-discovery/?test (Testpersonen nur mit `?test`).
+K1/K2 (Korrekturschleife r05) mergen, Folge-PR, Deploy; dann gatekeeper: ZZ neu ableiten (Versand läuft → Auswertung M2).
