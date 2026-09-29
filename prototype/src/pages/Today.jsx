@@ -45,13 +45,19 @@ const sameCombo = (t, c) => Boolean(t) && t.project === c.project && (t.task ?? 
   && String(t.note ?? '').trim() === String(c.note ?? '').trim();
 
 // Ein Play-Zeichen überall (base.css .btn-play): rund, gefülltes Dreieck. Hier nur Start – der laufende Zustand steht als
-// „läuft“ (Limette) an der Zeile; gestoppt wird in der Hülle.
+// „läuft“ an der Zeile; gestoppt wird in der Hülle.
 function PlayButton({ label, onClick }) {
   return (
     <button type="button" className="btn-play today-play" aria-label={label} title={label} onClick={onClick}>
       <Play aria-hidden="true" fill="currentColor" />
     </button>
   );
+}
+
+// Laufender Timer an der Zeile (r08): violetter Punkt + Wort wie „● Timer läuft“ in Zeiten – Violett = laufender Timer,
+// Limette bleibt dem Zustand „ausgewählt/offen“ vorbehalten.
+function Running() {
+  return <span className="today-live"><span className="dot today-live__dot" aria-hidden="true" />läuft</span>;
 }
 
 function DayGoal({ minutes }) {
@@ -200,7 +206,7 @@ export default function Today() {
                           </p>
                         </div>
                         <div className="today-row__aside">
-                          {here && <span className="badge badge-lime">läuft</span>}
+                          {here && <Running />}
                           <span className="today-row__num num">{hm(e.minutes)} h</span>
                           <PlayButton label={`Fortsetzen: ${title}`} onClick={() => play(combo, e.id, title, 'fortsetzen')} />
                         </div>
@@ -244,7 +250,7 @@ export default function Today() {
                             </p>
                           </div>
                           <div className="today-row__aside">
-                            {here && <span className="badge badge-lime">läuft</span>}
+                            {here && <Running />}
                             <span className="today-row__num today-row__num--quiet num">
                               <span className="visually-hidden">gebucht </span>{hours(t.bookedMin / 60)}
                               {estimate > 0 && (
