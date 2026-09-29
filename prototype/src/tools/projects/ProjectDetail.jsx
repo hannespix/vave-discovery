@@ -1,159 +1,104 @@
-// Projektdetail: Kopf mit kompakter Budgetzeile, gleich danach das Aufgaben-Board (auf dem Handy ohne langen Weg),
-// darunter Details: Kennzahlen, Budget als SVG mit Klartext, Team.
-import { useId } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { projects, projectStatusLabel, tasks as seedTasks, timeEntries as sampleEntries } from '../../data/sample.js';
+// Projektdetail (r07): Titel aus Code und Name, darunter Eigenschaften als Chips (Status, Lead, Studio, Abgabe,
+// Budget-Rest), dann Tabs als Links mit aria-current: Aufgaben | Übersicht | Zeiten. Keine Einleitung.
+import { ArrowLeft, CalendarDays } from 'lucide-react';
+import { projects, tasks as seedTasks, timeEntries as sampleEntries } from '../../data/sample.js';
 import { useStoredState } from '../../lib/store.js';
 import { cleanEntries, cleanTasks } from '../../lib/data.js';
 import { spentHours } from '../../lib/budget.js';
 import { href } from '../../lib/router.js';
-import { STATUSES, budgetIcon, budgetInfo, clientById, daysUntil, fmtDay, fmtH, personById, relDays } from './helpers.js';
-import { Avatar, BudgetMeter, StudioTag } from './parts.jsx';
+import { budgetInfo, clientById, fmtDay, fmtH, fmtKw, isDay, isoWeek, parseDay, personById, studioById } from './helpers.js';
+import { Avatar, StateIcon, StatusDot } from './parts.jsx';
 import TaskBoard from './TaskBoard.jsx';
+import Overview from './Overview.jsx';
+import ProjectTimes from './ProjectTimes.jsx';
+
+export const TABS = [
+  { key: 'aufgaben', label: 'Aufgaben' },
+  { key: 'uebersicht', label: 'Übersicht' },
+  { key: 'zeiten', label: 'Zeiten' },
+];
 
 function BackLink() {
   return (
     <a className="btn btn-ghost pj-back" href={href('/projekte')}>
-      <ArrowLeft size={20} aria-hidden="true" /> Alle Projekte
+      <ArrowLeft size={18} aria-hidden="true" /> Alle Projekte
     </a>
   );
 }
 
-// Balken: Budget = volle Spur, Gebuchtes darüber; Markierungen bei 80 % (knapp) und 100 % (Budget).
-// Das SVG ist Zierde – dieselbe Aussage steht darunter als Klartext.
-function BudgetChart({ spent, budget }) {
-  const b = budgetInfo(spent, budget);
-  const Icon = budgetIcon[b.state];
-  const max = Math.max(spent, budget) || 1;
-  const x = v => (v / max) * 100;
-  const sentence = b.rest < 0
-    ? `Überzogen um ${fmtH(-b.rest)}.`
-    : `${b.state === 'warn' ? 'Knapp' : 'Im Rahmen'}: noch ${fmtH(b.rest)} frei.`;
+function RestChip({ info }) {
+  const over = info.rest < 0;
   return (
-    <figure className={`pj-chart is-${b.state}`}>
-      <p className="pj-chart-state">
-        <Icon size={22} aria-hidden="true" />
-        <span>Budget {b.label}</span>
-        <strong className="num">{b.percent} %</strong>
-      </p>
-      <div>
-        <svg className="pj-chart-svg" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          <rect className="pj-chart-track" x="0" y="6" width={x(budget)} height="20" />
-          <rect className="pj-chart-fill" x="0" y="6" width={x(Math.min(spent, budget))} height="20" />
-          {spent > budget && <rect className="pj-chart-over" x={x(budget)} y="6" width={x(spent - budget)} height="20" />}
-          <line className="pj-chart-mark" x1={x(budget * 0.8)} x2={x(budget * 0.8)} y1="1" y2="31" />
-          <line className="pj-chart-mark is-budget" x1={x(budget)} x2={x(budget)} y1="0" y2="32" />
-        </svg>
-        <div className="pj-chart-scale" aria-hidden="true">
-          <span style={{ left: `${x(budget * 0.8)}%` }}>80 %</span>
-          <span style={{ left: `${x(budget)}%` }}>100 %</span>
-        </div>
-      </div>
-      <figcaption className="pj-chart-text">
-        <span className="num">{b.percent} % des Budgets gebucht: {fmtH(b.spent)} von {fmtH(budget)}. {sentence}</span>
-        <span className="quiet"> Ampel: unter 80 % im Rahmen, 80 bis 100 % knapp, darüber überzogen.</span>
-      </figcaption>
-    </figure>
+    <li className={`chip pj-prop-rest is-${info.state}`}>
+      <StateIcon state={info.state} size={16} />
+      <span className="visually-hidden">Budget: </span>
+      <span className="num">{over ? `${fmtH(-info.rest)} überzogen` : `${fmtH(info.rest)} Rest`}</span>
+      {info.state === 'warn' && <span>· knapp</span>}
+    </li>
   );
 }
 
-export default function ProjectDetail({ id, taskId }) {
+export default function ProjectDetail({ id, tab = 'aufgaben', taskId }) {
   const [tasks, setTasks] = useStoredState('tasks', seedTasks, cleanTasks);
-  // Buchungen der Zeiterfassung nur lesen – der Setter bleibt ungenutzt
+  // Buchungen lesen; geschrieben wird nur über den gemeinsamen Timer (lib/timer.js)
   const [entries] = useStoredState('time-entries', sampleEntries, cleanEntries);
-  const ids = { budget: useId(), team: useId(), tasks: useId(), details: useId(), meter: useId() };
   const p = projects.find(x => x.id === id);
 
   if (!p) {
     return (
       <section className="pj-page" aria-labelledby="pj-title">
         <BackLink />
-        <header className="pj-head">
-          <p className="eyebrow">Projekte</p>
-          <h1 id="pj-title" tabIndex={-1}>Nicht gefunden</h1>
-        </header>
-        <p className="muted">Zu dieser Adresse gibt es kein Projekt. Die Übersicht zeigt alle Projekte.</p>
+        <h1 id="pj-title" tabIndex={-1}>Nicht gefunden</h1>
+        <p className="muted">Zu dieser Adresse gibt es kein Projekt. Die Liste zeigt alle Projekte.</p>
       </section>
     );
   }
 
-  const spent = spentHours(p, entries);
-  const b = budgetInfo(spent, p.budget);
-  const StateIcon = budgetIcon[b.state];
-  const mine = tasks.filter(t => t.project === p.id && STATUSES.includes(t.status));
-  const open = mine.filter(t => t.status !== 'done');
-  const overdue = open.filter(t => t.due && daysUntil(t.due) < 0).length;
-  const memberIds = [...new Set([p.lead, ...mine.map(t => t.assignee)])].filter(pid => personById[pid]);
+  const info = budgetInfo(spentHours(p, entries), p.budget);
+  const lead = personById[p.lead];
+  const studio = studioById[p.studio];
+  const due = isDay(p.due) ? parseDay(p.due) : null;
+  const current = TABS.find(t => t.key === tab) || TABS[0];
 
   return (
     <article className="pj-page pj-detail" aria-labelledby="pj-title">
       <BackLink />
-      <header className="pj-head">
-        <p className="eyebrow">Projekte · <span className="num">{p.code}</span></p>
-        <h1 id="pj-title" className="pj-detail-title" tabIndex={-1}>{p.name}</h1>
-        <p className="pj-sub">
-          <span>{clientById[p.client]?.name}</span>
-          <StudioTag id={p.studio} />
-          <span className="badge">{projectStatusLabel[p.status]}</span>
-        </p>
-        <BudgetMeter id={ids.meter} spent={spent} budget={p.budget} withRest className="pj-budget-compact" />
+      <header className="pj-dhead">
+        <p className="overline pj-client">{clientById[p.client]?.name}</p>
+        <h1 id="pj-title" className="pj-dtitle" tabIndex={-1}>
+          <span className="pj-dcode num">{p.code}</span> {p.name}
+        </h1>
+        <ul className="pj-props" aria-label="Eigenschaften">
+          <li className="chip"><span className="visually-hidden">Status: </span><StatusDot status={p.status} /></li>
+          {lead && (
+            <li className="chip pj-prop-lead">
+              <Avatar person={lead} size="is-xs" /><span className="visually-hidden">Lead: </span>{lead.name}
+            </li>
+          )}
+          {studio && (
+            <li className="chip">
+              <span className="pj-dot" style={{ background: studio.color }} aria-hidden="true" />
+              <span className="visually-hidden">Studio: </span>{studio.name}
+            </li>
+          )}
+          <li className="chip">
+            <CalendarDays size={16} aria-hidden="true" />
+            <span className="visually-hidden">Abgabe: </span>
+            <span className="num">{due ? `${fmtDay(p.due, { day: '2-digit', month: '2-digit', year: 'numeric' })} · ${fmtKw(isoWeek(due))}` : 'ohne Abgabe'}</span>
+          </li>
+          <RestChip info={info} />
+        </ul>
+        <nav className="pj-tabs" aria-label="Ansichten des Projekts">
+          {TABS.map(t => (
+            <a key={t.key} className="pj-tab" href={href(`/projekte/${p.id}/${t.key}`)}
+              aria-current={t.key === current.key ? 'page' : undefined}>{t.label}</a>
+          ))}
+        </nav>
       </header>
 
-      <section className="pj-tasks" aria-labelledby={ids.tasks}>
-        <div className="pj-tasks-head">
-          <h2 id={ids.tasks} className="pj-h2" tabIndex={-1}>Aufgaben</h2>
-          <p className="quiet num">
-            {open.length} offen von {mine.length}
-            {overdue > 0 && <> · <span className="pj-overdue-sum">{overdue} überfällig</span></>}
-          </p>
-        </div>
-        <TaskBoard project={p} tasks={tasks} setTasks={setTasks} headingId={ids.tasks} taskId={taskId} />
-      </section>
-
-      <section className="pj-details" aria-labelledby={ids.details}>
-        <h2 id={ids.details} className="pj-h2">Details</h2>
-        <dl className="pj-kpis">
-          <div className="pj-kpi"><dt>Budget</dt><dd className="num">{fmtH(p.budget)}</dd></div>
-          <div className="pj-kpi"><dt>Gebucht</dt><dd className="num">{fmtH(b.spent)}<span className="pj-kpi-sub">{b.percent} % vom Budget</span></dd></div>
-          <div className={`pj-kpi is-${b.state}`}>
-            <dt>Rest</dt>
-            <dd className="num">{b.rest < 0 ? '−' : ''}{fmtH(Math.abs(b.rest))}
-              <span className="pj-kpi-sub"><StateIcon size={16} aria-hidden="true" /> {b.rest < 0 ? 'über Budget' : b.label}</span>
-            </dd>
-          </div>
-          <div className="pj-kpi">
-            <dt>Fällig</dt>
-            <dd className="num">{p.due ? fmtDay(p.due) : 'ohne Termin'}{p.due && <span className="pj-kpi-sub">{relDays(daysUntil(p.due))}</span>}</dd>
-          </div>
-          <div className="pj-kpi pj-kpi-wide"><dt>Phase</dt><dd>{p.phase}</dd></div>
-        </dl>
-
-        <div className="pj-detail-grid">
-          <section className="card pj-panel" aria-labelledby={ids.budget}>
-            <h3 id={ids.budget} className="pj-h3">Budget</h3>
-            <BudgetChart spent={spent} budget={p.budget} />
-          </section>
-          <section className="card pj-panel" aria-labelledby={ids.team}>
-            <h3 id={ids.team} className="pj-h3">Team</h3>
-            <ul className="pj-team">
-              {memberIds.map(pid => {
-                const m = personById[pid];
-                return (
-                  <li key={pid} className="pj-member">
-                    <Avatar person={m} />
-                    <div className="pj-member-text">
-                      <p className="pj-member-name">
-                        {m.name}{pid === p.lead && <span className="badge badge-lime">Leitung</span>}
-                      </p>
-                      <p className="quiet">{m.role} · <StudioTag id={m.studio} /></p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        </div>
-      </section>
+      {current.key === 'aufgaben' && <TaskBoard project={p} tasks={tasks} setTasks={setTasks} entries={entries} taskId={taskId} />}
+      {current.key === 'uebersicht' && <Overview project={p} entries={entries} tasks={tasks} />}
+      {current.key === 'zeiten' && <ProjectTimes project={p} entries={entries} tasks={tasks} />}
     </article>
   );
 }

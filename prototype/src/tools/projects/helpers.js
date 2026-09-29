@@ -55,3 +55,20 @@ export const fmtDayShort = iso => fmtDate(parseDay(iso), { weekday: 'short', day
 export const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('de-DE').trim();
 
 export const initials = name => (name || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+
+// Stunden immer mit einer Nachkommastelle („2,0“) – für „gebucht / geschätzt“
+export const fmt1 = h => (Math.round(h * 10) / 10).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+// Rest mit Vorzeichen: „331 h“, „−48 h“ (echtes Minuszeichen) – dieselbe Zahl in Liste, Kopf und Übersicht
+export const fmtRest = rest => `${rest < 0 ? '−' : ''}${fmtH(Math.abs(rest))}`;
+
+// ISO-Kalenderwoche (Montag bis Sonntag; KW 1 enthält den 4. Januar)
+export function isoWeek(date) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + 3); // Donnerstag derselben Woche
+  const year = d.getFullYear();
+  const jan4 = new Date(year, 0, 4);
+  return { week: 1 + Math.round(((d - jan4) / 86400000 - 3 + ((jan4.getDay() + 6) % 7)) / 7), year };
+}
+export const kwKey = kw => kw.year * 100 + kw.week;
+// „KW 41“, im anderen Jahr „KW 2/2027“
+export const fmtKw = (kw, refYear = new Date().getFullYear()) => (kw.year === refYear ? `KW ${kw.week}` : `KW ${kw.week}/${kw.year}`);
