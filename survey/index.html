@@ -143,7 +143,7 @@ p { margin: 0; }
   display: inline-flex; align-items: center; gap: 8px;
   min-height: 44px; /* Trefferfläche; .btn.small (Station 1) bleibt kompakt, siehe unten */
   padding: 12px 22px; border-radius: 999px; border: 1.5px solid var(--control);
-  background: var(--surface); font-weight: 700; line-height: 1;
+  background: var(--surface); font-weight: 700; line-height: 1; text-decoration: none; /* auch als Link (mailto) */
   transition: transform .15s var(--ease-out), background .2s, border-color .2s, opacity .2s;
 }
 .btn:hover { transform: translateY(-1px); border-color: var(--ink-3); }
@@ -582,6 +582,7 @@ input[type="range"]::-moz-range-thumb {
 .result-block { padding: 22px 24px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--line); display: grid; gap: 10px; }
 .result-block ul { margin: 0; padding-left: 1.2em; }
 .result-block li { margin: 2px 0; }
+#sendAddr { white-space: nowrap; } /* die Adresse nicht an „-“ umbrechen */
 .hypo { border-color: var(--signal); background: var(--signal-soft); }
 .hypo .target { font-size: 1.15rem; font-weight: 800; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -1700,14 +1701,14 @@ input[type="range"]::-moz-range-thumb {
   // Testlauf über den öffentlichen Link (index.html?test): Dateiname, Betreff, Mailtext, Brief und respondent tragen „Test“
   const TEST = new URLSearchParams(location.search).has('test');
   const WHO = TEST ? D.respondent + ' (Test)' : D.respondent;
-  // Handy = Touch als Hauptzeiger und kurze Bildschirmseite unter 700 px: mailto. Sonst (Desktop, Tablet) die .eml.
-  const PHONE = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 700;
+  // Touch als Hauptzeiger (Handy, Tablet): mailto – dort öffnet sich eine .eml nicht als Entwurf. Maus/Trackpad: die .eml.
+  const TOUCH = matchMedia('(pointer: coarse)').matches;
   function renderResult() {
     const h = hypothesis();
     const keep = kept();
     const top = keep.filter(m => state.friction[m.id] !== undefined).sort((a, b) => state.friction[b.id] - state.friction[a.id]).slice(0, 3);
     const musts = [...D.wishes.filter(w => state.wishes[w.id] === 'must').map(w => w.text), ...state.customWishes.filter(w => w.level === 'must').map(w => w.text)];
-    const out = resultFiles(), send = sendData(out), addr = `<b id="sendAddr" style="white-space: nowrap">${esc(HANNES)}</b>`;
+    const out = resultFiles(), send = sendData(out), addr = `<b id="sendAddr">${esc(HANNES)}</b>`;
     resultEl.innerHTML = `
       <div class="step-head">
         <h2>Danke, ${esc(D.respondent)}.</h2>
@@ -1739,11 +1740,11 @@ input[type="range"]::-moz-range-thumb {
       <section class="result-block" aria-labelledby="sendHead">
         <h3 id="sendHead">An Hannes schicken</h3>
         <p>${send.mailto ? `Öffnet dein Mailprogramm mit fertiger Mail an ${addr} – ${send.mailto.brief ? 'Brief und Daten stehen' : 'die Daten stehen'} im Text, nur noch senden.`
-          : PHONE ? `Für eine Mail vom Handy zu lang: Lade unten beide Dateien und häng sie an eine Mail an ${addr}.`
+          : TOUCH ? `Zu lang für eine Mail direkt aus dem Browser: Lade unten beide Dateien und häng sie an eine Mail an ${addr}.`
           : `Lädt einen Mail-Entwurf an ${addr} mit beiden Dateien im Anhang – öffnen und senden, in Apple Mail über „E-Mail“ › „Erneut senden“.`}</p>
         <div class="actions">
-          ${send.mailto ? `<a class="btn primary" id="sendMail" href="${esc(send.mailto.href)}" style="text-decoration: none">Per E-Mail senden</a>`
-            : PHONE ? '' : '<button type="button" class="btn primary" id="sendMail">E-Mail-Entwurf laden</button>'}
+          ${send.mailto ? `<a class="btn primary" id="sendMail" href="${esc(send.mailto.href)}">Per E-Mail senden</a>`
+            : TOUCH ? '' : '<button type="button" class="btn primary" id="sendMail">E-Mail-Entwurf laden</button>'}
           <button type="button" class="btn" id="copyAddr">Adresse kopieren</button>
         </div>
       </section>
@@ -1753,7 +1754,7 @@ input[type="range"]::-moz-range-thumb {
         <button type="button" class="btn" id="copyMd">Brief kopieren</button>
         <button type="button" class="btn quiet" id="restart">Von vorn</button>
       </div>`;
-    if (!PHONE) $('#sendMail').addEventListener('click', () => {
+    if (!TOUCH) $('#sendMail').addEventListener('click', () => {
       download(out.stamp + '.eml', buildEml([out.json, out.md], send.subject, send.body, out.at), 'message/rfc822');
       toast('Entwurf geladen – öffnen und senden.');
     });
@@ -1808,15 +1809,15 @@ input[type="range"]::-moz-range-thumb {
       md: { name: stamp + '.md', type: 'text/markdown', text: buildBrief() }
     };
   }
-  // Betreff und Begleittext der .eml; am Handy dazu der mailto-Link (null, wenn er zu lang wird)
+  // Betreff und Begleittext der .eml; bei Touch dazu der mailto-Link (null, wenn er zu lang wird)
   function sendData(out) {
     const subject = `${TEST ? '[Test] ' : ''}VAVE Discovery – Ergebnis von ${WHO}, ${deDate(out.at)}`;
     const what = TEST ? 'ein Testlauf der VAVE-Discovery-Umfrage, keine echte Antwort' : 'mein Ergebnis aus der VAVE-Discovery-Umfrage';
     const body = ['Hallo Hannes,', '', `anbei ${what}:`,
       `- ${out.json.name} (Daten)`, `- ${out.md.name} (Brief)`, '', 'Viele Grüße', WHO].join('\r\n');
-    return { subject, body, mailto: PHONE ? mailto(out, subject, what) : null };
+    return { subject, body, mailto: TOUCH ? mailto(out, subject, what) : null };
   }
-  // Handy: mailto kann keine Anhänge, also stehen Brief und Daten im Text, je zwischen Anfang- und Ende-Markierung
+  // Handy, Tablet: mailto kann keine Anhänge, also stehen Brief und Daten im Text, je zwischen Anfang- und Ende-Markierung
   // (fehlt „ENDE DATEN“, ist die Mail abgeschnitten). Zeilenenden CRLF, alles prozentkodiert (RFC 6068).
   // Gemessen (r04-K1, alle 28 Bausteine, alle Wünsche und Rollen, 3 eigene Wünsche à 120 Zeichen, Zauberstab und
   // No-Go à 400 Zeichen): 15 585 Zeichen, nur mit Daten 7 284. Grenze 16 000: darüber nur die Daten (der Brief
