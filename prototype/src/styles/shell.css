@@ -4,6 +4,8 @@
 .main { display: block; min-width: 0; padding: var(--s-5) var(--gutter) calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--s-7)); }
 .content { max-width: var(--content-max); container: content / inline-size; }
 html { scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--s-4)); }
+/* --dock-bottom: Abstand für alles, was unten klebt (Hinweise, Rückgängig) – schmal über der Tab-Leiste */
+:root { --dock-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + var(--s-3)); }
 
 @media (min-width: 1024px) {
   .app {
@@ -13,6 +15,7 @@ html { scroll-padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom)
   .main { padding: var(--s-7) var(--s-7) var(--s-8); }
   .topbar, .tabbar { display: none !important; }
   html { scroll-padding-bottom: var(--s-4); }
+  :root { --dock-bottom: var(--s-4); }
 }
 @media (max-width: 1023.98px) {
   .sidebar { display: none !important; }

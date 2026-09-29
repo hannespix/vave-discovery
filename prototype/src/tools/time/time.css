@@ -122,7 +122,7 @@
 /* Hinweis mit Rückgängig – unten im Blick, ohne die Seite zu verschieben */
 .tt-toast-region {
   position: fixed; z-index: 40; left: var(--s-4); right: var(--s-4);
-  bottom: calc(var(--s-4) + env(safe-area-inset-bottom, 0px));
+  bottom: var(--dock-bottom, calc(var(--s-4) + env(safe-area-inset-bottom, 0px))); /* über der Tab-Leiste der Hülle */
   display: flex; justify-content: center; pointer-events: none;
 }
 .tt-toast {

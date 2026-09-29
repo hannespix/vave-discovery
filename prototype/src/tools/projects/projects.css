@@ -193,7 +193,7 @@
 
 /* Rückgängig-Leiste: bleibt am unteren Rand sichtbar, solange der Aufgabenbereich im Bild ist */
 .pj-undo {
-  position: sticky; bottom: var(--s-4); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3);
+  position: sticky; bottom: var(--dock-bottom, var(--s-4)); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3);
   padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4); border-radius: var(--radius-l);
   background: var(--c-ink); color: var(--c-bg); box-shadow: var(--shadow-2);
 }
