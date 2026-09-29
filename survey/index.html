@@ -114,8 +114,8 @@ p { margin: 0; }
 ------------------------------------------------------------------- */
 .stage { max-width: 980px; margin: 0 auto; padding: 40px 24px 140px; }
 .step { display: none; }
-.step.is-active { display: block; animation: stepIn .45s var(--ease-out); }
-@keyframes stepIn { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+.step.is-active { display: block; animation: stepIn .24s var(--ease-out); }
+@keyframes stepIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
 .step-head { display: grid; gap: 12px; margin-bottom: 28px; max-width: 46em; }
 
 /* Eingang */
@@ -236,8 +236,8 @@ p { margin: 0; }
 .deck .card-name { font-size: 1.35rem; font-weight: 800; letter-spacing: -.015em; }
 .deck .card-price { font-size: .85rem; padding-top: 6px; }
 .deck .card-desc { font-size: 1rem; margin-top: 8px; }
-.deck .card.is-enter { animation: rise .38s var(--ease-out); }
-@keyframes rise { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+.deck .card.is-enter { animation: rise .24s var(--ease-out); }
+@keyframes rise { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
 /* Flug in die Zone (Script: assign): Die Karte schrumpft auf Zonengröße und liegt über der Zonenleiste, bis sie ankommt. */
 .card.is-flying {
   z-index: 12; pointer-events: none; animation: none;
@@ -599,7 +599,23 @@ input[type="range"]::-moz-range-thumb {
   .nav-hint { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: break-word; }
 }
 
-#confetti { position: fixed; inset: 0; z-index: 90; pointer-events: none; display: none; }
+/* Finale (Station 7, Script: finale): Die Linie geht einmal durch alle Räume, jeder leuchtet auf, sobald sie ihn
+   erreicht, zuletzt schließt sie sich zum Rahmen. Ohne .is-playing steht der Endzustand, ohne Bewegung. */
+.finale { display: block; width: min(100%, 280px); height: auto; margin: 0 0 18px; }
+.finale-room { fill: var(--signal-soft); stroke: var(--signal-soft); stroke-width: 1.5; }
+.finale-way { fill: none; stroke: var(--line); stroke-width: 2; }
+.finale-line { fill: none; stroke: var(--signal); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.finale-stop { fill: var(--signal); stroke: var(--surface); stroke-width: 2; transform-box: fill-box; transform-origin: center; }
+.finale.is-playing .finale-line { stroke-dasharray: 100; animation: finaleLine var(--draw) linear var(--at) both; }
+.finale.is-playing .finale-room { animation: finaleRoom .22s var(--ease-out) var(--at) both; }
+.finale.is-playing .finale-stop { animation: finaleStop .22s var(--ease-out) var(--at) both; }
+@keyframes finaleLine { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+@keyframes finaleRoom { from { fill: var(--surface); stroke: var(--line); } }
+@keyframes finaleStop { from { fill: var(--bg); stroke: var(--line); transform: scale(.6); } }
+@media (prefers-reduced-motion: reduce) { /* statt Bewegung ein kurzer Fade; das Finale spielt nicht (Script), es steht sofort */
+  .step.is-active, .deck .card.is-enter { animation: quietIn .2s linear !important; }
+}
+@keyframes quietIn { from { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -737,6 +753,7 @@ input[type="range"]::-moz-range-thumb {
   </section>
 
   <section class="step" data-step="7" aria-labelledby="h7">
+    <svg class="finale" id="finale" aria-hidden="true" focusable="false"></svg>
     <div class="result" id="result"></div>
   </section>
 
@@ -751,7 +768,6 @@ input[type="range"]::-moz-range-thumb {
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<canvas id="confetti" aria-hidden="true"></canvas>
 
 <script src="modules.js"></script>
 <script>
@@ -1646,7 +1662,7 @@ input[type="range"]::-moz-range-thumb {
       if (!confirm('Alle Antworten löschen und von vorn beginnen?')) return;
       state = freshState(); save(); goTo(0);
     });
-    if (!REDUCED) confetti();
+    finale();
   }
   function download(name, text, type) {
     const a = document.createElement('a');
@@ -1660,29 +1676,32 @@ input[type="range"]::-moz-range-thumb {
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('is-on'), 2200);
   }
 
-  /* ---------------- Konfetti ---------------- */
-  function confetti() {
-    const c = $('#confetti'), ctx = c.getContext('2d');
-    c.width = innerWidth; c.height = innerHeight; c.style.display = 'block';
-    const colors = ['#2D3BFF', '#E9EBFF', '#FFD9A8', '#B9E4D8', '#F3C1E1', '#171A21'];
-    const P = Array.from({ length: 140 }, () => ({
-      x: Math.random() * c.width, y: -20 - Math.random() * c.height * 0.4,
-      vx: (Math.random() - .5) * 2.2, vy: 2 + Math.random() * 3.5,
-      r: 4 + Math.random() * 6, a: Math.random() * Math.PI, va: (Math.random() - .5) * .2,
-      col: colors[Math.floor(Math.random() * colors.length)]
-    }));
-    const t0 = performance.now();
-    (function frame(t) {
-      const el = t - t0;
-      ctx.clearRect(0, 0, c.width, c.height);
-      P.forEach(p => {
-        p.x += p.vx; p.y += p.vy; p.a += p.va; p.vy += .03;
-        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a);
-        ctx.globalAlpha = Math.max(0, 1 - Math.max(0, el - 1800) / 900);
-        ctx.fillStyle = p.col; ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); ctx.restore();
-      });
-      if (el < 2700) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, c.width, c.height); c.style.display = 'none'; }
-    })(t0);
+  /* ---------------- Finale: der Rundgang schließt sich ---------------- */
+  // Grundriss mit einem Raum je Station, unten 0–3 von links nach rechts, oben 4–7 zurück. Die Linie geht einmal von
+  // Raum zu Raum, jeder Raum leuchtet auf, sobald sie ihn erreicht, zuletzt schließt sie sich zum Rahmen (CSS: .finale).
+  // Spielt einmal je Seitenaufruf, ≤ 1,5 s; danach, bei jedem weiteren Besuch und bei reduzierter Bewegung steht der Endzustand.
+  const FINALE_WAIT = 100, FINALE_DRAW = 1000, FINALE_MS = FINALE_WAIT + FINALE_DRAW + 220; // 220 = Dauer .finale-room/-stop
+  let finaleShown = false, finaleTimer = 0;
+  function finale() {
+    const svg = $('#finale');
+    if (!svg.firstChild) {
+      const W = 76, H = 60, n = STEPS.length, cols = Math.ceil(n / 2); // Raster je Raum, Räume 6 Einheiten auseinander
+      const pts = STEPS.map((_, i) => i < cols ? [i, 1] : [n - 1 - i, 0]).map(([c, r]) => [W * c + W / 2, H * r + H / 2]);
+      const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+      let run = 0;
+      const at = pts.map((p, i) => (run += i ? dist(p, pts[i - 1]) : 0));
+      const len = run + dist(pts[0], pts[n - 1]);
+      const when = i => `style="--at:${FINALE_WAIT + Math.round(at[i] / len * FINALE_DRAW)}ms"`;
+      const d = 'M' + pts.map(p => p.join(' ')).join(' L') + ' Z';
+      svg.setAttribute('viewBox', `2 2 ${W * cols - 4} ${2 * H - 4}`); // Raumkante bündig mit dem Text, 1 Einheit für die Kontur
+      svg.innerHTML = pts.map(([x, y], i) => `<rect class="finale-room" x="${x - W / 2 + 3}" y="${y - H / 2 + 3}" width="${W - 6}" height="${H - 6}" rx="8" ${when(i)}/>`).join('')
+        + `<path class="finale-way" d="${d}"/><path class="finale-line" d="${d}" pathLength="100" style="--at:${FINALE_WAIT}ms; --draw:${FINALE_DRAW}ms"/>`
+        + pts.map(([x, y], i) => `<circle class="finale-stop" cx="${x}" cy="${y}" r="5" ${when(i)}/>`).join('');
+    }
+    clearTimeout(finaleTimer); svg.classList.remove('is-playing');
+    if (finaleShown || REDUCED) return;
+    finaleShown = true; svg.classList.add('is-playing');
+    finaleTimer = setTimeout(() => svg.classList.remove('is-playing'), FINALE_MS);
   }
 
   /* ---------------- Start ---------------- */
