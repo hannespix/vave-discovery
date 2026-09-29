@@ -31,10 +31,13 @@ eine Datei mit eingebetteten Daten. Nur die wird weitergegeben.
   `../data/results/` legen; kamen die Daten als Mailtext, den Block zwischen den Markierungen unverändert
   als `.json` speichern. Dann `npm run check` und `/brief data/results/YYYY-MM-DD_tobias.json`.
 - **Testlauf:** `index.html?test` (auch der Pages-Link) markiert alles als Test – Dateien
-  `YYYY-MM-DD_test.*`, Betreff „[Test] …", `respondent` „Tobias (Test)". Testdateien gehören nicht
-  nach `../data/results/`. Die Markierung gilt ab dem Start mit `?test` für diesen Stand, auch wenn er
-  später ohne `?test` geöffnet wird; ein ohne `?test` begonnener Stand wird nie zum Test. „Von vorn"
-  ohne `?test` beendet sie, „Von vorn" mit `?test` beginnt einen neuen Testlauf.
+  `YYYY-MM-DD_test.*`, Betreff „[Test] …", `respondent` „Tobias (Test)"; Eingang und Ergebnis zeigen
+  „Testlauf – zählt nicht als Antwort von Tobias." Testdateien gehören nicht nach `../data/results/`.
+  Fest wird die Markierung mit der ersten gespeicherten Antwort: unter `?test` gegeben, bleibt der
+  Stand ein Test, auch später ohne `?test`; über den echten Link gegeben, wird er nie zum Test. Bis
+  dahin gilt die URL beim Öffnen – `?test` nur ansehen und dann über den echten Link antworten zählt
+  echt. Stände älterer Fassungen ohne Markierung, die schon Antworten haben, gelten als Test.
+  „Von vorn" öffnet die Markierung wieder.
 
 ## Anpassen
 
