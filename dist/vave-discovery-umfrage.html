@@ -128,7 +128,7 @@ p { margin: 0; }
 /* ------------------------------------------------------------------
    Bühne
 ------------------------------------------------------------------- */
-.stage { max-width: 980px; margin: 0 auto; padding: 40px 24px 140px; }
+.stage { max-width: 980px; margin: 0 auto; padding: 40px 24px 140px; overflow-x: clip; } /* stepIn (12 px) schiebt randbündige Blöcke (Notiz) sonst kurz über den Rand: Handy zoomt, „Los geht’s“ springt; clip lässt sticky heil */
 .step { display: none; }
 .step.is-active { display: block; animation: stepIn .24s var(--ease-out); }
 @keyframes stepIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
