@@ -1,15 +1,18 @@
 // Projektgesundheit in Stunden: Verlauf je Woche, Tempo, Prognose „reicht bis KW …“. Reine Funktion, keine Planung.
 //
 // Verlauf aus Beispieldaten (deterministisch, im UI so beschriftet): sample.js kennt je Projekt nur `spent` (Stand vor
-// der Zeiterfassung). Angenommen wird ein Projektbeginn L Wochen vor der Abgabe, L = Budget ÷ 25 h (6 bis 40 Wochen);
+// der Zeiterfassung). Angenommen wird ein Projektbeginn L Wochen vor der Abgabe, L = ursprüngliches Budget ÷ 25 h
+// (6 bis 40 Wochen; ursprünglich = vor der ersten Änderung in budgetLog);
 // ohne Abgabe 26 Wochen vor dieser Woche; immer mindestens 4 abgeschlossene Wochen. `spent` verteilt sich auf die
 // abgeschlossenen Wochen: Anlauf mit halber und ¾-Last, danach je Woche fest ±15 % (Hash aus Projekt-ID und Woche).
 // Echte Buchungen (time-entries) kommen in ihrer Woche dazu. Die Summe ist exakt spentHours() – wie in der Liste.
 //
-// Tempo = Ø der letzten 4 abgeschlossenen Wochen. Prognose: Rest ÷ Tempo ab heute, verglichen mit der Abgabe.
+// Tempo = Ø der letzten 4 abgeschlossenen Wochen. Prognose: Rest ÷ Tempo ab heute, verglichen mit der Abgabe – immer mit
+// dem aktuellen Budget. Budgetänderungen (budgetLog) ergeben die Stufen der Budgetlinie: budgetStart gilt am Beginn des
+// Verlaufs, steps [{ at, to }] danach (älteste zuerst); jede Woche trägt das Budget an ihrem Ende (w.budget).
 import { addDays, weekStart } from '../../lib/format.js';
 import { spentHours } from '../../lib/budget.js';
-import { budgetInfo, isDay, isoWeek, kwKey, parseDay } from './helpers.js';
+import { budgetChanges, budgetInfo, isDay, isoWeek, kwKey, parseDay } from './helpers.js';
 
 const DAY = 86400000;
 const WEEK = 7 * DAY;
@@ -31,7 +34,11 @@ export function forecast(p, entries, now = new Date()) {
   const thisMon = weekStart(today);
   const due = isDay(p.due) ? parseDay(p.due) : null;
   const budget = Number(p.budget) || 0;
-  const plan = clamp(Math.round(budget / HOURS_PER_WEEK_PLAN), 6, 40);
+  // Budgetänderungen, älteste zuerst. Der angenommene Beginn richtet sich nach dem ursprünglichen Budget – sonst
+  // verschöbe jede Änderung den Verlauf aus Beispieldaten und damit das Tempo
+  const changes = budgetChanges(p).reverse();
+  const initialBudget = changes.length ? changes[0].from : budget;
+  const plan = clamp(Math.round(initialBudget / HOURS_PER_WEEK_PLAN), 6, 40);
 
   let start = due ? addDays(weekStart(due), -7 * (plan - 1)) : addDays(thisMon, -7 * 26);
   const latest = addDays(thisMon, -7 * MIN_WEEKS);
@@ -53,8 +60,20 @@ export function forecast(p, entries, now = new Date()) {
     weeks[i].hours += h;
     weeks[i].booked += h;
   }
+  // Budgetverlauf: Wert am Beginn, danach Stufen; Änderungen vor dem Beginn verschieben nur den Startwert
+  let budgetStart = initialBudget;
+  const steps = [];
+  for (const c of changes) {
+    if (c.at <= start) budgetStart = c.to;
+    else steps.push({ at: c.at, to: c.to });
+  }
+  const budgetAt = d => steps.reduce((v, s) => (s.at <= d ? s.to : v), budgetStart);
+
   let cum = 0;
-  for (const w of weeks) { cum += w.hours; w.cum = cum; w.kw = isoWeek(w.monday); }
+  for (const [i, w] of weeks.entries()) {
+    cum += w.hours; w.cum = cum; w.kw = isoWeek(w.monday);
+    w.budget = i < n ? budgetAt(new Date(addDays(w.monday, 7).getTime() - 1)) : budget; // laufende Woche: Stand jetzt
+  }
 
   const total = spentHours(p, entries);
   const info = budgetInfo(total, budget);
@@ -73,5 +92,5 @@ export function forecast(p, entries, now = new Date()) {
   const short = Boolean(!over && cross && dueKw && !duePast && kwKey(crossKw) < kwKey(dueKw));
   const missing = short ? Math.max(0, toDue - info.rest) : 0;
 
-  return { start, weeks, n, today, thisMon, due, dueKw, duePast, budget, total, info, tempo, over, cross, crossKw, toDue, short, missing };
+  return { start, weeks, n, today, thisMon, due, dueKw, duePast, budget, budgetStart, steps, total, info, tempo, over, cross, crossKw, toDue, short, missing };
 }

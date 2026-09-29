@@ -1,12 +1,12 @@
 // Projektliste als Zeilen (r07): Code und Name, Kunde grau, Status als Punkt mit Wort, Lead als Kürzel, Abgabe und rechts
 // die Reststunden mit schmalem Balken. Ab 720 px Inhaltsbreite tabellenartig ausgerichtet (ein Raster für alle Zeilen).
 // Jede Zeile ist genau ein Link (Name; die Trefferfläche deckt die ganze Zeile). Schmal liegen Suche, Chips und
-// Sortierung hinter „Filter“, damit die erste Zeile gleich im Bild ist.
+// Sortierung hinter „Filter“, damit die erste Zeile gleich im Bild ist. Im Kopf „Neues Projekt“ (→ #/projekte/neu).
 import { useId, useMemo, useState } from 'react';
-import { Search, SearchX, SlidersHorizontal } from 'lucide-react';
+import { Plus, Search, SearchX, SlidersHorizontal } from 'lucide-react';
 import { studios, projectStatusLabel, timeEntries as sampleEntries } from '../../data/sample.js';
 import { clientsById, loadProjects } from '../../lib/projects.js';
-import { href } from '../../lib/router.js';
+import { href, navigate } from '../../lib/router.js';
 import { useStoredState } from '../../lib/store.js';
 import { cleanEntries } from '../../lib/data.js';
 import { spentHours } from '../../lib/budget.js';
@@ -77,6 +77,10 @@ export default function ProjectList({ filters, setFilters }) {
     <section className="pj-page" aria-labelledby="pj-title">
       <header className="pj-lhead">
         <h1 id="pj-title" tabIndex={-1}>Projekte</h1>
+        <button type="button" className="btn btn-primary" data-pj-opener="new" aria-haspopup="dialog"
+          onClick={() => navigate('/projekte/neu')}>
+          <Plus size={18} aria-hidden="true" /> Neues Projekt
+        </button>
       </header>
 
       <div className="pj-filters" role="search" aria-label="Projekte filtern">

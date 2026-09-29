@@ -33,7 +33,11 @@
 .pj-bar.is-l { height: 8px; border-radius: 4px; }
 
 /* ---------- Liste ---------- */
-.pj-lhead { padding-bottom: var(--s-3); border-bottom: 1px solid var(--c-line); }
+/* Kopf in einer Zeile: Titel links, „Neues Projekt“ rechts (einzige Hauptaktion der Ansicht) */
+.pj-lhead {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2) var(--s-4);
+  padding-bottom: var(--s-3); border-bottom: 1px solid var(--c-line);
+}
 .pj-filters { display: grid; gap: var(--s-3); }
 .pj-result { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
 .pj-result-text { flex: 1 1 auto; }
@@ -129,7 +133,16 @@
 
 /* ---------- Detail: Kopf, Eigenschaften, Tabs ---------- */
 .pj-detail { gap: var(--s-4); }
-.pj-dhead { display: grid; gap: var(--s-2); }
+/* „Bearbeiten“ (Nebenaktion, Pille): schmal rechts neben dem Kunden, breit rechts neben dem Titel. Im DOM steht der
+   Knopf nach dem Titel – nach dem Fokus auf die Überschrift ist er der nächste Tab-Stopp. */
+.pj-dhead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s-2) var(--s-4); }
+.pj-dhead > * { grid-column: 1 / -1; }
+.pj-dhead > .pj-client { grid-column: 1; grid-row: 1; align-self: end; }
+.pj-dhead > .pj-edit { grid-column: 2; grid-row: 1; }
+@container content (min-width: 720px) {
+  .pj-dhead > .pj-dtitle { grid-column: 1; }
+  .pj-dhead > .pj-edit { grid-row: 2; align-self: start; }
+}
 .pj-dtitle { font-size: clamp(1.625rem, 1.1rem + 2vw, 2.5rem); }
 .pj-dcode { color: var(--c-ink-3); font-weight: 400; letter-spacing: -0.01em; }
 .pj-props { list-style: none; margin: var(--s-2) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-2); }
@@ -168,7 +181,7 @@
 .pj-burn-over { fill: var(--c-danger-fill); }
 .pj-burn-line { fill: none; stroke: var(--c-ink); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
 .pj-burn-prog { fill: none; stroke: var(--c-ink); stroke-width: 2; stroke-dasharray: 6 5; stroke-linecap: round; }
-.pj-burn-budget { stroke: var(--c-ink-2); stroke-width: 1.5; }
+.pj-burn-budget { fill: none; stroke: var(--c-ink-2); stroke-width: 1.5; }
 .pj-burn-due { stroke: var(--c-ink-3); stroke-width: 1; stroke-dasharray: 2 3; }
 .pj-burn-today { stroke: var(--c-ink); stroke-width: 1; }
 .pj-burn-cross { fill: var(--c-bg); stroke: var(--c-ink); stroke-width: 2; }
@@ -181,6 +194,11 @@
 .pj-key { display: inline-block; width: 22px; height: 0; border-top: 2.5px solid var(--c-ink); }
 .pj-key.is-prog { border-top: 2px dashed var(--c-ink); }
 .pj-key.is-budget { border-top: 1.5px solid var(--c-ink-2); }
+/* Budgetänderungen: Datum | alt → neu, Grund | Differenz */
+.pj-changes { display: grid; gap: var(--s-2); max-width: 44rem; }
+.pj-change-day { flex: none; width: 6.25rem; font-size: var(--fs-meta); color: var(--c-ink-2); }
+.pj-change .row__aside { font-weight: 600; }
+.pj-changes-empty { color: var(--c-ink-2); }
 .pj-team .list { margin-top: var(--s-2); }
 .pj-member { min-height: 52px; }
 .pj-lead-tag { font-weight: 400; color: var(--c-ink-2); }
@@ -325,3 +343,65 @@
 .pj-entry-task:focus-visible { box-shadow: none; }
 .pj-entry:has(.pj-entry-task:focus-visible) { box-shadow: var(--focus); border-radius: var(--radius-s); }
 @media (hover: hover) { .pj-entry-task:hover { text-decoration-color: currentColor; } }
+
+/* ---------- Panel „Projekt bearbeiten“ / „Neues Projekt“ (natives <dialog>, modal) ----------
+   Ab 600 px Seitenpanel rechts in voller Höhe, darunter Vollbild-Blatt. Kopf und Knopfleiste stehen, dazwischen scrollt
+   das Formular. Einblenden ≤ 200 ms nur beim Öffnen aus der Seite heraus (data-instant: Seite öffnet mit Panel),
+   bei reduzierter Bewegung ohne. */
+dialog.pj-sheet {
+  position: fixed; inset: 0 0 0 auto; margin: 0; padding: 0;
+  width: min(32rem, 100%); max-width: 100%; height: auto; max-height: none; overflow: hidden;
+  border: 0; border-left: 1.5px solid var(--c-line-strong); border-radius: 0;
+  background: var(--c-surface); color: var(--c-ink); box-shadow: var(--shadow-2);
+}
+dialog.pj-sheet[open] { display: flex; flex-direction: column; }
+dialog.pj-sheet::backdrop { background: var(--c-backdrop); }
+@keyframes pj-sheet-in { from { transform: translateX(32px); opacity: 0; } }
+@keyframes pj-sheet-up { from { transform: translateY(24px); opacity: 0; } }
+dialog.pj-sheet[open]:not([data-instant]) { animation: pj-sheet-in 180ms var(--ease); }
+
+.pj-sheet-form { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.pj-sheet-head { flex: none; display: grid; gap: var(--s-1); padding: var(--s-5) var(--s-5) var(--s-4); border-bottom: 1px solid var(--c-line); }
+.pj-sheet-title { font-size: 1.5rem; line-height: 1.1; letter-spacing: -0.03em; text-transform: uppercase; color: var(--c-ink); }
+.pj-sheet-sub { overflow-wrap: anywhere; }
+.pj-sheet-body {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-4); align-content: start; padding: var(--s-5);
+}
+.pj-sheet-foot {
+  flex: none; display: flex; justify-content: flex-end; gap: var(--s-3);
+  padding: var(--s-3) var(--s-5) calc(var(--s-3) + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--c-line);
+}
+.pj-fields-row { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-3); }
+.pj-sheet .field { grid-template-columns: minmax(0, 1fr); }
+.pj-fields-row > .field { flex: 1 1 10rem; min-width: 0; }
+.pj-fields-row > .pj-field-status { flex: none; }
+/* Datumsfeld + „Abgabe entfernen“ brauchen ~225 px: am Handy eigene Zeile, im Panel neben dem Budget */
+.pj-fields-row > .pj-field-due { flex-basis: 13.5rem; }
+/* Feldbreite zeigt die erwartete Länge; Meldungen haben die ganze Zeile */
+.pj-field-code .input, .pj-field-budget .pj-unit { max-width: 12rem; }
+.pj-optional { font-weight: 400; color: var(--c-ink-2); }
+.pj-status-switch { justify-self: start; max-width: 100%; }
+.pj-sheet .pj-error { align-items: flex-start; }
+.pj-sheet .pj-error svg { flex: none; margin-top: 2px; }
+.pj-inline { display: flex; align-items: center; gap: var(--s-1); }
+.pj-inline .input { flex: 1 1 auto; min-width: 0; }
+.pj-inline .btn { flex: none; }   /* 44 × 44 bleibt, auch wenn das Datumsfeld Platz braucht */
+.pj-unit { position: relative; }
+.pj-unit .input { padding-right: 2.25rem; }
+.pj-unit-h { position: absolute; right: var(--s-3); top: 50%; transform: translateY(-50%); color: var(--c-ink-2); pointer-events: none; }
+/* Budget-Echo und Grund als eine Gruppe – ruhige Fläche, keine Signalfarbe */
+.pj-change-box { display: grid; gap: var(--s-3); padding: var(--s-3) var(--s-4) var(--s-4); border-radius: var(--radius); background: var(--c-bg-2); }
+.pj-echo { font-weight: 600; }
+/* Fehler: kräftige schwarze Kontur (kein box-shadow – der gehört dem Fokusring, der sichtbar bleiben muss) */
+.pj-sheet [aria-invalid="true"] { border-color: var(--c-line-strong); border-width: 2px; }
+
+@media (max-width: 599.98px) {
+  dialog.pj-sheet { inset: 0; width: 100%; border-left: 0; }
+  dialog.pj-sheet[open]:not([data-instant]) { animation-name: pj-sheet-up; }
+  .pj-sheet-head { padding: calc(var(--s-4) + env(safe-area-inset-top, 0px)) var(--gutter) var(--s-3); }
+  .pj-sheet-body { padding: var(--s-4) var(--gutter); }
+  .pj-sheet-foot { padding-inline: var(--gutter); }
+  .pj-sheet-foot .btn { flex: 1 1 0; }
+}
+@media (prefers-reduced-motion: reduce) { dialog.pj-sheet[open]:not([data-instant]) { animation: none; } }
