@@ -127,8 +127,24 @@ p { margin: 0; }
 /* ------------------------------------------------------------------
    Station 1 – Sortieren: ein Kartenstapel, drei Zonen, immer im Blick.
 ------------------------------------------------------------------- */
+/* Sortier-Einheit: Stapelkarte, Zonen und „Rest“-Knopf gehören zusammen. Reicht die Höhe nicht, klebt die Einheit
+   direkt über der Navigation (--dock-bottom misst das Script) und schiebt sich über den Einleitungstext – so bleiben
+   Kartenname, Beschreibung und alle drei Zonen für jede Karte ohne Scrollen im Blick, nichts davon unter der Navigation. */
+.sorter {
+  position: sticky; bottom: var(--dock-bottom, 72px); z-index: 10;
+  display: grid; grid-template-columns: minmax(0, 1fr); background: var(--bg);
+}
+/* Klebend rückt die Einheit höchstens bis an den Anfang ihres Abschnitts. Damit sie bis an den Kopf darf, beginnt der
+   Abschnitt von Station 1 schon im oberen Innenabstand der Bühne (40 px) – sichtbar bleibt alles, wo es war. */
+.step[data-step="1"] { margin-top: -40px; }
+.step[data-step="1"].is-active { display: flow-root; }
+.step[data-step="1"] > .step-head { margin-top: 40px; }
+.sorter::before { /* weiche Kante, wenn die Einheit über dem Einleitungstext klebt */
+  content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 26px; pointer-events: none;
+  background: linear-gradient(transparent, var(--bg));
+}
 .deck {
-  position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  grid-area: 1 / 1; position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px;
   padding: 6px 0 22px; border-radius: var(--radius); transition: background .2s;
 }
 .deck.is-over { background: var(--graphite-soft); }
@@ -149,6 +165,15 @@ p { margin: 0; }
 }
 .deck-help { margin-top: 14px; display: none; }
 @media (hover: hover) and (min-width: 760px) { .deck-help { display: block; } }
+/* Touch: Wer die Karte antippt oder ohne Halten zu ziehen versucht, bekommt den Hinweis an der Karte (Script: dragHint). */
+.drag-hint {
+  position: absolute; left: 50%; bottom: -14px; z-index: 2; margin: 0;
+  padding: 3px 12px; border-radius: 999px; background: var(--ink); color: #fff;
+  font-size: .9rem; font-weight: 700; line-height: 1.4; white-space: nowrap;
+  opacity: 0; transform: translate(-50%, 4px); pointer-events: none;
+  transition: opacity .2s, transform .2s var(--ease-out);
+}
+.drag-hint.is-on { opacity: 1; transform: translate(-50%, 0); }
 
 .card {
   --tint: var(--graphite-soft);
@@ -156,7 +181,7 @@ p { margin: 0; }
   text-align: left; width: 100%;
   padding: 10px 30px 10px 14px;
   border-radius: var(--radius-s); border: 1.5px solid var(--line); background: var(--surface);
-  user-select: none; -webkit-user-select: none;
+  user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
   transition: transform .18s var(--ease-out), box-shadow .18s, border-color .18s, opacity .18s;
 }
 .card::before {
@@ -177,22 +202,31 @@ p { margin: 0; }
 .card.is-placed { touch-action: manipulation; }
 
 /* Die aktuelle Karte im Stapel. Wischen darüber scrollt die Seite; per Touch zieht man sie erst nach
-   kurzem Halten (Script: LIFT_MS), mit der Maus sofort. */
+   kurzem Halten (Script: LIFT_MS), mit der Maus sofort. Beim Halten gibt die Karte sofort nach, und eine
+   Linie füllt sich bis zum Anheben – so antwortet schon der erste Versuch. */
 .deck .card {
   padding: 22px 24px 22px 26px; border-radius: var(--radius); cursor: grab;
   box-shadow: 0 14px 34px -20px rgba(23, 26, 33, .4);
   touch-action: manipulation; -webkit-touch-callout: none;
 }
 .deck .card::before { width: 5px; top: 16px; bottom: 16px; }
+.deck .card::after {
+  content: ""; position: absolute; left: 26px; right: 24px; bottom: 8px; height: 3px; border-radius: 2px;
+  background: var(--signal); opacity: 0; transform: scaleX(0); transform-origin: left; pointer-events: none;
+}
+.deck .card.is-pressing { transform: scale(.985); border-color: var(--signal); }
+.deck .card.is-pressing::after { opacity: 1; transform: none; transition: transform .22s linear; }
 .deck .card-name { font-size: 1.35rem; font-weight: 800; letter-spacing: -.015em; }
 .deck .card-price { font-size: .85rem; padding-top: 6px; }
 .deck .card-desc { font-size: 1rem; margin-top: 8px; }
 .deck .card.is-enter { animation: rise .38s var(--ease-out); }
 @keyframes rise { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+/* Flug in die Zone (Script: assign): Die Karte schrumpft auf Zonengröße und liegt über der Zonenleiste, bis sie ankommt. */
 .card.is-flying {
-  transition: transform .34s cubic-bezier(.2, .8, .2, 1), opacity .3s ease .05s;
-  transform: translate(var(--fx, 0px), var(--fy, 0px)) scale(.45) rotate(var(--fr, 0deg));
-  opacity: 0; pointer-events: none;
+  z-index: 12; pointer-events: none; animation: none;
+  transition: transform .24s cubic-bezier(.3, .7, .4, 1), opacity .08s linear .17s;
+  transform: translate(var(--fx, 0px), var(--fy, 0px)) scale(var(--fs, .45)) rotate(var(--fr, 0deg));
+  opacity: 0;
 }
 
 /* Karten in den Zonen: kompakt, Kreuz immer sichtbar */
@@ -200,7 +234,7 @@ p { margin: 0; }
 .zone .card-price { padding-top: 0; }
 .zone .card:hover { border-color: var(--ink-3); }
 .zone .card-desc { display: none; }
-.zone .card.is-new, .sorted .card.is-new { animation: snapIn .45s var(--ease-spring); }
+.zone .card.is-new, .sorted .card.is-new { animation: snapIn .28s var(--ease-spring); }
 @keyframes snapIn { 0% { transform: scale(.9); } 100% { transform: scale(1); } }
 .card .unassign {
   position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
@@ -209,18 +243,23 @@ p { margin: 0; }
 }
 .zone .card:hover .unassign { background: var(--graphite-soft); color: var(--ink); }
 
-.ghost {
-  position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none; margin: 0;
-  box-shadow: var(--shadow-lift); transform-origin: center; transition: none; will-change: transform;
+/* Angehobene Karte: kompakt (nur der Name), schwebt über dem Finger und nie über den Zonen (Script: placeGhost). */
+.card.ghost {
+  position: fixed; left: 0; top: 0; z-index: 100; display: block; width: auto; max-width: min(240px, 60vw);
+  margin: 0; padding: 10px 16px 10px 18px; border-color: var(--signal); pointer-events: none;
+  font-weight: 800; line-height: 1.25; box-shadow: var(--shadow-lift);
+  transition: none; will-change: transform; animation: ghostIn .15s var(--ease-out);
 }
+@keyframes ghostIn { from { opacity: .4; scale: .92; } }
 body.is-dragging { cursor: grabbing; }
 body.is-dragging * { cursor: grabbing !important; }
 
-.zones { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+/* Breit: drei Spalten mit fester Höhe – die Einheit passt über die Navigation, lange Listen scrollen in der Zone. */
+.zones { grid-area: 2 / 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .zone {
   --zone: var(--graphite); --zone-soft: var(--graphite-soft);
-  display: flex; flex-direction: column; gap: 8px; min-width: 0;
-  min-height: 200px; padding: 14px; cursor: pointer;
+  position: relative; display: flex; flex-direction: column; gap: 8px; min-width: 0;
+  height: clamp(200px, calc(100vh - 570px), 320px); padding: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; /* Rückmeldung gibt die Zone selbst */
   border-radius: var(--radius); border: 1.5px solid var(--line); background: var(--surface);
   transition: border-color .2s, background .2s, transform .2s var(--ease-out);
 }
@@ -238,21 +277,40 @@ body.is-dragging * { cursor: grabbing !important; }
 @media (hover: hover) and (min-width: 760px) { .zone-head kbd { display: inline-block; } }
 .zone-count { font-weight: 800; color: var(--zone); font-variant-numeric: tabular-nums; }
 .zone-hint { font-size: .85rem; color: var(--ink-2); }
-.zone-list { display: flex; flex-direction: column; gap: 6px; flex: 1; max-height: 220px; overflow-y: auto; padding-right: 2px; }
+.zone-list { display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; overflow-y: auto; padding-right: 2px; }
 .zone-list:empty::after {
   content: "Hier ablegen oder antippen"; display: grid; place-items: center; flex: 1; min-height: 72px;
   color: var(--ink-3); font-weight: 600; font-size: .85rem; text-align: center; padding: 0 8px;
   border: 1.5px dashed var(--line); border-radius: var(--radius-s);
 }
 .zone.is-over .zone-list:empty::after { border-color: var(--zone); color: var(--zone); }
+/* Landen: Die Zone bestätigt in ihrer Farbe – die Fläche blitzt, eine Linie zeichnet sich (Script: LAND_MS, 260 ms).
+   Ziehen: Die Zone unter dem Finger zeigt dieselbe Linie – hier landet die Karte. */
+.zone::after {
+  content: ""; position: absolute; left: 12px; right: 12px; bottom: 5px; height: 3px; border-radius: 2px;
+  background: var(--zone); opacity: 0; transform: scaleX(0); pointer-events: none;
+}
+.zone.is-over::after { opacity: 1; transform: none; transition: transform .15s var(--ease-out); }
+.zone.is-landed { animation: zoneLand .26s var(--ease-out); }
+.zone.is-landed::after { animation: zoneLine .26s var(--ease-out); }
+@keyframes zoneLand { from { background-color: var(--zone-soft); border-color: var(--zone); } }
+@keyframes zoneLine { 0% { opacity: 1; transform: scaleX(0); } 65% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
+@media (prefers-reduced-motion: reduce) { /* ohne Bewegung: nur die Bestätigung, gleich lang */
+  .zone.is-landed { background-color: var(--zone-soft); border-color: var(--zone); }
+  .zone.is-landed::after { opacity: 1; transform: none; }
+}
 
-/* „Rest zu ‚Kenne ich nicht‘“ steht hinter den Zonen (nicht erster Tab-Stopp) und fragt vor dem Verschieben nach. */
-.sort-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 14px; }
+/* „Rest zu ‚Kenne ich nicht‘“ steht hinter den Zonen (nicht erster Tab-Stopp), fragt vor dem Verschieben nach und gehört
+   zur Sortier-Einheit. Breit: rechts neben dem Stapel, direkt über „Kenne ich nicht“. */
+.sort-tools {
+  position: relative; z-index: 1; grid-area: 1 / 1; align-self: end; justify-self: end; width: calc(50% - 238px); margin-bottom: 12px;
+  display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px 10px; text-align: right;
+}
 .sort-tools:empty { display: none; }
-.sort-tools .btn { min-height: 44px; }
+.sort-tools .btn { min-height: 44px; white-space: nowrap; }
 .rest-q { flex-basis: 100%; font-weight: 700; }
 
-/* Sortierte Karten am Handy: unter den Zonen in voller Breite, antippen holt zurück. */
+/* Sortierte Karten in der Leiste: unter den Zonen in voller Breite, antippen holt zurück. */
 .sorted { display: none; }
 .sorted-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; color: var(--zone); }
 .sorted-count { font-variant-numeric: tabular-nums; }
@@ -262,38 +320,57 @@ body.is-dragging * { cursor: grabbing !important; }
 .sorted .card-price, .sorted .card-desc { display: none; }
 .sorted .card .unassign { right: 8px; width: 26px; height: 26px; background: var(--graphite-soft); color: var(--ink-2); }
 
-/* Drei Spalten erst ab 941 px – schmaler fasst eine Zonenkarte das längste Wort eines Namens nicht.
-   Darunter liegen die Zonen untereinander, die Karten fließen als Chips über die volle Breite. */
-@media (max-width: 940px) {
-  .zones { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .zone { min-height: 0; }
-  .zone-list { flex-direction: row; flex-wrap: wrap; align-content: flex-start; max-height: 150px; }
-  .zone .card { width: auto; max-width: 100%; }
-  .zone-list:empty::after { min-height: 48px; }
-}
-/* Handy: Stapelkarte, darunter die drei Zonen gleich groß nebeneinander. Ist die Seite zu kurz, klebt die
-   Zonenleiste direkt über der Navigation (--dock-bottom misst das Script) – Kartenname und alle drei Zonen
-   bleiben für jede Karte ohne Scrollen im Blick. Sortierte Karten stehen darunter in voller Breite (#sorted),
-   so bricht kein Name mitten im Wort. */
-@media (max-width: 640px) {
-  .deck { padding: 0 0 14px; gap: 8px; }
-  .deck-meta { order: -1; }
-  .deck .card { padding: 16px 18px 16px 22px; grid-template-columns: minmax(0, 1fr); } /* Preis unter den Namen */
-  .deck .card-name { font-size: 1.15rem; }
-  .deck .card-price { padding-top: 2px; }
-  .deck .card-desc { margin-top: 6px; }
-  .zones {
-    position: sticky; bottom: var(--dock-bottom, 72px); z-index: 10;
-    grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;
-    margin: 0 -6px; padding: 8px 6px; background: var(--bg);
-  }
-  .zone { min-height: 64px; padding: 8px 4px; gap: 0; justify-content: center; }
+/* Leiste: unter 941 px Breite (schmaler fasst eine Zonenspalte das längste Wort eines Namens nicht) und bei wenig Höhe
+   liegen die drei Zonen kompakt nebeneinander unter der Karte; sortierte Karten stehen darunter in voller Breite (#sorted),
+   so bricht kein Name mitten im Wort. Gilt für Handy, Tablet hochkant und Querformat (Script: BAR). */
+@media (max-width: 940px), (max-height: 520px) {
+  .sorter { padding-bottom: 8px; }
+  .zones { grid-area: 2 / 1; gap: 6px; padding-top: 8px; }
+  .zone { height: auto; min-height: 64px; padding: 8px 4px; gap: 0; justify-content: center; }
   .zone-head { flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; }
   .zone-head h3 { font-size: 1rem; line-height: 1.15; overflow-wrap: normal; }
   .zone-count { font-size: .9rem; line-height: 1.1; }
   .zone-hint, .zone .zone-list { display: none; }
-  .sort-tools { margin-top: 10px; }
+  .zone::after { left: 10px; right: 10px; bottom: 4px; }
+  .sort-tools { grid-area: 3 / 1; width: auto; justify-self: stretch; justify-content: flex-start; text-align: left; margin: 8px 0 0; }
+  /* Rückfrage „Rest“: steht so lange an Stelle der Zonen – die Einheit wird nicht höher. */
+  .sorter.is-asking .zones { visibility: hidden; }
+  .sorter.is-asking .sort-tools { grid-area: 2 / 1; align-self: center; margin: 0; padding-top: 8px; }
   .sorted { display: grid; gap: 16px; margin-top: 18px; }
+}
+/* Handy: Stapelkarte kompakt, Zähler darüber. */
+@media (max-width: 640px) {
+  .deck { padding: 0 0 14px; gap: 8px; }
+  .deck-meta { order: -1; }
+  .deck .card { padding: 16px 18px 16px 22px; grid-template-columns: minmax(0, 1fr); } /* Preis unter den Namen */
+  .deck .card::after { left: 22px; right: 18px; bottom: 7px; }
+  .deck .card-name { font-size: 1.15rem; }
+  .deck .card-price { padding-top: 2px; }
+  .deck .card-desc { margin-top: 6px; }
+}
+/* Querformat (wenig Höhe): Karte links, Zonen und „Rest“-Knopf rechts daneben – so passt alles über die Navigation.
+   Überschrift und Einleitung hätten keinen Platz (die Einheit schnitte sie an); sie bleiben nur für Screenreader,
+   den Ort nennt der Kopf („Station 1 von 7: Sortieren“), das Ziehen erklärt der Hinweis an der Karte. */
+@media (max-height: 520px) and (min-width: 560px) {
+  .step[data-step="1"] > .step-head { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .step[data-step="1"]::before { content: ""; display: block; height: 12px; } /* Luft unter dem Kopf, die Einheit darf darüber rücken */
+  .sorter { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); column-gap: 14px; align-items: start; padding-bottom: 4px; }
+  .deck { grid-area: 1 / 1 / 3 / 2; padding: 0 0 10px; gap: 6px; }
+  .deck-meta { order: -1; width: 100%; }
+  .deck-stack { width: 100%; min-height: 0; }
+  .deck-ghost.g1 { transform: translateY(5px) scale(.98); }
+  .deck-ghost.g2 { transform: translateY(10px) scale(.96); }
+  .deck .card { padding: 12px 16px 12px 20px; }
+  .deck .card::before { top: 12px; bottom: 12px; }
+  .deck .card::after { left: 20px; right: 16px; bottom: 5px; }
+  .deck .card-name { font-size: 1.1rem; }
+  .deck .card-price { padding-top: 3px; }
+  .deck .card-desc { font-size: .95rem; line-height: 1.3; margin-top: 4px; }
+  .zones { grid-area: 1 / 2; grid-template-columns: minmax(0, 1fr); padding-top: 0; }
+  .zone { min-height: 44px; padding: 6px 12px; }
+  .zone-head { flex-direction: row; justify-content: space-between; align-items: baseline; }
+  .sort-tools { grid-area: 2 / 2; margin-top: 6px; }
+  .sorter.is-asking .sort-tools { grid-area: 1 / 2 / 3 / 3; align-self: start; padding-top: 0; }
 }
 
 /* ------------------------------------------------------------------
@@ -538,9 +615,10 @@ input[type="range"]::-moz-range-thumb {
       <h2 id="h1">Sortier die Bausteine.</h2>
       <p class="lead">
         Das sind die Module, aus denen QuoJob besteht – eins nach dem anderen.
-        Zieh die Karte in eine Zone oder tipp die Zone einfach an.
+        Tipp die passende Zone an – oder halt die Karte kurz fest und zieh sie hinein.
       </p>
     </div>
+    <div class="sorter">
     <div class="deck" data-zone="pool" id="deck" aria-live="polite"></div>
     <div class="zones" id="zones">
       <section class="zone" data-zone="keep" tabindex="0" aria-label="Zone: Brauchen wir">
@@ -560,6 +638,7 @@ input[type="range"]::-moz-range-thumb {
       </section>
     </div>
     <div class="sort-tools" id="sortTools"></div>
+    </div>
     <section class="sorted" id="sorted" aria-label="Sortierte Karten">
       <p class="small muted sorted-note">Antippen holt eine Karte zurück in den Stapel.</p>
       <section class="sorted-group" data-list="keep" hidden><h3 class="sorted-head">Brauchen wir <span class="sorted-count">0</span></h3><div class="sorted-list"></div></section>
@@ -810,8 +889,9 @@ input[type="range"]::-moz-range-thumb {
   /* ---------------- Station 1: Sortieren ---------------- */
   const deck = $('#deck'), zonesEl = $('#zones'), stepSort = $('.step[data-step="1"]');
   const sortTools = $('#sortTools'), sortedEl = $('#sorted');
-  // Handy (wie im CSS): Zonen als Leiste nebeneinander, sortierte Karten darunter in voller Breite.
-  const PHONE = window.matchMedia('(max-width: 640px)');
+  // Leiste (wie im CSS): unter 941 px Breite oder bei wenig Höhe liegen die Zonen kompakt, sortierte Karten darunter (#sorted).
+  const BAR = window.matchMedia('(max-width: 940px), (max-height: 520px)');
+  const FLY_MS = 240, LAND_MS = 260; // Flug in die Zone, danach bestätigt die Zone (CSS: .is-flying, .is-landed)
   let lastMoved = null, busy = false, confirmRest = false;
 
   function unsorted() { return ORDER.filter(m => !state.sort[m.id]); }
@@ -826,7 +906,9 @@ input[type="range"]::-moz-range-thumb {
   }
   // „Rest zu ‚Kenne ich nicht‘“ fragt erst nach und nennt die Anzahl; Enter auf „Abbrechen“ verschiebt nichts.
   function renderTools(left) {
-    if (left < 2) { confirmRest = false; sortTools.innerHTML = ''; return; }
+    if (left < 2) confirmRest = false;
+    sortTools.parentNode.classList.toggle('is-asking', confirmRest); // Leiste: Rückfrage steht an Stelle der Zonen
+    if (left < 2) { sortTools.innerHTML = ''; return; }
     sortTools.innerHTML = confirmRest
       ? `<p class="rest-q" id="restQ">${left} übrige Karten zu „Kenne ich nicht“ legen?</p>
         <button type="button" class="btn primary small" id="restYes" aria-describedby="restQ">Ja, alle ${left}</button>
@@ -834,13 +916,14 @@ input[type="range"]::-moz-range-thumb {
       : '<button type="button" class="btn quiet small" id="restUnknown">Rest zu „Kenne ich nicht“</button>';
   }
   function renderSort() {
-    const rest = unsorted(), cur = rest[0], phone = PHONE.matches;
+    const rest = unsorted(), cur = rest[0], bar = BAR.matches;
     if (cur) {
       deck.innerHTML = `
         <div class="deck-stack">
           ${rest[2] ? '<div class="deck-ghost g2"></div>' : ''}
           ${rest[1] ? '<div class="deck-ghost g1"></div>' : ''}
           ${cardHtml(cur, false)}
+          <p class="drag-hint" aria-hidden="true">Kurz halten, dann ziehen</p>
         </div>
         <div class="deck-meta"><span>Karte ${D.modules.length - rest.length + 1} von ${D.modules.length}, Bereich ${esc(D.groups[cur.group])}</span></div>`;
     } else {
@@ -850,8 +933,8 @@ input[type="range"]::-moz-range-thumb {
       const key = z.dataset.zone, group = $(`.sorted-group[data-list="${key}"]`, sortedEl);
       const items = ORDER.filter(m => state.sort[m.id] === key).sort((a, b) => (state.seq[b.id] || 0) - (state.seq[a.id] || 0));
       const html = items.map(m => cardHtml(m, true)).join('');
-      $('.zone-list', z).innerHTML = phone ? '' : html;
-      $('.sorted-list', group).innerHTML = phone ? html : '';
+      $('.zone-list', z).innerHTML = bar ? '' : html;
+      $('.sorted-list', group).innerHTML = bar ? html : '';
       $('.zone-count', z).textContent = $('.sorted-count', group).textContent = items.length;
       group.hidden = !items.length;
     });
@@ -860,14 +943,23 @@ input[type="range"]::-moz-range-thumb {
     lastMoved = null;
     updateNav();
   }
-  // Die Zonenleiste klebt am Handy direkt über der Navigation; deren Höhe (samt Safe Area) wird gemessen.
+  // Die Sortier-Einheit klebt bei Bedarf direkt über der Navigation; deren Höhe (samt Safe Area) wird gemessen.
   const navEl = $('.nav');
   const syncDock = () => stepSort.style.setProperty('--dock-bottom', navEl.offsetHeight + 'px');
   syncDock();
   if (window.ResizeObserver) new ResizeObserver(syncDock).observe(navEl);
-  const onPhoneChange = () => { if (state.step === 1) renderSort(); };
-  if (PHONE.addEventListener) PHONE.addEventListener('change', onPhoneChange); else if (PHONE.addListener) PHONE.addListener(onPhoneChange);
+  const onBarChange = () => { if (state.step === 1) renderSort(); };
+  if (BAR.addEventListener) BAR.addEventListener('change', onBarChange); else if (BAR.addListener) BAR.addListener(onBarChange);
 
+  // Landen: Die Zone bestätigt in ihrer Farbe (Fläche und Linie, LAND_MS); bei reduzierter Bewegung nur die Bestätigung.
+  const landTimers = {};
+  function landZone(zone) {
+    const z = $(`.zone[data-zone="${zone}"]`, zonesEl);
+    if (!z) return;
+    clearTimeout(landTimers[zone]);
+    z.classList.remove('is-landed'); void z.offsetWidth; z.classList.add('is-landed');
+    landTimers[zone] = setTimeout(() => z.classList.remove('is-landed'), LAND_MS);
+  }
   function commit(id, zone) {
     const hadFocus = stepSort.contains(document.activeElement);
     if (!state.seq) state.seq = {};
@@ -876,6 +968,7 @@ input[type="range"]::-moz-range-thumb {
     if (zone !== 'keep') delete state.friction[id];
     lastMoved = id; busy = false; confirmRest = false;
     save(); renderSort();
+    if (zone !== 'pool') landZone(zone);
     keepFocus(hadFocus, zone);
     if (zone === 'pool') { // zurückgeholt, während der Stapel oben außer Sicht ist (Handy): Stapel ins Bild holen
       const off = deck.getBoundingClientRect().top - $('.top').getBoundingClientRect().bottom;
@@ -888,17 +981,19 @@ input[type="range"]::-moz-range-thumb {
     const t = $('.deck .card') || $(`.zone[data-zone="${zone}"]`, zonesEl);
     if (t) t.focus({ preventScroll: true });
   }
-  // Zuweisen mit Flug der Karte in Richtung Zone; ohne Element (Tastatur) sofort.
+  // Zuweisen mit Flug der Karte in die Zone: Sie schrumpft auf Zonengröße und kommt sichtbar an; ohne Element (Tastatur) sofort.
   function assign(id, zone, fromEl) {
     if (busy) return;
     const targetEl = zone === 'pool' ? deck : $(`.zone[data-zone="${zone}"]`, zonesEl);
     if (!fromEl || REDUCED || !targetEl) { commit(id, zone); return; }
     const a = fromEl.getBoundingClientRect(), b = targetEl.getBoundingClientRect();
-    const dx = (b.left + b.width / 2) - (a.left + a.width / 2), dy = (b.top + Math.min(b.height / 2, 90)) - (a.top + a.height / 2);
+    const s = zone === 'pool' ? .9 : Math.max(.2, Math.min(.6, (b.width - 8) / a.width, (Math.min(b.height, 120) - 4) / a.height));
+    const dx = (b.left + b.width / 2) - (a.left + a.width / 2), dy = (b.top + Math.min(b.height / 2, 60)) - (a.top + a.height / 2);
     fromEl.style.setProperty('--fx', dx + 'px'); fromEl.style.setProperty('--fy', dy + 'px');
-    fromEl.style.setProperty('--fr', Math.max(-10, Math.min(10, dx / 30)) + 'deg');
+    fromEl.style.setProperty('--fs', String(s));
+    fromEl.style.setProperty('--fr', Math.max(-8, Math.min(8, dx / 30)) + 'deg');
     fromEl.classList.add('is-flying'); busy = true;
-    setTimeout(() => commit(id, zone), 330);
+    setTimeout(() => commit(id, zone), FLY_MS);
   }
   function restTool(id) {
     if (busy) return;
@@ -906,7 +1001,7 @@ input[type="range"]::-moz-range-thumb {
     if (id === 'restYes') {
       state.seq = state.seq || {};
       rest.forEach(m => { state.sort[m.id] = 'unknown'; state.seq[m.id] = Date.now(); });
-      confirmRest = false; save(); renderSort();
+      confirmRest = false; save(); renderSort(); landZone('unknown');
       $('.zone[data-zone="unknown"]', zonesEl).focus({ preventScroll: true });
       return;
     }
@@ -943,22 +1038,35 @@ input[type="range"]::-moz-range-thumb {
     if (map[e.key] && cur) { e.preventDefault(); assign(cur.id, map[e.key], $('.deck .card')); }
   });
 
-  // Ziehen mit Pointer Events: Geist folgt dem Finger, Ziel unter dem Finger leuchtet.
-  // Maus: ab 6 px Bewegung. Touch und Stift: nur die Stapelkarte, und erst nach kurzem Halten (LIFT_MS) –
-  // bewegt sich der Finger vorher, ist es ein Wisch: Die Seite scrollt, nichts wird zugeordnet.
+  // Ziehen mit Pointer Events. Maus: ab 6 px Bewegung. Touch und Stift: nur die Stapelkarte, und erst nach kurzem
+  // Halten (LIFT_MS) – die Karte gibt dabei sofort nach und zeigt eine Halte-Linie (.is-pressing). Bewegt sich der
+  // Finger vorher, ist es ein Wisch: Die Seite scrollt, nichts wird zugeordnet, die Karte sagt „Kurz halten, dann ziehen“.
+  // Angehoben schwebt die Karte kompakt über dem Finger und nie über den Zonen; die Zone darunter zeigt, wo sie landet.
   // Sortierte Karten werden per Touch nur angetippt (zurückholen), nie gezogen.
   const LIFT_MS = 220;
-  let drag = null;
+  let drag = null, hintTimer = 0;
+  function dragHint() {
+    const h = $('.drag-hint', deck);
+    if (!h) return;
+    h.classList.add('is-on'); clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => h.classList.remove('is-on'), 2400);
+  }
+  function placeGhost(d, x, y) {
+    const z = zonesEl.getBoundingClientRect(), k = deck.getBoundingClientRect();
+    let left = x - d.gw / 2, top = y - d.gh - 24;
+    if (z.left >= k.right - 1) left = Math.min(left, z.left - d.gw - 10); // Zonen rechts daneben (Querformat)
+    else top = Math.min(top, z.top - d.gh - 10);                          // Zonen darunter
+    left = Math.max(6, Math.min(window.innerWidth - d.gw - 6, left));
+    d.ghost.style.transform = `translate(${Math.round(left)}px, ${Math.round(Math.max(6, top))}px) rotate(${Math.max(-4, Math.min(4, (x - d.x0) / 40))}deg)`;
+  }
   function lift(d) {
-    const r = d.card.getBoundingClientRect();
-    const g = d.card.cloneNode(true);
-    g.classList.add('ghost'); g.classList.remove('is-enter', 'is-new');
-    g.removeAttribute('tabindex'); g.setAttribute('aria-hidden', 'true');
-    g.style.width = r.width + 'px'; g.style.left = r.left + 'px'; g.style.top = r.top + 'px';
-    g.style.transform = 'scale(1.03)';
-    if (d.card.closest('.deck')) g.classList.add('from-deck');
+    const m = D.modules.find(x => x.id === d.id);
+    const g = document.createElement('div');
+    g.className = 'card ghost'; g.dataset.group = m.group; g.setAttribute('aria-hidden', 'true'); g.textContent = m.name;
     document.body.appendChild(g); document.body.classList.add('is-dragging');
-    d.ghost = g; d.moved = true; d.card.classList.add('is-lifted');
+    d.ghost = g; d.gw = g.offsetWidth; d.gh = g.offsetHeight; d.moved = true;
+    d.card.classList.remove('is-pressing'); d.card.classList.add('is-lifted');
+    placeGhost(d, d.x, d.y);
   }
   stepSort.addEventListener('pointerdown', e => {
     const card = e.target.closest('.card');
@@ -966,19 +1074,23 @@ input[type="range"]::-moz-range-thumb {
     const mouse = e.pointerType === 'mouse';
     if (!mouse && card.classList.contains('is-placed')) return;
     if (drag) endDrag(null, false);
-    const d = drag = { card, id: card.dataset.id, x0: e.clientX, y0: e.clientY, moved: false, ghost: null, pid: e.pointerId, over: null, mouse, timer: 0 };
-    if (!mouse) d.timer = setTimeout(() => { if (drag === d && !d.moved) lift(d); }, LIFT_MS);
+    const d = drag = { card, id: card.dataset.id, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, moved: false, ghost: null, pid: e.pointerId, over: null, mouse, timer: 0 };
+    if (!mouse) {
+      card.classList.add('is-pressing');
+      d.timer = setTimeout(() => { if (drag === d && !d.moved) lift(d); }, LIFT_MS);
+    }
     try { card.setPointerCapture(e.pointerId); } catch (err) { /* egal */ }
   });
   stepSort.addEventListener('pointermove', e => {
     if (!drag || e.pointerId !== drag.pid) return;
+    drag.x = e.clientX; drag.y = e.clientY;
     const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
     if (!drag.moved) {
       if (Math.hypot(dx, dy) < (drag.mouse ? 6 : 10)) return;
-      if (!drag.mouse) { endDrag(null, false); return; } // Wisch vor dem Halten: nichts zuordnen
+      if (!drag.mouse) { endDrag(null, false); return; } // Wisch vor dem Halten: nichts zuordnen, Hinweis an der Karte
       lift(drag);
     }
-    drag.ghost.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.max(-5, Math.min(5, dx / 40))}deg) scale(1.03)`;
+    placeGhost(drag, e.clientX, e.clientY);
     const el = document.elementFromPoint(e.clientX, e.clientY);
     let target = el ? el.closest('[data-zone]') : null;
     if (target === deck && drag.card.closest('.deck')) target = null;
@@ -993,16 +1105,15 @@ input[type="range"]::-moz-range-thumb {
     const d = drag; drag = null;
     clearTimeout(d.timer);
     if (d.ghost) d.ghost.remove();
-    d.card.classList.remove('is-lifted');
+    d.card.classList.remove('is-lifted', 'is-pressing');
     document.body.classList.remove('is-dragging');
     if (d.over) d.over.classList.remove('is-over');
-    if (d.moved) {
-      suppressClick = true;
-      setTimeout(() => { suppressClick = false; }, 0);
-      if (doCommit && d.over) {
-        const target = d.over.dataset.zone, current = state.sort[d.id] || 'pool';
-        if (target !== current) commit(d.id, target);
-      }
+    if (!d.moved) { if (!d.mouse) dragHint(); return; } // Tipp oder Wisch auf der Stapelkarte (Touch): sagen, wie Ziehen geht
+    suppressClick = true;
+    setTimeout(() => { suppressClick = false; }, 0);
+    if (doCommit && d.over) {
+      const target = d.over.dataset.zone, current = state.sort[d.id] || 'pool';
+      if (target !== current) commit(d.id, target);
     }
   }
   stepSort.addEventListener('pointerup', e => endDrag(e, true));
