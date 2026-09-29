@@ -4,11 +4,11 @@
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   margin: 0; min-height: 100dvh; background: var(--c-bg); color: var(--c-ink);
-  font-family: var(--font); font-size: 1rem; line-height: 1.5; font-weight: 350;
+  font-family: var(--font); font-size: 1rem; line-height: 1.5; font-weight: 400;
   -webkit-font-smoothing: antialiased;
 }
 h1, h2, h3, h4 { margin: 0; line-height: 1.1; font-weight: 600; }
-h1, .h1 { font-size: clamp(2rem, 5vw, 3.25rem); text-transform: uppercase; letter-spacing: -0.04em; }
+h1, .h1 { font-size: clamp(2rem, 5vw, 3.25rem); text-transform: uppercase; letter-spacing: -0.04em; overflow-wrap: break-word; hyphens: auto; }
 h2, .h2 { font-size: clamp(1.35rem, 3vw, 1.75rem); text-transform: uppercase; letter-spacing: -0.03em; }
 h3, .h3 { font-size: 1.125rem; letter-spacing: -0.01em; }
 p { margin: 0; }
@@ -16,6 +16,8 @@ a { color: var(--c-accent-text); text-underline-offset: 0.2em; }
 img, svg { display: block; max-width: 100%; }
 button, input, select, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--radius-s); }
+/* Programmatisch fokussierte Überschriften und <main> (Routenwechsel, Skip-Link) ohne Rahmen */
+[tabindex="-1"]:focus, [tabindex="-1"]:focus-visible { outline: none; box-shadow: none; }
 
 .muted { color: var(--c-ink-2); }
 .quiet { color: var(--c-ink-3); font-size: 0.9375rem; }
@@ -47,6 +49,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .btn-icon { width: var(--tap); padding: 0; }
 .btn[disabled], .btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
 .btn[disabled]:hover { background: var(--c-surface); color: var(--c-ink); border-color: var(--c-line-strong); }
+.btn-block { width: 100%; }
+.btn svg { flex: none; }
 
 .card {
   background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--radius-l);
@@ -61,6 +65,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .badge-danger { background: var(--c-danger-soft); color: var(--c-danger); }
 .badge-accent { background: var(--c-accent-soft); color: var(--c-accent-text); }
 .badge-lime { background: var(--c-lime); color: var(--c-lime-ink); }
+.badge svg { flex: none; }
 
 .field { display: grid; gap: var(--s-1); }
 .field > label, .field > .label { font-size: 0.9375rem; font-weight: 500; }

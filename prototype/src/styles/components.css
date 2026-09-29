@@ -1,0 +1,45 @@
+/* Wiederverwendbare Muster: Seitenkopf, Abschnitt, Kennzahl, Link-Zeile. Besitzer: Builder A – B und C dürfen sie nutzen. */
+
+/* Seitenkopf */
+.page-header {
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+  gap: var(--s-5) var(--s-6); margin-bottom: var(--s-6);
+}
+.page-header__main { min-width: 0; flex: 1 1 28rem; }
+.page-header__eyebrow { margin-bottom: var(--s-3); }
+.page-header__title {
+  font-size: clamp(2.25rem, 5.5vw, 3.75rem); line-height: 1; letter-spacing: -0.04em; text-transform: uppercase;
+  overflow-wrap: break-word; hyphens: auto;
+}
+.page-header__lead { margin-top: var(--s-4); max-width: 62ch; font-size: 1.0625rem; color: var(--c-ink-2); }
+.page-header__lead > * + * { margin-top: var(--s-2); }
+.page-header__actions { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+@media (min-width: 1024px) { .page-header { margin-bottom: var(--s-7); } }
+
+/* Abschnitt in einer Karte: Kopf mit Titel links, Link rechts */
+.section__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-2) var(--s-4); margin-bottom: var(--s-4); }
+.section__title { font-size: 1.25rem; line-height: 1.2; text-transform: uppercase; letter-spacing: -0.02em; }
+.section__note { color: var(--c-ink-2); }
+
+/* Link mit Pfeil, ≥ 44 px hoch */
+.link-more {
+  display: inline-flex; align-items: center; gap: var(--s-1); min-height: var(--tap);
+  font-weight: 500; color: var(--c-accent-text); text-decoration: none;
+}
+.link-more:hover { text-decoration: underline; }
+
+/* Kennzahlen */
+.stats { display: grid; gap: var(--s-3); grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
+@container content (min-width: 720px) { .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4); } }
+.stat {
+  display: flex; flex-direction: column; gap: var(--s-1); min-width: 0;
+  padding: var(--s-4); border: 1px solid var(--c-line); border-radius: var(--radius-l); background: var(--c-surface);
+}
+@container content (min-width: 720px) { .stat { padding: var(--s-5); } }
+.stat__label { order: 1; min-height: calc(2 * 1.3em); font-size: 0.8125rem; line-height: 1.3; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--c-ink-2); }
+.stat__value { order: 2; margin: 0; font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 600; line-height: 1.1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.stat__note { order: 3; margin: 0; font-size: 0.9375rem; color: var(--c-ink-2); }
+.stat--lime { background: var(--c-lime); border-color: var(--c-lime); color: var(--c-lime-ink); }
+.stat--lime .stat__label, .stat--lime .stat__note { color: var(--c-lime-ink); }
+.stat--alert { border-color: var(--c-danger); border-width: 1.5px; }
+.stat--alert .stat__value { color: var(--c-danger); }

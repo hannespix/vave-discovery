@@ -6,7 +6,15 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="description" content="UI-Entwurf für VAVE Studio – Prototyp mit Beispieldaten, ohne Backend.">
 <meta name="theme-color" content="#641dff">
-<title>VAVE Studio · Prototyp</title>
+<meta name="color-scheme" content="light dark">
+<title>VAVE Studio-Tool (Prototyp)</title>
+<script>
+  /* Darstellung vor dem ersten Rendern setzen (kein Aufblitzen); Schlüssel wie src/lib/theme.js */
+  try {
+    var t = localStorage.getItem('vave-proto:theme');
+    document.documentElement.setAttribute('data-theme', t === 'light' || t === 'dark' ? t : 'system');
+  } catch (e) { document.documentElement.setAttribute('data-theme', 'system'); }
+</script>
 </head>
 <body>
 <div id="root"></div>

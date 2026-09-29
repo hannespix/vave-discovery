@@ -1,13 +1,14 @@
 /* Design-Tokens – VAVE Studio (Website vave.studio, 2026-09-29):
    Schwarz, Weiß, Violett #641dff, Limette #e8ffb9; Akzentreihe aus der Website (Orange, Koralle, Gelb, Pink, Himmelblau).
    Schrift: Readex Pro (frei, OFL) statt der lizenzierten Hausschrift. Überschriften in Versalien, eng (-0.04em).
-   Vertrag für alle Builder: nur diese Variablen verwenden, keine neuen Farbwerte in Komponenten. Besitzer: Builder A. */
+   Vertrag für alle Builder: nur diese Variablen verwenden, keine neuen Farbwerte in Komponenten. Besitzer: Builder A.
+   Kontrastwerte in Klammern gelten gegen --c-bg bzw. die genannte Fläche. */
 :root {
   color-scheme: light;
   --font: 'Readex Pro Variable', 'Readex Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   --c-bg: #ffffff;
-  --c-bg-2: #f5f3fb;          /* Flächen, Seitenleiste */
+  --c-bg-2: #f5f3fb;          /* Flächen, Spuren von Balken */
   --c-surface: #ffffff;       /* Karten */
   --c-ink: #0b0b0f;           /* Text 19:1 auf Weiß */
   --c-ink-2: #45434f;         /* Nebentext, ≥ 9:1 */
@@ -18,14 +19,29 @@
 
   --c-accent: #641dff;        /* VAVE-Violett: Flächen mit weißer Schrift (6,6:1) */
   --c-accent-ink: #ffffff;
-  --c-accent-text: #5a14f0;   /* Violett als Text/Link auf hellem Grund */
+  --c-accent-text: #5a14f0;   /* Violett als Text/Link auf hellem Grund (7,5:1) */
   --c-accent-soft: #ebe2ff;   /* Lavendel */
   --c-lime: #e8ffb9;          /* Limette: Flächen mit schwarzer Schrift */
   --c-lime-ink: #0b0b0f;
 
+  /* Markierung „ausgewählt/aktiv“ auf hellem oder dunklem Grund (Tab-Leiste, Umschalter) – ≥ 3:1 zur Umgebung */
+  --c-indicator: #641dff;
+  --c-indicator-ink: #ffffff;
+
+  /* Navigation (Seitenleiste) – volle violette Fläche wie das Menü auf vave.studio */
+  --c-nav: #641dff;
+  --c-nav-ink: #ffffff;       /* 6,6:1 */
+  --c-nav-ink-2: #e6dcff;     /* 5,1:1 */
+  --c-nav-hover: rgb(255 255 255 / 0.14);
+  --c-nav-focus: #ffffff;
+
   --c-ok: #1b6e35;       --c-ok-soft: #e1f5e6;
   --c-warn: #7a4f00;     --c-warn-soft: #fff0c7;
   --c-danger: #b0231b;   --c-danger-soft: #fde6e4;
+  /* Füllungen für Balken (Budget-Ampel), ≥ 3:1 gegen --c-bg-2 */
+  --c-ok-fill: #1b6e35;
+  --c-warn-fill: #a86f00;
+  --c-danger-fill: #b0231b;
 
   /* Akzentreihe (Studios, Kategorien) – nur als Fläche mit --c-ink als Schrift */
   --c-orange: #ff7f53;
@@ -41,6 +57,12 @@
 
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
 
+  /* Layout der Hülle */
+  --sidebar-w: 272px;
+  --tabbar-h: 64px;
+  --content-max: 1200px;
+  --gutter: 16px;
+
   --shadow-1: 0 1px 2px rgb(11 11 15 / 0.06), 0 1px 1px rgb(11 11 15 / 0.04);
   --shadow-2: 0 8px 24px rgb(11 11 15 / 0.10);
   --focus: 0 0 0 3px var(--c-bg), 0 0 0 6px var(--c-accent);
@@ -49,6 +71,7 @@
   --dur: 180ms;
   --tap: 44px;                /* Mindest-Trefferfläche */
 }
+@media (min-width: 480px) { :root { --gutter: 24px; } }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -62,11 +85,22 @@
     --c-line: #2d2b3a;
     --c-line-strong: #f5f3fb;
     --c-control: #8d889f;
+    --c-accent: #7447ff;
     --c-accent-text: #c2a8ff;
     --c-accent-soft: #2a1d52;
+    --c-indicator: #e8ffb9;
+    --c-indicator-ink: #0b0b0f;
+    --c-nav: #1d1438;
+    --c-nav-ink: #ffffff;
+    --c-nav-ink-2: #d9cffa;
+    --c-nav-hover: rgb(255 255 255 / 0.10);
+    --c-nav-focus: #e8ffb9;
     --c-ok: #7fdc98;       --c-ok-soft: #12301c;
     --c-warn: #ffd166;     --c-warn-soft: #3a2c05;
     --c-danger: #ff9a92;   --c-danger-soft: #3d1210;
+    --c-ok-fill: #7fdc98;
+    --c-warn-fill: #ffd166;
+    --c-danger-fill: #ff9a92;
     --shadow-1: none;
     --shadow-2: 0 8px 24px rgb(0 0 0 / 0.5);
     --focus: 0 0 0 3px var(--c-bg), 0 0 0 6px var(--c-lime);
@@ -83,11 +117,22 @@
   --c-line: #2d2b3a;
   --c-line-strong: #f5f3fb;
   --c-control: #8d889f;
+  --c-accent: #7447ff;
   --c-accent-text: #c2a8ff;
   --c-accent-soft: #2a1d52;
+  --c-indicator: #e8ffb9;
+  --c-indicator-ink: #0b0b0f;
+  --c-nav: #1d1438;
+  --c-nav-ink: #ffffff;
+  --c-nav-ink-2: #d9cffa;
+  --c-nav-hover: rgb(255 255 255 / 0.10);
+  --c-nav-focus: #e8ffb9;
   --c-ok: #7fdc98;       --c-ok-soft: #12301c;
   --c-warn: #ffd166;     --c-warn-soft: #3a2c05;
   --c-danger: #ff9a92;   --c-danger-soft: #3d1210;
+  --c-ok-fill: #7fdc98;
+  --c-warn-fill: #ffd166;
+  --c-danger-fill: #ff9a92;
   --shadow-1: none;
   --shadow-2: 0 8px 24px rgb(0 0 0 / 0.5);
   --focus: 0 0 0 3px var(--c-bg), 0 0 0 6px var(--c-lime);
