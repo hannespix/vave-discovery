@@ -5,8 +5,9 @@
 .pj-head { display: grid; gap: var(--s-2); }
 .pj-head h1:focus, .pj-h2:focus { box-shadow: none; }          /* Ziel für Fokus nach Ansichtswechsel, kein Bedienelement */
 .pj-h2 { font-size: 1.25rem; letter-spacing: -0.02em; }
+.pj-h3 { font-size: 1.125rem; text-transform: uppercase; letter-spacing: -0.01em; }
 .pj-detail-title { font-size: clamp(1.625rem, 4.5vw + 0.5rem, 3.25rem); }
-.pj-detail-title, .pj-card-title, .pj-task-title, .pj-kpi dd, .pj-meta dd { overflow-wrap: anywhere; -webkit-hyphens: auto; hyphens: auto; }
+.pj-detail-title, .pj-card-title, .pj-kpi dd, .pj-meta dd { overflow-wrap: anywhere; -webkit-hyphens: auto; hyphens: auto; }
 .pj-back { justify-self: start; padding-inline: var(--s-3); }
 
 /* ---------- Liste: Filter ---------- */
@@ -26,7 +27,17 @@
 .pj-chip:hover .pj-chip-face { border-color: var(--c-line-strong); }
 .pj-chip input:checked + .pj-chip-face { background: var(--c-ink); border-color: var(--c-ink); color: var(--c-bg); }
 .pj-chip input:focus-visible + .pj-chip-face { box-shadow: var(--focus); }
-.pj-result { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2); min-height: var(--tap); }
+.pj-result { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); min-height: var(--tap); }
+.pj-result-text { flex: 1 1 auto; }
+.pj-filter-panel { display: grid; gap: var(--s-4); }
+.pj-filter-toggle[aria-expanded="true"] { background: var(--c-indicator); border-color: var(--c-indicator); color: var(--c-indicator-ink); }
+.pj-filter-count {
+  display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 999px;
+  background: var(--c-ink); color: var(--c-bg); font-size: 0.8125rem; font-weight: 600;
+}
+/* Schmal: Suche, Sortierung und Chips hinter „Filter“, damit die erste Karte gleich im Bild ist */
+@media (max-width: 719.98px) { .pj-filter-panel[data-open="false"] { display: none; } }
+@media (min-width: 720px) { .pj-filter-toggle { display: none; } }
 
 .pj-dot { flex: none; display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--c-line-strong); }
 .pj-studio { display: inline-flex; align-items: center; gap: var(--s-2); }
@@ -64,11 +75,18 @@
 .pj-budget-line { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); font-weight: 500; }
 .pj-budget-state { display: inline-flex; align-items: center; gap: var(--s-2); }
 .pj-budget-pct { font-size: 1.125rem; font-weight: 600; }
-.pj-bar { display: block; height: 10px; border-radius: 999px; background: var(--c-bg-2); box-shadow: inset 0 0 0 1px var(--c-control); overflow: hidden; }
-.pj-bar > span { display: block; height: 100%; border-radius: inherit; background: currentColor; }
-.is-ok > .pj-budget-line .pj-budget-state, .pj-budget.is-ok .pj-bar { color: var(--c-ok); }
-.is-warn > .pj-budget-line .pj-budget-state, .pj-budget.is-warn .pj-bar { color: var(--c-warn); }
-.is-danger > .pj-budget-line .pj-budget-state, .pj-budget.is-danger .pj-bar { color: var(--c-danger); }
+/* Balken im VAVE-Stil: Kontur 1,5 px, die Füllung endet an einer eigenen Kante – so grenzt sich auch eine helle Füllung ab.
+   Kontur als Schatten + Innenabstand statt border: Chrome rastet Rahmen auf ganze Pixel (1,5 → 1 px), die Füllung
+   liegt so innerhalb der Kontur und deckt sie nicht zu. */
+.pj-bar { display: block; height: 14px; padding: 1.5px; border-radius: 999px; background: var(--c-bg-2); box-shadow: inset 0 0 0 1.5px var(--c-line-strong); }
+.pj-bar > span { display: block; height: 100%; max-width: 100%; border-radius: 999px; background: var(--c-ok-fill); box-shadow: 1.5px 0 0 var(--c-line-strong); }
+.pj-budget.is-warn .pj-bar > span { background: var(--c-warn-fill); }
+.pj-budget.is-danger .pj-bar > span { background: var(--c-danger-fill); }
+.pj-budget.is-ok .pj-budget-state { color: var(--c-ok); }
+.pj-budget.is-warn .pj-budget-state { color: var(--c-warn); }
+.pj-budget.is-danger .pj-budget-state { color: var(--c-danger); }
+/* Kompakte Budgetzeile im Kopf des Details */
+.pj-budget.pj-budget-compact { margin-top: var(--s-2); padding: var(--s-3) var(--s-4); border: 1px solid var(--c-line); border-radius: var(--radius-l); background: var(--c-surface); }
 
 .pj-empty {
   display: grid; justify-items: start; gap: var(--s-3); padding: var(--s-6) var(--s-5);
@@ -87,19 +105,23 @@
 .pj-kpi.is-warn dd, .pj-kpi.is-warn .pj-kpi-sub { color: var(--c-warn); }
 .pj-kpi.is-danger dd, .pj-kpi.is-danger .pj-kpi-sub { color: var(--c-danger); }
 .pj-kpi-wide { grid-column: 1 / -1; }
+.pj-details { display: grid; gap: var(--s-4); }
 .pj-detail-grid { display: grid; gap: var(--s-4); grid-template-columns: minmax(0, 1fr); }
 .pj-panel { display: grid; gap: var(--s-4); align-content: start; min-width: 0; }
 
 .pj-chart { margin: 0; display: grid; gap: var(--s-3); }
 .pj-chart-state { display: flex; align-items: center; gap: var(--s-2); font-size: 1.125rem; font-weight: 600; }
 .pj-chart-state strong { margin-left: auto; font-size: 1.75rem; letter-spacing: -0.02em; }
-.pj-chart.is-ok .pj-chart-state, .pj-chart.is-ok .pj-chart-svg { color: var(--c-ok); }
-.pj-chart.is-warn .pj-chart-state, .pj-chart.is-warn .pj-chart-svg { color: var(--c-warn); }
-.pj-chart.is-danger .pj-chart-state, .pj-chart.is-danger .pj-chart-svg { color: var(--c-danger); }
+.pj-chart.is-ok .pj-chart-state { color: var(--c-ok); }
+.pj-chart.is-warn .pj-chart-state { color: var(--c-warn); }
+.pj-chart.is-danger .pj-chart-state { color: var(--c-danger); }
 .pj-chart-svg { display: block; width: 100%; height: 40px; overflow: visible; }
-.pj-chart-track { fill: var(--c-bg-2); stroke: var(--c-control); stroke-width: 1px; vector-effect: non-scaling-stroke; }
-.pj-chart-fill { fill: currentColor; }
-.pj-chart-over { fill: var(--c-danger); stroke: var(--c-ink); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+/* Spur und Füllung mit 1,5 px Kontur wie die Balken der Liste */
+.pj-chart-track, .pj-chart-fill, .pj-chart-over { stroke: var(--c-line-strong); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.pj-chart-track { fill: var(--c-bg-2); }
+.pj-chart-fill { fill: var(--c-ok-fill); }
+.pj-chart.is-warn .pj-chart-fill { fill: var(--c-warn-fill); }
+.pj-chart.is-danger .pj-chart-fill, .pj-chart-over { fill: var(--c-danger-fill); }
 .pj-chart-mark { stroke: var(--c-ink); stroke-width: 2px; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; }
 .pj-chart-mark.is-budget { stroke-dasharray: none; }
 .pj-chart-scale { position: relative; height: 1.25rem; font-size: 0.8125rem; color: var(--c-ink-2); }
@@ -119,7 +141,7 @@
 .pj-tasks { gap: var(--s-4); }
 .pj-tasks-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-2) var(--s-4); }
 .pj-overdue-sum { color: var(--c-danger); font-weight: 500; }
-.pj-board-wrap { gap: var(--s-4); }
+.pj-board-wrap { gap: var(--s-4); container: pj-board / inline-size; }   /* Layout des Boards folgt seiner Breite, nicht dem Fenster */
 .pj-hint svg { display: inline-block; vertical-align: -3px; }
 
 .pj-add { display: grid; gap: var(--s-3); justify-items: start; }
@@ -132,7 +154,8 @@
 .pj-error { display: flex; align-items: center; gap: var(--s-1); color: var(--c-danger); font-size: 0.9375rem; font-weight: 500; }
 .pj-add-form [aria-invalid="true"] { border-color: var(--c-danger); }
 
-/* Board: Handy = waagerecht wischbare Spalten mit Scroll-Snap; die nächste Spalte schaut an. Ab 1024 px vier Spalten. */
+/* Board nach eigener Breite (Container-Query): schmal waagerecht wischbare Spalten mit Scroll-Snap, die nächste Spalte
+   schaut an; ab 40rem 2 × 2, ab 72rem vier Spalten – erst dort passt das längste Wort neben den Griff. */
 .pj-board {
   display: grid; grid-auto-flow: column; grid-auto-columns: min(85%, 20rem); gap: var(--s-3);
   overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; padding-bottom: var(--s-3); min-width: 0;
@@ -160,13 +183,22 @@
 .pj-task {
   display: grid; gap: var(--s-2); padding: var(--s-3); background: var(--c-surface); color: var(--c-ink);
   border: 1px solid var(--c-line); border-radius: var(--radius); box-shadow: var(--shadow-1);
+  outline: 3px solid transparent; outline-offset: 2px; transition: outline-color var(--dur) var(--ease);
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
+.pj-task:focus { box-shadow: var(--shadow-1); }   /* base.css nimmt Fokus-Zielen mit tabindex -1 sonst den Schatten */
 @media (pointer: fine) { .pj-task { cursor: grab; } .pj-task :is(button, select, label) { cursor: pointer; } }
 .pj-task.is-overdue { border-color: var(--c-danger); box-shadow: inset 4px 0 0 var(--c-danger); }
+.pj-task:focus-visible { box-shadow: var(--focus); }
 .pj-task.is-dragging { opacity: 0.5; border-style: dashed; border-color: var(--c-control); }
+/* Gelandet (nach Ziehen, Statuswechsel, Anlegen, tiefem Link): kurz absetzen, dann bleibt der Ring LANDED_MS stehen.
+   Ohne Bewegung (prefers-reduced-motion) nur der Ring – als Umriss, damit er auch im Kontrastmodus sichtbar bleibt. */
+@keyframes pj-land { from { transform: translateY(-8px) scale(1.02); } to { transform: none; } }
+.pj-task.is-landed { outline: 3px solid var(--c-indicator); outline-offset: 2px; animation: pj-land 280ms var(--ease); }
+@media (prefers-reduced-motion: reduce) { .pj-task.is-landed { animation: none; } }
 .pj-task-head { display: flex; align-items: flex-start; gap: var(--s-2); }
-.pj-task-title { flex: 1; min-width: 0; padding-top: var(--s-1); font-weight: 500; line-height: 1.35; }
+/* Titel brechen nur zwischen Wörtern; nur ein einzelnes Wort, das breiter als die Karte ist, wird notfalls geteilt */
+.pj-task-title { flex: 1; min-width: 0; padding-top: var(--s-1); font-weight: 500; line-height: 1.35; overflow-wrap: break-word; -webkit-hyphens: manual; hyphens: manual; }
 .pj-grip {
   flex: none; display: grid; place-items: center; width: var(--tap); height: var(--tap);
   margin: calc(-1 * var(--s-2)) calc(-1 * var(--s-2)) 0 0; border-radius: var(--radius);
@@ -180,9 +212,11 @@
 .pj-due.is-overdue, .pj-due.is-today { justify-self: start; padding: 2px var(--s-2); border-radius: var(--radius-s); font-weight: 500; }
 .pj-due.is-overdue { background: var(--c-danger-soft); color: var(--c-danger); }
 .pj-due.is-today { background: var(--c-warn-soft); color: var(--c-warn); }
-.pj-task-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); padding-top: var(--s-2); border-top: 1px solid var(--c-line); }
-.pj-task-label { font-size: 0.875rem; font-weight: 500; color: var(--c-ink-2); }
-.pj-task-status { flex: 1 1 7rem; width: auto; min-width: 0; }
+/* Status und Löschen in einer Zeile – die Auswahl gibt Platz ab, das Löschen-Symbol bricht nie in eine eigene Zeile */
+.pj-task-actions { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--s-2); padding-top: var(--s-2); border-top: 1px solid var(--c-line); }
+.pj-task-label { flex: none; font-size: 0.875rem; font-weight: 500; color: var(--c-ink-2); }
+.pj-task-status { flex: 1 1 0; width: auto; min-width: 0; }
+.pj-del { flex: none; }
 .pj-del:hover { background: var(--c-danger-soft); color: var(--c-danger); }
 
 .pj-ghost {
@@ -205,8 +239,14 @@
 
 @media (min-width: 720px) {
   .pj-filter-row { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+}
+@container pj-board (min-width: 40rem) {
   .pj-add-form { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
   .pj-add-actions { grid-column: 1 / -1; }
+  .pj-board { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; scroll-snap-type: none; padding-bottom: 0; }
+}
+@container pj-board (min-width: 72rem) {
+  .pj-board { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 @media (min-width: 768px) {
   .pj-kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); }
@@ -214,5 +254,4 @@
 }
 @media (min-width: 1024px) {
   .pj-detail-grid { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
-  .pj-board { grid-auto-flow: row; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; scroll-snap-type: none; padding-bottom: 0; }
 }
