@@ -159,13 +159,16 @@ p { margin: 0; }
 /* ------------------------------------------------------------------
    Station 1 – Sortieren: ein Kartenstapel, drei Zonen, immer im Blick.
 ------------------------------------------------------------------- */
-/* Sortier-Einheit: Stapelkarte, Zonen und „Rest“-Knopf gehören zusammen. Reicht die Höhe nicht, klebt die Einheit
-   direkt über der Navigation (--dock-bottom misst das Script) und schiebt sich über den Einleitungstext – so bleiben
-   Kartenname, Beschreibung und alle drei Zonen für jede Karte ohne Scrollen im Blick, nichts davon unter der Navigation. */
+/* Sortier-Einheit: Anleitung, Stapelkarte, Zonen und „Rest“-Knopf gehören zusammen. Breit steht sie im Fluss, die Zonen
+   wachsen mit ihren Karten. In der Leiste (siehe unten) klebt sie bei Bedarf direkt über der Navigation (--dock-bottom
+   misst das Script) und schiebt sich über den Einleitungstext – so bleiben Anleitung, Karte und alle drei Zonen ohne
+   Scrollen im Blick, nichts davon unter der Navigation. */
 .sorter {
-  position: sticky; bottom: var(--dock-bottom, 72px); z-index: 10;
+  position: relative; z-index: 10;
   display: grid; grid-template-columns: minmax(0, 1fr); background: var(--bg);
 }
+/* Die Anleitung steht in der Einheit, nicht im Einleitungstext: Sie bleibt sichtbar, wenn die Einheit darüber rückt. */
+.sort-how { grid-area: 1 / 1; justify-self: center; margin: 0 0 6px; text-align: center; font-size: 1rem; font-weight: 600; line-height: 1.35; color: var(--ink); }
 /* Klebend rückt die Einheit höchstens bis an den Anfang ihres Abschnitts. Damit sie bis an den Kopf darf, beginnt der
    Abschnitt von Station 1 schon im oberen Innenabstand der Bühne (40 px) – sichtbar bleibt alles, wo es war. */
 .step[data-step="1"] { margin-top: -40px; }
@@ -176,7 +179,7 @@ p { margin: 0; }
   background: linear-gradient(transparent, var(--bg));
 }
 .deck {
-  grid-area: 1 / 1; position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px;
+  grid-area: 2 / 1; position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px;
   padding: 6px 0 22px; border-radius: var(--radius); transition: background .2s;
 }
 .deck.is-over { background: var(--graphite-soft); }
@@ -286,12 +289,13 @@ p { margin: 0; }
 body.is-dragging { cursor: grabbing; }
 body.is-dragging * { cursor: grabbing !important; }
 
-/* Breit: drei Spalten mit fester Höhe – die Einheit passt über die Navigation, lange Listen scrollen in der Zone. */
-.zones { grid-area: 2 / 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+/* Breit: drei Spalten, die mit ihren Karten wachsen – keine feste Höhe, keine Scrollleiste in der Zone. Stapelkarte und
+   Zonenköpfe bleiben dabei stehen; lange Listen reichen nach unten, die Seite scrollt. */
+.zones { grid-area: 3 / 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .zone {
   --zone: var(--graphite); --zone-soft: var(--graphite-soft);
   position: relative; display: flex; flex-direction: column; gap: 8px; min-width: 0;
-  height: clamp(200px, calc(100vh - 570px), 320px); padding: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; /* Rückmeldung gibt die Zone selbst */
+  padding: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; /* Rückmeldung gibt die Zone selbst */
   border-radius: var(--radius); border: 1.5px solid var(--line); background: var(--surface);
   transition: border-color .2s, background .2s, transform .2s var(--ease-out);
 }
@@ -309,10 +313,11 @@ body.is-dragging * { cursor: grabbing !important; }
 @media (hover: hover) and (min-width: 760px) { .zone-head kbd { display: inline-block; } }
 .zone-count { font-weight: 800; color: var(--zone); font-variant-numeric: tabular-nums; }
 .zone-hint { font-size: .85rem; color: var(--ink-2); }
-.zone-list { display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; overflow-y: auto; padding-right: 2px; }
+.zone-list { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+/* Leere Zone: so hoch wie die Nachbarn (Grid), der Text bleibt oben im Blick */
 .zone-list:empty::after {
-  content: "Hier ablegen oder antippen"; display: grid; place-items: center; flex: 1; min-height: 72px;
-  color: var(--ink-3); font-weight: 600; font-size: .85rem; text-align: center; padding: 0 8px;
+  content: "Hier ablegen oder antippen"; display: grid; place-items: start center; flex: 1; min-height: 72px;
+  color: var(--ink-3); font-weight: 600; font-size: .85rem; text-align: center; padding: 25px 8px 0;
   border: 1.5px dashed var(--line); border-radius: var(--radius-s);
 }
 .zone.is-over .zone-list:empty::after { border-color: var(--zone); color: var(--zone); }
@@ -335,7 +340,7 @@ body.is-dragging * { cursor: grabbing !important; }
 /* „Rest zu ‚Kenne ich nicht‘“ steht hinter den Zonen (nicht erster Tab-Stopp), fragt vor dem Verschieben nach und gehört
    zur Sortier-Einheit. Breit: rechts neben dem Stapel, direkt über „Kenne ich nicht“. */
 .sort-tools {
-  position: relative; z-index: 1; grid-area: 1 / 1; align-self: end; justify-self: end; width: calc(50% - 238px); margin-bottom: 12px;
+  position: relative; z-index: 1; grid-area: 2 / 1; align-self: end; justify-self: end; width: calc(50% - 238px); margin-bottom: 12px;
   display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px 10px; text-align: right;
 }
 .sort-tools:empty { display: none; }
@@ -356,53 +361,81 @@ body.is-dragging * { cursor: grabbing !important; }
    liegen die drei Zonen kompakt nebeneinander unter der Karte; sortierte Karten stehen darunter in voller Breite (#sorted),
    so bricht kein Name mitten im Wort. Gilt für Handy, Tablet hochkant und Querformat (Script: BAR). */
 @media (max-width: 940px), (max-height: 520px) {
-  .sorter { padding-bottom: 8px; }
-  .zones { grid-area: 2 / 1; gap: 6px; padding-top: 8px; }
-  .zone { height: auto; min-height: 64px; padding: 8px 4px; gap: 0; justify-content: center; }
+  .sorter { position: sticky; bottom: var(--dock-bottom, 72px); padding-bottom: 8px; }
+  .zones { grid-area: 3 / 1; gap: 6px; padding-top: 8px; }
+  .zone { min-height: 64px; padding: 8px 4px; gap: 0; justify-content: center; }
   .zone-head { flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; }
   .zone-head h3 { font-size: 1rem; line-height: 1.15; overflow-wrap: normal; }
   .zone-count { font-size: .9rem; line-height: 1.1; }
   .zone-hint, .zone .zone-list { display: none; }
   .zone::after { left: 10px; right: 10px; bottom: 4px; }
-  .sort-tools { grid-area: 3 / 1; width: auto; justify-self: stretch; justify-content: flex-start; text-align: left; margin: 8px 0 0; }
+  .sort-tools { grid-area: 4 / 1; width: auto; justify-self: stretch; justify-content: flex-start; text-align: left; margin: 8px 0 0; }
   /* Rückfrage „Rest“: steht so lange an Stelle der Zonen – die Einheit wird nicht höher. */
   .sorter.is-asking .zones { visibility: hidden; }
-  .sorter.is-asking .sort-tools { grid-area: 2 / 1; align-self: center; margin: 0; padding-top: 8px; }
+  .sorter.is-asking .sort-tools { grid-area: 3 / 1; align-self: center; margin: 0; padding-top: 8px; }
   .sorted { display: grid; gap: 16px; margin-top: 18px; }
 }
-/* Handy: Stapelkarte kompakt, Zähler darüber. */
+/* Handy: Anleitung linksbündig über dem Zähler, Stapelkarte kompakt (so hoch wie ihr Inhalt), Abstände knapp –
+   so passt die Einheit mit Anleitung auch bei 375 × 553 (iPhone SE mit Leisten) und der höchsten Karte über die Navigation. */
 @media (max-width: 640px) {
-  .deck { padding: 0 0 14px; gap: 8px; }
+  .sorter { padding-bottom: 6px; }
+  .sort-how { justify-self: stretch; text-align: left; margin-bottom: 2px; line-height: 1.25; }
+  .deck { padding: 0 0 10px; gap: 4px; }
   .deck-meta { order: -1; }
-  .deck .card { padding: 16px 18px 16px 22px; grid-template-columns: minmax(0, 1fr); } /* Preis unter den Namen */
+  .deck-stack { min-height: 0; }
+  .deck-ghost.g1 { transform: translateY(6px) scale(.97); }
+  .deck-ghost.g2 { transform: translateY(12px) scale(.94); }
+  .deck .card { padding: 14px 18px 14px 22px; grid-template-columns: minmax(0, 1fr); } /* Preis unter den Namen */
   .deck .card::after { left: 22px; right: 18px; bottom: 7px; }
   .deck .card-name { font-size: 1.15rem; }
   .deck .card-price { padding-top: 2px; }
-  .deck .card-desc { margin-top: 6px; }
+  .deck .card-desc { margin-top: 4px; }
+  .zones { padding-top: 6px; }
+  .zone { padding: 6px 4px; }
+  .sort-tools { margin-top: 4px; }
 }
-/* Querformat (wenig Höhe): Karte links, Zonen und „Rest“-Knopf rechts daneben – so passt alles über die Navigation.
-   Überschrift und Einleitung hätten keinen Platz (die Einheit schnitte sie an); sie bleiben nur für Screenreader,
-   den Ort nennt der Kopf („Station 1 von 7: Sortieren“), das Ziehen erklärt der Hinweis an der Karte. */
+/* Querformat (wenig Höhe): drei Spalten – Karte | Anleitung und „Rest“-Knopf | Zonen untereinander. Alle Spalten beginnen
+   oben: Ist eine Karte höher als der Platz, reicht nur sie tiefer, Zonen und „Rest“ bleiben über der Navigation.
+   Überschrift, Einleitung und Zähler hätten keinen Platz; sie bleiben für Screenreader. Den Ort nennt der Kopf
+   („Station 1 von 7: Sortieren“), die übrigen Karten die Navigation („Noch … Karten im Stapel“). */
 @media (max-height: 520px) and (min-width: 560px) {
-  .step[data-step="1"] > .step-head { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .step[data-step="1"] > .step-head, .deck-meta { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .step[data-step="1"]::before { content: ""; display: block; height: 12px; } /* Luft unter dem Kopf, die Einheit darf darüber rücken */
-  .sorter { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); column-gap: 14px; align-items: start; padding-bottom: 4px; }
-  .deck { grid-area: 1 / 1 / 3 / 2; padding: 0 0 10px; gap: 6px; }
-  .deck-meta { order: -1; width: 100%; }
+  .sorter { grid-template-columns: minmax(0, 1fr) minmax(0, 10.5rem) auto; grid-template-rows: auto 1fr; column-gap: 12px; align-items: start; padding-bottom: 4px; }
+  .sort-how { grid-area: 1 / 2; justify-self: stretch; margin: 0; text-align: left; line-height: 1.3; }
+  .deck { grid-area: 1 / 1 / 3 / 2; padding: 0 0 10px; gap: 0; }
   .deck-stack { width: 100%; min-height: 0; }
   .deck-ghost.g1 { transform: translateY(5px) scale(.98); }
   .deck-ghost.g2 { transform: translateY(10px) scale(.96); }
-  .deck .card { padding: 12px 16px 12px 20px; }
+  .deck .card { padding: 12px 16px 12px 20px; grid-template-columns: minmax(0, 1fr); } /* Preis unter dem Namen: der Name hat die volle Breite */
   .deck .card::before { top: 12px; bottom: 12px; }
   .deck .card::after { left: 20px; right: 16px; bottom: 5px; }
   .deck .card-name { font-size: 1.1rem; }
-  .deck .card-price { padding-top: 3px; }
+  .deck .card-price { padding-top: 1px; }
   .deck .card-desc { font-size: .95rem; line-height: 1.3; margin-top: 4px; }
-  .zones { grid-area: 1 / 2; grid-template-columns: minmax(0, 1fr); padding-top: 0; }
+  .zones { grid-area: 1 / 3 / 3 / 4; grid-template-columns: minmax(0, 1fr); gap: 4px; padding-top: 0; }
   .zone { min-height: 44px; padding: 6px 12px; }
-  .zone-head { flex-direction: row; justify-content: space-between; align-items: baseline; }
-  .sort-tools { grid-area: 2 / 2; margin-top: 6px; }
-  .sorter.is-asking .sort-tools { grid-area: 1 / 2 / 3 / 3; align-self: start; padding-top: 0; }
+  .zone-head { flex-direction: row; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .zone-head h3 { white-space: nowrap; }
+  .sort-tools { grid-area: 2 / 2; align-self: start; margin-top: 8px; }
+  .sort-tools .btn { white-space: normal; text-align: left; line-height: 1.2; }
+  .sorter.is-asking .sort-how { visibility: hidden; }
+  /* width 0 + min-width 100 %: Die Rückfrage füllt ihre Fläche, macht die Zonenspalte (auto) aber nicht breiter */
+  .sorter.is-asking .sort-tools { grid-area: 1 / 2 / 3 / 4; align-self: start; width: 0; min-width: 100%; margin: 0; padding-top: 0; }
+}
+/* Schmales Querformat (unter 660 px): Für drei Spalten wäre die Karte zu schmal – Karte links, Zonen und „Rest“ rechts
+   untereinander wie bisher; die Anleitung bleibt hier nur für Screenreader (das Ziehen erklärt der Hinweis an der Karte). */
+@media (max-height: 520px) and (min-width: 560px) and (max-width: 659px) {
+  .sort-how { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .deck-meta { position: static; order: -1; width: 100%; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+  .sorter { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+  .deck { gap: 6px; }
+  .deck .card { grid-template-columns: 1fr auto; }
+  .deck .card-price { padding-top: 3px; }
+  .zones { grid-area: 1 / 2; }
+  .sort-tools { grid-area: 2 / 2; }
+  .sort-tools .btn { white-space: nowrap; }
+  .sorter.is-asking .sort-tools { grid-area: 1 / 2 / 3 / 3; }
 }
 
 /* ------------------------------------------------------------------
@@ -680,12 +713,10 @@ input[type="range"]::-moz-range-thumb {
   <section class="step" data-step="1" aria-labelledby="h1">
     <div class="step-head">
       <h2 id="h1">Sortier die Bausteine.</h2>
-      <p class="lead">
-        Das sind die Module, aus denen QuoJob besteht – eins nach dem anderen.
-        Tipp die passende Zone an – oder halt die Karte kurz fest und zieh sie hinein.
-      </p>
+      <p class="lead">Das sind die Module, aus denen QuoJob besteht – eins nach dem anderen.</p>
     </div>
     <div class="sorter">
+    <p class="sort-how">Zone antippen oder Karte halten und ziehen.</p>
     <div class="deck" data-zone="pool" id="deck" aria-live="polite"></div>
     <div class="zones" id="zones">
       <section class="zone" data-zone="keep" tabindex="0" aria-label="Zone: Brauchen wir">
