@@ -3,16 +3,25 @@ import { Menu, RotateCcw, X } from 'lucide-react';
 import Wordmark from './Wordmark.jsx';
 import ThemeSwitch from './ThemeSwitch.jsx';
 import SearchButton from './SearchButton.jsx';
-import { TimerChip, TimerStart } from './TimerPill.jsx';
+import { TimerChip, TimerHeadStart, TimerStart } from './TimerPill.jsx';
 
-// Schmale Ansicht (< 1024 px): Wortmarke, Timer-Chip (nur wenn er läuft), Suchen, Menü.
-// Ruht der Timer, startet ihn das Menü (oder die Palette); dort liegen auch Darstellung und Zurücksetzen.
+// Schmale Ansicht (< 1024 px): Wortmarke, Timer (Ruhe: sichtbarer Start, läuft: Chip mit Stopp), Suchen, Menü.
+// Das Menü zeigt den Start zusätzlich mit Projekt; dort liegen auch Darstellung und Zurücksetzen.
 export default function TopBar({ theme, onTheme, onReset, path, timerState, lastProject, onStart, onStop, onSearch }) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const btnRef = useRef(null);
   const wrapRef = useRef(null);
+  const startRef = useRef(null);
+  const focusNext = useRef(null); // Fokus springt mit: Start → Stopp im Chip → Start im Kopf
   const { running } = timerState;
+
+  useEffect(() => {
+    const target = focusNext.current === 'stop' ? wrapRef.current?.querySelector('.timer-chip .timer-stop')
+      : focusNext.current === 'start' ? startRef.current : null;
+    focusNext.current = null;
+    target?.focus();
+  }, [running]);
 
   useEffect(() => { setOpen(false); }, [path]);
 
@@ -32,17 +41,28 @@ export default function TopBar({ theme, onTheme, onReset, path, timerState, last
     };
   }, [open]);
 
-  // Start im Menü: Menü zu, Fokus auf den Menü-Knopf (der Chip erscheint daneben)
-  const start = () => { setOpen(false); onStart(); btnRef.current?.focus(); };
-  // Stopp im Chip: der Chip verschwindet – Fokus auf den Menü-Knopf statt ins Leere
-  const stop = () => { onStop(); btnRef.current?.focus(); };
+  // Start (Kopf oder Menü): Menü zu, Fokus auf den Stopp im Chip, der an derselben Stelle erscheint
+  const start = () => {
+    setOpen(false);
+    focusNext.current = 'stop';
+    if (!onStart()?.started) { focusNext.current = null; btnRef.current?.focus(); }
+  };
+  // Stopp im Chip: der Chip verschwindet – Fokus auf den Start im Kopf. Fragt der Stopp erst nach (über 10 h),
+  // bleibt der Chip und die Rückfrage übernimmt den Fokus.
+  const stop = () => {
+    focusNext.current = 'start';
+    const res = onStop();
+    if (!res || res.pending) focusNext.current = null;
+  };
 
   return (
     <header className="topbar" ref={wrapRef}>
       <div className="topbar__bar">
         <Wordmark sub={null} />
         <div className="topbar__actions">
-          {running && <TimerChip timerState={timerState} onStop={stop} />}
+          {running
+            ? <TimerChip timerState={timerState} onStop={stop} />
+            : <TimerHeadStart project={lastProject} onStart={start} buttonRef={startRef} />}
           <SearchButton compact onClick={() => { setOpen(false); onSearch(); }} />
           <button
             ref={btnRef}

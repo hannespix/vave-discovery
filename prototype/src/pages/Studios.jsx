@@ -108,7 +108,7 @@ export default function Studios() {
           now={now}
           legend={
             <p className="studios__legend">
-              Balken: Arbeitszeit {HOURS}, umgerechnet. Violett umrandet: alle arbeiten. Senkrechte Linie: jetzt.
+              Balken: Arbeitszeit {HOURS}, umgerechnet. Hellgrünes Band: alle arbeiten. Senkrechte Linie: jetzt.
             </p>
           }
         />

@@ -5,8 +5,9 @@ import {
   CLOSE_HOUR, HOME_TZ, OPEN_HOUR, commonWindows, dayShift, diffToHome, fmtHM, fmtOffset, minutesOfDay, studioStatus, workWindowInHome,
 } from '../lib/time.js';
 
-// Eine Zeile je Studio auf gemeinsamer 24-h-Skala (Frankfurter Zeit): Stadt, Ortszeit groß, Versatz grau, Status,
-// Arbeitsfenster als Balken in der Studiofarbe, gemeinsames Fenster als Band, Linie „jetzt“.
+// Eine Zeile je Studio auf gemeinsamer 24-h-Skala (Frankfurter Zeit): Stadt mit Punkt in der Studiofarbe, Ortszeit groß,
+// Versatz grau, Status, Arbeitsfenster als neutraler Balken (grau, schwarze Kontur), gemeinsames Fenster als Band in
+// Limette (Zustand „alle arbeiten“), Linie „jetzt“. Farbrollen r07: die Studiofarbe steht nur im Punkt.
 // Reines HTML/CSS in Prozent – keine Messung, keine Bewegung beim Öffnen. Die Skala ist aria-hidden; dieselben Angaben
 // stehen je Zeile als Text und darunter als Tabelle.
 const DAY = 1440;
@@ -72,7 +73,7 @@ export default function StudioTimeline({ studios, now, legend = null }) {
                 <span key={`c${seg[0]}`} className="tl__common" style={{ left: at(seg[0]), width: at(seg[1] - seg[0]) }} />
               ))}
               {r.segs.map(seg => (
-                <span key={seg[0]} className="tl__bar" style={{ left: at(seg[0]), width: at(seg[1] - seg[0]), background: r.color }}>
+                <span key={seg[0]} className="tl__bar" style={{ left: at(seg[0]), width: at(seg[1] - seg[0]) }}>
                   {seg[1] - seg[0] >= 180 ? shortRange(seg) : ''}
                 </span>
               ))}

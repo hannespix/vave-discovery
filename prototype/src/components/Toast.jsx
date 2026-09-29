@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { CircleCheck, TriangleAlert, X } from 'lucide-react';
+import { CircleCheck, Info, TriangleAlert, X } from 'lucide-react';
 import { href } from '../lib/router.js';
 
-// Bestätigung der Hülle (Timer gebucht, Aufgabe angelegt, Timer über 24 h), unten über --dock-bottom.
-// Die Statusmeldung (role=status) bleibt immer im DOM, damit Screenreader jede neue Meldung ansagen.
-// toast: { id, text, link?: { to, label }, tone?: 'ok' | 'warn', sticky?, quiet? } – quiet = nur für Screenreader.
+// Bestätigung der Hülle (Timer gebucht, nicht gebucht, verworfen, Aufgabe angelegt, Timer über 24 h), unten über
+// --dock-bottom. Die Statusmeldung (role=status) bleibt immer im DOM, damit Screenreader jede neue Meldung ansagen.
+// toast: { id, text, link?: { to, label }, tone?: 'ok' | 'info' | 'warn', sticky?, quiet? } – quiet = nur für Screenreader.
+// info: nichts gebucht, aber auch kein Fehler (unter einer Minute, verworfen) – kein Haken, der „erledigt“ behauptet.
 const SHOW_MS = 8000;
 
 export default function Toast({ toast, onDismiss }) {
@@ -19,7 +20,7 @@ export default function Toast({ toast, onDismiss }) {
 
   useEffect(() => { setPaused(false); }, [toast]);
 
-  const Icon = toast?.tone === 'warn' ? TriangleAlert : CircleCheck;
+  const Icon = toast?.tone === 'warn' ? TriangleAlert : toast?.tone === 'info' ? Info : CircleCheck;
   return (
     <div className="toast-dock">
       <div
