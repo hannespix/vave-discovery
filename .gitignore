@@ -3,3 +3,5 @@ node_modules/
 *.log
 # isolierte Worktrees der Builder (Claude Code)
 .claude/worktrees/
+# Build des Prototyps (wird in CI gebaut, nicht eingecheckt)
+prototype/dist/

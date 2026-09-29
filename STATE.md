@@ -1,6 +1,6 @@
 # STATE — lebender Zustand (max. 150 Zeilen, wird jede Runde fortgeschrieben)
 
-Stand: Ende r05 → nächste Runde **r06** · 2026-09-29 · Meilenstein **M1 Umfrage** · **verschickt, Antwort ausstehend**
+Stand: **r06 läuft** (UI-Entwurf Prototyp, Wunsch Hannes; live unter `/prototyp/`, Kritik folgt) · 2026-09-29 · **M1** · **verschickt, Antwort ausstehend**
 
 ## Aktueller Meilenstein
 M1 — Umfrage, **live und eingefroren**. Hannes (Chat, 2026-09-29): „Jetzt mach mal fertig! Ich will es abschicken!“
@@ -8,9 +8,9 @@ Live auf https://hannespix.github.io/vave-discovery/ (`noindex`); Hannes schickt
 flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 verschickt: sie werden Auswertungsregeln.
 - **Eingefroren bis zu Tobias' Antwort:** Texte, Skalen, Regeln, Export. Erlaubt sind nur Fehlerkorrekturen ohne
   Messwirkung, jede mit Deploy-Zeit hier. In r05 Beobachtetes bleibt liegen, bis ZZ 3 es einordnet.
-- **Live-Stände** (Merge auf `main` ≈ Deploy, 2026-09-29, +02:00): #5 Hotfix 06:49 · #6 08:24 · #7 (K2) 09:02 · K1
-  (Bedienung Station 1, „Halbzeit.“) + Fix `.stage` `overflow-x: clip` (K2-Notiz ragte beim Einblenden 0,3 s über
-  den Rand, Handy zoomte, „Los geht’s“ sprang) als letzter PR offen; Zustand und Export gleich. Der Export trägt
+- **Live-Stände** (Merge auf `main` ≈ Deploy, 2026-09-29, +02:00): #5 Hotfix 06:49 · #6 08:24 · #7 (K2) 09:02 · #8 (K1:
+  Bedienung Station 1, „Halbzeit.“, Fix `.stage` `overflow-x: clip` – K2-Notiz ragte beim Einblenden 0,3 s über
+  den Rand, Handy zoomte, „Los geht’s“ sprang) 10:03; Zustand und Export gleich. Der Export trägt
   keinen Stand, `respondent` ist fest „Tobias“: Fassung und Person zeigen nur `startedAt` und der Absender der Mail.
 
 ## Offene Gates
