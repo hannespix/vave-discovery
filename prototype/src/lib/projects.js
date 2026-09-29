@@ -75,10 +75,11 @@ export function useProjects() {
   const codeTaken = (code, exceptId = null) =>
     projects.find(p => p.id !== exceptId && p.code.trim().toLowerCase() === String(code).trim().toLowerCase()) || null;
   const update = (id, patch, note = '') => setProjects(list => list.map(p => (p.id === id ? applyPatch(p, patch, note) : p)));
+  // createdAt: angelegt im Prototyp – solche Projekte haben keinen erfundenen Beispielverlauf, nur echte Buchungen
   const create = draft => {
     const project = {
       id: `pr-${uid()}`, status: 'aktiv', phase: '', studio: 'fra', lead: null, client: null, due: null,
-      ...draft, budget: Number(draft.budget) || 0, spent: 0, budgetLog: [],
+      ...draft, budget: Number(draft.budget) || 0, spent: 0, budgetLog: [], createdAt: new Date().toISOString(),
     };
     setProjects(list => [...list, project]);
     return project;
