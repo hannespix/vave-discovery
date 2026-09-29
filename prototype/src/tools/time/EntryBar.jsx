@@ -1,8 +1,9 @@
 // Eine Leiste für beide Wege zur Zeit: Umschalter „Timer | Nachtragen“. Projekt und Notiz liegen im gemeinsamen Entwurf
 // (draft, gehalten von TimeTracker) – beim Moduswechsel bleibt das Projekt stehen. Der Timer ist der gemeinsame aus
 // lib/timer.js (useTimer): Pille, Palette und Aufgaben starten und stoppen denselben, diese Leiste folgt dem Speicher.
-// Regeln aus r06: Stopp bucht höchstens 24 h; ab 10 h Hinweis „vergessen?“; über 24 h bucht Stopp nichts und belegt
-// „Nachtragen“ mit Datum, Beginn, Projekt und Notiz vor.
+// Stopp und Speichern wertet TimeTracker aus (onStop, onSave) und meldet über note/say in der Bestätigung hier.
+// Regeln aus lib/timer.js: unter 1 min wird nichts gebucht; ab 10 h stoppt der Knopf nicht selbst, sondern die Hülle
+// fragt nach (TIMER_GUARD) – ganz buchen, bis Feierabend oder verwerfen; über 24 h ist „ganz buchen“ gesperrt.
 import { useEffect, useRef, useState } from 'react';
 import { Play, Plus, Square, TriangleAlert } from 'lucide-react';
 import { LONG_RUN_MS, MAX_BOOK_MS, clockOf, useElapsed } from '../../lib/timer.js';
@@ -13,7 +14,7 @@ import ProjectSelect, { Dot, projectInfo } from './ProjectSelect.jsx';
 import Confirmation, { makeNote } from './Confirmation.jsx';
 import { DurationField, FieldError } from './fields.jsx';
 import { parseDuration, toInputDuration } from './duration.js';
-import { dayPhrase, endOf, fromMinutes, rowId, suggestStart, toMinutes, todayIso } from './timeUtils.js';
+import { dayPhrase, fromMinutes, minutesNow, suggestStart, toMinutes, todayIso } from './timeUtils.js';
 
 // „09:00“ für heute, sonst mit Datum: „Samstag, 26.09., 09:00“
 export const since = date => (isoDay(date) === isoDay(new Date()) ? clockOf(date) : `${dayPhrase(isoDay(date))}, ${clockOf(date)}`);
@@ -106,7 +107,7 @@ function TimerMode({ timer, shownProject, draft, setDraft, recent, combos, taskT
           <TriangleAlert aria-hidden="true" size={20} />
           <span>
             <strong>{stage === 2 ? 'Läuft seit über 24 h – vergessen?' : 'Läuft seit über 10 h – vergessen?'}</strong>{' '}
-            {stage === 2 ? 'Stopp bucht dann nichts, die Dauer wird nachgetragen.' : 'Stopp bucht die ganze Laufzeit.'}
+            {stage === 2 ? 'Beim Stoppen kommt eine Rückfrage – ganz buchen geht nicht mehr.' : 'Beim Stoppen kommt eine Rückfrage, was gebucht wird.'}
           </span>
         </p>
       )}
@@ -124,7 +125,7 @@ function TimerMode({ timer, shownProject, draft, setDraft, recent, combos, taskT
                     type="button" className="chip tt-chip" onClick={() => onQuick(c)}
                     aria-label={`Timer starten: ${info.code}, ${label}`}
                   >
-                    <Play aria-hidden="true" size={14} fill="currentColor" className="tt-chip-play" />
+                    <Play aria-hidden="true" size={12} fill="currentColor" className="tt-chip-play" />
                     <Dot color={info.color} />
                     <span className="tt-chip-code">{info.code}</span>
                     <span className="tt-chip-label">{label}</span>
@@ -156,9 +157,13 @@ function ManualMode({ draft, setDraft, shownProject, recent, mine, focusReq, onS
   const submitRef = useRef(null);
   const set = patch => setDraft(d => ({ ...d, ...patch }));
 
-  // Beginn: bis zur ersten eigenen Eingabe das Ende des letzten Eintrags an diesem Tag
-  const start = draft.start ?? suggestStart(mine, draft.date);
+  // Beginn: bis zur ersten eigenen Eingabe das Ende des letzten Eintrags an diesem Tag – heute aber nie so, dass das
+  // Ende in der Zukunft liegt (der Vorschlag rückt mit der getippten Dauer in eine Lücke davor)
   const parsed = parseDuration(draft.duration);
+  const start = draft.start ?? suggestStart(mine, draft.date, {
+    minutes: parsed.error ? 0 : parsed.minutes,
+    nowMin: draft.date === today ? minutesNow() : null,
+  });
   const startMin = toMinutes(start);
   const end = startMin != null && !parsed.error ? fromMinutes(startMin + parsed.minutes) : '';
   const errors = validate({ date: draft.date, start, duration: draft.duration, today });
@@ -255,16 +260,12 @@ function ManualMode({ draft, setDraft, shownProject, recent, mine, focusReq, onS
   );
 }
 
+// note/say: Bestätigung in der Leiste (gehalten von TimeTracker, damit auch Stopps aus der Liste hier landen können).
+// say(note, timerKey?) – Hinweise gehören zu einem Timer-Zustand und verschwinden, wenn der Timer von außen wechselt.
 export default function EntryBar({
   mode, onMode, timer, draft, setDraft, shownProject, recent, combos, taskTitle, mine, todayMinutes, focusReq,
-  onBooked, onAdd, onOverlong, onReveal, weekStartIso,
+  note, say, onClearNote, onStop, onSave,
 }) {
-  const [status, setStatus] = useState(null);
-  // Hinweise gehören zu einem Timer-Zustand: stoppt die Pille den Timer von außen, verschwinden veraltete Hinweise
-  const timerKey = timer.timer?.startedAt ?? null;
-  const note = status && status.timerKey === timerKey ? status : null;
-  const say = (n, key = timerKey) => setStatus({ ...n, timerKey: key });
-
   const alreadyRunning = () => {
     const t = timer.timer;
     const info = projectInfo(t.project);
@@ -286,46 +287,9 @@ export default function EntryBar({
     if (!timer.running) setDraft(d => ({ ...d, note: '' }));
   };
 
-  const stop = () => {
-    const r = timer.stop();
-    if (!r) return;
-    setDraft(d => ({ ...d, project: r.overlong ? r.project : r.entry.project, note: '' }));
-    if (r.overlong) {
-      onOverlong(r);
-      say(makeNote(
-        'warn',
-        `Nicht gebucht: Der Timer lief über 24 Stunden, seit ${since(new Date(timer.startedMs))} Uhr. ` +
-          'Datum und Beginn stehen schon unter „Nachtragen“, es fehlt nur die Dauer.',
-      ), null);
-      return;
-    }
-    const { entry } = r;
-    onBooked(entry);
-    const info = projectInfo(entry.project);
-    const beforeWeek = entry.date < weekStartIso;
-    say(makeNote(
-      'ok',
-      `Gestoppt und gebucht: ${fmtDuration(entry.minutes)} auf ${info.code}, ${dayPhrase(entry.date)}, ` +
-        `${entry.start}–${endOf(entry)} Uhr.${beforeWeek ? ' Der Tag liegt vor dieser Woche und steht deshalb nicht in der Liste.' : ''}`,
-      beforeWeek ? null : { label: 'Anzeigen', whenHidden: rowId(entry.id), run: () => onReveal(entry.id) },
-    ), null);
-  };
-
-  const save = entry => {
-    onAdd(entry);
-    const info = projectInfo(entry.project);
-    const beforeWeek = entry.date < weekStartIso;
-    say(makeNote(
-      'ok',
-      `Gespeichert: ${fmtDuration(entry.minutes)} auf ${info.code}, ${dayPhrase(entry.date)}, ${entry.start}–${endOf(entry)} Uhr.` +
-        (beforeWeek ? ' Der Tag liegt vor dieser Woche und steht deshalb nicht in der Liste.' : ''),
-      beforeWeek ? null : { label: 'Anzeigen', whenHidden: rowId(entry.id), run: () => onReveal(entry.id) },
-    ));
-  };
-
   const switchTo = next => {
     if (next === mode) return;
-    setStatus(null);
+    onClearNote();
     onMode(next);
   };
 
@@ -343,12 +307,12 @@ export default function EntryBar({
       {mode === 'timer' ? (
         <TimerMode
           timer={timer} shownProject={shownProject} draft={draft} setDraft={setDraft} recent={recent} combos={combos}
-          taskTitle={taskTitle} todayMinutes={todayMinutes} onStart={start} onStop={stop} onQuick={startWith}
+          taskTitle={taskTitle} todayMinutes={todayMinutes} onStart={start} onStop={() => onStop()} onQuick={startWith}
         />
       ) : (
         <ManualMode
           draft={draft} setDraft={setDraft} shownProject={shownProject} recent={recent} mine={mine}
-          focusReq={focusReq} onSave={save}
+          focusReq={focusReq} onSave={onSave}
         />
       )}
       <Confirmation note={note} />

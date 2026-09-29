@@ -1,13 +1,14 @@
 // Bestätigung in der Leiste nach Stopp und Nachtragen: Pille mit Symbol und Klartext. Der Text ist Live-Region, der Knopf
 // liegt daneben. „Anzeigen“ erscheint nur, wenn der Eintrag außerhalb des Blicks liegt – gerollt wird erst auf Wunsch.
 import { useLayoutEffect, useRef, useState } from 'react';
-import { CircleCheck, TriangleAlert } from 'lucide-react';
+import { CircleCheck, Info, TriangleAlert } from 'lucide-react';
 
-const ICON = { ok: CircleCheck, warn: TriangleAlert };
+const ICON = { ok: CircleCheck, warn: TriangleAlert, note: Info };
 
 let seq = 0;
-// tone: 'ok' (gespeichert), 'warn' (nichts gebucht, Hinweis), 'info' (nur für Screenreader – der Zustand ist sichtbar);
-// action: { label, run, whenHidden?: Element-ID }
+// tone: 'ok' (gespeichert), 'warn' (nicht gebucht, bitte handeln), 'note' (sachlich, nichts gebucht: „Unter einer
+// Minute – nicht gebucht.“, „Verworfen.“), 'info' (nur für Screenreader – der Zustand ist sichtbar);
+// action: { label, run, whenHidden?: Element-ID } – ohne whenHidden steht der Knopf immer da (Eintrag in anderer Woche)
 export const makeNote = (tone, text, action = null) => ({ key: ++seq, tone, text, action });
 
 export const reducedMotion = () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);

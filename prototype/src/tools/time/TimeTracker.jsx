@@ -1,8 +1,12 @@
-// Zeiten (r07): eine Leiste (Timer | Nachtragen), darunter die Ansichten „Liste“ (nach Tag) und „Woche“ (Raster).
-// Routen: #/zeit (Timer, Liste) · #/zeit/woche · #/zeit/nachtragen · #/zeit/nachtragen/<YYYY-MM-DD> (Datum vorbelegt,
-// Fokus im ersten leeren Feld). Datenvertrag unverändert: 'time-entries' = [{ id, date, start, minutes, project, note,
-// person, task? }]; der Timer kommt aus lib/timer.js. Eigener Schlüssel: 'time-week-rows' = { <Montag>: [Projekt-IDs] }
-// für selbst hinzugefügte Zeilen des Wochenrasters (ohne Stunden).
+// Zeiten (r07): eine Leiste (Timer | Nachtragen), darunter der Kopf der gewählten Woche (‹ KW › · Summe gegen Soll)
+// und die Ansichten „Liste“ (nach Tag) und „Woche“ (Raster). Die Woche steht in der Route, die laufende ohne Datum:
+//   #/zeit · #/zeit/nachtragen · #/zeit/liste/<Montag> (Liste einer früheren Woche)
+//   #/zeit/woche · #/zeit/woche/<Montag> (Raster)
+//   #/zeit/nachtragen/<YYYY-MM-DD> (Woche des Datums, Datum vorbelegt, Fokus im ersten leeren Feld)
+// Künftige Wochen gibt es nicht – ein späteres Datum zeigt die laufende Woche.
+// Datenvertrag: 'time-entries' = [{ id, date, start, minutes, project, note, person, task?, source? }], source 'grid' =
+// Sammeleintrag des Rasters (grid.js). Der Timer kommt aus lib/timer.js. Eigener Schlüssel: 'time-week-rows' =
+// { <Montag>: [Projekt-IDs] } für selbst hinzugefügte Zeilen des Wochenrasters (ohne Stunden).
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStoredState, uid } from '../../lib/store.js';
 import { cleanEntries, cleanTasks } from '../../lib/data.js';
@@ -13,13 +17,15 @@ import { addDays, fmtDuration } from '../../lib/format.js';
 import { me, tasks as sampleTasks, timeEntries as sampleEntries } from '../../data/sample.js';
 import EntryBar, { since } from './EntryBar.jsx';
 import EntryList from './EntryList.jsx';
-import WeekGrid, { WEEK_TARGET_MIN } from './WeekGrid.jsx';
+import WeekGrid, { cellId } from './WeekGrid.jsx';
+import WeekNav, { RANGE_TITLE_ID } from './WeekNav.jsx';
 import Toast, { useToast } from './Toast.jsx';
 import { bookableIds, projectInfo, projectOrder } from './ProjectSelect.jsx';
-import { scrollToEl } from './Confirmation.jsx';
-import { gridRows, setCell } from './grid.js';
+import { makeNote, scrollToEl } from './Confirmation.jsx';
+import { gridRows, resumeCombo, revertCell, setCell } from './grid.js';
 import {
-  isDayIso, isoWeek, lastProject, recentCombos, recentProjects, rowId, suggestStart, sumMinutes, todayIso, weekDays,
+  dayPhrase, endOf, isDayIso, isoWeek, lastProject, mondayIso, parseDay, recentCombos, recentProjects, rowId, sameCombo,
+  suggestStart, sumMinutes, todayIso, weekDays,
 } from './timeUtils.js';
 import './time.css';
 
@@ -28,6 +34,7 @@ const FLASH_MS = 2000;
 const isObj = x => x !== null && typeof x === 'object' && !Array.isArray(x);
 const cleanRows = (v, fallback) =>
   isObj(v) ? Object.fromEntries(Object.entries(v).filter(([, ids]) => Array.isArray(ids)).map(([k, ids]) => [k, ids.filter(x => typeof x === 'string')])) : fallback;
+const shiftWeek = (monday, n) => mondayIso(addDays(parseDay(monday), 7 * n));
 
 export default function TimeTracker({ parts = [] }) {
   useProjects(); // neu zeichnen, wenn Projekte bearbeitet werden (Helfer lesen den Stand zur Laufzeit)
@@ -40,18 +47,22 @@ export default function TimeTracker({ parts = [] }) {
   const taskOf = id => (typeof id === 'string' ? taskMap.get(id) ?? null : null);
   const taskTitle = id => taskOf(id)?.title ?? '';
 
+  // Ansicht und Woche aus der Route
+  const now = new Date();
+  const today = todayIso();
+  const currentMonday = mondayIso(now);
   const view = parts[0] === 'woche' ? 'week' : 'list';
+  const routeDay = ['woche', 'liste', 'nachtragen'].includes(parts[0]) && isDayIso(parts[1]) ? parts[1] : null;
+  const monday = routeDay && mondayIso(routeDay) < currentMonday ? mondayIso(routeDay) : currentMonday;
+  const isCurrentWeek = monday === currentMonday;
+  const days = weekDays(monday, now);
+  const weekNo = isoWeek(parseDay(monday));
+
   const [mode, setMode] = useState(() => (parts[0] === 'nachtragen' ? 'manual' : 'timer'));
   const [draft, setDraft] = useState(() => ({ project: null, note: '', date: todayIso(), start: null, duration: '' }));
   const [focusReq, setFocusReq] = useState(null);
-  const [flash, setFlash] = useState(null); // { id, date }
+  const [flash, setFlash] = useState(null); // { id, date, project }
 
-  const now = new Date();
-  const today = todayIso();
-  const days = weekDays(now);
-  const monday = days[0].iso;
-  const prevDays = weekDays(addDays(now, -7));
-  const weekNo = isoWeek(now);
   const inWeek = new Set(days.map(d => d.iso));
   const mine = entries.filter(e => !e.person || e.person === me.id);
   const week = mine.filter(e => inWeek.has(e.date));
@@ -101,27 +112,39 @@ export default function TimeTracker({ parts = [] }) {
     ownNav.current = true;
     navigate(to);
   };
+  const listRoute = (m, manual) => (m === currentMonday ? (manual ? '/zeit/nachtragen' : '/zeit') : `/zeit/liste/${m}`);
+  const weekRoute = m => (m === currentMonday ? '/zeit/woche' : `/zeit/woche/${m}`);
+  const routeFor = (v, m, manual = mode === 'manual') => (v === 'week' ? weekRoute(m) : listRoute(m, manual));
+
   const changeMode = next => {
     if (next === mode) return;
     setDraft(d => ({ ...d, project: shownProject })); // Projekt bleibt beim Wechsel stehen
     setMode(next);
-    if (view === 'list') go(next === 'manual' ? '/zeit/nachtragen' : '/zeit');
+    if (view === 'list') go(listRoute(monday, next === 'manual'));
   };
   const changeView = next => {
-    if (next === view) return;
-    go(next === 'week' ? '/zeit/woche' : mode === 'manual' ? '/zeit/nachtragen' : '/zeit');
+    if (next !== view) go(routeFor(next, monday));
+  };
+  // Wochen blättern – nie über die laufende Woche hinaus
+  const prevWeek = () => go(routeFor(view, shiftWeek(monday, -1)));
+  const nextWeek = () => { if (!isCurrentWeek) go(routeFor(view, shiftWeek(monday, 1))); };
+  const thisWeek = () => {
+    // „Diese Woche“ verschwindet gleich – der Fokus geht vorher auf den Wochentitel, nicht ins Leere
+    document.getElementById(RANGE_TITLE_ID)?.focus();
+    go(routeFor(view, currentMonday));
   };
 
   // Daten
   const list = prev => (Array.isArray(prev) ? prev : []);
-  const mark = (id, date) => setFlash({ id, date });
+  const mark = (id, date, project) => setFlash({ id, date, project });
   const addEntry = entry => {
     setEntries(prev => [...list(prev), entry]);
-    mark(entry.id, entry.date);
+    mark(entry.id, entry.date, entry.project);
   };
   const updateEntry = (id, patch) => {
+    const old = entries.find(e => e.id === id);
     setEntries(prev => list(prev).map(e => (e.id === id ? { ...e, ...patch } : e)));
-    mark(id, patch.date ?? entries.find(e => e.id === id)?.date);
+    mark(id, patch.date ?? old?.date, patch.project ?? old?.project);
   };
   const restoreEntry = (entry, index) => {
     setEntries(prev => {
@@ -130,7 +153,7 @@ export default function TimeTracker({ parts = [] }) {
       const at = index < 0 ? all.length : Math.min(index, all.length);
       return [...all.slice(0, at), entry, ...all.slice(at)];
     });
-    mark(entry.id, entry.date);
+    mark(entry.id, entry.date, entry.project);
   };
 
   const [focusAfter, setFocusAfter] = useState(null);
@@ -139,13 +162,19 @@ export default function TimeTracker({ parts = [] }) {
     document.getElementById(focusAfter)?.focus();
     setFocusAfter(null);
   }, [focusAfter]);
-  const toast = useToast({ onClosed: () => setFocusAfter(view === 'week' ? 'tt-week-title' : 'tt-list-title') });
+  const toast = useToast({ onClosed: () => setFocusAfter(RANGE_TITLE_ID) });
+
+  // Bestätigung in der Leiste – gehört zu einem Timer-Zustand (stoppt die Pille den Timer, verschwindet sie)
+  const [barNote, setBarNote] = useState(null);
+  const timerKey = timer.timer?.startedAt ?? null;
+  const note = barNote && barNote.timerKey === timerKey ? barNote : null;
+  const say = (n, key = timerKey) => setBarNote(n ? { ...n, timerKey: key } : null);
 
   const context = e => `${projectInfo(e.project).code}, ${e.start} Uhr, ${fmtDuration(e.minutes)}`;
   const deleteEntry = entry => {
     const index = entries.findIndex(e => e.id === entry.id);
     setEntries(prev => list(prev).filter(e => e.id !== entry.id));
-    mark(null, entry.date);
+    mark(null, entry.date, null);
     toast.show({
       text: `Gelöscht: ${context(entry)}.`,
       undo: () => {
@@ -157,10 +186,76 @@ export default function TimeTracker({ parts = [] }) {
     setFocusAfter('tt-undo');
   };
 
-  // Fortsetzen: neuer Timer mit Projekt, Aufgabe und Notiz des Eintrags
+  // „Anzeigen“: erst auf Wunsch zur Woche des Eintrags wechseln, zur Zeile (Liste) bzw. Zelle (Raster) rollen,
+  // fokussieren und noch einmal hervorheben. Liegt der Eintrag in einer anderen Woche, geschieht das nach dem Wechsel.
+  const [reveal, setReveal] = useState(null); // { id, project, date, monday }
+  useEffect(() => {
+    if (!reveal || reveal.monday !== monday) return;
+    setReveal(null);
+    const el = document.getElementById(view === 'list' ? rowId(reveal.id) : cellId(reveal.project, reveal.date));
+    if (!el) return;
+    scrollToEl(el, 'center');
+    el.focus({ preventScroll: true });
+    mark(reveal.id, reveal.date, reveal.project);
+  }, [reveal, monday, view]);
+  const showEntry = entry => {
+    const target = mondayIso(entry.date) > currentMonday ? currentMonday : mondayIso(entry.date);
+    setReveal({ id: entry.id, project: entry.project, date: entry.date, monday: target });
+    if (target !== monday) go(routeFor(view, target));
+  };
+  const revealAction = entry => {
+    const run = () => showEntry(entry);
+    if (mondayIso(entry.date) !== monday) return { label: 'Anzeigen', run };
+    return { label: 'Anzeigen', whenHidden: view === 'list' ? rowId(entry.id) : cellId(entry.project, entry.date), run };
+  };
+  const booked = entry => `${fmtDuration(entry.minutes)} auf ${projectInfo(entry.project).code}, ${dayPhrase(entry.date)}, ` +
+    `${entry.start}–${endOf(entry)} Uhr`;
+
+  const onOverlong = r => {
+    setDraft(d => ({ ...d, project: r.project, note: r.note, date: r.date, start: r.start, duration: '' }));
+    setMode('manual');
+    if (view === 'list') go(listRoute(monday, true));
+    setFocusReq({ key: Date.now(), target: 'duration' });
+  };
+
+  // Stopp – gleiche Auswertung für den runden Knopf und den gedrückten Play-Knopf in der Liste (lib/timer.js):
+  // pending (über 10 h): nichts tun, die Hülle fragt nach (TIMER_GUARD) und bucht selbst · tooShort: nichts gebucht ·
+  // discarded: verworfen · overlong: Nachtragen vorbelegen · entry: gebucht. via 'toast': Rückmeldung unten statt oben.
+  const stopTimer = (via = 'bar') => {
+    const startedMs = timer.startedMs;
+    const r = timer.stop();
+    if (!r || r.pending) return;
+    const project = r.entry?.project ?? r.project;
+    if (project) setDraft(d => ({ ...d, project, note: '' }));
+    const tell = (tone, text, action = null) => {
+      if (via === 'toast') toast.show({ tone: tone === 'ok' ? undefined : 'warn', text });
+      else say(makeNote(tone, text, action), null);
+    };
+    if (r.tooShort) return tell('note', 'Unter einer Minute – nicht gebucht.');
+    if (r.discarded) return tell('note', 'Verworfen.');
+    if (r.overlong) {
+      onOverlong(r);
+      say(makeNote('warn', `Nicht gebucht: Der Timer lief über 24 Stunden, seit ${since(new Date(startedMs))} Uhr. ` +
+        'Datum und Beginn stehen schon unter „Nachtragen“, es fehlt nur die Dauer.'), null);
+      return undefined;
+    }
+    if (!r.entry) return undefined;
+    mark(r.entry.id, r.entry.date, r.entry.project);
+    return tell('ok', `Gestoppt und gebucht: ${booked(r.entry)}.`, revealAction(r.entry));
+  };
+
+  const saveManual = entry => {
+    addEntry(entry);
+    say(makeNote('ok', `Gespeichert: ${booked(entry)}.`, revealAction(entry)));
+  };
+
+  // Fortsetzen: neuer Timer mit Projekt, Aufgabe und Notiz des Eintrags (ohne die Anzeige-Notiz „Wochenraster“).
+  // Läuft der Timer schon auf genau dieser Kombination, ist der Knopf gedrückt – dann stoppt ein Klick.
+  const isRunningOn = entry => running && sameCombo(timer.timer, resumeCombo(entry));
   const resume = entry => {
-    const combo = { project: entry.project, task: entry.task ?? null, note: String(entry.note ?? '') };
+    const combo = resumeCombo(entry);
     if (running) {
+      if (sameCombo(timer.timer, combo)) { stopTimer('toast'); return; }
       const t = timer.timer;
       toast.show({
         tone: 'warn',
@@ -170,52 +265,41 @@ export default function TimeTracker({ parts = [] }) {
     }
     const r = timer.start(combo);
     if (r.already) return;
-    const title = taskTitle(combo.task) || combo.note.trim();
+    const title = taskTitle(combo.task) || combo.note;
     toast.show({ text: `Timer läuft: ${projectInfo(combo.project).code}${title ? ` · ${title}` : ''}.` });
     if (mode !== 'timer') {
       setMode('timer');
-      if (view === 'list') go('/zeit');
+      if (view === 'list') go(listRoute(monday, false));
     }
   };
 
-  // „Anzeigen“: erst auf Wunsch zum Eintrag rollen, ihn fokussieren und noch einmal hervorheben
-  const reveal = id => {
-    const row = document.getElementById(rowId(id));
-    if (!row) return;
-    scrollToEl(row, 'center');
-    row.focus({ preventScroll: true });
-    mark(id, entries.find(e => e.id === id)?.date);
-  };
-
-  const onOverlong = r => {
-    setDraft(d => ({ ...d, project: r.project, note: r.note, date: r.date, start: r.start, duration: '' }));
-    setMode('manual');
-    if (view === 'list') go('/zeit/nachtragen');
-    setFocusReq({ key: Date.now(), target: 'duration' });
-  };
-
-  // Wochenraster: Zelle setzen (Sammeleintrag), Zeilen hinzufügen, Vorwoche übernehmen
+  // Wochenraster: Zelle setzen (nur der Sammeleintrag), Zeilen hinzufügen, Vorwoche übernehmen – alles mit Rückgängig
   const onCell = (project, date, minutes) => {
     const id = uid();
     const args = { project, date, minutes, person: me.id, start: suggestStart(mine, date), newId: () => id };
     const r = setCell(entries, args);
-    if (!r.error && r.action !== 'unchanged') {
-      setEntries(prev => {
-        const x = setCell(list(prev), args);
-        return x.error ? prev : x.entries;
-      });
-    }
-    return r;
+    if (r.error || r.action === 'unchanged') return r;
+    setEntries(prev => {
+      const x = setCell(list(prev), args);
+      return x.error ? prev : x.entries;
+    });
+    return { ...r, undo: () => setEntries(prev => revertCell(list(prev), r)) };
   };
   const extra = weekRows[monday] ?? [];
   const order = projectOrder();
   const rows = gridRows(mine, days.map(d => d.iso), extra, order);
-  const prevRows = gridRows(mine, prevDays.map(d => d.iso), weekRows[prevDays[0].iso] ?? [], order);
-  const addRows = ids => setWeekRows(prev => {
-    const all = isObj(prev) ? prev : {};
-    const have = all[monday] ?? [];
-    return { ...all, [monday]: [...have, ...ids.filter(x => !have.includes(x))] };
-  });
+  const prevMonday = shiftWeek(monday, -1);
+  const prevRows = gridRows(mine, weekDays(prevMonday, now).map(d => d.iso), weekRows[prevMonday] ?? [], order);
+  const addRows = newIds => {
+    const at = monday;
+    const added = newIds.filter(x => !(weekRows[at] ?? []).includes(x));
+    const edit = fn => setWeekRows(prev => {
+      const all = isObj(prev) ? prev : {};
+      return { ...all, [at]: fn(all[at] ?? []) };
+    });
+    edit(have => [...have, ...added.filter(x => !have.includes(x))]);
+    return () => edit(have => have.filter(x => !added.includes(x)));
+  };
 
   return (
     <div className="tt">
@@ -227,31 +311,31 @@ export default function TimeTracker({ parts = [] }) {
             <button type="button" aria-pressed={view === 'week'} onClick={() => changeView('week')}>Woche</button>
           </div>
         </div>
-        <p className="tt-header-figure">
-          <span className="overline">KW {weekNo}</span>
-          <strong className="num">{fmtDuration(weekMinutes)}</strong>
-          <span className="meta">von {WEEK_TARGET_MIN / 60} h</span>
-        </p>
       </header>
 
       <EntryBar
         mode={mode} onMode={changeMode} timer={timer} draft={draft} setDraft={setDraft} shownProject={shownProject}
         recent={recent} combos={combos} taskTitle={taskTitle} mine={mine} todayMinutes={todayMinutes} focusReq={focusReq}
-        onBooked={entry => mark(entry.id, entry.date)} onAdd={addEntry} onOverlong={onOverlong} onReveal={reveal}
-        weekStartIso={monday}
+        note={note} say={say} onClearNote={() => setBarNote(null)} onStop={() => stopTimer('bar')} onSave={saveManual}
       />
 
-      {view === 'list' ? (
-        <EntryList
-          entries={week} days={days} flash={flash} taskOf={taskOf} taskTitle={taskTitle}
-          onResume={resume} onUpdate={updateEntry} onDelete={deleteEntry} notify={toast.show}
+      <div className="tt-range-section">
+        <WeekNav
+          weekNo={weekNo} days={days} isCurrent={isCurrentWeek} minutes={weekMinutes}
+          onPrev={prevWeek} onNext={nextWeek} onCurrent={thisWeek}
         />
-      ) : (
-        <WeekGrid
-          all={entries} mine={mine} days={days} weekNo={weekNo} rows={rows} prevRows={prevRows}
-          onAddRow={id => addRows([id])} onCopyRows={addRows} onCell={onCell}
-        />
-      )}
+        {view === 'list' ? (
+          <EntryList
+            entries={week} days={days} weekNo={weekNo} flash={flash} taskOf={taskOf} taskTitle={taskTitle}
+            isRunning={isRunningOn} onResume={resume} onUpdate={updateEntry} onDelete={deleteEntry} notify={toast.show}
+          />
+        ) : (
+          <WeekGrid
+            all={entries} mine={mine} days={days} weekNo={weekNo} rows={rows} prevRows={prevRows} flash={flash}
+            onAddRow={id => addRows([id])} onCopyRows={addRows} onCell={onCell}
+          />
+        )}
+      </div>
 
       <Toast api={toast} />
     </div>
