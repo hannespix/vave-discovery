@@ -11,6 +11,7 @@ import { addDays, budgetState, fmtDate, fmtH1, fmtTime, isoDay, pct } from '../l
 import { CLOSE_HOUR, OPEN_HOUR, daysFromToday, dueLabel, greeting, studioStatus, useNow } from '../lib/time.js';
 import { me, studios, tasks as sampleTasks, timeEntries as sampleEntries } from '../data/sample.js';
 import { projectsById, useProjects } from '../lib/projects.js';
+import { resumeCombo } from '../tools/time/grid.js';
 import '../styles/pages.css';
 
 // „Heute“ (r07): eine Spalte – heute Gebuchtes, eigene Aufgaben nach Fälligkeit –, daneben schmal Studios und knappe
@@ -185,7 +186,8 @@ export default function Today() {
                   const task = typeof e.task === 'string' ? taskById.get(e.task) : null;
                   const note = String(e.note ?? '').trim();
                   const title = note || task?.title || 'Ohne Beschreibung';
-                  const combo = { project: e.project, task: e.task ?? null, note };
+                  // Fortsetzen wie in Zeiten: ohne die Anzeige-Notiz eines Sammeleintrags aus dem Wochenraster
+                  const combo = resumeCombo(e);
                   const here = running && sameCombo(timer, combo);
                   return (
                     <li key={e.id} data-entry={e.id}>
