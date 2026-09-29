@@ -52,19 +52,22 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .btn-block { width: 100%; }
 .btn svg { flex: none; }
 
+/* Abschnitt statt Kasten (VAVE): schwarze Linie oben, Weißraum statt Rahmen, Hintergrund und Schatten.
+   Nebeneinander stehende Karten trennt der Abstand des Rasters. */
 .card {
-  background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--radius-l);
-  padding: var(--s-5); box-shadow: var(--shadow-1);
+  background: transparent; border: 0; border-top: 2px solid var(--c-line-strong); border-radius: 0;
+  padding: var(--s-4) 0 0; box-shadow: none;
 }
+/* Marken: Pille; helle Füllungen (Limette, Koralle) mit schwarzer Kontur, damit sie sich ≥ 3:1 abheben */
 .badge {
-  display: inline-flex; align-items: center; gap: var(--s-1); padding: 2px var(--s-2); border-radius: 999px;
-  font-size: 0.8125rem; font-weight: 500; line-height: 1.5; background: var(--c-bg-2); color: var(--c-ink);
+  display: inline-flex; align-items: center; gap: var(--s-1); padding: 1px var(--s-2); border: 1.5px solid transparent;
+  border-radius: 999px; font-size: 0.8125rem; font-weight: 500; line-height: 1.5; background: var(--c-bg-2); color: var(--c-ink);
 }
 .badge-ok { background: var(--c-ok-soft); color: var(--c-ok); }
-.badge-warn { background: var(--c-warn-soft); color: var(--c-warn); }
-.badge-danger { background: var(--c-danger-soft); color: var(--c-danger); }
+.badge-warn { background: var(--c-surface); color: var(--c-warn); border-color: var(--c-line-strong); }
+.badge-danger { background: var(--c-danger-fill); color: var(--c-danger-fill-ink); border-color: var(--c-line-strong); }
 .badge-accent { background: var(--c-accent-soft); color: var(--c-accent-text); }
-.badge-lime { background: var(--c-lime); color: var(--c-lime-ink); }
+.badge-lime { background: var(--c-lime); color: var(--c-lime-ink); border-color: var(--c-line-strong); }
 .badge svg { flex: none; }
 
 .field { display: grid; gap: var(--s-1); }
