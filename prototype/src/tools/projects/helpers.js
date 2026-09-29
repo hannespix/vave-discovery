@@ -1,6 +1,7 @@
 // Helfer für das Projekte-Werkzeug (Builder C, B5). Nutzt src/lib, ändert es nicht.
 import { CircleCheck, TriangleAlert, OctagonAlert } from 'lucide-react';
-import { pct, budgetState, budgetLabel, fmtDate } from '../../lib/format.js';
+import { pct, budgetState, budgetLabel, fmtDate, fmtH1 } from '../../lib/format.js';
+import { restHours, spentHours } from '../../lib/budget.js';
 import { studios, people, byId } from '../../data/sample.js';
 
 export const studioById = byId(studios);
@@ -8,20 +9,21 @@ export const personById = byId(people);
 
 export const STATUSES = ['todo', 'doing', 'review', 'done'];
 
-// Stunden → „1.200 h“, „619,8 h“ – deutsch, höchstens eine Nachkommastelle
-export const fmtH = h => `${(Math.round(h * 10) / 10).toLocaleString('de-DE', { maximumFractionDigits: 1 })} h`;
+// Eine Rundung für alle Stunden (r07-Korrektur): wie fmtH1 aus lib/format.js – dieselbe Zahl wie Heute und Wochenraster
+const round1 = h => Math.round(Number(h) * 10) / 10;
 
-const floor1 = h => Math.floor(h * 10 + 1e-6) / 10;
-const ceil1 = h => Math.ceil(h * 10 - 1e-6) / 10;
-
-// Budget-Ampel: Zustand, Prozent, Klartext und die angezeigten Stunden. Gerundet wie pct(): im Budget ab-, darüber
-// aufgerundet – so steht nie „640 von 640 h“ neben „überzogen“ oder „überzogen um 0 h“. rest < 0 = überzogen;
-// gebucht + Rest ergibt immer das Budget.
-export function budgetInfo(spent, budget) {
+// Budget-Ampel eines Projekts: Zustand, Prozent, Klartext und die angezeigten Stunden. Rest = restHours()
+// (lib/budget.js), angezeigt mit fmtH1 – MIR-07 zeigt überall 20,3 h. Gebucht = Budget − angezeigter Rest, so ergeben
+// beide Zahlen immer das Budget. Nur ein Randfall weicht ab: weniger als 0,05 h überzogen zeigt „0,1 h“ statt „0 h“
+// (sonst stünde „überzogen um 0 h“ neben der Ampel). rest < 0 = überzogen.
+export function budgetInfo(p, entries) {
+  const spent = spentHours(p, entries);
+  const rawRest = restHours(p, entries);
+  const budget = Number(p.budget) || 0;
   const state = budgetState(spent, budget);
-  const over = spent > budget;
-  const shown = over ? Math.max(ceil1(spent), floor1(budget) + 0.1) : floor1(spent);
-  return { percent: pct(spent, budget), state, label: budgetLabel[state], spent: shown, rest: Math.round((budget - shown) * 10) / 10 };
+  const over = rawRest < 0;
+  const rest = over ? -Math.max(0.1, round1(-rawRest)) : round1(rawRest);
+  return { percent: pct(spent, budget), state, label: budgetLabel[state], over, total: spent, rest, spent: round1(budget - rest) };
 }
 export const budgetIcon = { ok: CircleCheck, warn: TriangleAlert, danger: OctagonAlert };
 
@@ -55,15 +57,15 @@ export const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, ''
 
 export const initials = name => (name || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
-// Stunden immer mit einer Nachkommastelle („2,0“) – für „gebucht / geschätzt“
-export const fmt1 = h => (Math.round(h * 10) / 10).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-// Rest mit Vorzeichen: „331 h“, „−48 h“ (echtes Minuszeichen) – dieselbe Zahl in Liste, Kopf und Übersicht
-export const fmtRest = rest => `${rest < 0 ? '−' : ''}${fmtH(Math.abs(rest))}`;
+// Stunden immer mit einer Nachkommastelle („2,0“) – für „gebucht / geschätzt“ (gleiche Rundung wie fmtH1)
+export const fmt1 = h => round1(h).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+// Rest mit Vorzeichen: „331 h“, „−48 h“ (echtes Minuszeichen) – fmtH1 auf den Betrag, so rundet −79,75 wie 79,75
+export const fmtRest = rest => `${rest < 0 ? '−' : ''}${fmtH1(Math.abs(rest))}`;
 
-// Stundenzahl ohne Einheit, deutsch: 640 → „640“, 1200 → „1.200“, 80.5 → „80,5“
-export const fmtNum = h => (Math.round(h * 10) / 10).toLocaleString('de-DE', { maximumFractionDigits: 1 });
+// Stundenzahl ohne Einheit, deutsch: 640 → „640“, 1200 → „1.200“, 80.5 → „80,5“ (gleiche Rundung wie fmtH1)
+export const fmtNum = h => round1(h).toLocaleString('de-DE', { maximumFractionDigits: 1 });
 // Differenz mit Vorzeichen: „+60 h“, „−40 h“ (echtes Minuszeichen)
-export const fmtDelta = d => `${d > 0 ? '+' : d < 0 ? '−' : '±'}${fmtH(Math.abs(d))}`;
+export const fmtDelta = d => `${d > 0 ? '+' : d < 0 ? '−' : '±'}${fmtH1(Math.abs(d))}`;
 
 // Stunden aus einer Eingabe: „120“, „80,5“, „80.5“, „1.200“ (Tausenderpunkt), „120 h“ → Zahl; leer → null; sonst NaN
 export function parseHours(input) {

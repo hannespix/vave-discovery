@@ -9,6 +9,8 @@ import { projectInfo, spokenDuration } from './shellData.js';
 // Befehlspalette (⌘K / Strg K, „/“, Suchen-Knopf): natives <dialog>, darin Combobox + Listbox mit aria-activedescendant.
 // Gruppen: Aktionen, Projekte, Aufgaben (eigene zuerst), Seiten. Leer: Aktionen und zuletzt geöffnete Projekte.
 // „Neue Aufgabe“ ist ein zweiter Schritt in der Palette (Titel, Projekt) und schreibt in 'tasks'.
+// Ohne Treffer (r07-Korrektur): aria-expanded="false", sichtbar „Keine Treffer für …“ (role=status) und das Angebot
+// „Neue Aufgabe „<Suchtext>““ – Knopf oder Enter führt in den zweiten Schritt, Titel vorbelegt.
 
 const personById = byId(people);
 
@@ -165,6 +167,11 @@ function SearchStep({ index, recentIds, bookedIds, running, query, setQuery, onR
     if (currentId) document.getElementById(currentId)?.scrollIntoView({ block: 'nearest' });
   }, [currentId]);
 
+  // Ohne Treffer: Suchtext als Titel einer neuen Aufgabe anbieten
+  const q = query.trim();
+  const offer = !flat.length && q ? { step: 'task', title: q } : null;
+  const status = !q ? '' : flat.length ? `${flat.length} Treffer` : `Keine Treffer für „${q}“.`;
+
   const onKeyDown = e => {
     if (e.nativeEvent.isComposing) return; // Enter bestätigt hier die Eingabemethode, nicht die Auswahl
     const n = flat.length;
@@ -176,6 +183,7 @@ function SearchStep({ index, recentIds, bookedIds, running, query, setQuery, onR
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (current) onRun(current);
+      else if (offer) onRun(offer);
     }
   };
 
@@ -188,7 +196,7 @@ function SearchStep({ index, recentIds, bookedIds, running, query, setQuery, onR
           className="palette__input"
           type="text"
           role="combobox"
-          aria-expanded="true"
+          aria-expanded={flat.length > 0 ? 'true' : 'false'}
           aria-controls={listId}
           aria-autocomplete="list"
           aria-activedescendant={currentId}
@@ -235,8 +243,16 @@ function SearchStep({ index, recentIds, bookedIds, running, query, setQuery, onR
           </div>
         ))}
       </div>
-      {!flat.length && <p className="palette__empty">Keine Treffer für „{query.trim()}“.</p>}
-      <p className="visually-hidden" role="status">{query.trim() ? `${flat.length} Treffer` : ''}</p>
+      {/* Bleibt im DOM (Statusmeldung wird so zuverlässig angesagt); sichtbar nur ohne Treffer */}
+      <div className={offer ? 'palette__empty cluster' : 'visually-hidden'}>
+        <p role="status">{status}</p>
+        {offer && (
+          <button type="button" className="btn" onClick={() => onRun(offer)}>
+            <ListPlus aria-hidden="true" size={18} strokeWidth={1.75} />
+            Neue Aufgabe „{q.length > 40 ? `${q.slice(0, 39)}…` : q}“
+          </button>
+        )}
+      </div>
       <p className="palette__hint" aria-hidden="true">
         <span><kbd className="kbd">↑</kbd><kbd className="kbd">↓</kbd> auswählen</span>
         <span><kbd className="kbd">↵</kbd> ausführen</span>
@@ -246,13 +262,13 @@ function SearchStep({ index, recentIds, bookedIds, running, query, setQuery, onR
   );
 }
 
-// Zweiter Schritt: Titel und Projekt; Esc und „Zurück“ führen zur Suche zurück
-function NewTaskStep({ initialProject, onBack, onCreate }) {
+// Zweiter Schritt: Titel (ohne Treffer vorbelegt mit dem Suchtext) und Projekt; Esc und „Zurück“ führen zur Suche zurück
+function NewTaskStep({ initialProject, initialTitle = '', onBack, onCreate }) {
   const titleId = useId();
   const projectId = useId();
   const errorId = useId();
   const headId = useId();
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(initialTitle);
   const [project, setProject] = useState(initialProject);
   const [error, setError] = useState('');
   const titleRef = useRef(null);
@@ -302,6 +318,7 @@ function PaletteBody({
   const [tasks, setTasks] = useStoredState('tasks', sampleTasks, cleanTasks);
   const [step, setStep] = useState('search');
   const [query, setQuery] = useState('');
+  const [draftTitle, setDraftTitle] = useState('');
   const { running, timer, startedMs } = timerState;
   // Laufzeit beim Öffnen reicht für „läuft seit …“ – die Palette zählt nicht mit
   const [openedAt] = useState(() => Date.now());
@@ -313,7 +330,7 @@ function PaletteBody({
   }), [routes, running, timer, elapsedMin, lastProject, bookedIds, tasks, routeProjectId, onStart, onStop, onHelp]);
 
   const run = item => {
-    if (item.step) { setStep(item.step); return; }
+    if (item.step) { setDraftTitle(item.title || ''); setStep(item.step); return; }
     if (item.to) { close({ toMain: true }); onGo(item.to); return; }
     close();
     item.run();
@@ -334,7 +351,7 @@ function PaletteBody({
 
   if (step === 'task') {
     const initial = projectsById()[routeProjectId] ? routeProjectId : recentIds[0] || lastProject;
-    return <NewTaskStep initialProject={initial} onBack={backToSearch} onCreate={create} />;
+    return <NewTaskStep initialProject={initial} initialTitle={draftTitle} onBack={backToSearch} onCreate={create} />;
   }
   return (
     <SearchStep index={index} recentIds={recentIds} bookedIds={bookedIds} running={running}
