@@ -33,7 +33,7 @@ export default function WeekGrid({ all, mine, days, weekNo, rows, prevRows, onAd
   const totals = cellTotals(week);
   const cols = days.filter(d => !d.weekend || week.some(e => e.date === d.iso));
   const weekMinutes = sumMinutes(week);
-  const addable = bookable.filter(p => !rows.includes(p.id));
+  const addable = bookable().filter(p => !rows.includes(p.id));
   const fresh = prevRows.filter(id => !rows.includes(id));
 
   useEffect(() => {

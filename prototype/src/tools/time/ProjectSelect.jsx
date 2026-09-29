@@ -1,17 +1,19 @@
 // Projektauswahl der Zeiterfassung: oben „Zuletzt“ (bis zu 3), dann aktive und interne Projekte, mit Code und Studio.
 // Farbe nur als Punkt (Studiofarbe), dekorativ – Code und Studio stehen immer im Text.
-import { projects, studios, byId } from '../../data/sample.js';
+import { studios, byId } from '../../data/sample.js';
+import { loadProjects, projectsById } from '../../lib/projects.js';
 
-const projectById = byId(projects);
 const studioById = byId(studios);
 
-// Buchbar sind aktive und interne Projekte (Pitches und Angebote nicht)
-export const bookable = projects.filter(p => p.status === 'aktiv' || p.status === 'intern');
-export const bookableIds = bookable.map(p => p.id);
-export const projectOrder = projects.map(p => p.id);
+// Projekte kommen aus der gemeinsamen, bearbeitbaren Quelle (lib/projects.js) – bei jedem Aufruf aktuell.
+// Buchbar sind aktive und interne Projekte (Pitches nicht).
+export const bookable = () => loadProjects().filter(p => p.status === 'aktiv' || p.status === 'intern');
+export const bookableIds = () => bookable().map(p => p.id);
+export const projectOrder = () => loadProjects().map(p => p.id);
 
 export function projectInfo(id) {
-  const p = typeof id === 'string' && Object.hasOwn(projectById, id) ? projectById[id] : null;
+  const map = projectsById();
+  const p = typeof id === 'string' && Object.hasOwn(map, id) ? map[id] : null;
   if (!p) return { id, code: id || '–', name: 'Unbekanntes Projekt', studio: '', color: 'var(--c-bg-2)', budget: 0, project: null };
   const s = studioById[p.studio];
   return { id, code: p.code, name: p.name, studio: s ? s.name : '', color: s ? s.color : 'var(--c-bg-2)', budget: p.budget, project: p };
@@ -26,13 +28,16 @@ const optionLabel = p => `${p.code} · ${p.name} · ${projectInfo(p.id).studio}`
 
 // label: nur ohne sichtbares <label> setzen (wird zum aria-label)
 export default function ProjectSelect({ id, value, onChange, recent = [], label, describedBy }) {
+  const map = projectsById();
+  const ids = bookableIds();
+  const list = bookable();
   const groups = [
-    ['Zuletzt', recent.filter(x => bookableIds.includes(x)).slice(0, 3).map(x => projectById[x])],
-    ['Aktive Projekte', bookable.filter(p => p.status === 'aktiv')],
-    ['Intern', bookable.filter(p => p.status === 'intern')],
-  ].filter(([, list]) => list.length);
+    ['Zuletzt', recent.filter(x => ids.includes(x)).slice(0, 3).map(x => map[x])],
+    ['Aktive Projekte', list.filter(p => p.status === 'aktiv')],
+    ['Intern', list.filter(p => p.status === 'intern')],
+  ].filter(([, items]) => items.length);
   // Läuft schon ein Eintrag auf einem nicht (mehr) buchbaren Projekt, bleibt es sichtbar statt still zu springen
-  const extra = value && !bookableIds.includes(value) ? projectInfo(value) : null;
+  const extra = value && !ids.includes(value) ? projectInfo(value) : null;
   return (
     <div className="tt-select">
       <Dot color={projectInfo(value).color} />

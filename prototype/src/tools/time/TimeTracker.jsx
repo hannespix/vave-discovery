@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStoredState, uid } from '../../lib/store.js';
 import { cleanEntries, cleanTasks } from '../../lib/data.js';
 import { useTimer } from '../../lib/timer.js';
+import { useProjects } from '../../lib/projects.js';
 import { navigate } from '../../lib/router.js';
 import { addDays, fmtDuration } from '../../lib/format.js';
 import { me, tasks as sampleTasks, timeEntries as sampleEntries } from '../../data/sample.js';
@@ -29,6 +30,7 @@ const cleanRows = (v, fallback) =>
   isObj(v) ? Object.fromEntries(Object.entries(v).filter(([, ids]) => Array.isArray(ids)).map(([k, ids]) => [k, ids.filter(x => typeof x === 'string')])) : fallback;
 
 export default function TimeTracker({ parts = [] }) {
+  useProjects(); // neu zeichnen, wenn Projekte bearbeitet werden (Helfer lesen den Stand zur Laufzeit)
   const [stored, setEntries] = useStoredState('time-entries', sampleEntries, cleanEntries);
   const [storedTasks] = useStoredState('tasks', sampleTasks, cleanTasks);
   const [weekRows, setWeekRows] = useStoredState('time-week-rows', {}, cleanRows);
@@ -55,9 +57,10 @@ export default function TimeTracker({ parts = [] }) {
   const week = mine.filter(e => inWeek.has(e.date));
   const weekMinutes = sumMinutes(week);
   const todayMinutes = sumMinutes(mine.filter(e => e.date === today));
-  const defaultProject = lastProject(mine, bookableIds);
-  const recent = recentProjects(mine, bookableIds);
-  const combos = recentCombos(mine, bookableIds);
+  const ids = bookableIds();
+  const defaultProject = lastProject(mine, ids);
+  const recent = recentProjects(mine, ids);
+  const combos = recentCombos(mine, ids);
 
   const running = timer.running;
   const timerProject = running && typeof timer.timer.project === 'string' && timer.timer.project ? timer.timer.project : null;
@@ -205,8 +208,9 @@ export default function TimeTracker({ parts = [] }) {
     return r;
   };
   const extra = weekRows[monday] ?? [];
-  const rows = gridRows(mine, days.map(d => d.iso), extra, projectOrder);
-  const prevRows = gridRows(mine, prevDays.map(d => d.iso), weekRows[prevDays[0].iso] ?? [], projectOrder);
+  const order = projectOrder();
+  const rows = gridRows(mine, days.map(d => d.iso), extra, order);
+  const prevRows = gridRows(mine, prevDays.map(d => d.iso), weekRows[prevDays[0].iso] ?? [], order);
   const addRows = ids => setWeekRows(prev => {
     const all = isObj(prev) ? prev : {};
     const have = all[monday] ?? [];

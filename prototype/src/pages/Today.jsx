@@ -9,7 +9,8 @@ import { useTimer } from '../lib/timer.js';
 import { spentHours } from '../lib/budget.js';
 import { addDays, budgetState, fmtDate, fmtTime, isoDay, pct } from '../lib/format.js';
 import { CLOSE_HOUR, OPEN_HOUR, daysFromToday, dueLabel, greeting, studioStatus, useNow } from '../lib/time.js';
-import { byId, me, projects, studios, tasks as sampleTasks, timeEntries as sampleEntries } from '../data/sample.js';
+import { me, studios, tasks as sampleTasks, timeEntries as sampleEntries } from '../data/sample.js';
+import { projectsById, useProjects } from '../lib/projects.js';
 import '../styles/pages.css';
 
 // „Heute“ (r07): eine Spalte – heute Gebuchtes, eigene Aufgaben nach Fälligkeit –, daneben schmal Studios und knappe
@@ -18,9 +19,9 @@ const DAY_GOAL_MIN = 8 * 60;      // Tagessoll der Demo
 const GAP_BELOW_MIN = 6 * 60;     // sanfter Hinweis, wenn der letzte Arbeitstag darunter liegt
 const WATCH_FROM = 0.8;           // „Budgets im Blick“ ab 80 %
 
-const projectById = byId(projects);
 // Nur echte Projekte – gespeicherte Werte wie „__proto__“ ergeben kein Projekt
-const projectOf = id => (typeof id === 'string' && Object.hasOwn(projectById, id) ? projectById[id] : null);
+// Projekte aus der gemeinsamen, bearbeitbaren Quelle (lib/projects.js)
+const projectOf = id => { const m = projectsById(); return typeof id === 'string' && Object.hasOwn(m, id) ? m[id] : null; };
 const firstName = me.name.split(' ')[0];
 const minutesOf = list => list.reduce((a, e) => a + (Number(e.minutes) || 0), 0);
 // Minuten → „2:45“ (ohne Einheit)
@@ -65,6 +66,7 @@ function DayGoal({ minutes }) {
 }
 
 export default function Today() {
+  const { projects } = useProjects();
   const [entries] = useStoredState('time-entries', sampleEntries, cleanEntries);
   const [tasks] = useStoredState('tasks', sampleTasks, cleanTasks);
   const { timer, running, start } = useTimer();

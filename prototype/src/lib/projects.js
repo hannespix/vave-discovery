@@ -1,4 +1,4 @@
-import { uid, useStoredState } from './store.js';
+import { readRaw, uid, useStoredState } from './store.js';
 import { clients as sampleClients, projects as sampleProjects } from '../data/sample.js';
 
 // Projekte und Kunden als gemeinsame, bearbeitbare Quelle (r07, Wunsch Hannes: „Projekte editieren, Stundenbudget
@@ -45,6 +45,28 @@ function applyPatch(p, patch, note) {
   }
   return next;
 }
+
+// Synchron lesen (für Helfer wie projectInfo): immer der aktuelle Speicherstand, gecacht am Rohtext.
+// Komponenten, die bei Änderungen neu zeichnen sollen, rufen zusätzlich useProjects()/useClients() auf.
+function cachedReader(key, sample, clean) {
+  let cache = { raw: undefined, list: sample, byId: null };
+  return () => {
+    const raw = readRaw(key);
+    if (raw !== cache.raw) {
+      let parsed = sample;
+      if (raw) { try { parsed = JSON.parse(raw); } catch (e) { parsed = sample; } }
+      cache = { raw, list: clean(parsed, sample), byId: null };
+    }
+    if (!cache.byId) cache.byId = Object.fromEntries(cache.list.map(x => [x.id, x]));
+    return cache;
+  };
+}
+const readProjects = cachedReader('projects', sampleProjects, cleanProjects);
+const readClients = cachedReader('clients', sampleClients, cleanClients);
+export const loadProjects = () => readProjects().list;
+export const projectsById = () => readProjects().byId;
+export const loadClients = () => readClients().list;
+export const clientsById = () => readClients().byId;
 
 export function useProjects() {
   const [projects, setProjects] = useStoredState('projects', sampleProjects, cleanProjects);

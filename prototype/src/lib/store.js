@@ -13,6 +13,11 @@ export function load(key, fallback) {
   }
 }
 
+// Rohtext eines Schlüssels (für gecachte Leser, z. B. lib/projects.js); null ohne Wert oder ohne Speicher
+export function readRaw(key) {
+  try { return localStorage.getItem(NS + key); } catch (e) { return null; }
+}
+
 export function save(key, value) {
   try { localStorage.setItem(NS + key, JSON.stringify(value)); } catch (e) { /* ohne Speicher weiter */ }
 }
