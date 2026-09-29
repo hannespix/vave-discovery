@@ -825,11 +825,15 @@ input[type="range"]::-moz-range-thumb {
 
   /* ---------------- Zustand ---------------- */
   // Budget-Werte sind Platzhalter (Reglermitte); sie zählen erst, wenn der Regler berührt wurde.
+  // Testlauf: test hält fest, ob der Stand unter index.html?test begonnen wurde (Start oder „Von vorn“). Danach zählt
+  // nur der Merker, nicht die URL beim Öffnen (siehe TEST, Station 7). Er bleibt im Browser, nicht im Export.
+  const TEST_URL = new URLSearchParams(location.search).has('test');
   function freshState() {
     return {
       step: 0,
       maxStep: 0, // höchste erreichte Station; die Route springt vorwärts höchstens bis dorthin
       startedAt: new Date().toISOString(),
+      test: TEST_URL,
       sort: {}, seq: {}, friction: {}, wishes: {}, customWishes: [], roles: {},
       budget: { current: 3000, currentUnknown: false, max: 3000, buildBuy: 50 },
       budgetTouched: { current: false, max: false, buildBuy: false },
@@ -846,19 +850,25 @@ input[type="range"]::-moz-range-thumb {
   function upgrade(s) {
     if (!s || typeof s !== 'object') return null;
     const f = freshState();
-    if (!s.budgetTouched || typeof s.budgetTouched !== 'object') {
+    const legacy = !s.budgetTouched || typeof s.budgetTouched !== 'object'; // Fassung vor r02
+    if (legacy) {
       // Ohne Merker gilt ein Regler nur als bewegt, wenn er von der alten Vorgabe abweicht.
       const b = s.budget || {};
       s.budgetTouched = {};
       Object.keys(LEGACY_BUDGET).forEach(k => { s.budgetTouched[k] = typeof b[k] === 'number' && b[k] !== LEGACY_BUDGET[k]; });
     }
+    const marked = typeof s.test === 'boolean';
     Object.keys(f).forEach(k => { if (s[k] === undefined || s[k] === null) s[k] = f[k]; });
+    // Stände vor r05 kennen den Test-Merker nicht: null = unbekannt, dann gilt die URL beim Öffnen (die sichere Seite).
+    if (!marked) s.test = null;
     s.budget = Object.assign({}, f.budget, s.budget);
     s.budgetTouched = Object.assign({}, f.budgetTouched, s.budgetTouched);
     // Kaufen/Bauen kennt fünf Stufen (Werte wie BB_STAGES[].v, Station 5). Ein Wert dazwischen stammt aus der
     // stufenlosen Fassung, dort hieß z. B. 40 oder 60 „Offen“. Nicht still umdeuten: gilt als nicht eingestellt,
-    // Station 5 fragt neu.
-    if (![0, 35, 50, 65, 100].includes(s.budget.buildBuy)) { s.budget.buildBuy = f.budget.buildBuy; s.budgetTouched.buildBuy = false; }
+    // Station 5 fragt neu. Ohne budgetTouched (Fassung vor r02) gilt das auch für 35 und 65 – dort hieß alles von
+    // 35 bis 65 „Offen“; nur 0 und 100 meinen dasselbe wie heute, 50 ist die alte Vorgabe und bleibt offen.
+    const stages = legacy ? [0, 50, 100] : [0, 35, 50, 65, 100];
+    if (!stages.includes(s.budget.buildBuy)) { s.budget.buildBuy = f.budget.buildBuy; s.budgetTouched.buildBuy = false; }
     // Stände vor r04 kennen maxStep nicht: dann gilt die Station, auf der man stand, als höchste erreichte
     // (vor dem Zurücksetzen auf 5 – die Route sperrt 6 und 7 ohnehin, solange das Budget offen ist).
     const int = v => (Number.isInteger(v) ? v : 0);
@@ -1703,9 +1713,14 @@ input[type="range"]::-moz-range-thumb {
   /* ---------------- Station 7: Ergebnis ---------------- */
   const resultEl = $('#result');
   const HANNES = 'hannes@pix-el.de'; // Empfänger der Ergebnisse, einzige Stelle der Adresse
-  // Testlauf über den öffentlichen Link (index.html?test): Dateiname, Betreff, Mailtext, Brief und respondent tragen „Test“
-  const TEST = new URLSearchParams(location.search).has('test');
-  const WHO = TEST ? D.respondent + ' (Test)' : D.respondent;
+  // Testlauf über den öffentlichen Link (index.html?test): Dateiname, Betreff, Mailtext, Brief und respondent tragen „Test“.
+  // Maßgeblich ist der Merker des Stands (Zustand), die URL nur bei Ständen ohne Merker. Neu gesetzt beim Laden und nach „Von vorn“.
+  let TEST, WHO;
+  function syncTest() {
+    TEST = typeof state.test === 'boolean' ? state.test : TEST_URL;
+    WHO = TEST ? D.respondent + ' (Test)' : D.respondent;
+  }
+  syncTest();
   // Touch als Hauptzeiger (Handy, Tablet): mailto – dort öffnet sich eine .eml nicht als Entwurf. Maus/Trackpad: die .eml.
   const TOUCH = matchMedia('(pointer: coarse)').matches;
   function renderResult() {
@@ -1779,7 +1794,7 @@ input[type="range"]::-moz-range-thumb {
     });
     $('#restart').addEventListener('click', () => {
       if (!confirm('Alle Antworten löschen und von vorn beginnen?')) return;
-      state = freshState(); save(); goTo(0);
+      state = freshState(); syncTest(); save(); goTo(0);
     });
     finale();
   }

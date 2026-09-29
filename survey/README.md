@@ -32,7 +32,9 @@ eine Datei mit eingebetteten Daten. Nur die wird weitergegeben.
   als `.json` speichern. Dann `npm run check` und `/brief data/results/YYYY-MM-DD_tobias.json`.
 - **Testlauf:** `index.html?test` (auch der Pages-Link) markiert alles als Test – Dateien
   `YYYY-MM-DD_test.*`, Betreff „[Test] …", `respondent` „Tobias (Test)". Testdateien gehören nicht
-  nach `../data/results/`.
+  nach `../data/results/`. Die Markierung gilt ab dem Start mit `?test` für diesen Stand, auch wenn er
+  später ohne `?test` geöffnet wird; ein ohne `?test` begonnener Stand wird nie zum Test. „Von vorn"
+  ohne `?test` beendet sie, „Von vorn" mit `?test` beginnt einen neuen Testlauf.
 
 ## Anpassen
 
