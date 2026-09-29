@@ -1,152 +1,117 @@
+import { useMemo } from 'react';
+import { CalendarClock } from 'lucide-react';
 import PageHeader from '../components/PageHeader.jsx';
-import OpenBadge from '../components/OpenBadge.jsx';
 import StudioTimeline, { fmtRange } from '../components/StudioTimeline.jsx';
-import { href } from '../lib/router.js';
-import { fmtDate, fmtTime } from '../lib/format.js';
+import { fmtDate } from '../lib/format.js';
 import {
-  CLOSE_HOUR, HOME_TZ, OPEN_HOUR, commonWindows, dayShift, diffToHome, fmtOffset, studioStatus, useNow, weekdayIn, workWindowInHome,
+  CLOSE_HOUR, HOME_TZ, OPEN_HOUR, commonWindows, isWorkdayIn, minutesOfDay, tzOffset, useNow, workWindowInHome,
 } from '../lib/time.js';
-import { people, projects, studios } from '../data/sample.js';
+import { studios } from '../data/sample.js';
 import '../styles/pages.css';
 
+const DAY_MS = 86400000;
+const LOOKAHEAD_DAYS = 14;
 const zoneCount = new Set(studios.map(s => s.tz)).size;
-const dayWord = { '-1': 'gestern', 0: 'heute', 1: 'morgen' };
 // Annahme der Demo – steht so in der Oberfläche
 const HOURS = `Mo–Fr ${OPEN_HOUR}–${CLOSE_HOUR} Uhr Ortszeit`;
-const OPEN_AT = `${String(OPEN_HOUR).padStart(2, '0')}:00 Uhr Ortszeit`;
+
 const listDe = names => (names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} und ${names[names.length - 1]}`);
+const ranges = win => win.map(fmtRange).join(' und ');
+const length = win => win.reduce((n, [a, b]) => n + (b - a), 0);
+const sameWin = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const dayMonth = d => fmtDate(d, { day: 'numeric', month: 'numeric', timeZone: HOME_TZ });   // „26.10.“
+const weekday = d => fmtDate(d, { weekday: 'long', timeZone: HOME_TZ });
+const dayKey = d => fmtDate(d, { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: HOME_TZ });
 
-// Gemeinsames Fenster in Ortszeit einer Zeitzone (Frankfurter Minuten + Differenz), über Mitternacht normalisiert
-const shift = ([a, b], diff) => {
-  const start = (((a + diff) % 1440) + 1440) % 1440;
-  const end = start + (b - a);
-  return [start, end > 1440 ? end - 1440 : end];
-};
+// Gemeinsames Fenster aller Studios am Frankfurter Kalendertag von `date`
+const commonOn = date => commonWindows(studios.map(s => workWindowInHome(date, s.tz)));
+// Frankfurter Mittag, k Tage von heute – liegt auch über eine Zeitumstellung hinweg sicher im richtigen Kalendertag
+const dayAt = (now, k) => new Date(now.getTime() - (minutesOfDay(now, HOME_TZ) - 720) * 60000 + k * DAY_MS);
 
-// Wann öffnet das Studio als Nächstes? Freitag nach Feierabend und am Wochenende erst Montag.
-function openingNote(now, tz, { open, workday, minutes }) {
-  if (open) return `Offen bis ${CLOSE_HOUR}:00 Uhr Ortszeit`;
-  if (workday && minutes < OPEN_HOUR * 60) return `Öffnet um ${OPEN_AT}`;
-  const wd = weekdayIn(now, tz); // 0 So … 6 Sa
-  return `Öffnet ${wd === 5 || wd === 6 || wd === 0 ? 'Montag' : 'morgen'} um ${OPEN_AT}`;
+function reasonFor(from, to) {
+  const home = tzOffset(to, HOME_TZ) - tzOffset(from, HOME_TZ);
+  if (home < 0) return 'Ende der Sommerzeit';
+  if (home > 0) return 'Beginn der Sommerzeit';
+  const moved = studios.filter(s => tzOffset(to, s.tz) !== tzOffset(from, s.tz)).map(s => s.name);
+  return moved.length ? `Zeitumstellung in ${listDe(moved)}` : '';
+}
+
+// Heute, nächster Werktag mit gemeinsamer Zeit und die erste Änderung in den nächsten 14 Tagen (über workWindowInHome).
+// Bezug ist heute; am Wochenende der letzte Werktag davor – so kündigt auch der Samstag die Umstellung am Montag an.
+function outlook(now) {
+  const workday = isWorkdayIn(now, HOME_TZ);
+  const today = commonOn(now);
+  let ref = { date: now, win: today };
+  for (let k = -1; !workday && k >= -3; k--) {
+    const d = dayAt(now, k);
+    if (isWorkdayIn(d, HOME_TZ)) { ref = { date: d, win: commonOn(d) }; break; }
+  }
+  let next = null;
+  let change = null;
+  for (let k = 1; k <= LOOKAHEAD_DAYS && !(next && change); k++) {
+    const d = dayAt(now, k);
+    if (!isWorkdayIn(d, HOME_TZ)) continue;
+    const win = commonOn(d);
+    if (!next && win.length) next = { date: d, win };
+    if (!change && !sameWin(win, ref.win)) change = { date: d, win, shorter: length(win) < length(ref.win), reason: reasonFor(ref.date, d) };
+  }
+  return { workday, today, next, change };
+}
+
+function changeText({ date, win, shorter, reason }) {
+  const what = win.length
+    ? `Ab ${dayMonth(date)} ${shorter ? 'nur noch' : 'gemeinsam'} ${ranges(win)} Frankfurt`
+    : `Ab ${dayMonth(date)} keine gemeinsame Zeit mehr`;
+  return reason ? `${what} – ${reason}.` : `${what}.`;
 }
 
 export default function Studios() {
   const now = useNow(15000);
-  const windows = studios.map(s => workWindowInHome(now, s.tz));
-  const common = commonWindows(windows);
-  // Studios ohne Arbeitszeit am Frankfurter Kalendertag (Wochenende in Ortszeit)
-  const resting = studios.filter((s, i) => windows[i].length === 0).map(s => s.name);
-
-  // Gleiche Zeitzonen zusammenfassen (Shanghai und Shenzhen)
-  const zones = [];
-  for (const s of studios) {
-    if (s.tz === HOME_TZ) continue;
-    const z = zones.find(q => q.tz === s.tz);
-    if (z) z.names.push(s.name); else zones.push({ tz: s.tz, names: [s.name], diff: diffToHome(now, s.tz) });
-  }
+  const key = dayKey(now);
+  // Ausblick nur einmal je Frankfurter Tag rechnen (14 Tage × 5 Studios)
+  const o = useMemo(() => outlook(now), [key]); // eslint-disable-line react-hooks/exhaustive-deps -- neu je Tag
 
   return (
     <>
       <PageHeader eyebrow={`${studios.length} Studios · ${zoneCount} Zeitzonen`} title="Studios">
-        <p>Ortszeiten, wer wo arbeitet und wann alle gleichzeitig erreichbar sind.</p>
+        <p>Ortszeiten und die Zeit, in der alle Studios gleichzeitig arbeiten.</p>
         <p>Angenommen: {HOURS}, Feiertage nicht berücksichtigt.</p>
       </PageHeader>
 
-      <section className="card overlap" aria-labelledby="overlap-title">
-        <div className="section__head">
-          <h2 id="overlap-title" className="section__title">Gemeinsame Zeit für Calls</h2>
-          <p className="section__note">Zeitleiste in Frankfurter Zeit</p>
-        </div>
-        {common.length ? (
-          <div className="overlap__summary">
-            <p className="overlap__window">
-              <span className="overlap__swatch" aria-hidden="true" />
-              <span><strong className="num nowrap">{common.map(fmtRange).join(' und ')} Uhr</strong> in Frankfurt</span>
-            </p>
-            <p className="overlap__local">
-              Das ist {zones.map(z => `${common.map(seg => fmtRange(shift(seg, z.diff))).join(' und ')} Uhr in ${listDe(z.names)}`).join(', ')}.
-            </p>
-          </div>
-        ) : (
-          <div className="overlap__summary">
-            <p className="overlap__none">Heute gibt es keine Zeit, in der alle Studios arbeiten.</p>
-            <p className="overlap__local">
-              {resting.length
-                ? `Wochenende in ${listDe(resting)}. Ein gemeinsamer Termin geht erst wieder an einem Werktag.`
-                : 'Die Arbeitszeiten überschneiden sich heute nicht.'}
-            </p>
-          </div>
+      <div className="studios-now">
+        {o.workday && o.today.length > 0 && (
+          <p className="studios-now__line" data-common>
+            Gemeinsam heute: <strong className="num">{ranges(o.today)}</strong> Frankfurt
+          </p>
         )}
-        <StudioTimeline studios={studios} now={now} />
-        <p className="quiet overlap__legend">
-          Farbige Balken: Arbeitszeit {HOURS}, umgerechnet. Violette Fläche: alle arbeiten. Senkrechte Linie: jetzt.
-        </p>
-      </section>
+        {!o.workday && (
+          <p className="studios-now__line" data-weekend>
+            Heute ist Wochenende.
+            {o.next && <> Gemeinsam wieder {weekday(o.next.date)}, {dayMonth(o.next.date)}, <strong className="num">{ranges(o.next.win)}</strong> Frankfurt.</>}
+          </p>
+        )}
+        {o.workday && o.today.length === 0 && (
+          <p className="studios-now__line">Heute gibt es keine Zeit, in der alle Studios arbeiten.</p>
+        )}
+        {o.change && (
+          <p className="studios-now__change" data-change>
+            <CalendarClock aria-hidden="true" size={18} strokeWidth={1.75} />
+            <span>{changeText(o.change)}</span>
+          </p>
+        )}
+      </div>
 
-      <section className="studios" aria-labelledby="studios-list-title">
-        <h2 id="studios-list-title" className="section__title studios__title">Standorte</h2>
-        <ul className="studio-grid" role="list">
-          {studios.map((s, i) => {
-            const status = studioStatus(now, s.tz);
-            const diff = diffToHome(now, s.tz);
-            const shiftDays = dayShift(now, s.tz);
-            const team = people.filter(p => p.studio === s.id);
-            const active = projects.filter(p => p.studio === s.id && p.status === 'aktiv');
-            const wins = windows[i];
-            return (
-              <li key={s.id} className="card studio-card">
-                <div className="studio-card__head">
-                  <span className="chip chip--lg" style={{ background: s.color }} aria-hidden="true" />
-                  <h3 id={`studio-${s.id}`} className="studio-card__name">{s.name}</h3>
-                </div>
-                <div className="studio-card__now">
-                  <p className="studio-card__clock num">
-                    {fmtTime(now, s.tz)}<span className="visually-hidden"> Uhr Ortszeit</span>
-                  </p>
-                  <OpenBadge open={status.open} workday={status.workday} />
-                </div>
-                <p className="studio-card__meta">
-                  {fmtDate(now, { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: s.tz })}
-                  {shiftDays !== 0 && ` (${dayWord[shiftDays] ?? ''})`}
-                  {' · '}
-                  {s.tz === HOME_TZ ? 'Bezugszeit' : `${fmtOffset(diff)} zu Frankfurt`}
-                </p>
-                <p className="studio-card__hours">
-                  {openingNote(now, s.tz, status)}
-                  {s.tz !== HOME_TZ && (
-                    <>
-                      <br />
-                      {wins.length
-                        ? <>In Frankfurter Zeit heute: <span className="nowrap">{wins.map(fmtRange).join(' und ')} Uhr</span></>
-                        : 'In Frankfurter Zeit heute: keine Arbeitszeit'}
-                    </>
-                  )}
-                </p>
-
-                <h4 className="studio-card__sub">Team ({team.length})</h4>
-                <ul className="studio-card__team" role="list">
-                  {team.map(p => (
-                    <li key={p.id}><span className="studio-card__person">{p.name}</span> <span className="quiet">{p.role}</span></li>
-                  ))}
-                </ul>
-
-                <h4 className="studio-card__sub">Aktive Projekte ({active.length})</h4>
-                {active.length ? (
-                  <ul className="studio-card__projects" role="list">
-                    {active.map(p => (
-                      <li key={p.id}>
-                        <a href={href('/projekte/' + p.id)}><span className="budget-row__code">{p.code}</span><span>{p.name}</span></a>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="quiet">Zurzeit kein aktives Projekt.</p>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+      <section aria-labelledby="scale-title">
+        <h2 id="scale-title" className="studios__label">Heute in Frankfurter Zeit</h2>
+        <StudioTimeline
+          studios={studios}
+          now={now}
+          legend={
+            <p className="studios__legend">
+              Balken: Arbeitszeit {HOURS}, umgerechnet. Violett umrandet: alle arbeiten. Senkrechte Linie: jetzt.
+            </p>
+          }
+        />
       </section>
     </>
   );
