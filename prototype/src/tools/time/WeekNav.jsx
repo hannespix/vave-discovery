@@ -12,7 +12,7 @@ export default function WeekNav({ weekNo, days, isCurrent, minutes, onPrev, onNe
   return (
     <div className="tt-range">
       <div className="tt-range-nav">
-        <button type="button" className="btn btn-icon tt-range-step" aria-label="Vorherige Woche" title="Vorherige Woche" onClick={onPrev}>
+        <button type="button" className="btn btn-ghost btn-icon tt-range-step" aria-label="Vorherige Woche" title="Vorherige Woche" onClick={onPrev}>
           <ChevronLeft aria-hidden="true" size={20} />
         </button>
         <h2 id={RANGE_TITLE_ID} className="tt-range-title" tabIndex={-1} aria-live="polite">
@@ -21,7 +21,7 @@ export default function WeekNav({ weekNo, days, isCurrent, minutes, onPrev, onNe
           {isCurrent && <span className="visually-hidden"> (diese Woche)</span>}
         </h2>
         <button
-          type="button" className="btn btn-icon tt-range-step" aria-label="Nächste Woche"
+          type="button" className="btn btn-ghost btn-icon tt-range-step" aria-label="Nächste Woche"
           title={isCurrent ? 'Das ist die laufende Woche' : 'Nächste Woche'}
           aria-disabled={isCurrent ? 'true' : undefined} onClick={isCurrent ? undefined : onNext}
         >

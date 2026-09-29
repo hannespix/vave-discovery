@@ -44,12 +44,12 @@ const groupOf = (days, toSunday) =>
 const sameCombo = (t, c) => Boolean(t) && t.project === c.project && (t.task ?? null) === (c.task ?? null)
   && String(t.note ?? '').trim() === String(c.note ?? '').trim();
 
-// Ein Play-Zeichen überall (base.css .btn-play): rund, schwarze Kontur. Hier nur Start – der laufende Zustand steht als
+// Ein Play-Zeichen überall (base.css .btn-play): rund, gefülltes Dreieck. Hier nur Start – der laufende Zustand steht als
 // „läuft“ (Limette) an der Zeile; gestoppt wird in der Hülle.
 function PlayButton({ label, onClick }) {
   return (
     <button type="button" className="btn-play today-play" aria-label={label} title={label} onClick={onClick}>
-      <Play aria-hidden="true" size={18} strokeWidth={2} />
+      <Play aria-hidden="true" fill="currentColor" />
     </button>
   );
 }
