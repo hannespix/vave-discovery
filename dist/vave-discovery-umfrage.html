@@ -128,7 +128,7 @@ p { margin: 0; }
 /* ------------------------------------------------------------------
    Bühne
 ------------------------------------------------------------------- */
-.stage { max-width: 980px; margin: 0 auto; padding: 40px 24px 140px; }
+.stage { max-width: 980px; margin: 0 auto; padding: 40px 24px 140px; overflow-x: clip; } /* stepIn (12 px) schiebt randbündige Blöcke (Notiz) sonst kurz über den Rand: Handy zoomt, „Los geht’s“ springt; clip lässt sticky heil */
 .step { display: none; }
 .step.is-active { display: block; animation: stepIn .24s var(--ease-out); }
 @keyframes stepIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
@@ -236,8 +236,11 @@ p { margin: 0; }
   width: min(100%, 460px); padding: 26px 24px; text-align: center;
   border: 1.5px dashed var(--line); border-radius: var(--radius); color: var(--ink-2); font-weight: 600;
 }
-.deck-help { margin-top: 14px; display: none; }
-@media (hover: hover) and (min-width: 760px) { .deck-help { display: block; } }
+.deck-help { margin-top: 14px; display: none; font-size: 1rem; }
+.deck-keys { display: none; }
+@media (hover: hover) and (min-width: 760px) { .deck-help { display: block; } .deck-keys { display: inline; } }
+/* r05-K1: Breit ohne Hover (iPad quer) nennt der Hinweis das „ד als Weg zurück; die Tasten nur, wo es Hover gibt. */
+@media (min-width: 941px) and (min-height: 521px) { .deck-help { display: block; } }
 /* Touch: Wer die Karte antippt oder ohne Halten zu ziehen versucht, bekommt den Hinweis an der Karte (Script: dragHint). */
 .drag-hint {
   position: absolute; left: 50%; bottom: -14px; z-index: 2; margin: 0;
@@ -393,6 +396,24 @@ body.is-dragging * { cursor: grabbing !important; }
 .card .recall { position: absolute; top: 0; right: 0; bottom: 0; width: 44px; padding: 0; border: 0; border-radius: 0 var(--radius-s) var(--radius-s) 0; background: none; }
 .card .recall:hover .unassign { background: var(--graphite-soft); color: var(--ink); }
 .card .recall:focus-visible { outline-offset: -3px; }
+
+/* r05-K1: Die Zone ist die Fläche, ihr Knopf (.zone-btn: Kopf und Hinweis) ein eigenes Element. Die Karten stehen daneben
+   als Liste, jedes „ד ist ein eigener Knopf – kein Knopf im Knopf. Ein Tipp irgendwo in die Zone gilt weiter der Zone
+   (Script); den Fokusring des Knopfs trägt die ganze Zone. */
+.zone-btn { display: flex; flex-direction: column; gap: 8px; }
+@supports selector(:has(a)) {
+  .zone-btn:focus-visible { outline: none; }
+  .zone:has(> .zone-btn:focus-visible) { outline: 3px solid var(--signal); outline-offset: 3px; }
+}
+/* r05-K1: Halbzeit – beim ersten Erreichen der mittleren Karte steht kurz „Halbzeit.“ an Stelle der Anleitung: gleiche
+   Zeile, gleiche Größe, nur Überblenden (0,2 s), keine Bewegung. Angesagt über die Live-Region des Stapels (.deck-vh). */
+.sort-how { position: relative; transition: color .2s; }
+.sorter.is-half .sort-how { color: transparent; }
+.sorter.is-half .sort-how::after {
+  content: "Halbzeit."; position: absolute; left: 0; right: 0; top: 0; color: var(--ink); font-weight: 700;
+  pointer-events: none; animation: quietIn .2s linear;
+}
+.deck-vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 /* Sortierte Karten in der Leiste: unter den Zonen in voller Breite, antippen holt zurück. */
 .sorted { display: none; }
@@ -797,20 +818,26 @@ input[type="range"]::-moz-range-thumb {
     <p class="sort-how">Zone antippen oder Karte halten und ziehen.</p>
     <div class="deck" data-zone="pool" id="deck" aria-live="polite"></div>
     <div class="zones" id="zones">
-      <section class="zone" data-zone="keep" role="button" tabindex="0" aria-label="Brauchen wir, 0 Karten">
-        <div class="zone-head"><h3><kbd>1</kbd>Brauchen wir</h3><span class="zone-count">0</span></div>
-        <p class="zone-hint">Ohne das läuft der Laden nicht.</p>
-        <div class="zone-list"></div>
+      <section class="zone" data-zone="keep">
+        <div class="zone-btn" role="button" tabindex="0" aria-label="Brauchen wir, 0 Karten">
+          <div class="zone-head"><h3><kbd>1</kbd>Brauchen wir</h3><span class="zone-count">0</span></div>
+          <p class="zone-hint">Ohne das läuft der Laden nicht.</p>
+        </div>
+        <div class="zone-list" role="list"></div>
       </section>
-      <section class="zone" data-zone="drop" role="button" tabindex="0" aria-label="Brauchen wir nicht, 0 Karten">
-        <div class="zone-head"><h3><kbd>2</kbd>Brauchen wir nicht</h3><span class="zone-count">0</span></div>
-        <p class="zone-hint">Ballast. Weg damit.</p>
-        <div class="zone-list"></div>
+      <section class="zone" data-zone="drop">
+        <div class="zone-btn" role="button" tabindex="0" aria-label="Brauchen wir nicht, 0 Karten">
+          <div class="zone-head"><h3><kbd>2</kbd>Brauchen wir nicht</h3><span class="zone-count">0</span></div>
+          <p class="zone-hint">Ballast. Weg damit.</p>
+        </div>
+        <div class="zone-list" role="list"></div>
       </section>
-      <section class="zone" data-zone="unknown" role="button" tabindex="0" aria-label="Kenne ich nicht, 0 Karten">
-        <div class="zone-head"><h3><kbd>3</kbd>Kenne ich nicht</h3><span class="zone-count">0</span></div>
-        <p class="zone-hint">Nie gesehen oder nie benutzt.</p>
-        <div class="zone-list"></div>
+      <section class="zone" data-zone="unknown">
+        <div class="zone-btn" role="button" tabindex="0" aria-label="Kenne ich nicht, 0 Karten">
+          <div class="zone-head"><h3><kbd>3</kbd>Kenne ich nicht</h3><span class="zone-count">0</span></div>
+          <p class="zone-hint">Nie gesehen oder nie benutzt.</p>
+        </div>
+        <div class="zone-list" role="list"></div>
       </section>
     </div>
     <div class="sort-tools" id="sortTools"></div>
@@ -821,7 +848,7 @@ input[type="range"]::-moz-range-thumb {
       <section class="sorted-group" data-list="drop" hidden><h3 class="sorted-head">Brauchen wir nicht <span class="sorted-count">0</span></h3><div class="sorted-list"></div></section>
       <section class="sorted-group" data-list="unknown" hidden><h3 class="sorted-head">Kenne ich nicht <span class="sorted-count">0</span></h3><div class="sorted-list"></div></section>
     </section>
-    <p class="small muted deck-help">Tasten 1, 2, 3 sortieren die aktuelle Karte. Das × an einer sortierten Karte holt sie zurück in den Stapel.</p>
+    <p class="small muted deck-help"><span class="deck-keys">Tasten 1, 2, 3 sortieren die aktuelle Karte. </span>Das × an einer sortierten Karte holt sie zurück in den Stapel.</p>
   </section>
 
   <section class="step" data-step="2" aria-labelledby="h2">
@@ -1398,17 +1425,21 @@ window.VAVE_DATA = {
   // Leiste (wie im CSS): unter 941 px Breite oder bei wenig Höhe liegen die Zonen kompakt, sortierte Karten darunter (#sorted).
   const BAR = window.matchMedia('(max-width: 940px), (max-height: 520px)');
   const FLY_MS = 240, LAND_MS = 260; // Flug in die Zone, danach bestätigt die Zone (CSS: .is-flying, .is-landed)
-  let lastMoved = null, busy = false, confirmRest = false;
+  // Halbzeit: Sind HALF Karten sortiert (Karte 15 von 28), steht HALF_MS lang „Halbzeit.“ in der Anleitungszeile – einmal je
+  // Durchgang: nicht erneut nach Zurückholen, nicht nach Neuladen hinter der Mitte; erst ein leerer Stapelstand beginnt neu.
+  const HALF = Math.floor(D.modules.length / 2), HALF_MS = 1800;
+  let lastMoved = null, busy = false, confirmRest = false, halfNow = false, halfTimer = 0;
 
   function unsorted() { return ORDER.filter(m => !state.sort[m.id]); }
   function currentCard() { return unsorted()[0] || null; }
+  let halfSeen = D.modules.length - unsorted().length >= HALF;
   // Karte im Stapel ('deck'), in einer Zone ('zone', breit) oder in der Liste „Sortierte Karten“ ('list', Leiste).
   // Zurückholen hat ein eigenes Ziel: in der Zone nur der Knopf „ד (ein Tipp auf die Karte selbst gilt der Zone),
   // in der Liste die ganze Karte.
   function cardHtml(m, where) {
     const placed = where !== 'deck', name = esc(m.name), x = '<span class="unassign" aria-hidden="true">×</span>';
     const attrs = where === 'deck' ? `role="group" tabindex="-1" aria-label="${name}"`
-      : where === 'list' ? `role="button" tabindex="0" aria-label="${name}, zurück in den Stapel"` : '';
+      : where === 'list' ? `role="button" tabindex="0" aria-label="${name}, zurück in den Stapel"` : 'role="listitem"';
     return `<div class="card${placed ? ' is-placed' : ' is-enter'}${placed && m.id === lastMoved ? ' is-new' : ''}" ${attrs} data-id="${m.id}" data-group="${m.group}">
       <span class="card-name">${name}</span>
       <span class="card-price">${m.price ? m.price + ' €/Monat' : 'in Lizenz'}</span>
@@ -1416,7 +1447,8 @@ window.VAVE_DATA = {
       ${where === 'list' ? x : where === 'zone' ? `<button type="button" class="recall" aria-label="${name} zurückholen" title="Zurück in den Stapel">${x}</button>` : ''}
     </div>`;
   }
-  // Zonen sind Knöpfe: Name (Überschrift ohne Tastenhinweis) und Anzahl, z. B. „Brauchen wir, 3 Karten“.
+  // Jede Zone hat einen Knopf (.zone-btn): Name (Überschrift ohne Tastenhinweis) und Anzahl, z. B. „Brauchen wir, 3 Karten“.
+  // Die Karten der Zone folgen als Liste, ihre „ד als eigene Knöpfe.
   const zoneName = z => Array.from($('h3', z).childNodes).filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
   const zoneLabel = (z, n) => `${zoneName(z)}, ${n} ${n === 1 ? 'Karte' : 'Karten'}`;
   // „Rest zu ‚Kenne ich nicht‘“ fragt erst nach und nennt die Anzahl; Enter auf „Abbrechen“ verschiebt nichts.
@@ -1432,8 +1464,9 @@ window.VAVE_DATA = {
   }
   function renderSort() {
     const rest = unsorted(), cur = rest[0], bar = BAR.matches;
+    if (rest.length === D.modules.length) halfSeen = false; // leerer Stapelstand (auch nach „Von vorn“): neuer Durchgang
     if (cur) {
-      deck.innerHTML = `
+      deck.innerHTML = `${halfNow ? '<span class="deck-vh">Halbzeit.</span>' : ''}
         <div class="deck-stack">
           ${rest[2] ? '<div class="deck-ghost g2"></div>' : ''}
           ${rest[1] ? '<div class="deck-ghost g1"></div>' : ''}
@@ -1450,13 +1483,20 @@ window.VAVE_DATA = {
       $('.zone-list', z).innerHTML = bar ? '' : items.map(m => cardHtml(m, 'zone')).join('');
       $('.sorted-list', group).innerHTML = bar ? items.map(m => cardHtml(m, 'list')).join('') : '';
       $('.zone-count', z).textContent = $('.sorted-count', group).textContent = items.length;
-      z.setAttribute('aria-label', zoneLabel(z, items.length));
+      $('.zone-btn', z).setAttribute('aria-label', zoneLabel(z, items.length));
       group.hidden = !items.length;
     });
     $('.sorted-note', sortedEl).hidden = rest.length === D.modules.length;
     renderTools(rest.length);
-    lastMoved = null;
+    lastMoved = null; halfNow = false;
     updateNav();
+  }
+  // Einmal kurz „Halbzeit.“ in der Anleitungszeile (CSS: .sorter.is-half); die Ansage steht schon im Stapel (renderSort).
+  function halfNote() {
+    const s = $('.sorter', stepSort);
+    clearTimeout(halfTimer);
+    s.classList.add('is-half');
+    halfTimer = setTimeout(() => s.classList.remove('is-half'), HALF_MS);
   }
   // Die Sortier-Einheit klebt bei Bedarf direkt über der Navigation; deren Höhe (samt Safe Area) wird gemessen.
   const navEl = $('.nav');
@@ -1465,6 +1505,39 @@ window.VAVE_DATA = {
   if (window.ResizeObserver) new ResizeObserver(syncDock).observe(navEl);
   const onBarChange = () => { if (state.step === 1) renderSort(); };
   if (BAR.addEventListener) BAR.addEventListener('change', onBarChange); else if (BAR.addListener) BAR.addListener(onBarChange);
+
+  // Sichtbares Band zwischen Kopf und Navigation. Der Kopf klebt nur, bis die Seite weiter gescrollt ist, als der Body hoch
+  // ist (lange Zonen) – dann beginnt das Band oben am Fenster.
+  const topEl = $('.top'), SHOW_MS = 240;
+  const band = () => ({ top: Math.max(0, topEl.getBoundingClientRect().bottom), bottom: Math.min(innerHeight, navEl.getBoundingClientRect().top) });
+  // Stapelkarte gesehen: mindestens zur Hälfte im Band.
+  function cardSeen(card) {
+    const r = card.getBoundingClientRect(), b = band();
+    return Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top) >= r.height / 2;
+  }
+  // Stapel ins Bild: Die Sortier-Einheit (Anleitung, Karte) rückt direkt unter den Kopf – in SHOW_MS, bei reduzierter
+  // Bewegung sofort. Gemessen wird in Dokumentlage (Rechteck gegen <html>), nicht über scrollY: Ist die Seite eben kürzer
+  // geworden (Karte zurückgeholt), gleicht der Browser den Scrollstand erst im nächsten Frame an. Jede Eingabe des Nutzers
+  // (Rad, Finger, Maus, Taste) beendet die Animation.
+  let showFrame = 0;
+  const stopShow = () => cancelAnimationFrame(showFrame);
+  ['wheel', 'touchstart', 'mousedown', 'keydown'].forEach(t => window.addEventListener(t, stopShow, { passive: true }));
+  function showDeck() {
+    stopShow();
+    const root = document.documentElement.getBoundingClientRect(), hh = topEl.offsetHeight;
+    const top = $('.sorter', stepSort).getBoundingClientRect().top - root.top;
+    let y = top - hh - 8;
+    if (y > innerHeight - hh) y = top - 8; // dort klebt der Kopf nicht mehr
+    y = Math.max(0, Math.min(document.documentElement.scrollHeight - innerHeight, Math.round(y)));
+    const y0 = -root.top, t0 = performance.now();
+    if (REDUCED || Math.abs(y - y0) < 2) { window.scrollTo(0, y); return; }
+    const step = now => {
+      const k = Math.min(1, (now - t0) / SHOW_MS);
+      window.scrollTo(0, Math.round(y0 + (y - y0) * (1 - Math.pow(1 - k, 3))));
+      if (k < 1) showFrame = requestAnimationFrame(step);
+    };
+    showFrame = requestAnimationFrame(step);
+  }
 
   // Landen: Die Zone bestätigt in ihrer Farbe (Fläche und Linie, LAND_MS); bei reduzierter Bewegung nur die Bestätigung.
   const landTimers = {};
@@ -1482,18 +1555,21 @@ window.VAVE_DATA = {
     else { state.sort[id] = zone; state.seq[id] = Date.now(); }
     if (zone !== 'keep') delete state.friction[id];
     lastMoved = id; busy = false; confirmRest = false;
+    const half = zone !== 'pool' && !halfSeen && unsorted().length === D.modules.length - HALF;
+    if (half) halfSeen = halfNow = true;
     save(); renderSort();
+    if (half) halfNote();
     if (zone !== 'pool') landZone(zone);
     keepFocus(hadFocus, zone);
-    if (zone === 'pool') { // zurückgeholt, während der Stapel oben außer Sicht ist (Handy): Stapel ins Bild holen
-      const off = deck.getBoundingClientRect().top - $('.top').getBoundingClientRect().bottom;
-      if (off < 0) window.scrollBy({ top: off - 12, behavior: REDUCED ? 'auto' : 'smooth' });
+    if (zone === 'pool') { // zurückgeholt, während die Stapelkarte oben außer Sicht ist (Handy und breit): Stapel ins Bild holen
+      const c = $('.deck .card');
+      if (c && (c.getBoundingClientRect().top < band().top || !cardSeen(c))) showDeck();
     }
   }
-  // Wurde das fokussierte Element neu gezeichnet, bleibt der Fokus im Sortierbereich: Stapelkarte, sonst Zone.
+  // Wurde das fokussierte Element neu gezeichnet, bleibt der Fokus im Sortierbereich: Stapelkarte, sonst Knopf der Zone.
   function keepFocus(had, zone) {
     if (!had || stepSort.contains(document.activeElement)) return;
-    const t = $('.deck .card') || $(`.zone[data-zone="${zone}"]`, zonesEl);
+    const t = $('.deck .card') || $(`.zone[data-zone="${zone}"] .zone-btn`, zonesEl);
     if (t) t.focus({ preventScroll: true });
   }
   // Zuweisen mit Flug der Karte in die Zone: Sie schrumpft auf Zonengröße und kommt sichtbar an; ohne Element (Tastatur) sofort.
@@ -1517,7 +1593,7 @@ window.VAVE_DATA = {
       state.seq = state.seq || {};
       rest.forEach(m => { state.sort[m.id] = 'unknown'; state.seq[m.id] = Date.now(); });
       confirmRest = false; save(); renderSort(); landZone('unknown');
-      $('.zone[data-zone="unknown"]', zonesEl).focus({ preventScroll: true });
+      $('.zone[data-zone="unknown"] .zone-btn', zonesEl).focus({ preventScroll: true });
       return;
     }
     confirmRest = id === 'restUnknown';
@@ -1529,14 +1605,20 @@ window.VAVE_DATA = {
   // Doppeltipp (Finger oder Maus): Höchstens TAP_GAP ms nach einem Tipp auf „Rest“, „Ja“ oder „Abbrechen“ verschiebt kein
   // Tipp eine Karte – die Rückfrage erscheint unter dem Finger, die Liste darunter rückt nach („Ja“, Zone, Zurückholen
   // zählen nicht; „Abbrechen“ schon). Ein Tipp auf eine Zone zählt nicht, wenn der vorige auf eine Zone höchstens TAP_GAP ms
-  // zurückliegt – er sortierte sonst die nächste, noch ungelesene Karte mit. Auch ein verworfener Tipp zählt als voriger.
-  // Tastatur und Screenreader lösen Klicks ohne Zählung aus (detail 0) und sind ausgenommen.
-  const TAP_GAP = 400, lastTap = { zone: -Infinity, rest: -Infinity };
+  // zurückliegt – er sortierte sonst die nächste, noch ungelesene Karte mit. Zurückholen („ד, Liste) und Zone sperren sich
+  // gegenseitig ebenso lang, Zurückholen auch sich selbst: Nach jedem der beiden rückt die Liste unter dem Finger nach, der
+  // zweite Tipp träfe eine andere Karte (holte sie zurück samt Reibungswert oder legte die eben geholte gleich wieder ab).
+  // Auch ein verworfener Tipp zählt als voriger. Tastatur und Screenreader lösen Klicks ohne Zählung aus (detail 0) und
+  // sind ausgenommen.
+  // Breit (keine Leiste) legt ein Tipp in eine Zone nur ab, wenn die Stapelkarte mindestens zur Hälfte im Band zwischen Kopf
+  // und Navigation liegt; sonst holt er sie ins Bild und sortiert nichts – nie eine ungesehene Karte.
+  const TAP_GAP = 400, lastTap = { zone: -Infinity, rest: -Infinity, recall: -Infinity };
   const quickAfter = (kind, e, now) => e.detail > 0 && now - lastTap[kind] <= TAP_GAP;
   let suppressClick = false;
   stepSort.addEventListener('click', e => {
     if (suppressClick) { suppressClick = false; return; }
     const now = performance.now(), afterRest = quickAfter('rest', e, now);
+    const afterZone = quickAfter('zone', e, now), afterRecall = quickAfter('recall', e, now);
     const tool = e.target.closest('#restUnknown, #restYes, #restNo');
     if (tool) {
       if (e.detail) lastTap.rest = now;
@@ -1546,25 +1628,28 @@ window.VAVE_DATA = {
     const recall = e.target.closest('.recall, #sorted .card.is-placed'); // eigenes Ziel: „ד an der Karte oder Karte in der Liste
     if (recall) {
       const card = recall.closest('.card');
-      if (!afterRest) assign(card.dataset.id, 'pool', card);
+      if (e.detail) lastTap.recall = now;
+      if (!afterRest && !afterZone && !afterRecall) assign(card.dataset.id, 'pool', card);
       return;
     }
     const zone = e.target.closest('.zone'); // irgendwo in der Zone, auch auf einer dort liegenden Karte
     if (!zone) return;
-    const afterZone = quickAfter('zone', e, now), cur = currentCard();
+    const cur = currentCard(), card = $('.deck .card');
     if (e.detail) lastTap.zone = now;
-    if (cur && !afterZone && !afterRest) assign(cur.id, zone.dataset.zone, $('.deck .card'));
+    if (!cur || afterZone || afterRest || afterRecall || busy) return;
+    if (e.detail && !BAR.matches && card && !cardSeen(card)) { showDeck(); return; }
+    assign(cur.id, zone.dataset.zone, card);
   });
-  // Enter und Leertaste: auf der Zone wie ein Tipp, auf einer Karte der Liste „Sortierte Karten“ zurückholen.
+  // Enter und Leertaste: auf dem Knopf einer Zone wie ein Tipp, auf einer Karte der Liste „Sortierte Karten“ zurückholen.
   // Echte Knöpfe (×, „Rest“) lösen selbst einen Klick aus.
   stepSort.addEventListener('keydown', e => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     const t = e.target;
     if (t.matches('#sorted .card.is-placed')) { e.preventDefault(); assign(t.dataset.id, 'pool', t); return; }
-    if (!t.classList.contains('zone')) return;
+    if (!t.classList.contains('zone-btn')) return;
     e.preventDefault();
     const cur = currentCard();
-    if (cur) assign(cur.id, t.dataset.zone, $('.deck .card'));
+    if (cur) assign(cur.id, t.closest('.zone').dataset.zone, $('.deck .card'));
   });
   document.addEventListener('keydown', e => {
     if (state.step !== 1 || e.target.matches('input, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
