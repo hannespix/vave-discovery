@@ -6,8 +6,8 @@ import { loadProjects, projectsById } from '../../lib/projects.js';
 const studioById = byId(studios);
 
 // Projekte kommen aus der gemeinsamen, bearbeitbaren Quelle (lib/projects.js) – bei jedem Aufruf aktuell.
-// Buchbar sind aktive und interne Projekte (Pitches nicht).
-export const bookable = () => loadProjects().filter(p => p.status === 'aktiv' || p.status === 'intern');
+// Buchbar sind alle: aktive, Pitch- und interne Projekte (auch Pitch-Zeit wird erfasst, z. B. PIT-01).
+export const bookable = () => loadProjects().filter(p => ['aktiv', 'pitch', 'intern'].includes(p.status));
 export const bookableIds = () => bookable().map(p => p.id);
 export const projectOrder = () => loadProjects().map(p => p.id);
 
@@ -34,6 +34,7 @@ export default function ProjectSelect({ id, value, onChange, recent = [], label,
   const groups = [
     ['Zuletzt', recent.filter(x => ids.includes(x)).slice(0, 3).map(x => map[x])],
     ['Aktive Projekte', list.filter(p => p.status === 'aktiv')],
+    ['Pitch', list.filter(p => p.status === 'pitch')],
     ['Intern', list.filter(p => p.status === 'intern')],
   ].filter(([, items]) => items.length);
   // Läuft schon ein Eintrag auf einem nicht (mehr) buchbaren Projekt, bleibt es sichtbar statt still zu springen

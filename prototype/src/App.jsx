@@ -6,7 +6,8 @@ import { resetDemo, useStoredState } from './lib/store.js';
 import { useTimer } from './lib/timer.js';
 import { cleanEntries } from './lib/data.js';
 import { fmtDate, fmtDuration } from './lib/format.js';
-import { projects, timeEntries as sampleEntries } from './data/sample.js';
+import { timeEntries as sampleEntries } from './data/sample.js';
+import { loadProjects, projectsById, useProjects } from './lib/projects.js';
 import Sidebar from './components/Sidebar.jsx';
 import TopBar from './components/TopBar.jsx';
 import TabBar from './components/TabBar.jsx';
@@ -15,7 +16,7 @@ import CommandPalette from './components/CommandPalette.jsx';
 import ShortcutsDialog from './components/ShortcutsDialog.jsx';
 import Toast from './components/Toast.jsx';
 import { useGlobalShortcuts } from './components/shortcuts.js';
-import { RECENT_MAX, bookedProjects, cleanRecent, projectById, projectInfo } from './components/shellData.js';
+import { RECENT_MAX, bookedProjects, cleanRecent, projectInfo } from './components/shellData.js';
 import Today from './pages/Today.jsx';
 import Studios from './pages/Studios.jsx';
 import Later from './pages/Later.jsx';
@@ -64,6 +65,7 @@ function focusHeading() {
 }
 
 export default function App() {
+  useProjects(); // neu zeichnen, wenn Projekte bearbeitet werden (Palette, Pille lesen den Stand zur Laufzeit)
   const { path, parts } = useHashRoute();
   const current = routes.find(r => r.path === (parts[0] || '')) || routes[0];
   const Page = current.Component;
@@ -76,9 +78,9 @@ export default function App() {
   const timerApi = useTimer();
   const [entries] = useStoredState('time-entries', sampleEntries, cleanEntries);
   const booked = useMemo(() => bookedProjects(entries), [entries]);
-  const lastProject = booked[0] || projects[0].id;
+  const lastProject = booked[0] || loadProjects()[0].id;
   const [recent, setRecent] = useStoredState('recent-projects', [], cleanRecent);
-  const routeProjectId = parts[0] === 'projekte' && projectById[parts[1]] ? parts[1] : null;
+  const routeProjectId = parts[0] === 'projekte' && projectsById()[parts[1]] ? parts[1] : null;
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [toast, setToast] = useState(null);
 

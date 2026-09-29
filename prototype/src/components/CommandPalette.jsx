@@ -2,8 +2,9 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { CalendarRange, ClockPlus, FolderKanban, Keyboard, ListPlus, Play, Search, Square, SquareCheck } from 'lucide-react';
 import { uid, useStoredState } from '../lib/store.js';
 import { cleanTasks } from '../lib/data.js';
-import { byId, me, people, projects, projectStatusLabel, statusLabel, tasks as sampleTasks } from '../data/sample.js';
-import { clientById, projectById, projectInfo, spokenDuration } from './shellData.js';
+import { byId, me, people, projectStatusLabel, statusLabel, tasks as sampleTasks } from '../data/sample.js';
+import { clientsById, loadProjects, projectsById } from '../lib/projects.js';
+import { projectInfo, spokenDuration } from './shellData.js';
 
 // Befehlspalette (⌘K / Strg K, „/“, Suchen-Knopf): natives <dialog>, darin Combobox + Listbox mit aria-activedescendant.
 // Gruppen: Aktionen, Projekte, Aufgaben (eigene zuerst), Seiten. Leer: Aktionen und zuletzt geöffnete Projekte.
@@ -46,23 +47,23 @@ const PAGE_WORDS = {
 const LIMIT = { projects: 6, tasks: 6 };
 
 const projectMeta = p => {
-  const client = clientById[p.client]?.name;
+  const client = clientsById()[p.client]?.name;
   return p.status === 'aktiv' ? client : `${client} · ${projectStatusLabel[p.status] || p.status}`;
 };
 const projectItem = (p, prefix) => ({
   id: `${prefix}-${p.id}`, icon: FolderKanban, label: `${p.code} · ${p.name}`, meta: projectMeta(p),
-  to: `/projekte/${p.id}`, code: fold(p.code), hay: haystack(p.code, p.name, clientById[p.client]?.name, p.phase),
+  to: `/projekte/${p.id}`, code: fold(p.code), hay: haystack(p.code, p.name, clientsById()[p.client]?.name, p.phase),
 });
 
 function buildIndex({ routes, running, timer, elapsedMin, lastProject, bookedIds, tasks, routeProjectId, handlers }) {
   // Aktionen
   const order = [lastProject, ...bookedIds.filter(id => id !== lastProject),
     ...projects.map(p => p.id).filter(id => id !== lastProject && !bookedIds.includes(id))];
-  const starts = running ? [] : order.map(id => projectById[id]).filter(Boolean).map(p => ({
+  const starts = running ? [] : order.map(id => projectsById()[id]).filter(Boolean).map(p => ({
     id: `start-${p.id}`, icon: Play, label: `Timer starten · ${p.code}`, meta: p.name,
     keys: p.id === lastProject ? ['T'] : null, run: () => handlers.onStart(p.id),
     verbs: ['timer', 'starten', 'start'], code: fold(p.code),
-    hay: haystack('Timer starten', p.code, p.name, clientById[p.client]?.name),
+    hay: haystack('Timer starten', p.code, p.name, clientsById()[p.client]?.name),
   }));
   const stop = running ? (() => {
     const p = projectInfo(timer.project);
@@ -71,7 +72,7 @@ function buildIndex({ routes, running, timer, elapsedMin, lastProject, bookedIds
       keys: ['T'], run: handlers.onStop, verbs: ['timer', 'stoppen', 'stop', 'beenden'], hay: haystack('Timer stoppen beenden', p.code),
     };
   })() : null;
-  const routeProject = projectById[routeProjectId];
+  const routeProject = projectsById()[routeProjectId];
   const general = [
     { id: 'log', icon: ClockPlus, label: 'Zeit nachtragen', meta: 'Dauer oder Von–Bis', keys: ['N'], to: '/zeit/nachtragen',
       hay: haystack('Zeit nachtragen eintragen vergessen buchen manuell') },
@@ -95,8 +96,8 @@ function buildIndex({ routes, running, timer, elapsedMin, lastProject, bookedIds
   });
 
   // Aufgaben: eigene zuerst, erledigte zuletzt
-  const taskItems = tasks.filter(t => projectById[t.project]).map(t => {
-    const p = projectById[t.project];
+  const taskItems = tasks.filter(t => projectsById()[t.project]).map(t => {
+    const p = projectsById()[t.project];
     const own = t.assignee === me.id;
     const who = own ? 'dir zugewiesen' : personById[t.assignee]?.name.split(' ')[0];
     return {
@@ -107,7 +108,7 @@ function buildIndex({ routes, running, timer, elapsedMin, lastProject, bookedIds
     };
   });
 
-  return { starts, stop, general, projects: projects.map(p => projectItem(p, 'project')), taskItems, pages };
+  return { starts, stop, general, projects: loadProjects().map(p => projectItem(p, 'project')), taskItems, pages };
 }
 
 function search(index, query, recentIds, bookedIds, running) {
@@ -118,7 +119,7 @@ function search(index, query, recentIds, bookedIds, running) {
       { id: 'actions', label: 'Aktionen', items: [running ? index.stop : index.starts[0], ...index.general].filter(Boolean) },
       {
         id: 'recent', label: recentIds.length ? 'Zuletzt geöffnet' : 'Zuletzt gebucht',
-        items: recentSource.slice(0, 5).map(id => projectItem(projectById[id], 'recent')),
+        items: recentSource.slice(0, 5).map(id => projectItem(projectsById()[id], 'recent')),
       },
     ].filter(g => g.items.length);
   }
@@ -281,7 +282,7 @@ function NewTaskStep({ initialProject, onBack, onCreate }) {
       <div className="field">
         <label htmlFor={projectId}>Projekt</label>
         <select id={projectId} className="select" value={project} onChange={e => setProject(e.target.value)}>
-          {projects.map(p => <option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}
+          {loadProjects().map(p => <option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}
         </select>
       </div>
       <p className="meta">Dir zugewiesen, Status „{statusLabel.todo}“, ohne Schätzung und ohne Termin.</p>
@@ -330,7 +331,7 @@ function PaletteBody({
   };
 
   if (step === 'task') {
-    const initial = projectById[routeProjectId] ? routeProjectId : recentIds[0] || lastProject;
+    const initial = projectsById()[routeProjectId] ? routeProjectId : recentIds[0] || lastProject;
     return <NewTaskStep initialProject={initial} onBack={backToSearch} onCreate={create} />;
   }
   return (
