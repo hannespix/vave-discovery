@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { Component, useEffect, useRef } from 'react';
 import { Clock3, FolderKanban, Globe, Hourglass, House } from 'lucide-react';
 import { useHashRoute } from './lib/router.js';
 import { useTheme } from './lib/theme.js';
+import { resetDemo } from './lib/store.js';
 import Sidebar from './components/Sidebar.jsx';
 import TopBar from './components/TopBar.jsx';
 import TabBar from './components/TabBar.jsx';
@@ -27,6 +28,22 @@ export const routes = [
 
 const APP_NAME = 'VAVE Studio-Tool (Prototyp)';
 
+// Fängt Fehler einer Seite ab (z. B. unpassende gespeicherte Daten): statt weißer Seite ein Weg zurück
+class PageBoundary extends Component {
+  constructor(props) { super(props); this.state = { failed: false }; }
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <section className="card stack" role="alert">
+        <h1 className="h2">Hier hakt die Demo</h1>
+        <p>Wahrscheinlich passen gespeicherte Demo-Daten nicht mehr. Zurücksetzen stellt die Beispieldaten wieder her.</p>
+        <p><button type="button" className="btn btn-primary" onClick={() => { resetDemo(); location.reload(); }}>Demo zurücksetzen</button></p>
+      </section>
+    );
+  }
+}
+
 // Fokus auf die Seitenüberschrift – auch für Werkzeug-Seiten ohne tabIndex
 function focusHeading() {
   const h = document.querySelector('#main h1');
@@ -47,10 +64,14 @@ export default function App() {
     document.title = `${current.label} · ${APP_NAME}`;
   }, [current]);
 
-  // Nach einem Routenwechsel (nicht beim ersten Laden): nach oben, Fokus auf die <h1>
+  // Nach einem Routenwechsel (nicht beim ersten Laden): nach oben, Fokus auf die <h1>. Hat die Seite den Fokus schon
+  // selbst gesetzt (Effekte der Kinder laufen vorher, z. B. zurück zur Liste auf das zuletzt offene Projekt), bleibt er dort.
   useEffect(() => {
     if (lastPath.current === path) return;
     lastPath.current = path;
+    const main = document.getElementById('main');
+    const active = document.activeElement;
+    if (main && active && active !== main && main.contains(active) && !active.matches('h1')) return;
     window.scrollTo(0, 0);
     focusHeading();
   }, [path]);
@@ -72,7 +93,9 @@ export default function App() {
       <TopBar theme={theme} onTheme={setTheme} onReset={openReset} path={path} />
       <main id="main" className="main" tabIndex={-1}>
         <div className="content">
-          <Page key={current.path} parts={parts.slice(1)} />
+          <PageBoundary key={current.path}>
+            <Page parts={parts.slice(1)} />
+          </PageBoundary>
         </div>
       </main>
       <TabBar routes={routes} current={current} />

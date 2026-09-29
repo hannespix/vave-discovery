@@ -50,10 +50,22 @@ export function dayShift(date, tz) {
   return Math.round((Date.UTC(a.year, a.month - 1, a.day) - Date.UTC(b.year, b.month - 1, b.day)) / 86400000);
 }
 
-// Offen = 9–18 Uhr Ortszeit (ohne Wochenenden und Feiertage – Annahme für die Demo)
-export function studioStatus(date, tz) {
+// Wochentag in der Zeitzone: 0 = Sonntag … 6 = Samstag
+export function weekdayIn(date, tz) {
+  const z = partsOf(date, tz);
+  return new Date(Date.UTC(z.year, z.month - 1, z.day)).getUTCDay();
+}
+export const isWorkdayIn = (date, tz) => { const w = weekdayIn(date, tz); return w !== 0 && w !== 6; };
+
+// Arbeitet das Studio in diesem Moment? Mo–Fr 9–18 Uhr Ortszeit; Feiertage kennt die Demo nicht (steht in der UI)
+export const isWorkingAt = (date, tz) => {
   const m = minutesOfDay(date, tz);
-  return { open: m >= OPEN_HOUR * 60 && m < CLOSE_HOUR * 60, minutes: m };
+  return isWorkdayIn(date, tz) && m >= OPEN_HOUR * 60 && m < CLOSE_HOUR * 60;
+};
+
+// Offen = Mo–Fr 9–18 Uhr Ortszeit (ohne Feiertage – Annahme für die Demo)
+export function studioStatus(date, tz) {
+  return { open: isWorkingAt(date, tz), minutes: minutesOfDay(date, tz), workday: isWorkdayIn(date, tz) };
 }
 
 // „+6 h“, „−2 h“, „+5,5 h“; 0 → „±0 h“
@@ -66,11 +78,26 @@ export function fmtOffset(min) {
 // Minuten seit Mitternacht → „09:00“ (1440 → „24:00“)
 export const fmtHM = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
 
-// Arbeitszeit eines Studios in Frankfurter Minuten [[start, ende], …] – über Mitternacht geteilt
+// Frankfurter Mitternacht des Kalendertags von `date` als Zeitpunkt
+function homeMidnight(date) {
+  const z = partsOf(date, HOME_TZ);
+  const guess = Date.UTC(z.year, z.month - 1, z.day);
+  return new Date(guess - tzOffset(new Date(guess), HOME_TZ) * 60000);
+}
+
+// Arbeitszeit eines Studios am Frankfurter Kalendertag von `date`, in Frankfurter Minuten [[start, ende], …].
+// Zählt Mo–Fr 9–18 Uhr Ortszeit (Raster 30 min, alle Studio-Zeitzonen sind ganz- oder halbstündig versetzt):
+// Wochenenden fallen heraus, auch der Samstag in Shanghai am Frankfurter Freitagabend.
 export function workWindowInHome(date, tz) {
-  const start = (((OPEN_HOUR * 60 - diffToHome(date, tz)) % DAY) + DAY) % DAY;
-  const len = (CLOSE_HOUR - OPEN_HOUR) * 60;
-  return start + len <= DAY ? [[start, start + len]] : [[start, DAY], [0, start + len - DAY]];
+  const base = homeMidnight(date).getTime();
+  const segs = [];
+  let from = -1;
+  for (let m = 0; m <= DAY; m += 30) {
+    const on = m < DAY && isWorkingAt(new Date(base + m * 60000), tz);
+    if (on && from < 0) from = m;
+    if (!on && from >= 0) { segs.push([from, m]); from = -1; }
+  }
+  return segs;
 }
 
 // Schnittmenge mehrerer Fensterlisten → zusammenhängende Bereiche [[start, ende], …]

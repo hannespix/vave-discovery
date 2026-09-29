@@ -1,5 +1,6 @@
 // Aufgaben-Board: vier Spalten, Aufgabe anlegen, Verschieben per Ziehen (Maus: ganze Karte, Finger/Stift: Griff)
 // und gleichwertig ohne Ziehen über das Status-Feld jeder Karte; Löschen mit Rückgängig; jede Änderung per aria-live.
+// Nach Verschieben, Anlegen, Wiederherstellen und tiefem Link (taskId) bleibt die Karte im Bild und wird kurz markiert.
 // Daten: Schlüssel 'tasks' (useStoredState im Elternteil) – Form { id, project, title, status, assignee, due } bleibt unverändert.
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { AlarmClock, CalendarDays, CircleAlert, Clock, GripVertical, Plus, Trash2, Undo2, X } from 'lucide-react';
@@ -9,15 +10,17 @@ import { addDays, isoDay } from '../../lib/format.js';
 import { STATUSES, daysUntil, fmtDayShort, personById, relDays } from './helpers.js';
 import { Avatar } from './parts.jsx';
 
-const byDue = (a, b) => (a.due || '9999').localeCompare(b.due || '9999') || a.title.localeCompare(b.title, 'de');
+const dueKey = t => (typeof t.due === 'string' && t.due) || '9999';
+const byDue = (a, b) => dueKey(a).localeCompare(dueKey(b)) || a.title.localeCompare(b.title, 'de');
+const LANDED_MS = 2000; // so lange bleibt die Markierung „hier gelandet“ stehen
 const INTERACTIVE = 'button, select, input, textarea, a, label';
 const EDGE = 24; // Randzone für automatisches Scrollen beim Ziehen (px) – schmaler als die angeschnittene Nachbarspalte
 // Je näher am Rand, desto schneller (1–10 px je Bild); so bleibt die Nachbarspalte als Ziel treffbar
 const edgeSpeed = dist => (dist < EDGE ? Math.min(10, Math.ceil(((EDGE - dist) / EDGE) * 10)) : 0);
 
 function DueLine({ task }) {
-  if (!task.due) return null;
   const n = daysUntil(task.due);
+  if (n === null) return null;
   const open = task.status !== 'done';
   if (open && n < 0) {
     return (
@@ -38,13 +41,15 @@ function DueLine({ task }) {
   );
 }
 
-function TaskCard({ task, dragging, onStatus, onDelete, pointer }) {
+function TaskCard({ task, dragging, landed, onStatus, onDelete, pointer }) {
   const selectId = useId();
   const person = personById[task.assignee];
   const n = daysUntil(task.due);
   const overdue = task.status !== 'done' && n !== null && n < 0;
+  const cls = `pj-task${overdue ? ' is-overdue' : ''}${dragging ? ' is-dragging' : ''}${landed ? ' is-landed' : ''}`;
+  // tabIndex -1: Ziel für den Fokus nach einem tiefen Link, nicht in der Tab-Reihenfolge
   return (
-    <li className={`pj-task${overdue ? ' is-overdue' : ''}${dragging ? ' is-dragging' : ''}`} data-task={task.id} {...pointer}>
+    <li className={cls} data-task={task.id} tabIndex={-1} {...pointer}>
       <div className="pj-task-head">
         <p className="pj-task-title">{task.title}</p>
         <span className="pj-grip" data-grip="" title="Ziehen, um die Aufgabe zu verschieben" aria-hidden="true">
@@ -153,15 +158,17 @@ function AddTask({ project, onAdd }) {
   );
 }
 
-export default function TaskBoard({ project, tasks, setTasks, headingId }) {
+export default function TaskBoard({ project, tasks, setTasks, headingId, taskId }) {
   const [live, setLive] = useState('');
   const [undo, setUndo] = useState(null); // { task, index } – nur die letzte Löschung
   const [overCol, setOverCol] = useState(null);
   const [dragId, setDragId] = useState(null);
+  const [landed, setLanded] = useState(null); // { id, n } – zuletzt gelandete Karte; n startet die Markierung neu
   const boardRef = useRef(null);
   const rootRef = useRef(null);
   const drag = useRef(null);
   const focusAfter = useRef(null);
+  const revealAfter = useRef(null); // { id, keepFocus } – Karte nach dem nächsten Rendern ins Bild holen
   const undoMsgId = useId();
 
   const mine = tasks.filter(t => t.project === project.id);
@@ -170,17 +177,56 @@ export default function TaskBoard({ project, tasks, setTasks, headingId }) {
   // Gleicher Text zweimal hintereinander wird sonst nicht erneut angesagt
   const announce = msg => setLive(m => (m === msg ? `${msg} ` : msg));
 
-  // Die Karte wandert beim Statuswechsel in eine andere Liste und wird neu erzeugt – der Fokus folgt ihr.
+  // Karte ins Bild holen. Schmales Board: Zielspalte an den Anfang – sonst schnappt Scroll-Snap nach dem Ziehen auf
+  // „Offen“ zurück. Dann senkrecht so wenig wie nötig; keep (Titelfeld nach „Aufgabe anlegen“) bleibt dabei im Bild.
+  const reveal = (card, { block = 'nearest', keep = null } = {}) => {
+    const board = boardRef.current;
+    const col = card.closest('[data-drop-status]');
+    if (board && col && board.scrollWidth > board.clientWidth) {
+      board.scrollLeft = Math.min(col.offsetLeft, board.scrollWidth - board.clientWidth);
+    }
+    if (!keep) return card.scrollIntoView({ block, inline: 'nearest' });
+    const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom) || 0;
+    const need = card.getBoundingClientRect().bottom - (window.innerHeight - pad);
+    const dy = Math.min(need, keep.getBoundingClientRect().top - 16);
+    if (dy > 0) window.scrollBy(0, dy);
+  };
+
+  const mark = id => setLanded(l => ({ id, n: (l?.n || 0) + 1 }));
+
+  // Die Karte wandert beim Statuswechsel in eine andere Liste und wird neu erzeugt – Blick und Fokus folgen ihr.
   useLayoutEffect(() => {
+    const root = rootRef.current;
+    const r = revealAfter.current;
+    revealAfter.current = null;
+    const card = r && boardRef.current?.querySelector(`[data-task="${CSS.escape(r.id)}"]`);
+    const keep = r?.keepFocus && document.activeElement !== document.body ? document.activeElement : null;
+    if (card) reveal(card, { keep });
     const f = focusAfter.current;
     if (!f) return;
     focusAfter.current = null;
-    const root = rootRef.current;
     const el = f.undo ? root?.querySelector('[data-undo]')
       : f.heading ? document.getElementById(headingId)
         : root?.querySelector(`[data-task="${CSS.escape(f.id)}"] [data-ctl="${f.ctl}"]`);
-    el?.focus();
+    el?.focus({ preventScroll: Boolean(card) });
   });
+
+  // Tiefer Link #/projekte/<projekt>/<aufgabe>: Karte ins Bild, Fokus, einmal markieren. Unbekannte ID: still nichts.
+  useLayoutEffect(() => {
+    if (!taskId) return;
+    const card = boardRef.current?.querySelector(`[data-task="${CSS.escape(taskId)}"]`);
+    if (!card) return;
+    reveal(card, { block: 'center' });
+    card.focus({ preventScroll: true });
+    mark(taskId);
+  }, [taskId]); // eslint-disable-line react-hooks/exhaustive-deps -- nur beim Wechsel der Aufgabe
+
+  // Markierung nach kurzer Zeit wieder weg (die Bewegung selbst dauert 280 ms, siehe .is-landed)
+  useEffect(() => {
+    if (!landed) return;
+    const t = setTimeout(() => setLanded(null), LANDED_MS);
+    return () => clearTimeout(t);
+  }, [landed]);
 
   useEffect(() => () => { // Aufräumen, falls mitten im Ziehen weg-navigiert wird
     const d = drag.current;
@@ -191,6 +237,8 @@ export default function TaskBoard({ project, tasks, setTasks, headingId }) {
     if (!STATUSES.includes(to) || task.status === to) return;
     setTasks(all => all.map(t => (t.id === task.id ? { ...t, status: to } : t)));
     announce(`„${task.title}“ verschoben nach ${statusLabel[to]}.`);
+    revealAfter.current = { id: task.id };
+    mark(task.id);
     if (focusCtl) focusAfter.current = { id: task.id, ctl: focusCtl };
   };
 
@@ -208,6 +256,8 @@ export default function TaskBoard({ project, tasks, setTasks, headingId }) {
     setTasks(all => (all.some(t => t.id === task.id) ? all : [...all.slice(0, index), task, ...all.slice(index)]));
     setUndo(null);
     announce(`„${task.title}“ wiederhergestellt in ${statusLabel[task.status]}.`);
+    revealAfter.current = { id: task.id };
+    mark(task.id);
     focusAfter.current = { id: task.id, ctl: 'status' };
   };
 
@@ -217,6 +267,9 @@ export default function TaskBoard({ project, tasks, setTasks, headingId }) {
     const task = { id: `t-${uid()}`, project: project.id, title, status: 'todo', assignee, due };
     setTasks(all => [...all, task]);
     announce(`„${title}“ angelegt in ${statusLabel.todo}.`);
+    // Fokus bleibt im Titelfeld (schnell mehrere anlegen) – die Karte kommt ins Bild, soweit das Feld sichtbar bleibt
+    revealAfter.current = { id: task.id, keepFocus: true };
+    mark(task.id);
   };
 
   // ---- Ziehen mit Pointer Events (Maus, Finger, Stift) ----
@@ -313,7 +366,7 @@ export default function TaskBoard({ project, tasks, setTasks, headingId }) {
         {columns.map(({ status, list }) => (
           <Column key={status} status={status} count={list.length} over={overCol === status}>
             {list.map(t => (
-              <TaskCard key={t.id} task={t} dragging={dragId === t.id} pointer={pointerProps(t)}
+              <TaskCard key={t.id} task={t} dragging={dragId === t.id} landed={landed?.id === t.id} pointer={pointerProps(t)}
                 onStatus={(task, to) => setStatus(task, to, 'status')} onDelete={remove} />
             ))}
           </Column>

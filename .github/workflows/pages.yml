@@ -5,6 +5,8 @@
 # Solange survey/index.html fehlt, wird nichts deployt und der Lauf bleibt grün.
 # Seit r06 zusätzlich der UI-Entwurf aus prototype/ unter /prototyp/ (Vite-Build). Ein kaputter Prototyp hält den
 # Deploy der Umfrage nicht auf: Dann bleibt /prototyp/ weg, die Umfrage geht trotzdem raus (check.yml prüft den Build im PR).
+# Schutz der Umfrage: Prüfsumme von _site/index.html vor dem Prototyp-Build, Vergleich vor dem Upload; Build mit Zeitlimit,
+# damit ein hängendes npm ci keinen Umfrage-Hotfix aufhält; scripts/check-prototype.mjs prüft den Build auf externe Aufrufe.
 #
 # Einmalig nötig: Settings → Pages → Build and deployment → Source: "GitHub Actions".
 # configure-pages versucht das über `enablement` selbst. Mit dem Standard-GITHUB_TOKEN
@@ -55,19 +57,26 @@ jobs:
         run: |
           mkdir -p _site
           cp dist/vave-discovery-umfrage.html _site/index.html
-      - name: Prototyp bauen
+          sha256sum _site/index.html > "$RUNNER_TEMP/umfrage.sha256"
+      - name: Prototyp bauen und prüfen
         id: proto
         if: steps.survey.outputs.present == 'true' && hashFiles('prototype/package-lock.json') != ''
         continue-on-error: true
+        timeout-minutes: 10
         working-directory: prototype
         run: |
           npm ci --no-audit --no-fund
           npm run build
+          node ../scripts/check-prototype.mjs
       - name: Prototyp einhängen (/prototyp/)
         if: steps.proto.outcome == 'success'
+        continue-on-error: true
         run: |
           mkdir -p _site/prototyp
           cp -r prototype/dist/. _site/prototyp/
+      - name: Umfrage unverändert?
+        if: steps.survey.outputs.present == 'true'
+        run: sha256sum -c "$RUNNER_TEMP/umfrage.sha256"
       - if: steps.survey.outputs.present == 'true'
         uses: actions/configure-pages@v5
         with:

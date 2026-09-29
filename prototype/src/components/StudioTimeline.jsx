@@ -6,8 +6,9 @@ const DAY = 1440;
 const range = ([a, b]) => `${fmtHM(a)}–${fmtHM(b)}`;
 const shortRange = ([a, b]) => (a % 60 || b % 60 ? range([a, b]) : `${String(a / 60).padStart(2, '0')}–${String(b / 60).padStart(2, '0')}`);
 
-// SVG-Zeitleiste über 24 h Frankfurter Zeit: Arbeitszeit je Studio, gemeinsames Fenster, Linie „jetzt“.
+// SVG-Zeitleiste über 24 h Frankfurter Zeit: Arbeitszeit je Studio (Mo–Fr), gemeinsames Fenster, Linie „jetzt“.
 // Maße in Pixeln nach gemessener Breite, damit die Schrift auf dem Handy nicht schrumpft.
+// Keine Bewegung beim Öffnen; die Linie springt mit der Uhr (alle 15 s, Bruchteile eines Pixels).
 // Für Screenreader: SVG ist aria-hidden, dieselben Angaben stehen in Satz und Tabelle.
 export default function StudioTimeline({ studios, now }) {
   const wrapRef = useRef(null);
@@ -55,6 +56,11 @@ export default function StudioTimeline({ studios, now }) {
               return (
                 <g key={r.id}>
                   <text className="tl-label" x={0} y={y + rowH / 2} dominantBaseline="central">{r.name}</text>
+                  {r.segs.length === 0 && (
+                    <text className="tl-empty" x={labelW + plotW / 2} y={y + rowH / 2} textAnchor="middle" dominantBaseline="central">
+                      Wochenende
+                    </text>
+                  )}
                   {r.segs.map(seg => {
                     const w = x(seg[1]) - x(seg[0]);
                     return (
@@ -76,7 +82,7 @@ export default function StudioTimeline({ studios, now }) {
                 {String(h).padStart(2, '0')}
               </text>
             ))}
-            <line className="tl-now" x1={nowX} x2={nowX} y1={top - 10} y2={top + bodyH + 6} pathLength="1" />
+            <line className="tl-now" x1={nowX} x2={nowX} y1={top - 10} y2={top + bodyH + 6} />
             <text className="tl-now-label" x={nowX} y={14} textAnchor={nowAnchor}>jetzt {fmtTime(now, HOME_TZ)}</text>
           </svg>
         )}
@@ -85,7 +91,7 @@ export default function StudioTimeline({ studios, now }) {
       {/* Tabellen ignorieren width: 1px – deshalb versteckt der Container, nicht die Tabelle */}
       <div className="visually-hidden">
       <table>
-        <caption>Arbeitszeit der Studios ({OPEN_HOUR}–{CLOSE_HOUR} Uhr Ortszeit), umgerechnet in Frankfurter Zeit</caption>
+        <caption>Arbeitszeit der Studios heute (Mo–Fr {OPEN_HOUR}–{CLOSE_HOUR} Uhr Ortszeit), umgerechnet in Frankfurter Zeit</caption>
         <thead>
           <tr><th scope="col">Studio</th><th scope="col">Ortszeit jetzt</th><th scope="col">Arbeitszeit in Frankfurter Zeit</th></tr>
         </thead>
@@ -94,7 +100,7 @@ export default function StudioTimeline({ studios, now }) {
             <tr key={r.id}>
               <th scope="row">{r.name}</th>
               <td>{fmtTime(now, r.tz)} Uhr</td>
-              <td>{r.segs.map(range).join(' und ')} Uhr</td>
+              <td>{r.segs.length ? `${r.segs.map(range).join(' und ')} Uhr` : 'keine (Wochenende)'}</td>
             </tr>
           ))}
         </tbody>

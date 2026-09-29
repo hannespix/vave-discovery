@@ -1,11 +1,13 @@
 // Nachtragen: Datum, Beginn, Dauer (1:30 · 90 · 1,5 · 1,5 h), Projekt, Notiz. Fehler stehen am Feld.
+// Bucht Stopp nichts (Timer über 24 h), kommen Datum, Beginn, Projekt und Notiz als Vorbelegung (prefill).
 import { useRef, useState } from 'react';
 import { CircleAlert, Plus } from 'lucide-react';
 import { uid } from '../../lib/store.js';
 import { fmtDuration } from '../../lib/format.js';
 import { me } from '../../data/sample.js';
 import ProjectSelect, { projectInfo } from './ProjectSelect.jsx';
-import { dayTitle, durationMessage, endOf, parseDuration, suggestStart, toMinutes, todayIso } from './timeUtils.js';
+import Confirmation, { makeNote } from './Confirmation.jsx';
+import { dayPhrase, durationMessage, endOf, parseDuration, rowId, suggestStart, toMinutes, todayIso } from './timeUtils.js';
 
 export function FieldError({ id, children }) {
   if (!children) return null;
@@ -29,7 +31,7 @@ function validate({ date, start, duration, today }) {
 
 const describe = (...ids) => ids.filter(Boolean).join(' ') || undefined;
 
-export default function ManualEntry({ entries, onAdd, defaultProject, weekStartIso }) {
+export default function ManualEntry({ entries, onAdd, onReveal, prefill, defaultProject, weekStartIso }) {
   const today = todayIso();
   const [date, setDate] = useState(today);
   const [startInput, setStartInput] = useState(null); // null = Vorschlag verwenden
@@ -37,37 +39,64 @@ export default function ManualEntry({ entries, onAdd, defaultProject, weekStartI
   const [project, setProject] = useState(defaultProject);
   const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [saved, setSaved] = useState('');
+  const [status, setStatus] = useState(null);
+  const [fromTimer, setFromTimer] = useState(false);
+  const [seenPrefill, setSeenPrefill] = useState(prefill);
   const refs = { date: useRef(null), start: useRef(null), duration: useRef(null) };
+  const submitRef = useRef(null);
+
+  // Neue Vorbelegung vom Timer übernehmen – die Dauer bleibt leer, die trägt die Person selbst ein
+  if (prefill !== seenPrefill) {
+    setSeenPrefill(prefill);
+    if (prefill) {
+      setDate(prefill.date);
+      setStartInput(prefill.start);
+      setDuration('');
+      if (prefill.project) setProject(prefill.project);
+      setNote(prefill.note || '');
+      setSubmitted(false);
+      setStatus(null);
+      setFromTimer(true);
+    }
+  }
 
   // Beginn: bis zur ersten eigenen Eingabe das Ende des letzten Eintrags an diesem Tag
   const start = startInput ?? suggestStart(entries, date);
   const errors = validate({ date, start, duration, today });
   const shown = submitted ? errors : {};
   const parsed = parseDuration(duration);
-  const hint = duration.trim() && parsed.minutes ? `Ergibt ${fmtDuration(parsed.minutes)}.` : 'Zum Beispiel 1:30, 90, 1,5 oder 1,5 h.';
+  const hint = duration.trim() && parsed.minutes
+    ? `Ergibt ${fmtDuration(parsed.minutes)}.`
+    : fromTimer ? 'Datum und Beginn kommen vom Timer. Es fehlt nur die Dauer, zum Beispiel 1:30.' : 'Zum Beispiel 1:30, 90, 1,5 oder 1,5 h.';
 
   const submit = ev => {
     ev.preventDefault();
     setSubmitted(true);
     const first = ['date', 'start', 'duration'].find(k => errors[k]);
     if (first) {
-      setSaved('');
+      setStatus(null);
       refs[first].current?.focus();
       return;
     }
     const entry = { id: uid(), date, start, minutes: parsed.minutes, project, note: note.trim(), person: me.id };
     onAdd(entry);
     const info = projectInfo(project);
-    let message = `Gespeichert: ${fmtDuration(entry.minutes)} auf ${info.code}, ${dayTitle(date).long}, ${start}–${endOf(entry)} Uhr.`;
-    if (date < weekStartIso) message += ' Der Tag liegt vor dieser Woche und steht deshalb nicht in der Liste.';
-    setSaved(message);
+    const beforeWeek = date < weekStartIso;
+    setStatus(makeNote(
+      'ok',
+      `Gespeichert: ${fmtDuration(entry.minutes)} auf ${info.code}, ${dayPhrase(date)}, ${start}–${endOf(entry)} Uhr.` +
+        (beforeWeek ? ' Der Tag liegt vor dieser Woche und steht deshalb nicht in der Liste.' : ''),
+      beforeWeek ? null : { label: 'Anzeigen', whenHidden: rowId(entry.id), run: () => onReveal(entry.id) },
+    ));
     setDuration('');
     setNote('');
     setStartInput(null);
     setSubmitted(false);
-    // Fokus bleibt im Formular, auf dem Feld für den nächsten Eintrag
-    refs.duration.current?.focus();
+    setFromTimer(false);
+    // Fokus: mit Tastatur zurück auf „Dauer“ für den nächsten Eintrag. Am Touch-Gerät bleibt er auf dem Knopf –
+    // sonst öffnet sich die Bildschirmtastatur wieder und verdeckt die Bestätigung.
+    const touch = Boolean(window.matchMedia?.('(pointer: coarse)').matches);
+    (touch ? submitRef : refs.duration).current?.focus({ preventScroll: true });
   };
 
   return (
@@ -116,11 +145,11 @@ export default function ManualEntry({ entries, onAdd, defaultProject, weekStartI
             value={note} onChange={e => setNote(e.target.value)}
           />
         </div>
-        <button type="submit" className="btn btn-primary tt-submit">
+        <button ref={submitRef} type="submit" className="btn btn-primary tt-submit">
           <Plus aria-hidden="true" size={20} />
           Zeit eintragen
         </button>
-        <p className="tt-saved" role="status">{saved}</p>
+        <Confirmation note={status} />
       </form>
     </section>
   );

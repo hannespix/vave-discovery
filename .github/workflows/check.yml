@@ -1,4 +1,5 @@
-# npm run check und der Build des Prototyps (prototype/) auf jedem PR (und auf Knopfdruck).
+# npm run check (Umfrage) und der Build des Prototyps (prototype/) auf jedem PR (und auf Knopfdruck) – als zwei Jobs:
+# Ein kaputter Prototyp färbt nur die Zeile „prototype“ rot, der Check der Umfrage bleibt davon unberührt.
 # Pushes auf main prüft pages.yml, dort ist der Check die Vorstufe des Deploys.
 name: check
 
@@ -19,9 +20,20 @@ jobs:
           node-version: 22
           package-manager-cache: false
       - run: npm run check
-      - name: Prototyp bauen
+
+  prototype:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - name: Prototyp bauen und prüfen
         if: hashFiles('prototype/package-lock.json') != ''
         working-directory: prototype
         run: |
           npm ci --no-audit --no-fund
           npm run build
+          node ../scripts/check-prototype.mjs

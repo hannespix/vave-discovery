@@ -3,6 +3,9 @@ import { addDays, isoDay, weekStart } from '../../lib/format.js';
 
 const pad = n => String(n).padStart(2, '0');
 export const DAY_MIN = 24 * 60;
+const HOUR_MS = 3600000;
+export const LONG_RUN_MS = 10 * HOUR_MS; // Timer läuft länger: Hinweis „vergessen?“
+export const MAX_BOOK_MS = 24 * HOUR_MS; // darüber bucht Stopp nichts (Nachtragen und Bearbeiten erlauben höchstens 24 h)
 
 // Dauer aus freier Eingabe: „1:30“, „90“, „90 min“, „1,5“, „1.5“, „1,5 h“, „2 h“, „1 h 30“ → { minutes } oder { error }.
 // Ganze Zahl ohne Einheit = Minuten, Komma-/Punktzahl ohne Einheit = Stunden.
@@ -48,7 +51,7 @@ export const fromMinutes = min => {
   const x = ((Math.round(min) % DAY_MIN) + DAY_MIN) % DAY_MIN;
   return `${pad(Math.floor(x / 60))}:${pad(x % 60)}`;
 };
-export const endOf = e => fromMinutes((toMinutes(e.start) ?? 0) + e.minutes);
+export const endOf = e => fromMinutes((toMinutes(e.start) ?? 0) + (Number(e.minutes) || 0));
 export const clockOf = date => `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
 // „YYYY-MM-DD“ als lokales Datum (new Date('YYYY-MM-DD') wäre UTC und verrutscht westlich von Greenwich)
@@ -90,11 +93,17 @@ export function dayTitle(iso, now = new Date()) {
   return { name, dm: dm(date), long: `${LONG[(date.getDay() + 6) % 7]}, ${dm(date)}` };
 }
 
+// Für Bestätigungen: „heute“ oder mit Datum „Montag, 28.09.“
+export const dayPhrase = (iso, now = new Date()) => (iso === isoDay(now) ? 'heute' : dayTitle(iso, now).long);
+
+// Zeile eines Eintrags in der Wochenliste (Hervorhebung, „Anzeigen“)
+export const rowId = id => `tt-entry-${id}`;
+
 export const sumMinutes = list => list.reduce((s, e) => s + (Number(e.minutes) || 0), 0);
 
 // Vorschlag für „Beginn“: Ende des letzten Eintrags an diesem Tag, sonst 09:00
 export function suggestStart(entries, date) {
-  const ends = entries.filter(e => e.date === date).map(e => (toMinutes(e.start) ?? 0) + e.minutes);
+  const ends = entries.filter(e => e.date === date).map(e => (toMinutes(e.start) ?? 0) + (Number(e.minutes) || 0));
   if (!ends.length) return '09:00';
   const last = Math.max(...ends);
   return last >= DAY_MIN ? '23:59' : fromMinutes(last);

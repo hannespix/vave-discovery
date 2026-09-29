@@ -1,6 +1,6 @@
 # STATE — lebender Zustand (max. 150 Zeilen, wird jede Runde fortgeschrieben)
 
-Stand: **r06 läuft** (UI-Entwurf Prototyp, Wunsch Hannes; live unter `/prototyp/`, Kritik folgt) · 2026-09-29 · **M1** · **verschickt, Antwort ausstehend**
+Stand: Ende r06 → **r07** (Prototyp ausbauen, Wunsch Hannes) · 2026-09-29 · **M1** · **verschickt, Antwort ausstehend**
 
 ## Aktueller Meilenstein
 M1 — Umfrage, **live und eingefroren**. Hannes (Chat, 2026-09-29): „Jetzt mach mal fertig! Ich will es abschicken!“
@@ -10,23 +10,30 @@ flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 vers
   Messwirkung, jede mit Deploy-Zeit hier. In r05 Beobachtetes bleibt liegen, bis ZZ 3 es einordnet. **Ausnahme E11**
   (Hannes, 2026-09-29): Vorwort kündigt den UI-Entwurf an, der Link erscheint erst nach dem Senden (Station 7).
 - **Live-Stände** (Merge auf `main` ≈ Deploy, 2026-09-29, +02:00): #5 Hotfix 06:49 · #6 08:24 · #7 (K2) 09:02 · #8 (K1:
-  Station 1, „Halbzeit.“, `.stage` `overflow-x: clip` gegen Zoom-Sprung) 10:03 · #10 (E11) folgt. Der Export trägt
+  Station 1, „Halbzeit.“, `.stage` `overflow-x: clip` gegen Zoom-Sprung) 10:03 · #10 (E11) 15:32. Der Export trägt
   keinen Stand, `respondent` ist fest „Tobias“: Fassung und Person zeigen nur `startedAt` und der Absender der Mail.
+
+## Nebenstrang Prototyp (Wunsch Hannes, vor G2; Ausnahme zu D-001, Eintrag fehlt)
+- Live `/prototyp/` (#9 15:12, r06-Korrektur #11): React/Vite, Beispieldaten, kein Backend, Budgets nur in Stunden.
+  Die Umfrage verlinkt ihn erst nach dem Senden (E11). Recherche r07: `docs/research/07-saas-muster.md`.
+- **Vorschlag D-006 · Hannes · UI-Entwurf vor G2** — *Entscheidung:* Ein UI-Entwurf mit erfundenen Daten, ohne Backend,
+  ohne Rechnungs-, Buchhaltungs- und Mandantenlogik darf vor G2 entstehen und unter `/prototyp/` live sein; die Umfrage
+  verlinkt ihn erst nach dem Senden. *Grund:* Gesprächsgrundlage, zeigt Stil und Bedienidee, legt das Zielbild nicht
+  fest. *Kippt, wenn:* G2 ein anderes Zielbild wählt oder der Entwurf Antworten nachweislich prägt.
+- **P1 · r07 Kern-Workflows** (Auswahl aus der Recherche, Abschnitt 3): klares Gestaltungssystem (neutrale Leiste,
+  Farbrollen), ein Timer überall + Buchen aus der Aufgabe, Zeiten mit Timer/Nachtragen in einer Leiste und Wochenraster,
+  Befehlspalette ⌘K, Projekte als Zeilen mit Burn-up und „reicht bis KW“, Heute als eine Spalte. DoD: je Workflow ein
+  Playwright-Test (390/1280, hell/dunkel), ui-critic ≥ 8 in allen Dimensionen, red-team ohne „hoch“, kein Geld.
+- Offene Frage an Tobias (nach der Antwort): Freigabe von Stundenzetteln nötig? Kalender-Anbindung?
 
 ## Offene Gates
 - **G0** — Kriterien 3/3 erfüllt, Freigabe durch Hannes ausstehend (seit r03; M1 ging ohne Eintrag raus). Belege am
   Stand `f322688`: `npm run check` grün (28 Module, 14 Wünsche, 7 Rollen, 1 Export); `survey/modules.js` 28 Bausteine
   in 5 Gruppen (alltag 6, projekt 3, finanzen 10, gruppe 4, anbindung 5); Annahme D-002 in `DECISIONS.md`.
-- **G1** — 0/4 erfüllt, 1 Punkt nicht prüfbar (Stand `f322688`, live `bf121bf`).
-  - Nachweis `data/results/YYYY-MM-DD_tobias.json`: nicht erfüllt, dort nur `README.md` und `example.json`.
-  - ui-critic ≥ 8 in allen 8 Dimensionen: nicht erfüllt. r05 erste volle Bewertung (`2354545`, 7 Stationen): Tempo 7,
-    Bauchbedienung 7, Klarheit 8, Bewegung 8, Mobil 8, Zugänglichkeit 8, Vertrauen 9, Freude 7. K1/K2 nicht nachgeprüft.
-  - red-team ohne Bias-Falle „hoch“: nicht erfüllt. r05 (`2354545`) höchstens „mittel“, aber B1 (Mechanismus in r01
-    „hoch“) ist offen, lösbar nur in der Auswertung (D-005); das Vorwort wurde nach der Prüfung umgeschrieben (K2, E9).
-  - Testlauf einer unbeteiligten Person < 8 min: nicht erfüllt, nie durchgeführt (offen seit r03).
-  - Nicht prüfbar: „Antwort vollständig“ ist undefiniert. Neu: Die ROADMAP regelt weder den Versand vor den drei
-    Qualitätskriterien (seither nur per Urteil, ZZ 3, oder Ausnahme erreichbar) noch eine ausbleibende Antwort; der
-    Abbruchpfad nennt `docs/survey/interview-guide.md`, die Datei fehlt. Vorschläge unter „Offene Entscheidungen“.
+- **G1** — 0/4 erfüllt, 1 nicht prüfbar. Nachweis `data/results/…_tobias.json` fehlt · ui-critic ≥ 8 nicht erfüllt (r05
+  `2354545`: 7/7/8/8/8/8/9/7, K1/K2 ungeprüft) · red-team höchstens „mittel“, aber B1 offen (nur via D-005) und Vorwort
+  nach der Prüfung neu (E9) · Testlauf < 8 min nie gemacht. Nicht prüfbar: „vollständig“ undefiniert; ROADMAP regelt
+  weder Versand vor den Kriterien noch ausbleibende Antwort, `docs/survey/interview-guide.md` fehlt (→ Entscheidungen).
 
 ## Blocker
 - **B1 · Regel 1 schlägt Zielbild C bei Unwissen vor** (Nr. 1, seit r02). `keptBack` zählt nur `keep`, „Kenne ich
@@ -77,13 +84,10 @@ flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 vers
    von Tobias' Datei. Kommt sie früher: nur ablegen und prüfen (ZZ 4 bis `npm run check`), Brief und Rechnung erst
    danach, sonst beide Lesarten (ROADMAP, D-005) nebeneinander und gekennzeichnet.
 
-3. **Urteil am gemessenen Stand, nur lesen** (ui-critic + red-team, kein Builder, nach K1-Deploy; holt die entfallene
-   Nachprüfung nach) — Live-Link, `survey/index.html` am Deploy-SHA, `docs/design-principles.md`.
-   DoD: ui-critic bewertet alle 8 Dimensionen über alle 7 Stationen (390 × 844, 1280 × 800), zu jeder < 8 der Befund;
-   red-team prüft Bias am selben Stand, ausdrücklich Vorwort (E9) und K1. Jeder Befund und die fünf r05-Beobachtungen
-   (Kopf klebt nur eine Fensterhöhe, Tasten 1/2/3 und Enter ohne Sichtprüfung, `.sorted-note` 14,4 px, doppelte Ansage
-   Toast/Statuszeile, „Halbzeit“ je Seitenaufruf) sind eingeordnet: (a) ohne Messwirkung → Hotfix erlaubt, (b) mit
-   Messwirkung → Einschränkung im Brief und in der G1-Ausnahme. Keine Code-Änderung in diesem ZZ.
+3. **Urteil am gemessenen Stand, nur lesen** (ui-critic + red-team, kein Builder) — Live-Link am Deploy-SHA (inkl. E11).
+   DoD: alle 8 Dimensionen über 7 Stationen (390 × 844, 1280 × 800), Bias inkl. Vorwort (E9) und E11-Ankündigung; jeder
+   Befund und die fünf r05-Beobachtungen (Kopf, Tasten 1/2/3, `.sorted-note`, doppelte Ansage, „Halbzeit“) eingeordnet:
+   ohne Messwirkung → Hotfix erlaubt, mit → Einschränkung im Brief und in der G1-Ausnahme. Kein Code in diesem ZZ.
 
 4. **Eingang und Brief** (Auslöser: Tobias' Mail) — `data/results/YYYY-MM-DD_tobias.json` (+ `.md`),
    `docs/brief/<datum>-vibecoding-brief.md`.
@@ -91,35 +95,27 @@ flüchtig, Kontakt bisher über Matthias). Bewusst vor B1/D-005, E3, E7, E9 vers
    Tobias (sonst Zweig „mehr Personen“); Fassung über `startedAt` bestimmt; „vollständig“ nach ZZ 2 geprüft, Zweig
    benannt; `/brief` mit red-team, Abschnitt 12 wörtlich, Budget als Stufenlabel statt „x/100“. Danach `/gate G2`.
 
-5. **Zielbild-Rechnung vorbereiten** (für G2) — `scripts/zielbild.mjs` (neu), `package.json`, `docs/brief/probe-*`,
-   `.claude/agents/brief-writer.md` (Budget-Stufen, Vollständigkeit). Builder: A Rechnung · B Probe.
-   DoD: `npm run zielbild -- <datei>` rechnet ohne Code aus `survey/index.html` die sieben ROADMAP-Größen, die Regel
-   nach ROADMAP und nach D-005 (N als Parameter), die Konfidenz (±1 Reibung, ±10 `bb`, ±1 Stufe), den Kipppunkt und den
-   Abgleich mit `hypothesis.target`; in ROADMAP-Lesart gleich mit `hypothesis()` in ≥ 200 Zufallsprofilen und an allen
-   Schwellen (`bb` 0/35/50/65/100 × `keptBack` 2/3 × `backPain` 2,4/2,5). Probe an `data/results/example.json` (`bb` 55,
-   keine Stufe) läuft durch, Kopf „Probe, erfundene Daten“.
+5. **Zielbild-Rechnung vorbereiten** (für G2) — `scripts/zielbild.mjs`, `package.json`, `docs/brief/probe-*`, Brief-Agent.
+   DoD: `npm run zielbild -- <datei>` rechnet die sieben ROADMAP-Größen, Regel nach ROADMAP und D-005 (N als Parameter),
+   Konfidenz (±1 Reibung, ±10 `bb`, ±1 Stufe), Kipppunkt, Abgleich mit `hypothesis.target`; gleich mit `hypothesis()` in
+   ≥ 200 Zufallsprofilen und allen Schwellen; Probe an `example.json` mit Kopf „Probe, erfundene Daten“.
 
-**Gestrichen (durch den Versand überholt):** Alt 1 erledigt. Alt 2 „vor dem Einfrieren“ → ZZ 2 „vor dem Öffnen“.
-Alt 3a Zeitprobe sollte vor dem Versand über „Umfrage kürzen“ entscheiden; zwei Runden ohne Fortschritt → gestrichen,
-Tobias' Dauer ersetzt sie (G1-Ausnahme). Alt 3b → ZZ 1. Alt 4A/4B ändern, was Tobias sieht → gestrichen; 4C → ZZ 1.
-Alt 5 (in der Umfrage umsetzen, einfrieren, abnehmen) → gestrichen: Regeln → Auswertung (ZZ 2, 5), Abnahme → ZZ 3.
+**Gestrichen (durch den Versand überholt):** Alt 2 → ZZ 2 · 3a Zeitprobe (Tobias' Dauer ersetzt sie) · 3b, 4C → ZZ 1 ·
+4A/4B (ändern, was Tobias sieht) · 5 → Regeln ZZ 2/5, Abnahme ZZ 3. Details: `git show 5568d47:STATE.md`.
 
 ## Erledigt (letzte 5 Runden, älteres → git log)
-- r05 (PRs #5, #6, #7 gemergt und deployt; K1 `f322688` als PR offen): Hotfix #5 (Hannes' Screenshot) Reibungslinie am
-  Handy: p < 0 und Neustart bei gleichem Wert → p ∈ [0,1], kein Neustart zum selben Ziel (Auslenkung 189 258 → 9).
-  A Doppeltipp-Sperre 400 ms, Zurückholen nur über × bzw. Liste, Zonen als Knopf mit Anzahl. B Anleitung in der
-  Sortier-Einheit sichtbar bei 360×600, 390×664, 667×320, 844×340; quer drei Spalten; Desktop „Zonenkopf + 44 px“
-  ersetzt r03 „ganze Zone“. C ohne `budgetTouched` fragen 35/65 neu. D Vorwort „Vorab von Hannes“ (vierte Teilaufgabe,
-  bewusst). Kritik `2354545`: ui-critic FIX (7/7/8/8/8/8/9/7), red-team FIX (höchstens „mittel“), `hypothesis()` =
-  ROADMAP in 200 Profilen + 10 Grenzfällen. K2 (#7): Test-Merker ab erster Antwort, Vorwort 2 Absätze (Station 0 bei
-  390×844 1,59 statt 2,10 Bildschirme), Statuszeile, `noindex`. K1: nie eine ungesehene Karte sortieren, Zurückholen
-  hinter der Sperre, keine Knöpfe in Knöpfen, „Halbzeit.“ bei Karte 15. Nachprüfung auf Hannes' Wunsch entfallen.
+- r06 (Prototyp, #9–#11): UI-Entwurf in 3 Buildern (Hülle/Heute/Studios, Zeiten, Projekte). Kritik ui-critic FIX
+  (7/6/7/5/8/8/8/5), red-team FIX („mittel“: Vorprägung, Budget ohne Buchungen). Vorarbeit (Speicher-Abgleich,
+  Prüfer, Budget aus Buchungen, Ampel ungerundet, Wochenende) + Korrektur K1–K3 (Board-Rückmeldung, tiefer Link,
+  kurze Wege, Bestätigung am Eintrag, Timer > 24 h bucht nicht, 3 Farben, keine Lade-Animation), CI gehärtet
+  (Prüfsumme Umfrage, `check:prototype`). E11: Ankündigung im Vorwort, Link nach dem Senden (#10). Nachprüfung am r07-Stand.
+- r05 (#5–#8): Hotfix Reibungslinie (p ∈ [0,1]), Station 1 (Sperre 400 ms, Zonen-Knöpfe, Anleitung sichtbar), Vorwort,
+  Test-Merker, `noindex`. Kritik FIX/FIX (7/7/8/8/8/8/9/7). Nachprüfung K1/K2 auf Hannes' Wunsch entfallen (ZZ 3).
 - r04 (PR #4): Route als Knöpfe, Versand an `hannes@pix-el.de` (Desktop `.eml` mit Anhängen, Touch mailto bis 16 000
   Zeichen), eine Uhr `resultTime()`, `?test`, SVG-Finale. ui-critic FIX (8/5/7/8/7/7/8/7), red-team FIX („mittel“, E7).
 - r03 (PR #3 mit r02): B2–B4 behoben (Karte + drei Zonen bei 360–430 px, wischsicher, Rest-Knopf fragt nach), Reibung
   ohne Anker, Kaufen-oder-Bauen in 5 Stufen, Ziele ≥ 44 px, Schrift ≥ 16 px, Kontrast ≥ 4,5:1. Kritik FIX/FIX.
-- r02: Namen generisch, Budget ohne Vorbelegung, `FRONT` = ROADMAP; beide BLOCK → B2–B4. Davor Basiswechsel (PR #2).
-- r01 (alter Katalog, ersetzt): red-team BLOCK (B1-Mechanismus „hoch“).
+- r02/r01: Namen generisch, `FRONT` = ROADMAP, BLOCK → B2–B4; Basiswechsel (PR #2); r01 BLOCK (B1 „hoch“).
 
 ## Gelernt (kurz, was künftige Runden wissen müssen)
 - QuoJob-Kritik ist fast nur UX/Starrheit → A ist Arbeitshypothese, entschieden wird in G2. VAVE ist eine Gruppe
@@ -137,8 +133,10 @@ Alt 5 (in der Umfrage umsetzen, einfrieren, abnehmen) → gestrichen: Regeln →
   → Timings als Konstanten in den Auftrag, nach dem Merge alle Tests gemeinsam.
 - r05: Zwei Runden ohne Fortschritt → Zeitprobe gestrichen, Versandprobe halbiert. Entscheidungen fallen im Chat,
   nicht in `DECISIONS.md` → fertige Absätze anbieten, Auslöser nennen.
-- r05: Export ohne Stand und fester `respondent` → Fassung und Person nur über `startedAt` und Absender; beides gehört
-  in eine zweite Erhebung (E7a).
+- r05: Export ohne Stand, fester `respondent` → Fassung und Person nur über `startedAt` und Absender (E7a).
+- r06: Parallele Builder mergen konfliktfrei, wenn der Orchestrator gemeinsame Verträge vorab committet (Speicher,
+  Prüfer, Budget) und Dateien strikt verteilt; Kind-Effekte laufen vor dem App-Effekt (Fokus-Vertrag). Headless-Chromium
+  vertraut dem Proxy nicht (nicht umgehen) → Designrecherche über Bild-Download mit curl, Bilder nur im Scratchpad.
 - UI-Lehren r02–r05 (Layout, Timing, Kopfzeile) für eine zweite Erhebung und den Prototyp: `git show 5568d47:STATE.md`.
 - Versand ohne Server: mailto hat keine Anhänge, `.eml` öffnet am Handy nicht als Entwurf, `canShare` prüft keine
   Dateitypen; headless prüft nur die URL → echte Geräte. Eine Uhr je Export; Markierungen in den Zustand, nicht die URL.
@@ -146,5 +144,6 @@ Alt 5 (in der Umfrage umsetzen, einfrieren, abnehmen) → gestrichen: Regeln →
   Menschen-Aufgaben brauchen Datum oder Auslöser. Ergebnisse immer in Git committen.
 
 ## Nächste Runde startet mit
-r06 zu Ende führen (Korrekturschleife Prototyp, Gatekeeper). Danach ZZ 1: Hannes' Testmail, Builder für `ingest`;
-ZZ 2 mit den Absätzen aus der Gatekeeper-Ausgabe r05. Kommt Tobias' Mail vorher: unverändert sichern, dann ZZ 4.
+r07 = P1 (Prototyp, Wunsch Hannes): Vorarbeit Gestaltungssystem + `lib/timer.js`, dann 3 Builder (Hülle/Palette/Heute,
+Zeiten, Projekte), Kritik, eine Korrektur. Umfrage: ZZ 1 (Testmail, `ingest`) und ZZ 2 bleiben offen; kommt Tobias'
+Mail vorher: unverändert sichern, dann ZZ 4.
