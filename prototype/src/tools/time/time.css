@@ -1,0 +1,164 @@
+/* Zeiterfassung (Builder B) – nur Tokens aus tokens.css, keine eigenen Farbwerte. Präfix .tt-, Handy zuerst. */
+
+.tt { display: grid; gap: var(--s-5); min-width: 0; }
+.tt-head { display: grid; gap: var(--s-2); }
+.tt-lead { max-width: 42ch; }
+
+.tt-grid { display: grid; gap: var(--s-5); align-items: start; }
+.tt-col { display: grid; gap: var(--s-5); min-width: 0; }
+@media (min-width: 1024px) {
+  .tt-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+}
+
+.tt-card { display: grid; gap: var(--s-4); align-content: start; min-width: 0; }
+@media (max-width: 479px) {
+  .tt .tt-card { padding: var(--s-4); }
+}
+.tt-card-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-2) var(--s-3); }
+.tt-card-meta { color: var(--c-ink-2); font-size: 0.9375rem; }
+.tt-optional { font-weight: 350; color: var(--c-ink-2); }
+.tt ::placeholder { color: var(--c-ink-3); opacity: 1; }
+.tt-empty { color: var(--c-ink-2); }
+
+/* Projektauswahl mit Studiofarbe */
+.tt-swatch {
+  display: inline-block; flex: none; width: 12px; height: 12px; border-radius: 50%;
+  border: 1.5px solid var(--c-line-strong);
+}
+.tt-select { position: relative; min-width: 0; }
+.tt-select .select { padding-left: 36px; text-overflow: ellipsis; }
+.tt-select-swatch { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+
+/* Timer */
+.tt-clock-panel {
+  display: grid; gap: var(--s-1); justify-items: center; text-align: center;
+  padding: var(--s-5) var(--s-4); border-radius: var(--radius-l);
+  background: var(--c-bg-2); color: var(--c-ink);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.tt-clock-panel[data-running="true"] { background: var(--c-lime); color: var(--c-lime-ink); }
+.tt-clock {
+  font-size: clamp(3rem, 15vw, 4.75rem); font-weight: 600; line-height: 1; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+/* Readex Pro hat keine Tabellenziffern (tnum wirkt nicht) – feste Zelle je Ziffer, die Uhr springt nicht */
+.tt-clock-digits { display: inline-flex; }
+.tt-clock-digit { display: inline-block; width: 1ch; text-align: center; }
+.tt-clock-sub { font-size: 0.9375rem; color: var(--c-ink-2); }
+.tt-clock-panel[data-running="true"] .tt-clock-sub { color: var(--c-lime-ink); }
+
+.tt-bigbtn {
+  width: 100%; min-height: 64px; gap: var(--s-3);
+  font-size: 1.25rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.tt-bigbtn[data-running="true"] { background: var(--c-ink); border-color: var(--c-ink); color: var(--c-bg); }
+.tt-bigbtn[data-running="true"]:hover { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-accent-ink); }
+.tt-announce, .tt-saved { font-size: 0.9375rem; color: var(--c-ink-2); }
+/* Leere Live-Regionen bleiben im DOM (sonst keine Ansage), sollen aber keinen Abstand erzeugen */
+.tt-announce:empty, .tt-saved:empty { margin-top: calc(-1 * var(--s-4)); }
+
+/* Formulare */
+.tt-form { display: grid; gap: var(--s-4); container-type: inline-size; }
+/* Datums- und Zeitfelder schrumpfen in Chrome nicht unter ~160 px: erst ab genug Breite nebeneinander */
+.tt-form-row { display: grid; gap: var(--s-4) var(--s-3); grid-template-columns: minmax(0, 1fr); align-items: start; }
+.tt-submit { width: 100%; }
+@container (min-width: 21rem) {
+  .tt-form-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tt-form-dur { grid-column: 1 / -1; }
+}
+@container (min-width: 26rem) {
+  .tt-submit { width: auto; justify-self: start; }
+}
+@container (min-width: 32rem) {
+  .tt-form-row { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .tt-form-dur { grid-column: auto; }
+}
+.tt-hint { font-size: 0.875rem; color: var(--c-ink-2); }
+.tt-error {
+  display: flex; gap: var(--s-2); align-items: flex-start;
+  font-size: 0.9375rem; font-weight: 500; line-height: 1.35; color: var(--c-danger);
+}
+.tt-error svg { flex: none; margin-top: 1px; }
+.tt .input[aria-invalid="true"] { border-color: var(--c-danger); }
+/* Datum/Uhrzeit: hat der Kalender-/Uhr-Knopf im Feld den Fokus, greift :focus(-visible) am Feld nicht – Ring trotzdem zeigen */
+.tt input[type="date"]:focus-within, .tt input[type="time"]:focus-within { box-shadow: var(--focus); border-color: var(--c-accent); }
+
+/* Liste der Woche */
+.tt-weeksum { display: flex; align-items: baseline; gap: var(--s-2); }
+.tt-weeksum-label { color: var(--c-ink-2); font-size: 0.9375rem; }
+.tt-weeksum strong { font-size: 1.25rem; font-weight: 600; }
+.tt-day { display: grid; gap: var(--s-1); container-type: inline-size; }
+.tt-day + .tt-day { padding-top: var(--s-4); border-top: 1px solid var(--c-line); }
+.tt-day-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-1) var(--s-2); font-size: 1rem; font-weight: 600; }
+.tt-day-date { color: var(--c-ink-2); font-weight: 400; }
+.tt-day-sum { margin-left: auto; }
+.tt-entries { list-style: none; margin: 0; padding: 0; display: grid; }
+
+.tt-entry {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "dot main dur" "dot main act";
+  column-gap: var(--s-3); align-items: center; padding: var(--s-2) 0;
+}
+.tt-entry + .tt-entry { border-top: 1px solid var(--c-line); }
+.tt-entry-swatch { grid-area: dot; align-self: start; margin-top: 6px; }
+.tt-entry-main { grid-area: main; min-width: 0; }
+.tt-entry-title, .tt-entry-meta { overflow-wrap: anywhere; }
+.tt-entry-title strong { font-weight: 600; }
+.tt-entry-meta { font-size: 0.9375rem; color: var(--c-ink-2); }
+.tt-entry-dur { grid-area: dur; justify-self: end; font-weight: 600; white-space: nowrap; }
+.tt-entry-actions { grid-area: act; justify-self: end; display: flex; }
+.tt-danger:hover { background: var(--c-danger-soft); color: var(--c-danger); }
+@container (min-width: 30rem) {
+  .tt-entry { grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "dot main dur act"; }
+}
+
+.tt-entry-editing { display: block; margin: var(--s-2) 0; padding: var(--s-4); border-radius: var(--radius); background: var(--c-bg-2); }
+.tt-edit { display: grid; gap: var(--s-3); }
+.tt-edit-row { display: grid; gap: var(--s-3); }
+@container (min-width: 30rem) {
+  .tt-edit-row { grid-template-columns: minmax(0, 8rem) minmax(0, 1fr); }
+}
+
+/* Hinweis mit Rückgängig – unten im Blick, ohne die Seite zu verschieben */
+.tt-toast-region {
+  position: fixed; z-index: 40; left: var(--s-4); right: var(--s-4);
+  bottom: calc(var(--s-4) + env(safe-area-inset-bottom, 0px));
+  display: flex; justify-content: center; pointer-events: none;
+}
+.tt-toast {
+  pointer-events: auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: var(--s-2) var(--s-3); width: min(100%, 34rem); padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4);
+  border-radius: var(--radius-l); background: var(--c-ink); color: var(--c-bg); box-shadow: var(--shadow-2);
+}
+.tt-toast p { padding: var(--s-2) 0; }
+.tt-toast-btn { background: transparent; border-color: var(--c-bg); color: var(--c-bg); }
+.tt-toast-btn:hover { background: var(--c-lime); border-color: var(--c-lime); color: var(--c-lime-ink); }
+
+/* Wochenblick */
+.tt-chart { display: block; width: 100%; overflow: visible; }
+.tt-axis { stroke: var(--c-control); stroke-width: 1.5; }
+.tt-bar { fill: var(--c-accent-text); }
+.tt-bar.is-today { fill: var(--c-lime); stroke: var(--c-line-strong); stroke-width: 1.5; }
+.tt-chart-value { fill: var(--c-ink); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tt-chart-day { fill: var(--c-ink-2); font-size: 13px; font-weight: 500; }
+.tt-chart-day.is-future { fill: var(--c-ink-3); }
+.tt-chart-date { fill: var(--c-ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.tt-chart-day.is-today, .tt-chart-date.is-today { fill: var(--c-ink); font-weight: 700; }
+
+.tt-sub { font-size: 1rem; font-weight: 600; }
+.tt-projects { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); }
+.tt-project { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px var(--s-3); align-items: center; }
+.tt-project-name { min-width: 0; overflow-wrap: anywhere; }
+.tt-project-name strong { font-weight: 600; }
+.tt-project-value { font-weight: 600; white-space: nowrap; }
+.tt-project-share { font-weight: 400; color: var(--c-ink-2); }
+.tt-project-bar { grid-column: 2 / -1; height: 6px; border-radius: 999px; background: var(--c-bg-2); overflow: hidden; }
+.tt-project-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--c-accent-text); }
+
+/* Bewegung nur, wenn erwünscht: Balken wachsen einmal beim Öffnen (≤ 600 ms), Hinweis gleitet ein */
+@media (prefers-reduced-motion: no-preference) {
+  .tt-bar { transform-box: fill-box; transform-origin: 50% 100%; animation: tt-grow 520ms var(--ease) both; }
+  .tt-toast { animation: tt-rise var(--dur) var(--ease) both; }
+}
+@keyframes tt-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes tt-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
