@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Inventory · Playing with Fire</title>
+<link rel="stylesheet" href="../vendor/reveal/reset.css">
+<link rel="stylesheet" href="../vendor/reveal/reveal.css">
+<link rel="stylesheet" href="../shared/campfire.css">
+<link rel="stylesheet" href="../shared/deck.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ── Level 3 · The inventory: what the words mean ────────────────── -->
+<!-- Item cards come from shared/lore.js (ITEMS). -->
+
+<section class="level">
+  <div class="cols wr">
+    <div class="pic"><img class="art art-square" src="../art/items-sheet.svg" alt="An inventory grid of pixel items, one per term"></div>
+    <div>
+      <p class="lvl">Level 3</p>
+      <h1>The Inventory</h1>
+      <p class="lead">What the words mean. Ten items, explained with booths.</p>
+      <p class="clock">0:23 · Beginner</p>
+    </div>
+  </div>
+  <aside class="notes">
+    Level three: the inventory. These are the ten words everybody uses, and every term is an item with stats:
+    rarity, effect, and a "watch out". We explain them with VAVE's world, not with maths.
+  </aside>
+</section>
+
+<section>
+  <div class="cols">
+    <div>
+      <p class="kicker">Mental model 1 · Next word</p>
+      <h2 class="sm">It predicts the next word</h2>
+      <p class="lead">A very well-read autocomplete. It doesn't <em>know</em>, it <em>continues</em>.</p>
+      <p class="small mt">Live: the Token Oracle. Turn up the temperature and watch it get wild.</p>
+    </div>
+    <div class="box">
+      <p class="label">The client wants it …</p>
+      <ul class="bars">
+        <li>bigger <span class="bar w9"></span></li>
+        <li>cheaper <span class="bar w6"></span></li>
+        <li>yesterday <span class="bar w4"></span></li>
+        <li>greener <span class="bar w2"></span></li>
+        <li>purple <span class="bar w1"></span></li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    First mental model: it predicts the next word. A very well-read autocomplete; it doesn't know, it continues.
+    In the Token Oracle it predicts the next word, and when we turn up the temperature it gets wild.
+  </aside>
+</section>
+
+<section>
+  <div class="cols wr">
+    <div class="pic"><svg data-px="circle" data-scale="8" aria-label="A campfire with a circle of light. Messages inside the light are bright, messages in the dark are dim."></svg></div>
+    <div>
+      <p class="kicker">Mental model 2 · Circle of light</p>
+      <h2 class="sm">It only sees what's in the light</h2>
+      <ul class="chips">
+        <li>your prompt</li><li>your files</li><li>the chat so far</li>
+      </ul>
+      <ul class="chips dark mt">
+        <li>everything else</li>
+      </ul>
+      <p class="small mt">Live: the Context Circle. The fact walks into the dark, and the AI answers "coffee brown" with total confidence.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    Second model: the circle of light. Whatever is in the light, it can use; everything in the dark doesn't exist for it.
+    In the Context Circle the fact walks into the dark, and the AI answers "coffee brown" with total confidence.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">Mental model 3 · Tools → agents</p>
+  <h2 class="sm">With tools, it can act</h2>
+  <p class="lead">Hand the intern a phone, a laser measure and the shared calendar: suddenly it can do, not just say.</p>
+  <ol class="steps mt-lg">
+    <li><strong>Plan</strong>Reads the brief.</li>
+    <li><strong>Do</strong>Drafts the checklist, books the slot.</li>
+    <li class="hot-step"><strong>Check</strong>Looks at the result.</li>
+    <li><strong>Report</strong>Opens a pull request.</li>
+  </ol>
+  <aside class="notes">
+    Third model: give it tools and it can act. Hand the intern a phone, a laser measure and the shared calendar.
+    That's an agent: it plans, does, checks and reports back. Like a project manager who can actually call the carpenter.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">Inventory · 1 / 5</p>
+  <div class="item-pair"><div data-lore-item="llm"></div><div data-lore-item="token"></div></div>
+  <aside class="notes">
+    LLM: the know-it-all intern who has seen every booth on Pinterest.
+    Token: language Lego. That's why "strawberry" was hard: the model sees bricks, not letters.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">Inventory · 2 / 5</p>
+  <div class="item-pair"><div data-lore-item="context"></div><div data-lore-item="temperature"></div></div>
+  <aside class="notes">
+    Context window: the booth footprint. Old chat pushes the hero product into storage.
+    Temperature: the lighting dimmer, from museum showcase to club night.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">Inventory · 3 / 5</p>
+  <div class="item-pair"><div data-lore-item="hallucination"></div><div data-lore-item="rag"></div></div>
+  <aside class="notes">
+    Hallucination: the render that ignores gravity. Looks perfect, statics say no.
+    RAG: the material library it checks before answering.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">Inventory · 4 / 5</p>
+  <div class="item-pair"><div data-lore-item="embedding"></div><div data-lore-item="agent"></div></div>
+  <aside class="notes">
+    Embedding: the invisible moodboard where similar vibes stick together.
+    Agent: the PM who can actually call the carpenter.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">Inventory · 5 / 5</p>
+  <div class="item-pair"><div data-lore-item="mcp"></div><div data-lore-item="openweight"></div></div>
+  <aside class="notes">
+    MCP: the standard power socket on the fair floor. Any tool plugs in, any AI can use it. Remember it, it comes back.
+    Open weights and local models: buying the booth system instead of renting it.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">The landscape · no ranking</p>
+  <h2 class="sm">Pick one and start</h2>
+  <ul class="cards c2 mt">
+    <li><h3>Chat</h3><p>ChatGPT, Claude, Gemini, Mistral, DeepSeek</p></li>
+    <li><h3>Image and video</h3><p>Midjourney, Firefly, Flux, Runway, Veo, Sora</p></li>
+    <li><h3>Coding agents</h3><p>Claude Code, Codex, Copilot, Cursor, Jules</p></li>
+    <li><h3>Local</h3><p>Ollama, on your own laptop</p></li>
+  </ul>
+  <p class="small mt">The rankings change faster than this talk.</p>
+  <aside class="notes">
+    The landscape, with no ranking: chat AIs, image and video tools, coding agents, and local models with Ollama.
+    The rankings change faster than this talk, so pick one and start.
+  </aside>
+</section>
+
+<section class="statement">
+  <p class="kicker center">For client work</p>
+  <p class="big">The plan matters more than the logo</p>
+  <ul class="cards c4 mt">
+    <li><h3>Business terms</h3></li>
+    <li><h3>No training on your data</h3></li>
+    <li><h3>A signed data processing agreement</h3></li>
+    <li class="hot-card"><h3>The client's NDA decides what goes in</h3></li>
+  </ul>
+  <aside class="notes">
+    For work, the plan matters more than the logo: business terms, no training on your data,
+    and a signed data processing agreement.
+    And the client's NDA decides what may go in at all.
+  </aside>
+</section>
+
+<section data-savepoint="Inventory full. You now speak AI." data-level="3">
+  <aside class="notes">
+    Saving game. Inventory full. You now speak AI.
+    Next level: kindling, where we light our first fire.
+  </aside>
+</section>
+
+</div>
+</div>
+<script src="../vendor/reveal/reveal.js"></script>
+<script src="../vendor/reveal/plugin/notes.js"></script>
+<script src="../shared/pixel.js"></script>
+<script src="../shared/lore.js"></script>
+<script src="../shared/deck.js"></script>
+</body>
+</html>

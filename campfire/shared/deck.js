@@ -166,6 +166,214 @@
     return { w: s.w, h: s.h, frames: [spr(name, 0, 0)] };
   }
 
+  /* ── Lore (version 2): facts come from window.LORE (shared/lore.js), so every number lives in one place ──
+     Filled at load, before the pixel art is drawn and before reveal.js counts the fragments:
+       <div data-lore-item="token"></div>          item card: icon, name, full name, rarity, fun, booth world, watch out
+       <svg data-item-icon="mcp" data-scale="4">    just an item icon (PX.ITEMS, generic gem as fallback)
+       <ol data-lore-history="0-3"></ol>           timeline entries by index range ("" = all)
+       <div data-lore-myth="3"></div>              the claim; verdict stamp and why appear as one fragment
+       <div data-lore-boss="leaker"></div>         boss card; an <img> inside is the art, else ../art/boss-<id>.svg if it loads
+       <ul data-lore-quests="0-3"></ul>            side quests by index range ("" = all eight)
+       <ol data-lore-rules></ol>                   the fireplace rules
+       <section data-savepoint="Sentence." data-level="2">   save point: campfire, SAVING GAME… in steps, the sentence */
+  var LORE = window.LORE;
+
+  /* Small 16×16 icons for the lore (same '#' format as PX.ICONS); only added where pixel.js has no such name */
+  var LORE_ICONS = {
+    gem: [
+      '................', '................', '....########....', '...#..#..#..#...',
+      '..#..#....#..#..', '.##############.', '..#...#..#...#..', '...#...##...#...',
+      '....#..##..#....', '.....#.##.#.....', '......####......', '.......##.......',
+      '................', '................', '................', '................',
+    ],
+    sun: [
+      '.......##.......', '.......##.......', '..#..........#..', '...#..####..#...',
+      '.....######.....', '....########....', '....########....', '##..########..##',
+      '##..########..##', '....########....', '.....######.....', '...#..####..#...',
+      '..#..........#..', '.......##.......', '.......##.......', '................',
+    ],
+    screen: [
+      '................', '.##############.', '.#............#.', '.#.#..........#.',
+      '.#..#.........#.', '.#.#..###.....#.', '.#............#.', '.#.###.##.....#.',
+      '.#............#.', '.#.##.####....#.', '.#............#.', '.##############.',
+      '.......##.......', '.....######.....', '................', '................',
+    ],
+    snow: [
+      '.......#........', '.....#.#.#......', '......###.......', '.#.....#.....#..',
+      '..#....#....#...', '...#...#...#....', '....#..#..#.....', '###############.',
+      '....#..#..#.....', '...#...#...#....', '..#....#....#...', '.#.....#.....#..',
+      '......###.......', '.....#.#.#......', '.......#........', '................',
+    ],
+    knight: [
+      '................', '......#.#.......', '.....######.....', '....########....',
+      '...###.######...', '..##########....', '..##########....', '...###..####....',
+      '.......#####....', '......######....', '.....#######....', '.....#######....',
+      '....#########...', '...###########..', '...###########..', '................',
+    ],
+    trophy: [
+      '................', '...##########...', '.#.##########.#.', '.#.##########.#.',
+      '.#..########..#.', '..#.########.#..', '...#.######.#...', '......####......',
+      '.......##.......', '.......##.......', '......####......', '.....######.....',
+      '....########....', '....########....', '................', '................',
+    ],
+    cat: [
+      '................', '..#.........#...', '..##.......##...', '..###.....###...',
+      '..###########...', '.#############..', '.###..###..###..', '.###..###..###..',
+      '.#############..', '.######.######..', '..###########...', '...#########....',
+      '.....#####......', '................', '................', '................',
+    ],
+    go: [
+      '................', '.#############..', '.#...#...#...#..', '.#..###..#...#..',
+      '.#.#####.#...#..', '.#############..', '.#.#####.#...#..', '.#..###.###..#..',
+      '.#...#.#####.#..', '.#############..', '.#...#.#####.#..', '.#...#..###..#..',
+      '.#...#...#...#..', '.#############..', '................', '................',
+    ],
+    pizza: [
+      '................', '.##############.', '.##############.', '..#..........#..',
+      '..#.##....##.#..', '...#.##.....#...', '...#........#...', '....#..##..#....',
+      '....#..##..#....', '.....#....#.....', '.....#....#.....', '......#..#......',
+      '......#..#......', '.......##.......', '................', '................',
+    ],
+  };
+  if (PX) Object.keys(LORE_ICONS).forEach(function (k) { if (!PX.ICONS[k]) PX.ICONS[k] = LORE_ICONS[k]; });
+
+  /* One small icon per LORE.HISTORY entry, by index (the fire grows from spark to forge, then the camp) */
+  var HISTORY_ICONS = ['bubble', 'sun', 'screen', 'snow', 'knight', 'trophy', 'cat', 'go', 'spark', 'kindling', 'fire', 'smoke', 'pizza', 'forge', 'tent'];
+  var VERDICTS = { fact: 'Fact', myth: 'Myth', half: 'Half true', rumour: 'Rumour', depends: 'It depends' };
+  var KINDS = { ai: 'AI', code: 'Code', github: 'GitHub' };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  /** "3" | "0-4" | "" → indices within 0…n-1 */
+  function indices(spec, n) {
+    var m = String(spec || '').trim().match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+    var from = m ? Number(m[1]) : 0;
+    var to = m ? Number(m[2] != null ? m[2] : m[1]) : n - 1;
+    var out = [];
+    for (var i = from; i <= Math.min(to, n - 1); i++) out.push(i);
+    return out;
+  }
+  function svgWrap(body, w, h, scale, cls, label) {
+    var a11y = label ? ' role="img" aria-label="' + esc(label) + '"' : ' aria-hidden="true"';
+    return '<svg xmlns="http://www.w3.org/2000/svg" class="' + cls + '" viewBox="0 0 ' + w + ' ' + h + '" width="' + w * scale +
+      '" height="' + h * scale + '" shape-rendering="crispEdges" focusable="false"' + a11y + '>' + body + '</svg>';
+  }
+  function monoIcon(name, scale, cls) { return svgWrap(PX.icon(name), 16, 16, scale, cls); }
+  /** Item icon from PX.ITEMS (rows of '#', colour rows, { rows, pal } or SVG markup); the generic gem otherwise */
+  function itemIcon(id, scale, cls) {
+    var art = PX.ITEMS ? PX.ITEMS[id] : null;
+    try {
+      if (typeof art === 'function') art = art();
+      if (typeof art === 'string' && art.trim().charAt(0) === '<') return svgWrap(art, 16, 16, scale, cls);
+      var rows = art && (art.rows || art);
+      if (rows && rows.length && typeof rows[0] === 'string') {
+        var mono = /^[#.]+$/.test(rows.join(''));
+        var body = mono ? '<path fill="currentColor" d="' + PX.runPath(rows, '#', 0, 0) + '"/>' : PX.sprite(rows, { pal: art.pal });
+        return svgWrap(body, rows[0].length, rows.length, scale, cls);
+      }
+    } catch (e) { console.warn('deck: item icon "' + id + '" unreadable, using the gem'); }
+    return monoIcon('gem', scale, cls);
+  }
+  function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0]; }
+
+  function renderItem(el) {
+    var it = byId(LORE.ITEMS, el.getAttribute('data-lore-item'));
+    if (!it) throw new Error('unknown lore item "' + el.getAttribute('data-lore-item') + '"');
+    el.classList.add('item-card', 'rar-' + it.rarity);
+    el.innerHTML =
+      '<div class="item-head">' + itemIcon(it.id, 5, 'item-ico') +
+        '<div><p class="item-rar">' + esc(it.rarity) + ' · ' + esc(KINDS[it.kind] || it.kind) + '</p>' +
+        '<h3 class="item-name">' + esc(it.name) + '</h3><p class="item-full">' + esc(it.full) + '</p></div></div>' +
+      '<p class="item-fun">' + esc(it.fun) + '</p>' +
+      '<p><b class="k">In the booth world:</b> ' + esc(it.space) + '</p>' +
+      '<p><b class="k">Watch out:</b> ' + esc(it.watch) + '</p>';
+  }
+  function renderItemIcon(svg) {
+    var scale = Number(svg.getAttribute('data-scale')) || 4;
+    svg.outerHTML = itemIcon(svg.getAttribute('data-item-icon'), scale, 'lore-ico ' + (svg.getAttribute('class') || ''));
+  }
+  function renderHistory(el) {
+    el.classList.add('lore-timeline');
+    el.innerHTML = indices(el.getAttribute('data-lore-history'), LORE.HISTORY.length).map(function (i) {
+      var h = LORE.HISTORY[i];
+      return '<li><span class="tl-year">' + esc(h.year) + '</span>' + monoIcon(HISTORY_ICONS[i] || 'spark', 3, 'tl-ico') +
+        '<div><p class="tl-title">' + esc(h.title) + '</p><p class="tl-text">' + esc(h.text) + '</p></div></li>';
+    }).join('');
+  }
+  function renderMyth(el) {
+    var m = LORE.MYTHS[Number(el.getAttribute('data-lore-myth'))];
+    if (!m) throw new Error('unknown myth "' + el.getAttribute('data-lore-myth') + '"');
+    el.classList.add('myth');
+    el.innerHTML = '<p class="myth-claim">' + esc(m.claim) + '</p>' +
+      '<div class="myth-reveal fragment"><p class="stamp v-' + esc(m.verdict) + '">' + esc(VERDICTS[m.verdict] || m.verdict) + '</p>' +
+      '<p class="myth-why">' + esc(m.why) + '</p></div>';
+  }
+  function renderBoss(el) {
+    var id = el.getAttribute('data-lore-boss');
+    var b = byId(LORE.BOSSES, id);
+    if (!b) throw new Error('unknown boss "' + id + '"');
+    var img = el.querySelector('img');
+    el.classList.add('boss-card');
+    el.innerHTML = '<div class="boss-body"><p class="boss-tag">Boss</p><h3 class="boss-name">' + esc(b.name) + '</h3>' +
+      '<p class="boss-k">Attacks with</p><p class="boss-v">' + esc(b.hp) + '</p>' +
+      '<p class="boss-k">Weakness</p><p class="boss-v boss-weak">' + esc(b.weakness) + '</p></div>';
+    if (!img && el.getAttribute('data-art') !== 'none') {   // no art in the markup: try the file, drop it if missing
+      img = doc.createElement('img');
+      img.onerror = function () { if (img.parentNode) img.parentNode.removeChild(img); el.classList.add('no-art'); };
+      img.src = '../art/boss-' + id + '.svg';
+    }
+    if (img) {
+      img.classList.add('boss-art');
+      if (!img.getAttribute('alt')) img.setAttribute('alt', b.name);
+      el.insertBefore(img, el.firstChild);
+    } else el.classList.add('no-art');
+  }
+  function renderQuests(el) {
+    el.classList.add('lore-quests');
+    el.innerHTML = indices(el.getAttribute('data-lore-quests'), LORE.QUESTS.length).map(function (i) {
+      var q = LORE.QUESTS[i];
+      return '<li><p class="q-n">' + (i < 9 ? '0' : '') + (i + 1) + '</p><div><h3>' + esc(q.title) + '</h3><p>' + esc(q.text) + '</p></div></li>';
+    }).join('');
+  }
+  function renderRules(el) {
+    el.innerHTML = LORE.RULES.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('');
+  }
+  function renderSavepoint(sec) {
+    var lvl = sec.getAttribute('data-level');
+    var label = 'SAVING GAME...';
+    var cells = '';
+    for (var i = 0; i < 10; i++) cells += '<span style="--i:' + i + '"></span>';
+    sec.classList.add('savepoint');
+    sec.insertAdjacentHTML('afterbegin', '<div class="save">' +
+      '<svg data-px="campfire" data-scale="8" class="save-fire"></svg>' +
+      (lvl ? '<p class="kicker">Save point · Level ' + esc(lvl) + '</p>' : '') +
+      svgWrap(PX.text(label, { fill: 'currentColor' }), PX.textWidth(label), 7, 5, 'save-label', 'Saving game') +
+      '<div class="save-bar" aria-hidden="true">' + cells + '</div>' +
+      '<p class="save-line">' + esc(sec.getAttribute('data-savepoint')) + '</p></div>');
+  }
+
+  function renderLore() {
+    function each(sel, fn) {
+      Array.prototype.forEach.call(doc.querySelectorAll(sel), function (el) {
+        try { fn(el); } catch (e) { console.warn('deck: ' + e.message); }
+      });
+    }
+    if (!PX) return;
+    each('section[data-savepoint]', renderSavepoint);
+    each('svg[data-item-icon]', renderItemIcon);
+    if (!doc.querySelector('[data-lore-item],[data-lore-history],[data-lore-myth],[data-lore-boss],[data-lore-quests],[data-lore-rules]')) return;
+    if (!LORE) { console.warn('deck: shared/lore.js missing, lore slides stay empty'); return; }
+    each('[data-lore-item]', renderItem);
+    each('[data-lore-history]', renderHistory);
+    each('[data-lore-myth]', renderMyth);
+    each('[data-lore-boss]', renderBoss);
+    each('[data-lore-quests]', renderQuests);
+    each('[data-lore-rules]', renderRules);
+  }
+
   /* ── Render ── */
   var animated = [];
 
@@ -222,6 +430,7 @@
     }
   }
 
+  renderLore();   // first: lore cards and save points contain pixel art that renderAll draws
   renderAll();
   if (animated.length) window.setInterval(step, TICK_MS);
 
