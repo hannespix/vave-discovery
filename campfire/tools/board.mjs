@@ -215,7 +215,8 @@ function andereKarten(frameX, frameY, karten) {
     if (k.app) {
       const f = datei_(k.app);
       const name = k.app.split('/').pop();
-      extra.push({ id: k.id, type: 'htmlapp', position: pos, width: k.size.w, height: k.size.h, autoFit: false, data: { name, size: existsSync(f) ? readFileSync(f).length : 0, titel: k.titel } });
+      // The card shows data.name (HtmlAppCard), so the readable title goes there; the file keeps its own name
+      extra.push({ id: k.id, type: 'htmlapp', position: pos, width: k.size.w, height: k.size.h, autoFit: false, data: { name: k.titel ?? name, size: existsSync(f) ? readFileSync(f).length : 0 } });
       if (existsSync(f)) dateien[k.id] = { name, mime: 'text/html', b64: b64(f) };
     } else if (k.bild) {
       const f = datei_(`art/${k.bild}`);
@@ -224,28 +225,31 @@ function andereKarten(frameX, frameY, karten) {
     } else if (k.pdf) {
       const f = datei_(k.pdf);
       const name = k.pdf.split('/').pop();
-      extra.push({ id: k.id, type: 'file', position: pos, width: 240, data: { name, mime: 'application/pdf', size: existsSync(f) ? readFileSync(f).length : 0, titel: `Handout · ${name.replace('.pdf', '')}` } });
+      // Handouts live together in their own frame below the stations — unconnected, so they don't add slides
+      const hp = { x: HANDOUTS.x + 60 + handouts.length * 300, y: HANDOUTS.y + 110 };
+      handouts.push(k.id);
+      extra.push({ id: k.id, type: 'file', position: hp, width: 240, data: { name, mime: 'application/pdf', size: existsSync(f) ? readFileSync(f).length : 0, titel: `Handout · ${name.replace('.pdf', '')}` } });
       if (existsSync(f)) dateien[k.id] = { name, mime: 'application/pdf', b64: b64(f) };
     }
   }
 }
 
 const frames = [];
+const HANDOUTS = { x: 0, y: ROWS[2] + FH + GAP, w: FW, h: 520 };
+const handouts = [];
 for (const [i, st] of STATIONS.entries()) {
   const fx = COLS[i % 3], fy = ROWS[Math.floor(i / 3)];
-  const kopf = { mcp: { op: 'shape', shape: 'terminator', text: `${st.nr} · ${st.name}` }, slot: 'head', size: { w: 520, h: 110 }, kopf: true, stil: { fontSize: 'xl', font: 'mono' } };
-  const zeit = { mcp: { op: 'shape', shape: 'process', text: st.zeit }, slot: 'head', size: { w: 260, h: 56 }, kopf: true, stil: { fontSize: 'l', font: 'mono' } };
-  const karten = [kopf, zeit, ...st.cards];
+  // One header shape with the start time — a separate clock shape was an extra slide in presentation mode
+  const kopf = { mcp: { op: 'shape', shape: 'terminator', text: `${st.nr} · ${st.name} · ${st.zeit.split('–')[0]}` }, slot: 'head', size: { w: 520, h: 130 }, kopf: true, stil: { fontSize: 'xl', font: 'mono' } };
+  const karten = [kopf, ...st.cards];
   await mcpKarten(fx, fy, karten);
   andereKarten(fx, fy, karten);
-  lage.get(zeit.id).y += 125;                          // the clock sits under the header, right-aligned
-  lage.get(zeit.id).x += 260;
   frames.push({ id: uid(), type: 'frame', position: { x: fx, y: fy }, width: FW, height: FH, dragHandle: '.frame-head', data: { name: `${st.nr} · ${st.name} · ${st.zeit}` } });
   // Presentation path: header → goal → main → side → lower row → bridge; PDFs hang off the deck with a plain line
-  const reihe = karten.filter((k) => !k.pdf && k !== zeit);
+  const reihe = karten.filter((k) => !k.pdf);
   const order = ['head', 'goal', 'main', 'side', 'low1', 'low2', 'low3', 'low4'];
   reihe.sort((a, b) => order.indexOf(a.slot) - order.indexOf(b.slot));
-  ketten.push({ reihe: reihe.map((k) => k.id), zeit: zeit.id, pdfs: karten.filter((k) => k.pdf).map((k) => k.id), deck: karten.find((k) => k.app?.startsWith('decks/'))?.id });
+  ketten.push({ reihe: reihe.map((k) => k.id) });
 }
 
 // 2) Overview frame on top: title, scene, trail map, agenda — built the same way
@@ -256,6 +260,7 @@ const howto = { mcp: { op: 'note', title: 'How to use this board', text: `- **Pr
   const ops = [agenda.mcp, howto.mcp];
   const text = await tool('pixinotes_bearbeiten', { board: NAME, ops });
   const neu = [...(text.match(/Neu: (.*)/)?.[1] ?? '').matchAll(/\[([^\]]+)\]/g)].map((m) => m[1]);
+  if (neu.length !== 2) throw new Error(`board: Übersicht – 2 Operationen, aber ${neu.length} neue Karten:\n${text}`);
   [agenda.id, howto.id] = neu;
   lage.set(agenda.id, { x: 3640, y: 90, w: 1960, h: 420 });
   lage.set(howto.id, { x: 60, y: 560, w: 640 });
@@ -291,8 +296,6 @@ const kante = (source, target, kind = 'arrow') => ({ id: `e-${uid()}`, source, t
 const edges = [];
 for (const k of ketten) {
   for (let i = 1; i < k.reihe.length; i++) edges.push(kante(k.reihe[i - 1], k.reihe[i]));
-  edges.push(kante(k.reihe[0], k.zeit, 'line'));
-  for (const p of k.pdfs) edges.push(kante(k.deck ?? k.reihe[1], p, 'line'));
 }
 edges.push(kante(titel.id, szene.id), kante(szene.id, karte.id), kante(karte.id, agenda.id), kante(agenda.id, howto.id));
 const ueberFrame = { id: uid(), type: 'frame', position: { x: 0, y: 0 }, width: UEB.w, height: UEB.h, dragHandle: '.frame-head', data: { name: 'CAMPFIRE · PLAYING WITH FIRE · VAVE · 90 MIN' } };
@@ -315,7 +318,8 @@ for (let i = 0; i < STATIONS.length - 1; i++) {
 }
 gestrichelt([[UEB.w / 2, UEB.h + 10], [UEB.w / 2, UEB.h + GAP / 2], [COLS[0] + FW / 2, UEB.h + GAP / 2], [COLS[0] + FW / 2, ROWS[0] - 10]]);
 
-board.nodes = [ueberFrame, ...frames, titel, ...uebersicht, pix, pix00, ...board.nodes, ...extra];
+const handoutFrame = { id: uid(), type: 'frame', position: { x: HANDOUTS.x, y: HANDOUTS.y }, width: HANDOUTS.w, height: HANDOUTS.h, dragHandle: '.frame-head', data: { name: 'HANDOUTS · PDF of every deck' } };
+board.nodes = [ueberFrame, ...frames, handoutFrame, titel, ...uebersicht, pix, pix00, ...board.nodes, ...extra];
 board.edges = [...board.edges, ...edges];
 board.drawings = striche;
 
