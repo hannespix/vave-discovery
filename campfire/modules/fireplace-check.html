@@ -139,20 +139,23 @@
   /** One piece of advice per answer: [level 0 green · 1 yellow · 2 red, text] */
   function advise(a) {
     const safe = a.plan === 'yes';
+    const planOffen = a.plan === undefined || a.plan === 'unsure';   // unanswered ≠ "no business plan"
     const out = [];
     const add = (lv, t) => out.push([lv, t]);
-    if (a.conf === 'yes') add(safe ? 1 : 2, safe ? 'Confidential material: fine on your business plan. Share only what the task needs and follow the client’s rules.'
-      : 'Confidential material without a business plan: don’t paste it. Use a business plan, or strip names, figures and visuals first.');
+    if (a.conf === 'yes') add(safe || planOffen ? 1 : 2, safe ? 'Confidential material: business plan first, then check the client contract or NDA. If unsure, ask the project lead. Share only what the task needs.'
+      : planOffen ? 'Confidential material: first find out which plan you’re on, then check the client contract or NDA before anything goes in.'
+      : 'Confidential material without a business plan: don’t paste it. Use a business plan and check the client contract, or strip names, figures and visuals first.');
     if (a.conf === 'unsure') add(1, 'Not sure if it’s confidential? Treat it as confidential until the project lead says otherwise.');
     if (a.conf === 'no') add(0, 'No confidential material. Still a good habit: keep client names out of prompts.');
-    if (a.pers === 'yes') add(safe ? 1 : 2, safe ? 'Personal data: use only what’s needed, anonymise where you can, and check your data agreement covers it.'
+    if (a.pers === 'yes') add(safe || planOffen ? 1 : 2, safe ? 'Personal data: use only what’s needed, anonymise where you can, and check a signed data processing agreement (DPA) covers it.'
+      : planOffen ? 'Personal data: find out which plan you’re on and whether a data processing agreement (DPA) is signed before using it.'
       : 'Personal data on a personal or free plan: don’t. Replace names and faces with placeholders first.');
     if (a.pers === 'unsure') add(1, 'If someone could be identified from it, it counts as personal data. Anonymise first.');
     if (a.pers === 'no') add(0, 'No personal data. One less thing to worry about.');
-    if (a.pub === 'yes') add(1, 'Public or client-facing: check facts, rights (fonts, images, code licences) and the brand before it goes out.');
+    if (a.pub === 'yes') add(1, 'Public or client-facing: check facts, rights (fonts, images, code licences, who owns the AI output under the tool’s terms and the client contract), labelling rules for AI-generated content, and the brand before it goes out.');
     if (a.pub === 'unsure') add(1, 'Assume it might travel. Check facts and rights as if it were public.');
     if (a.pub === 'no') add(0, 'Internal only: room to experiment.');
-    if (a.plan === 'yes') add(0, 'Business plan: your work stays out of training. Client rules still apply.');
+    if (a.plan === 'yes') add(0, 'Business plan: check the terms once — no training, retention period, where data is processed, a signed DPA. Client rules still apply.');
     if (a.plan === 'no') add(1, 'Personal or free plan: fine for public information and general questions. Keep client and personal data out.');
     if (a.plan === 'unsure') add(1, 'Ask whoever manages your AI accounts which plan you’re on before using real work data.');
     if (a.owner === 'yes') add(0, 'Owner named. Keep a short how-to next to the tool.');

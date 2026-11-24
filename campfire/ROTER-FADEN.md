@@ -8,7 +8,10 @@
 > - **Ablauf auf dem Board:** Er ist eine Wanderkarte durch acht Stationen und liegt fertig als PixiNotes-Board
 >   (`dist/campfire.pixiboard.json`) vor. Datei auf das Board ziehen: Es kommt als neues Board dazu, deine Boards bleiben
 >   unberührt.
-> - **Kennzeichnung:** Alles mit ⚑ musst du vor dem Vortrag klären. Alles mit [⇢ …] liegt fertig in `campfire/`.
+> - **Kennzeichnung:** Alles mit [⇢ …] liegt fertig in `campfire/`.
+> - **Öffentlich:** Diese Datei liegt in einem öffentlichen Repo und enthält nur, was auch im Vortrag zu hören ist.
+>   Beispiel-Ampel, Checkliste für den Vortag und alles, was du vorher klären musst, bekommst du als private Datei
+>   (nicht im Repo).
 
 ---
 
@@ -65,12 +68,11 @@ of each station. Buffer: stations 03 and 05 can each give back 3 minutes if the 
 
 - **Life strip**, six pixel frames [⇢ `art/life-strip.svg`]: hippie parents → childhood on a farm → the farm becomes a
   winery → viticulture engineer → wine crisis, into public administration → vibecoder.
-  ⚑ Check the wording; it is your life. The order follows the six story pictures on pix-el.de.
-- **Repo wall** [⇢ `art/repo-wall.svg`]: one pixel tile per repository, coloured by kind (work tools, family business,
-  play, VAVE). The numbers: **41 repositories**. The biggest one has **323 test files**. **PixiNotes** went from v1.0 on
+- **Repo wall** [⇢ `art/repo-wall.svg`]: one pixel tile per repository, coloured by kind (everyday tools, family
+  business, play, VAVE). The numbers: **41 repositories**. The biggest one has **323 test files**. **PixiNotes** went from v1.0 on
   day one (14 July 2026) to **440+ milestones** in four months.
 - **Say:**
-  > "I'm not a developer. I never studied computer science. My day job is vocational training in the green professions.
+  > "I'm not a developer. I never studied computer science. My day job is in public administration, not in IT.
   > What I am is a translator: I know what the problem feels like, and I've learnt to explain it to a machine."
 - **Show** (pick one, 60 seconds): `pix-el.de` (your brand, the hopping Pix), or `email-checker` ("Pix & fertig":
   a tiny tool that fixes e-mail typos).
@@ -92,8 +94,9 @@ of each station. Buffer: stations 03 and 05 can each give back 3 minutes if the 
 3. **With tools, it can act.** Give it a search engine, a code runner, GitHub or your whiteboard (via **MCP**, the
    "USB-C port for AI tools") and a chat model becomes an *agent*: it plans, does, checks.
 - **Landscape, one slide, no ranking:** Claude, ChatGPT, Gemini, Mistral (EU), open models that run on your own
-  laptop (Ollama). For work it matters more *which plan* you use (business terms, no training on your data) than which
-  logo.
+  laptop (Ollama). For work it matters more *which plan* you use than which logo: business terms with no training on
+  your data, a clear retention period, a signed data processing agreement. And the client's NDA still decides what may
+  go in at all.
 - **Deck:** [⇢ `decks/spark.html`] 8 slides.
 - **Bridge:** "Enough theory. Let's light something."
 
@@ -102,17 +105,17 @@ of each station. Buffer: stations 03 and 05 can each give back 3 minutes if the 
 **Goal:** Show that a first useful tool is one conversation away, and how to ask well.
 
 - **Vibecoding, defined:** Andrej Karpathy coined the term in February 2025: *"fully give in to the vibes… and forget
-  that the code even exists."* You describe the result, the AI writes the code, you judge by looking at it.
+  that the code even exists."* He meant it for throwaway weekend projects, which is exactly where to start; the rest of
+  the evening is about going further. You describe the result, the AI writes the code, you judge by looking at it.
 - **Beginner rule:** one HTML file. Double-click, it works, offline, on any laptop or phone. No server, no install.
 - **The prompt recipe** [⇢ module `prompt-forge.html`]: *Who is it for · Goal · Context · Constraints · Done when ·
   Look & feel.* Show a weak prompt and a strong one side by side. Same AI, very different fire.
 - **Live mini-build (5 min):** ask the AI for a single HTML file live, e.g. *"a pixel-art campfire that crackles and
-  grows when you click"*. ⚑ Keep the pre-built result [⇢ `art/campfire-scene.svg`] as a fallback if Wi-Fi fails.
+  grows when you click"*. The pre-built scene [⇢ `art/campfire-scene.svg`] is the fallback if Wi-Fi fails.
 - **Examples, tiny to real:**
   - `email-checker`: tiny, single file, pixel branding.
-  - The **VAVE survey** (`hannespix.github.io/vave-discovery/?test`): one HTML file; Tobias filled it out on his
-    phone. ⚑ Only open it with `?test`, otherwise it counts as a real answer.
-  - `pflanzenbestimmung` / `pflanze-bw.de`: a real tool with real users and its own domain.
+  - The **VAVE survey**: one HTML file, made for a CEO's phone, no install and no login.
+  - `pixoodle.de`: a scheduling poll with real users and its own domain.
 - **Deck:** [⇢ `decks/kindling.html`] part 1.
 - **Bridge:** "The first fire is easy. Keeping it burning is the craft."
 
@@ -127,9 +130,9 @@ of each station. Buffer: stations 03 and 05 can each give back 3 minutes if the 
 - **Give it your CD and it follows it:** the clickable VAVE prototype (`/vave-discovery/prototyp/`) in violet and
   lime with Readex Pro, built from the brand tokens. ⌘K command palette, `t` starts the timer.
 - **From phone to production:** a change requested from the train, reviewed as a pull request, live minutes later.
-  On 29 September 2026, 16 pull requests went live on this project in one day.
+  On 29 September 2026, 19 pull requests were merged and went live on this project in one day.
 - **Design wow:** `liquidtype` (`hannespix.github.io/liquidtype/`): type "VAVE", pull the letters, hold to burst.
-  Physics and shaders by a non-developer. ⚑ Not the `/MS/` sub-page.
+  Physics and shaders by a non-developer.
 - **Deck:** [⇢ `decks/kindling.html`] part 2.
 - **Bridge:** "Now, how does a hobby fire become a forge that ships real software?"
 
@@ -142,17 +145,16 @@ reliable.
   - **Repository:** a project folder with a perfect memory.
   - **Commit:** a save point with a note.
   - **Branch:** a parallel sketch, the main version stays safe.
-  - **Pull request:** a critique round before anything goes live.
+  - **Pull request:** a review round before it goes live: robots, a critic agent, or you.
   - **Actions:** robots that test and publish on every change.
-  - **Pages:** free hosting, the link you send to the client.
+  - **Pages:** free hosting. Public links for public things, never a client secret.
 - **An agent team, not one chat:** builder, critic, red team, gatekeeper. Each has one job; *agents propose, humans
   decide.* (VAVE discovery: `.claude/agents/`.)
-- **Trust comes from checks, not from vibes:** automated browser tests, accessibility audits (13 screens, 0 findings),
-  a test suite that runs before every release.
+- **Trust comes from checks, not from vibes:** quick robots on every pull request (about a minute), the big browser and
+  accessibility suites at night or before a release, and a human who looks at the live result. Honest version: robots
+  catch breakage, not bad taste.
 - **Scale stories (one slide):** PixiNotes, 440+ milestones in four months. `vave.log`: projects, time and
   budgets for VAVE in English, German and Chinese, with its own MCP server.
-  ⚑ It contains publicly named VAVE people with made-up numbers: clear this with Tobias first, test the login the day
-  before, and keep a screen recording as backup.
 - **The reveal (big moment):** "By the way: this board you've been looking at all evening was built by an AI, through
   PixiNotes' own MCP server. I described the talk; it wrote the cards and laid them out, and the same script tucked the
   decks and tools inside." Show `campfire/tools/board.mjs` for ten seconds.
@@ -169,18 +171,19 @@ Seven signals, each with what to do:
 
 | Smoke | What it means | What to do |
 |---|---|---|
-| **Confidential data** | Client briefs, NDAs, personal data in consumer chats | Business plans only, anonymise, ask before pasting |
+| **Confidential data** | Client briefs, NDAs, personal data in consumer chats | Business plan, and the client NDA decides; anonymise; ask before pasting |
 | **Secrets** | API keys and passwords end up in code, even in private repos | Keys in a vault / env, never in files; rotate when exposed |
 | **Confident errors** | It sounds right, it's wrong | Verify facts, test behaviour, ask for sources |
 | **Shipped insecurity** | Logins, databases, prompt injection | Row-level security, reviews, never trust outside text |
-| **Rights** | Fonts, images, code licences, real people's photos | Use what you own or what's licensed, credit sources |
+| **Rights** | Fonts, images, code licences, real people's photos, who owns AI output | Use what you own or what's licensed; check tool terms and client contracts; credit sources |
 | **Orphan tools** | Who fixes it in six months? | Every tool has an owner, docs live in the repo |
 | **Lost craft** | People stop thinking | AI amplifies taste; keep the taste human |
 
-- **A true story, anonymised** ⚑ (only if you want it, and only after rotating the keys): *"While preparing this talk,
-  an AI audit of my own private repositories found live keys in three of them. Private is not the same as safe."*
-- **Interaction:** [⇢ module `fireplace-check.html`]: the room answers five questions about a real task
-  ("client data? personal data? public output? who maintains it? reviewed?") and gets green, yellow or red with advice.
+- **Secrets, the cheap habit:** a key in a private repository is still a key in a file. Let an AI audit your
+  repositories for secrets now and then, and rotate what it finds.
+- **Interaction:** [⇢ module `fireplace-check.html`]: the room answers six questions about a real task
+  ("client data? personal data? public output? business plan? who maintains it? reviewed?") and gets green, yellow or
+  red with advice. A rule of thumb for the studio, not legal advice: the client contract and the NDA always win.
 - **Fireplace rules for VAVE** [⇢ `art/fireplace-rules.svg`]:
   1. No client secrets in consumer chats.
   2. Keys never live in code.
@@ -204,9 +207,7 @@ Seven signals, each with what to do:
   - Data stories for clients.
   - Generative content inside the brand.
 - **"Try on Monday" kanban:** one small experiment per person, e.g. *"rebuild one boring spreadsheet as a single HTML
-  file"*.
-- **Link to the agreed project** (one sentence, no sales pitch): "Phase one of VAVE's own tool is exactly this: time
-  tracking, AI-assisted time entries, capacity planning, built in small visible steps."
+  file"*, with dummy data.
 
 ## 08 · Open fire: Q&A and goodbye (1:25–1:30)
 
@@ -216,30 +217,3 @@ Seven signals, each with what to do:
   > "Fire didn't replace cooks. It made cooking possible. Keep your taste, feed the fire, and mind the smoke. Thanks
   > for sitting with me."
 
----
-
-## Example bank: what to show, and what not to
-
-| Example | Shows | Safe? |
-|---|---|---|
-| `vave-discovery` survey + prototype | their own problem, their CD, agent loop | ✔ survey with `?test` only. Don't show `STATE.md` or `docs/research/` (personal notes, vendor research) |
-| `vave.log` | VAVE app, MCP, EN/DE/ZH | ⚑ clear the people data with Tobias first, test the login, have a recording |
-| PixiNotes | this board, MCP, 440+ milestones | ✔ |
-| `liquidtype` | design wow | ✔ main page only, not `/MS/` |
-| `pix-el.de` (+ `/interactive/`) | brand, live audience tool | ✔ live site only, never the repo |
-| `email-checker` | tiny tool, 60 s | ✔ with dummy data |
-| `pflanzenbestimmung` | real users, own domain | ✔ don't open the deploy workflow file |
-| `tankverkauf` | family-winery story, demo mode | ✔ only "Nur ansehen", never log in |
-| `thronerush` | pixel game, chiptune made in code | ⚑ check the humour first |
-| `pixletics` | voice coach, pixel wordmark | ✔ don't log into Spotify |
-| `autotrd` | the scale story (323 test files) | ⚑ one number only, nothing that looks like investment advice |
-| Work tools (Berichtsheft, Prüfungen, M1, Plausibilisator …) | – | ✘ employer-internal or personal data, at most an anonymised one-liner ("a database for an authority, 43 automated checks") |
-
-## Prep checklist (day before)
-
-- [ ] Import `dist/campfire.pixiboard.json` into PixiNotes and run the presentation mode once end to end.
-- [ ] Open every live link on the venue Wi-Fi (or hotspot). Recordings of `vave.log` and `liquidtype` as backup.
-- [ ] Tobias: OK for `vave.log` demo people, OK to mention the project in one sentence.
-- [ ] Rotate the exposed keys (see the private note from Claude) before telling the secrets story.
-- [ ] Phone ready for the live mini-build; fallback file open in a tab.
-- [ ] Clear the mood and question bubbles from the rehearsal.
