@@ -281,7 +281,7 @@ body { overflow: hidden; }
 .reveal .center .kicker { text-align: center; }
 .reveal .narrow { max-width: 920px; }
 .reveal .center.narrow, .reveal .center .narrow { margin-left: auto; margin-right: auto; }
-.reveal .mt { margin-top: 32px; }
+.reveal .mt { margin-top: 32px; }       /* final say: see the end of the file */
 .reveal .mt-lg { margin-top: 48px; }
 
 /* ── Pixel art ─────────────────────────────────────────────────────────── */
@@ -425,6 +425,7 @@ body { overflow: hidden; }
 .reveal .steps .hot-step { border-color: var(--deck-hot); }
 .reveal .steps.s5 > li { padding: 18px 14px; }   /* five steps in a row: smaller titles, no broken words */
 .reveal .steps.s5 strong { font-size: 38px; }
+.reveal .steps.s6 > li { font-size: 24px; overflow-wrap: normal; hyphens: none; }   /* six in a row: whole words only */
 
 /* Compact numbered rules (smoke deck) */
 .reveal ol.rules > li { padding-left: 52px; margin-bottom: 10px; font-size: 28px; line-height: 1.3; }
@@ -490,6 +491,11 @@ body { overflow: hidden; }
 @media print {
   .reveal-viewport::before { display: none; }
 }
+
+/* Spacing utilities win over the component resets above (.cards, .steps, .chips … set margin: 0 with the same
+   specificity and came later, so mt/mt-lg rendered as 0). Higher specificity, last in the file. */
+.reveal .slides .mt { margin-top: 32px; }
+.reveal .slides .mt-lg { margin-top: 48px; }
 </style>
 </head>
 <body>
@@ -533,12 +539,11 @@ body { overflow: hidden; }
   <div class="box hot narrow">
     <p class="lead">“Rebuild one boring spreadsheet as a single HTML file.”</p>
   </div>
-  <p class="small mt-lg">Phase one of VAVE's own tool is exactly this: time tracking, AI-assisted time entries, capacity planning, built in small visible steps.</p>
+  <p class="small mt-lg">With dummy data, please. Small, visible steps beat one big plan.</p>
   <aside class="notes">
     Put one small experiment per person on the Try on Monday kanban, for example rebuilding one boring spreadsheet
     as a single HTML file.
-    One sentence, no sales pitch: phase one of VAVE's own tool is exactly this, time tracking, AI-assisted time entries
-    and capacity planning, built in small visible steps.
+    With dummy data, please: no client files in a first experiment. Small, visible steps beat one big plan.
   </aside>
 </section>
 
@@ -801,11 +806,11 @@ body { overflow: hidden; }
       '..#..##....#....', '.#..#..#....#...', '.#...##.....#...', '.#..........#...',
       '..#........#....', '...########.....', '................', '................',
     ],
-    bubble: [
-      '................', '.############...', '#............#..', '#..##....##..#..',
-      '#..##....##..#..', '#............#..', '#...######...#..', '#............#..',
-      '.#####..######..', '.....#.#........', '.....##.........', '.....#..........',
-      '................', '................', '................', '................',
+    bubble: [ // speech bubble with a question mark — no eyes, so it never reads as an emoji face
+      '................', '..############..', '.#............#.', '.#....####....#.',
+      '.#...##..##...#.', '.#.......##...#.', '.#......##....#.', '.#.....##.....#.',
+      '.#............#.', '.#.....##.....#.', '.#............#.', '..####.#######..',
+      '.....#.#........', '.....##.........', '.....#..........', '................',
     ],
   };
 

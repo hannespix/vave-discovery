@@ -281,7 +281,7 @@ body { overflow: hidden; }
 .reveal .center .kicker { text-align: center; }
 .reveal .narrow { max-width: 920px; }
 .reveal .center.narrow, .reveal .center .narrow { margin-left: auto; margin-right: auto; }
-.reveal .mt { margin-top: 32px; }
+.reveal .mt { margin-top: 32px; }       /* final say: see the end of the file */
 .reveal .mt-lg { margin-top: 48px; }
 
 /* ── Pixel art ─────────────────────────────────────────────────────────── */
@@ -425,6 +425,7 @@ body { overflow: hidden; }
 .reveal .steps .hot-step { border-color: var(--deck-hot); }
 .reveal .steps.s5 > li { padding: 18px 14px; }   /* five steps in a row: smaller titles, no broken words */
 .reveal .steps.s5 strong { font-size: 38px; }
+.reveal .steps.s6 > li { font-size: 24px; overflow-wrap: normal; hyphens: none; }   /* six in a row: whole words only */
 
 /* Compact numbered rules (smoke deck) */
 .reveal ol.rules > li { padding-left: 52px; margin-bottom: 10px; font-size: 28px; line-height: 1.3; }
@@ -490,6 +491,11 @@ body { overflow: hidden; }
 @media print {
   .reveal-viewport::before { display: none; }
 }
+
+/* Spacing utilities win over the component resets above (.cards, .steps, .chips … set margin: 0 with the same
+   specificity and came later, so mt/mt-lg rendered as 0). Higher specificity, last in the file. */
+.reveal .slides .mt { margin-top: 32px; }
+.reveal .slides .mt-lg { margin-top: 48px; }
 </style>
 </head>
 <body>
@@ -521,6 +527,8 @@ body { overflow: hidden; }
   <p class="lead mt-lg">You describe the result. The AI writes the code. <strong>You judge by looking at it.</strong></p>
   <aside class="notes">
     Andrej Karpathy coined the word in February 2025: fully give in to the vibes and forget that the code even exists.
+    He meant it for throwaway weekend projects, and that's exactly where to start. The rest of tonight is about what it
+    takes to go further than a weekend.
     You describe the result, the AI writes the code, and you judge by looking at it.
     That last part is where designers are already experts.
   </aside>
@@ -608,16 +616,14 @@ body { overflow: hidden; }
   <h2>Three fires, three sizes</h2>
   <ol class="steps mt">
     <li><strong>email-checker</strong>Tiny. One file that fixes e-mail typos, with pixel branding.</li>
-    <li><strong>VAVE survey</strong>One HTML file. Tobias filled it out on his phone.
-      <br><a href="https://hannespix.github.io/vave-discovery/?test">open in test mode</a></li>
-    <li class="hot-step"><strong>Plant ID</strong>A real tool with real users and its own domain.
-      <br><a href="https://pflanze-bw.de">pflanze-bw.de</a></li>
+    <li><strong>VAVE survey</strong>One HTML file, made for a CEO's phone: no install, no login, no server.</li>
+    <li class="hot-step"><strong>pixoodle</strong>A scheduling poll with real users and its own domain.
+      <br><a href="https://pixoodle.de">pixoodle.de</a></li>
   </ol>
   <aside class="notes">
     From tiny to real. The email-checker is one file, sixty seconds, with dummy data.
-    The VAVE survey is one HTML file too, and Tobias filled it out on his phone. Only open it with the test link,
-    otherwise it counts as a real answer.
-    The plant identification tool has real users and its own domain. The first fire is easy; keeping it burning is the craft.
+    The VAVE survey is one HTML file too, made to be answered on a phone, no install and no login.
+    pixoodle is a scheduling poll with real users and its own domain. The first fire is easy; keeping it burning is the craft.
   </aside>
 </section>
 
@@ -702,12 +708,12 @@ body { overflow: hidden; }
     <li class="hot-step"><strong>Live</strong>Merged, published, minutes later.</li>
   </ol>
   <div class="stat mt-lg">
-    <p class="n">16</p>
-    <p class="t">pull requests went live on this project in one day, 29 September 2026.</p>
+    <p class="n">19</p>
+    <p class="t">pull requests merged and live on this project in one day, 29 September 2026.</p>
   </div>
   <aside class="notes">
     From phone to production: a change requested from the train, reviewed as a pull request, live minutes later.
-    On 29 September 2026, sixteen pull requests went live on this project in a single day.
+    On 29 September 2026, nineteen pull requests were merged and went live on this project in a single day.
   </aside>
 </section>
 
@@ -935,11 +941,11 @@ body { overflow: hidden; }
       '..#..##....#....', '.#..#..#....#...', '.#...##.....#...', '.#..........#...',
       '..#........#....', '...########.....', '................', '................',
     ],
-    bubble: [
-      '................', '.############...', '#............#..', '#..##....##..#..',
-      '#..##....##..#..', '#............#..', '#...######...#..', '#............#..',
-      '.#####..######..', '.....#.#........', '.....##.........', '.....#..........',
-      '................', '................', '................', '................',
+    bubble: [ // speech bubble with a question mark — no eyes, so it never reads as an emoji face
+      '................', '..############..', '.#............#.', '.#....####....#.',
+      '.#...##..##...#.', '.#.......##...#.', '.#......##....#.', '.#.....##.....#.',
+      '.#............#.', '.#.....##.....#.', '.#............#.', '..####.#######..',
+      '.....#.#........', '.....##.........', '.....#..........', '................',
     ],
   };
 

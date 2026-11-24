@@ -10,12 +10,13 @@
   html, body { min-height: 100%; }
   body {
     font-size: clamp(15px, 0.5vw + 10px, 19px);
-    padding: clamp(10px, 1.6vw, 24px);
-    display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 14px);
+    padding: clamp(8px, 1.6vw, 24px);
+    display: flex; flex-direction: column; gap: clamp(6px, 1.2vw, 14px);
     min-height: 100vh;
   }
+  .px-label { font-size: 13px; }
   .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; }
-  .top h1 { margin: 0; font-size: clamp(32px, 4.4vw, 64px); color: var(--fire-3); }
+  .top h1 { margin: 0; font-size: clamp(30px, 4.4vw, 64px); color: var(--fire-3); }
   .top p { margin: 0; color: var(--muted); }
   .top b { color: var(--ink); font-weight: 600; }
 
@@ -40,7 +41,7 @@
   .block[aria-pressed="true"]::before { border-color: var(--fire-2); background: var(--fire-3); }
   .block:hover { border-color: var(--lcd-c); }
   .block b { display: block; font: 1.3em/1.1 var(--pixel); font-weight: 400; }
-  .block span { display: block; font-size: 0.78em; color: var(--muted); line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .block span { display: block; font-size: max(13px, 0.78em); color: var(--muted); line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
   .meter { display: flex; align-items: flex-end; gap: 14px; margin-top: auto; padding: 10px; background: var(--night-0); border: var(--px) solid var(--night-3); min-height: 120px; }
   .meter svg { display: block; height: auto; flex: none; }
@@ -82,16 +83,59 @@
   @keyframes pf-smoke { from { transform: translateY(0); } to { transform: translateY(-3px); } }
 
   @media (min-width: 761px) and (min-height: 560px) { body { height: 100vh; } }
-  @media (max-width: 760px) {
-    main { grid-template-columns: 1fr; }
-    .top h1 { font-size: 34px; }
-    .top .more { display: none; }
+  /* Projector: the recipe blocks become big keys (their text appears in the prompt), the prompt and the fire get the room */
+  @media (min-width: 1024px) and (min-height: 600px) {
+    body { font-size: 24px; }
+    .px-label { font-size: 16px; }
+    .top p { font-size: 22px; }
+    .seg button { font-size: 26px; min-height: 48px; padding: 0 16px; }
+    main { grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr); }
+    .blocks { gap: 10px; }
+    .block { min-height: 64px; padding: 10px 12px 10px 48px; }
+    .block::before { left: 12px; top: 50%; margin-top: -12px; width: 24px; height: 24px; }
+    .block b { font-size: 34px; }
     .block span { display: none; }
-    .block b { font-size: 1.15em; }
-    .meter { min-height: 0; padding: 6px 10px; }
-    .preview { max-height: 300px; }
+    .meter { flex: 1; min-height: 0; align-items: flex-end; padding: 14px 18px; }
+    .meter .lvl { font-size: 44px; }
+    .segs i { width: 28px; height: 18px; }
+    /* the prompt shrinks a little as it grows: 28px for the one-liner, 21px with all six parts */
+    .preview { font-size: calc(28px - var(--n, 0) * 1.2px); line-height: 1.4; }
+    .px-btn { font-size: 26px; min-height: 52px; }
+    .status { font-size: 22px; }
+    .cmp h2 { font-size: 48px; }
+    .cmp .preview { font-size: 20px; }
+    .likely { font-size: 22px; }
+  }
+  /* Narrow: blocks left as a single column of keys with the fire under them, prompt right */
+  @media (max-width: 760px) {
+    main { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); }
+    .top h1 { font-size: 30px; }
+    .top .more { display: none; }
+    .blocks { grid-template-columns: 1fr; gap: 4px; }
+    .block { min-height: 36px; padding: 6px 8px 6px 34px; }
+    .block::before { left: 8px; top: 50%; margin-top: -8px; width: 16px; height: 16px; border-width: 3px; }
+    .block span { display: none; }
+    .block b { font-size: 18px; }
+    .meter { min-height: 0; padding: 6px 8px; gap: 8px; margin-top: 0; }
+    .meter .lvl { font-size: 20px; }
+    .segs i { width: 12px; height: 10px; }
+    .preview { min-height: 0; max-height: 60vh; font-size: 13px; padding: 8px; }
+    .panel { padding: 8px; gap: 6px; }
+    .px-btn { font-size: 17px; min-height: 38px; padding: 8px 12px; }
+    .status { font-size: 13px; }
     .cmp { grid-template-columns: 1fr; }
-    .cmp .preview { max-height: none; }
+    .cmp .preview { max-height: none; flex: none; font-size: 13px; }
+    .likely { font-size: 14px; }
+  }
+  /* Card: the task and view switches go below the blocks, so blocks and fire are what you see first */
+  @media (max-height: 520px) {
+    .bar { order: 3; }
+    main { flex: none; height: calc(100vh - 54px); grid-template-rows: minmax(0, 1fr); }
+    .preview { max-height: none; }
+    .seg button { font-size: 17px; min-height: 36px; }
+    #build-left > .px-label { display: none; }
+    .meter .info { gap: 3px; padding-bottom: 2px; }
+    .meter .info .px-label { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { .fr, .smoke { animation: none !important; } }
 </style>
@@ -206,6 +250,8 @@
     };
   }
   const narrow = () => window.matchMedia('(max-width: 760px)').matches;
+  const big = () => window.matchMedia('(min-width: 1024px) and (min-height: 600px)').matches;
+  const sizeKey = () => (narrow() ? 'n' : big() ? 'b' : 'm');
 
   function renderBuild() {
     const t = TASKS[st.task];
@@ -213,12 +259,13 @@
     const p = promptParts(st.on);
     $('preview').innerHTML = p.html;
     const n = st.on.size;
+    $('preview').style.setProperty('--n', String(n));
     $('prompt-label').textContent = n ? `Your prompt: ${n} of 6 parts, ${p.text.split(/\s+/).length} words` : 'Your prompt: the weak one-liner. Add parts.';
-    $('meter').innerHTML = meterHtml(n, narrow() ? 2 : 6, true);
+    $('meter').innerHTML = meterHtml(n, narrow() ? 2 : big() ? 8 : 6, true);
   }
   function renderCompare() {
     const t = TASKS[st.task];
-    const unit = narrow() ? 2 : 4;
+    const unit = narrow() ? 2 : big() ? 5 : 4;
     $('m-weak').innerHTML = meterHtml(0, unit, false);
     $('m-strong').innerHTML = meterHtml(6, unit, false);
     $('p-weak').innerHTML = promptParts(new Set()).html;
@@ -271,8 +318,8 @@
     else { selectPreview(); $('status').textContent = 'Text selected. Press Ctrl+C (Cmd+C on a Mac) to copy.'; }
   });
 
-  let lastNarrow = narrow();
-  window.addEventListener('resize', () => { if (narrow() !== lastNarrow) { lastNarrow = narrow(); render(); } });
+  let lastNarrow = sizeKey();
+  window.addEventListener('resize', () => { if (sizeKey() !== lastNarrow) { lastNarrow = sizeKey(); render(); } });
   render();
 })();
 </script>

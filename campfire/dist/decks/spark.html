@@ -281,7 +281,7 @@ body { overflow: hidden; }
 .reveal .center .kicker { text-align: center; }
 .reveal .narrow { max-width: 920px; }
 .reveal .center.narrow, .reveal .center .narrow { margin-left: auto; margin-right: auto; }
-.reveal .mt { margin-top: 32px; }
+.reveal .mt { margin-top: 32px; }       /* final say: see the end of the file */
 .reveal .mt-lg { margin-top: 48px; }
 
 /* ── Pixel art ─────────────────────────────────────────────────────────── */
@@ -425,6 +425,7 @@ body { overflow: hidden; }
 .reveal .steps .hot-step { border-color: var(--deck-hot); }
 .reveal .steps.s5 > li { padding: 18px 14px; }   /* five steps in a row: smaller titles, no broken words */
 .reveal .steps.s5 strong { font-size: 38px; }
+.reveal .steps.s6 > li { font-size: 24px; overflow-wrap: normal; hyphens: none; }   /* six in a row: whole words only */
 
 /* Compact numbered rules (smoke deck) */
 .reveal ol.rules > li { padding-left: 52px; margin-bottom: 10px; font-size: 28px; line-height: 1.3; }
@@ -490,6 +491,11 @@ body { overflow: hidden; }
 @media print {
   .reveal-viewport::before { display: none; }
 }
+
+/* Spacing utilities win over the component resets above (.cards, .steps, .chips … set margin: 0 with the same
+   specificity and came later, so mt/mt-lg rendered as 0). Higher specificity, last in the file. */
+.reveal .slides .mt { margin-top: 32px; }
+.reveal .slides .mt-lg { margin-top: 48px; }
 </style>
 </head>
 <body>
@@ -628,10 +634,11 @@ body { overflow: hidden; }
 <section class="statement">
   <p class="kicker center">For work</p>
   <p class="big">The plan matters more than the logo</p>
-  <p class="lead">Business terms. No training on your data.</p>
+  <p class="lead">Business terms: no training on your data, clear retention, a data processing agreement.</p>
   <aside class="notes">
     For work it matters more which plan you use than which logo is on it.
-    Business terms, and no training on your data.
+    Business terms: no training on your data, a clear retention period, where the data is processed,
+    and a signed data processing agreement. And the client's NDA still decides what may go in at all.
     Enough theory. Let's light something.
   </aside>
 </section>
@@ -848,11 +855,11 @@ body { overflow: hidden; }
       '..#..##....#....', '.#..#..#....#...', '.#...##.....#...', '.#..........#...',
       '..#........#....', '...########.....', '................', '................',
     ],
-    bubble: [
-      '................', '.############...', '#............#..', '#..##....##..#..',
-      '#..##....##..#..', '#............#..', '#...######...#..', '#............#..',
-      '.#####..######..', '.....#.#........', '.....##.........', '.....#..........',
-      '................', '................', '................', '................',
+    bubble: [ // speech bubble with a question mark — no eyes, so it never reads as an emoji face
+      '................', '..############..', '.#............#.', '.#....####....#.',
+      '.#...##..##...#.', '.#.......##...#.', '.#......##....#.', '.#.....##.....#.',
+      '.#............#.', '.#.....##.....#.', '.#............#.', '..####.#######..',
+      '.....#.#........', '.....##.........', '.....#..........', '................',
     ],
   };
 

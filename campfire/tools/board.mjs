@@ -76,7 +76,7 @@ const STATIONS = [
       note('Goal', 'Turn the room into a campfire circle before anyone thinks "tech talk".\n\n- Everybody adds **one word** to the bubbles\n- Read three out loud: excited, sceptical, funny\n\n> "No slides that read themselves, no maths. Questions whenever they come up — drop a bubble."'),
       bild('campfire-scene.svg', 'main', 1100, 'Campfire'),
       { mcp: { op: 'bubbles', title: 'Warm-up', question: 'One word: right now, AI makes me feel …', ideas: [] }, slot: 'side', size: SIDE },
-      note('Join the board', 'Live → invite link → **show the QR code**. Everyone can add bubbles and questions — no account needed.', 'mint', 'low3', 560),
+      note('Join the board', 'Live → invite link (create it **without account**) → **show the QR code**. Everyone can add bubbles and questions.', 'mint', 'low3', 560),
       note('Bridge', '"Before we talk about fire, let me tell you who\'s holding the matches."', 'white', 'low4', 520),
     ],
   },
@@ -95,7 +95,7 @@ const STATIONS = [
   {
     nr: '02', name: 'THE SPARK', zeit: '0:12–0:25 · Beginner',
     cards: [
-      note('Three mental models', '1. **It predicts the next word.** A very well-read autocomplete — it continues, it doesn\'t know.\n2. **It only sees what\'s inside the circle of light.** The context window. Files beat long chats.\n3. **With tools, it can act.** Search, code, GitHub, your whiteboard (MCP) → an *agent*.\n\nFor work, *which plan* (business terms, no training on your data) matters more than which logo.'),
+      note('Three mental models', '1. **It predicts the next word.** A very well-read autocomplete — it continues, it doesn\'t know.\n2. **It only sees what\'s inside the circle of light.** The context window. Files beat long chats.\n3. **With tools, it can act.** Search, code, GitHub, your whiteboard (MCP) → an *agent*.\n\nFor work, *which plan* matters more than which logo: business terms, no training on your data, clear retention, a signed DPA. The client NDA decides what may go in at all.'),
       app('decks/spark.html', 'main', MAIN, 'Deck · Spark'),
       app('modules/token-oracle.html', 'side', SIDE, 'Token Oracle'),
       app('modules/context-circle.html', 'low1', { w: 560, h: 380 }, 'Context Circle'),
@@ -107,11 +107,11 @@ const STATIONS = [
   {
     nr: '03', name: 'KINDLING', zeit: '0:25–0:40 · Beginner',
     cards: [
-      note('Your first builds', '- **Vibecoding** (Karpathy, Feb 2025): describe the result, let the AI write the code, judge by looking\n- Beginner rule: **one HTML file** — double-click, works offline\n- The recipe: *Who · Goal · Context · Constraints · Done when · Look & feel*'),
+      note('Your first builds', '- **Vibecoding** (Karpathy, Feb 2025, meant for weekend projects): describe the result, let the AI write the code, judge by looking\n- Beginner rule: **one HTML file** — double-click, works offline\n- The recipe: *Who · Goal · Context · Constraints · Done when · Look & feel*'),
       app('decks/kindling.html', 'main', MAIN, 'Deck · Kindling'),
       app('modules/prompt-forge.html', 'side', SIDE, 'Prompt Forge'),
       note('Live mini-build (5 min)', 'Prompt: *"A single HTML file: a pixel-art campfire that crackles and grows when you click."*\n\nFallback if Wi-Fi fails: the campfire scene in frame 00.', 'pink', 'low1', 560),
-      note('Tiny to real', '- [email-checker](https://hannespix.github.io/email-checker/) — tiny, one file\n- [VAVE survey](https://hannespix.github.io/vave-discovery/?test) — one file, **only with ?test**\n- [pflanze-bw.de](https://pflanze-bw.de) — real users, own domain', 'mint', 'low2', 520),
+      note('Tiny to real', '- [email-checker](https://hannespix.github.io/email-checker/) — tiny, one file\n- The VAVE survey — one file, made for a CEO\'s phone\n- [pixoodle.de](https://pixoodle.de) — a scheduling poll with real users, own domain', 'mint', 'low2', 520),
       note('Bridge', '"The first fire is easy. Keeping it burning is the craft."', 'white', 'low4', 520),
       pdf('pdf/kindling.pdf'),
     ],
@@ -121,7 +121,7 @@ const STATIONS = [
     cards: [
       note('The loop', 'The real skill is not prompting, it\'s **iterating with taste** — design work.\n\n- Describe → Build → **Look** → Feedback (screenshots beat words) → Repeat\n- **AI forgets, files remember:** CLAUDE.md, design principles, STATE.md\n- Give it your CD and it follows it\n\nDeck: *Kindling*, second half.'),
       { mcp: { op: 'mermaid', code: 'flowchart LR\n  A[Describe] --> B[Build]\n  B --> C[Look]\n  C --> D[Feedback]\n  D --> A\n  M[(Memory files)] -.-> A' }, slot: 'main', size: { w: 1100, h: 520 } },
-      note('Show', '- [VAVE prototype](https://hannespix.github.io/vave-discovery/prototyp/) — ⌘K palette, `t` starts the timer\n- [Liquid type](https://hannespix.github.io/liquidtype/) — type "VAVE", pull, hold to burst (not /MS/)\n- From phone to production: **16 PRs live in one day** (29 Sep 2026)', 'mint', 'side', 560),
+      note('Show', '- [VAVE prototype](https://hannespix.github.io/vave-discovery/prototyp/) — ⌘K palette, `t` starts the timer\n- [Liquid type](https://hannespix.github.io/liquidtype/) — type "VAVE", pull, hold to burst\n- From phone to production: **19 PRs merged and live in one day** (29 Sep 2026)', 'mint', 'side', 560),
       note('Memory files', '- `CLAUDE.md` — how we work here\n- `design-principles.md` — the CD as rules\n- `STATE.md` — where we are, what\'s next', 'yellow', 'low1', 560),
       note('Bridge', '"How does a hobby fire become a forge that ships real software?"', 'white', 'low4', 520),
     ],
@@ -129,7 +129,7 @@ const STATIONS = [
   {
     nr: '05', name: 'THE FORGE', zeit: '0:55–1:10 · Advanced',
     cards: [
-      note('What, how, where', '- **GitHub in six words:** repository, commit, branch, pull request, Actions, Pages\n- **An agent team:** builder, critic, red team, gatekeeper — *agents propose, humans decide*\n- **Trust from checks:** browser tests, accessibility audits, tests before every release\n- **Where:** Claude Code (terminal, web, phone), Cursor / VS Code, GitHub, Supabase/Firebase, Pages'),
+      note('What, how, where', '- **GitHub in six words:** repository, commit, branch, pull request, Actions, Pages\n- **An agent team:** builder, critic, red team, gatekeeper — *agents propose, humans decide*\n- **Trust from checks:** quick robots on every PR, big browser and accessibility suites at night or before a release, a human looks at the live result\n- **Where:** Claude Code (terminal, web, phone), Cursor / VS Code, GitHub, Supabase/Firebase, Pages'),
       app('decks/forge.html', 'main', MAIN, 'Deck · Forge'),
       app('modules/git-time-machine.html', 'side', SIDE, 'Git Time Machine'),
       { mcp: { op: 'sheet', title: 'Scale stories', rows: [['What', 'Number', 'Note'], ['Repositories', '41', 'in about a year'], ['PixiNotes milestones', '440', 'in four months'], ['Largest test suite', '323', 'test files'], ['VAVE discovery', '16', 'PRs live in one day']] }, slot: 'low1', size: { w: 560, h: 260 } },
@@ -141,10 +141,10 @@ const STATIONS = [
   {
     nr: '06', name: 'SMOKE SIGNALS', zeit: '1:10–1:20',
     cards: [
-      note('Honest, practical', 'Leave the room with **rules, not worries.**\n\nOptional true story (only after rotating the keys): *"While preparing this talk, an AI audit of my own private repositories found live keys in three of them. Private is not the same as safe."*'),
+      note('Honest, practical', 'Leave the room with **rules, not worries.**\n\n- A key in a private repository is still a key in a file: let an AI audit your repos for secrets, rotate what it finds\n- The Fireplace Check is a rule of thumb for the studio, **not legal advice** — the client contract and the NDA always win'),
       app('decks/smoke.html', 'main', MAIN, 'Deck · Smoke'),
       app('modules/fireplace-check.html', 'side', SIDE, 'Fireplace Check'),
-      { mcp: { op: 'sheet', title: 'Seven smoke signals', rows: [['Smoke', 'What to do'], ['Confidential data', 'Business plans only, anonymise, ask first'], ['Secrets', 'Keys in a vault, never in files; rotate'], ['Confident errors', 'Verify, test, ask for sources'], ['Shipped insecurity', 'Row-level security, reviews'], ['Rights', 'Use what you own or license'], ['Orphan tools', 'Every tool has an owner'], ['Lost craft', 'Keep the taste human']] }, slot: 'low1', size: { w: 560, h: 330 } },
+      { mcp: { op: 'sheet', title: 'Seven smoke signals', rows: [['Smoke', 'What to do'], ['Confidential data', 'Business plan, client NDA decides, anonymise'], ['Secrets', 'Keys in a vault, never in files; rotate'], ['Confident errors', 'Verify, test, ask for sources'], ['Shipped insecurity', 'Row-level security, reviews'], ['Rights', 'Own or license it; check who owns AI output'], ['Orphan tools', 'Every tool has an owner'], ['Lost craft', 'Keep the taste human']] }, slot: 'low1', size: { w: 560, h: 330 } },
       bild('fireplace-rules.svg', 'low2', 520, 'Fireplace rules'),
       note('Bridge', '"So where should VAVE light the first fire?"', 'white', 'low4', 520),
       pdf('pdf/smoke.pdf'),
@@ -153,10 +153,10 @@ const STATIONS = [
   {
     nr: '07', name: 'EMBERS', zeit: '1:20–1:25',
     cards: [
-      note('Chances for VAVE', 'Turn the talk into the room\'s ideas — **three dots each.**\n\nThen one small experiment per person on the kanban.\n\n> Phase one of VAVE\'s own tool is exactly this: time tracking, AI-assisted entries, capacity planning — in small visible steps.'),
+      note('Chances for VAVE', 'Turn the talk into the room\'s ideas — **three dots each.**\n\nThen one small experiment per person on the kanban — with dummy data, no client files.'),
       { mcp: { op: 'bubbles', title: 'First fires', question: 'Where should VAVE light the first fire?', ideas: ['Pitch prototypes clients can click', 'Exhibition interactives in days', 'Internal tools: time, capacity, quotes', 'Research and synthesis across EN / DE / ZH', 'Data stories for clients', 'Generative content inside the brand'] }, slot: 'main', size: { w: 1100, h: 690 } },
-      { mcp: { op: 'kanban', title: 'Try on Monday', columns: ['Idea', 'Trying', 'Done'], items: [{ text: 'Rebuild one boring spreadsheet as a single HTML file' }, { text: 'Write a CLAUDE.md for one project' }] }, slot: 'side', size: SIDE },
-      { mcp: { op: 'sheet', title: 'Build or buy? Napkin math', rows: [['Input', 'Value'], ['Seats', '20'], ['Price per seat / month (€)', '30'], ['Buy per year (€)', '=B2*B3*12'], ['Build hours', '40'], ['Hourly rate (€)', '90'], ['Upkeep per year (€)', '1200'], ['Build, first year (€)', '=B5*B6+B7']] }, slot: 'low1', size: { w: 560, h: 330 } },
+      { mcp: { op: 'kanban', title: 'Try on Monday', columns: ['Idea', 'Trying', 'Done'], items: [{ text: 'Rebuild one boring spreadsheet as a single HTML file (dummy data)' }, { text: 'Write a CLAUDE.md for one project' }] }, slot: 'side', size: SIDE },
+      { mcp: { op: 'sheet', title: 'Build or buy? Napkin math (example numbers, type your own)', rows: [['Input', 'Value'], ['Seats', '10'], ['Price per seat / month (€)', '25'], ['Buy per year (€)', '=B2*B3*12'], ['Build hours', '80'], ['Hourly rate (€)', '90'], ['Upkeep per year (€)', '2400'], ['Build, first year (€)', '=B5*B6+B7']] }, slot: 'low1', size: { w: 560, h: 330 } },
       note('Bridge', '"Questions? The fire is still burning."', 'white', 'low4', 520),
     ],
   },
@@ -167,7 +167,7 @@ const STATIONS = [
       app('decks/embers.html', 'main', MAIN, 'Deck · Embers'),
       { mcp: { op: 'bubbles', title: 'Your questions', question: 'What do you want to ask the fire?', ideas: [] }, slot: 'side', size: SIDE },
       { mcp: { op: 'kanban', title: 'Parking lot', columns: ['Asked', 'Answered'], items: [] }, slot: 'low1', size: { w: 560, h: 330 } },
-      note('Resources', `- [Talk hub: decks, modules, art](${HUB})\n- [Storyline (Roter Faden)](https://github.com/hannespix/vave-discovery/blob/main/campfire/ROTER-FADEN.md)\n- [PixiNotes](https://hannespix.github.io/pixinotes/)\n- [Liquid type](https://hannespix.github.io/liquidtype/)`, 'yellow', 'low2', 520),
+      note('Resources', `- [Talk hub: decks, modules, art](${HUB})\n- [PixiNotes](https://hannespix.github.io/pixinotes/)\n- [Liquid type](https://hannespix.github.io/liquidtype/)`, 'yellow', 'low2', 520),
       bild('pix-wave.svg', 'low3', 320, 'Pix says bye'),
       pdf('pdf/embers.pdf'),
     ],
@@ -215,7 +215,8 @@ function andereKarten(frameX, frameY, karten) {
     if (k.app) {
       const f = datei_(k.app);
       const name = k.app.split('/').pop();
-      extra.push({ id: k.id, type: 'htmlapp', position: pos, width: k.size.w, height: k.size.h, autoFit: false, data: { name, size: existsSync(f) ? readFileSync(f).length : 0, titel: k.titel } });
+      // The card shows data.name (HtmlAppCard), so the readable title goes there; the file keeps its own name
+      extra.push({ id: k.id, type: 'htmlapp', position: pos, width: k.size.w, height: k.size.h, autoFit: false, data: { name: k.titel ?? name, size: existsSync(f) ? readFileSync(f).length : 0 } });
       if (existsSync(f)) dateien[k.id] = { name, mime: 'text/html', b64: b64(f) };
     } else if (k.bild) {
       const f = datei_(`art/${k.bild}`);
@@ -224,28 +225,31 @@ function andereKarten(frameX, frameY, karten) {
     } else if (k.pdf) {
       const f = datei_(k.pdf);
       const name = k.pdf.split('/').pop();
-      extra.push({ id: k.id, type: 'file', position: pos, width: 240, data: { name, mime: 'application/pdf', size: existsSync(f) ? readFileSync(f).length : 0, titel: `Handout · ${name.replace('.pdf', '')}` } });
+      // Handouts live together in their own frame below the stations — unconnected, so they don't add slides
+      const hp = { x: HANDOUTS.x + 60 + handouts.length * 300, y: HANDOUTS.y + 110 };
+      handouts.push(k.id);
+      extra.push({ id: k.id, type: 'file', position: hp, width: 240, data: { name, mime: 'application/pdf', size: existsSync(f) ? readFileSync(f).length : 0, titel: `Handout · ${name.replace('.pdf', '')}` } });
       if (existsSync(f)) dateien[k.id] = { name, mime: 'application/pdf', b64: b64(f) };
     }
   }
 }
 
 const frames = [];
+const HANDOUTS = { x: 0, y: ROWS[2] + FH + GAP, w: FW, h: 520 };
+const handouts = [];
 for (const [i, st] of STATIONS.entries()) {
   const fx = COLS[i % 3], fy = ROWS[Math.floor(i / 3)];
-  const kopf = { mcp: { op: 'shape', shape: 'terminator', text: `${st.nr} · ${st.name}` }, slot: 'head', size: { w: 520, h: 110 }, kopf: true, stil: { fontSize: 'xl', font: 'mono' } };
-  const zeit = { mcp: { op: 'shape', shape: 'process', text: st.zeit }, slot: 'head', size: { w: 260, h: 56 }, kopf: true, stil: { fontSize: 'l', font: 'mono' } };
-  const karten = [kopf, zeit, ...st.cards];
+  // One header shape with the start time — a separate clock shape was an extra slide in presentation mode
+  const kopf = { mcp: { op: 'shape', shape: 'terminator', text: `${st.nr} · ${st.name} · ${st.zeit.split('–')[0]}` }, slot: 'head', size: { w: 520, h: 130 }, kopf: true, stil: { fontSize: 'xl', font: 'mono' } };
+  const karten = [kopf, ...st.cards];
   await mcpKarten(fx, fy, karten);
   andereKarten(fx, fy, karten);
-  lage.get(zeit.id).y += 125;                          // the clock sits under the header, right-aligned
-  lage.get(zeit.id).x += 260;
   frames.push({ id: uid(), type: 'frame', position: { x: fx, y: fy }, width: FW, height: FH, dragHandle: '.frame-head', data: { name: `${st.nr} · ${st.name} · ${st.zeit}` } });
   // Presentation path: header → goal → main → side → lower row → bridge; PDFs hang off the deck with a plain line
-  const reihe = karten.filter((k) => !k.pdf && k !== zeit);
+  const reihe = karten.filter((k) => !k.pdf);
   const order = ['head', 'goal', 'main', 'side', 'low1', 'low2', 'low3', 'low4'];
   reihe.sort((a, b) => order.indexOf(a.slot) - order.indexOf(b.slot));
-  ketten.push({ reihe: reihe.map((k) => k.id), zeit: zeit.id, pdfs: karten.filter((k) => k.pdf).map((k) => k.id), deck: karten.find((k) => k.app?.startsWith('decks/'))?.id });
+  ketten.push({ reihe: reihe.map((k) => k.id) });
 }
 
 // 2) Overview frame on top: title, scene, trail map, agenda — built the same way
@@ -256,6 +260,7 @@ const howto = { mcp: { op: 'note', title: 'How to use this board', text: `- **Pr
   const ops = [agenda.mcp, howto.mcp];
   const text = await tool('pixinotes_bearbeiten', { board: NAME, ops });
   const neu = [...(text.match(/Neu: (.*)/)?.[1] ?? '').matchAll(/\[([^\]]+)\]/g)].map((m) => m[1]);
+  if (neu.length !== 2) throw new Error(`board: Übersicht – 2 Operationen, aber ${neu.length} neue Karten:\n${text}`);
   [agenda.id, howto.id] = neu;
   lage.set(agenda.id, { x: 3640, y: 90, w: 1960, h: 420 });
   lage.set(howto.id, { x: 60, y: 560, w: 640 });
@@ -291,8 +296,6 @@ const kante = (source, target, kind = 'arrow') => ({ id: `e-${uid()}`, source, t
 const edges = [];
 for (const k of ketten) {
   for (let i = 1; i < k.reihe.length; i++) edges.push(kante(k.reihe[i - 1], k.reihe[i]));
-  edges.push(kante(k.reihe[0], k.zeit, 'line'));
-  for (const p of k.pdfs) edges.push(kante(k.deck ?? k.reihe[1], p, 'line'));
 }
 edges.push(kante(titel.id, szene.id), kante(szene.id, karte.id), kante(karte.id, agenda.id), kante(agenda.id, howto.id));
 const ueberFrame = { id: uid(), type: 'frame', position: { x: 0, y: 0 }, width: UEB.w, height: UEB.h, dragHandle: '.frame-head', data: { name: 'CAMPFIRE · PLAYING WITH FIRE · VAVE · 90 MIN' } };
@@ -315,7 +318,8 @@ for (let i = 0; i < STATIONS.length - 1; i++) {
 }
 gestrichelt([[UEB.w / 2, UEB.h + 10], [UEB.w / 2, UEB.h + GAP / 2], [COLS[0] + FW / 2, UEB.h + GAP / 2], [COLS[0] + FW / 2, ROWS[0] - 10]]);
 
-board.nodes = [ueberFrame, ...frames, titel, ...uebersicht, pix, pix00, ...board.nodes, ...extra];
+const handoutFrame = { id: uid(), type: 'frame', position: { x: HANDOUTS.x, y: HANDOUTS.y }, width: HANDOUTS.w, height: HANDOUTS.h, dragHandle: '.frame-head', data: { name: 'HANDOUTS · PDF of every deck' } };
+board.nodes = [ueberFrame, ...frames, handoutFrame, titel, ...uebersicht, pix, pix00, ...board.nodes, ...extra];
 board.edges = [...board.edges, ...edges];
 board.drawings = striche;
 

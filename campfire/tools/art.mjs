@@ -454,7 +454,7 @@ function lifeStrip() {
 function repoWall() {
   const W = 240, H = 135;
   const cats = [
-    [17, 'b', 'WORK TOOLS'], [6, 'o', 'FAMILY WINERY'], [9, 'r', 'PERSONAL & PLAY'],
+    [17, 'b', 'EVERYDAY TOOLS'], [6, 'o', 'FAMILY WINERY'], [9, 'r', 'PERSONAL & PLAY'],
     [4, 'd', 'BRAND & TALKS'], [3, 'M', 'VAVE'], [2, 't', 'SYSTEM CONFIG'],
   ];
   const total = cats.reduce((a, c) => a + c[0], 0);
@@ -499,7 +499,7 @@ function repoWall() {
   write('repo-wall.svg', {
     w: W, h: H, css, body,
     title: '41 repos, 1 year',
-    desc: 'A wall of 41 pixel tiles, one per repository built in one year, coloured by kind: 17 work tools for vocational training, 6 family business and winery, 9 personal and play, 4 brand and presentation, 3 for VAVE, 2 system configuration. A light wave runs across the tiles.',
+    desc: 'A wall of 41 pixel tiles, one per repository built in one year, coloured by kind: 17 everyday tools, 6 family business and winery, 9 personal and play, 4 brand and presentation, 3 for VAVE, 2 system configuration. A light wave runs across the tiles.',
   });
 }
 

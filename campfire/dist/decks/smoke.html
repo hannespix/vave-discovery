@@ -281,7 +281,7 @@ body { overflow: hidden; }
 .reveal .center .kicker { text-align: center; }
 .reveal .narrow { max-width: 920px; }
 .reveal .center.narrow, .reveal .center .narrow { margin-left: auto; margin-right: auto; }
-.reveal .mt { margin-top: 32px; }
+.reveal .mt { margin-top: 32px; }       /* final say: see the end of the file */
 .reveal .mt-lg { margin-top: 48px; }
 
 /* ── Pixel art ─────────────────────────────────────────────────────────── */
@@ -425,6 +425,7 @@ body { overflow: hidden; }
 .reveal .steps .hot-step { border-color: var(--deck-hot); }
 .reveal .steps.s5 > li { padding: 18px 14px; }   /* five steps in a row: smaller titles, no broken words */
 .reveal .steps.s5 strong { font-size: 38px; }
+.reveal .steps.s6 > li { font-size: 24px; overflow-wrap: normal; hyphens: none; }   /* six in a row: whole words only */
 
 /* Compact numbered rules (smoke deck) */
 .reveal ol.rules > li { padding-left: 52px; margin-bottom: 10px; font-size: 28px; line-height: 1.3; }
@@ -490,6 +491,11 @@ body { overflow: hidden; }
 @media print {
   .reveal-viewport::before { display: none; }
 }
+
+/* Spacing utilities win over the component resets above (.cards, .steps, .chips … set margin: 0 with the same
+   specificity and came later, so mt/mt-lg rendered as 0). Higher specificity, last in the file. */
+.reveal .slides .mt { margin-top: 32px; }
+.reveal .slides .mt-lg { margin-top: 48px; }
 </style>
 </head>
 <body>
@@ -517,7 +523,7 @@ body { overflow: hidden; }
     <div class="box">
       <h3>Confidential data</h3>
       <p class="muted">Client briefs, NDAs, personal data in consumer chats.</p>
-      <p class="mt"><strong>Do:</strong> business plans only. Anonymise. Ask before pasting.</p>
+      <p class="mt"><strong>Do:</strong> business plan, and the client's NDA decides. Anonymise. Ask before pasting.</p>
     </div>
     <div class="box">
       <h3>Secrets</h3>
@@ -561,7 +567,7 @@ body { overflow: hidden; }
     <div class="box">
       <h3>Rights</h3>
       <p class="muted">Fonts, images, code licences, real people's photos.</p>
-      <p class="mt"><strong>Do:</strong> use what you own or what's licensed. Credit sources.</p>
+      <p class="mt"><strong>Do:</strong> use what you own or what's licensed. Check who owns the AI output. Credit sources.</p>
     </div>
     <div class="box">
       <h3>Orphan tools</h3>
@@ -570,7 +576,7 @@ body { overflow: hidden; }
     </div>
   </div>
   <aside class="notes">
-    Fifth, rights: fonts, images, code licences and real people's photos. Use what you own or what's licensed,
+    Fifth, rights: fonts, images, code licences and real people's photos. Use what you own or what's licensed, check who owns the AI output under the tool's terms and the client contract,
     and credit your sources.
     Sixth, orphan tools: who fixes it in six months? Every tool needs an owner, and the docs live in the repo.
   </aside>
@@ -587,31 +593,32 @@ body { overflow: hidden; }
 </section>
 
 <section>
-  <p class="kicker">A true story, anonymised</p>
-  <blockquote class="quote">“While preparing this talk, an AI audit of my own private repositories found live keys in three of them.”</blockquote>
-  <p class="lead mt-lg"><strong>Private is not the same as safe.</strong></p>
+  <p class="kicker">06 · Secrets</p>
+  <blockquote class="quote">“A key in a private repository is still a key in a file.”</blockquote>
+  <p class="lead mt-lg"><strong>Private is not the same as safe.</strong> Let an AI audit your repos for secrets, then rotate what it finds.</p>
   <aside class="notes">
-    OPTIONAL: only tell this story if you want to, and only after the keys have been rotated. Otherwise skip this slide.
-    While preparing this talk, an AI audit of my own private repositories found live keys in three of them.
-    Private is not the same as safe.
+    Private is not the same as safe. A key in a private repository is still a key in a file: it gets copied, cloned,
+    shared with tools. A cheap habit: let an AI audit your repositories for secrets now and then, and rotate what it finds.
   </aside>
 </section>
 
 <section>
   <p class="kicker">06 · Fireplace check</p>
-  <h2 class="sm">Five questions about a real task</h2>
-  <ol class="steps s5 mt">
+  <h2 class="sm">Six questions about a real task</h2>
+  <ol class="steps s5 s6 mt">
     <li>Client data?</li>
     <li>Personal data?</li>
     <li>Public output?</li>
-    <li>Who maintains it?</li>
+    <li>Business plan?</li>
+    <li>Owner named?</li>
     <li class="hot-step">Reviewed?</li>
   </ol>
-  <p class="lead mt-lg">You get green, yellow or red, with advice.</p>
+  <p class="lead mt-lg">You get green, yellow or red, with advice. <span class="muted">A rule of thumb, not legal advice.</span></p>
   <aside class="notes">
-    Let's try it on a real task from the room. The Fireplace Check module asks five questions:
-    client data, personal data, public output, who maintains it, and was it reviewed.
-    The answer is green, yellow or red, with advice.
+    Let's try it on a real task from the room. The Fireplace Check module asks six questions:
+    client data, personal data, public output, which plan we're on, who maintains it, and was it reviewed.
+    The answer is green, yellow or red, with advice. It's a rule of thumb for the studio, not legal advice:
+    the client contract and the NDA always win.
   </aside>
 </section>
 
@@ -851,11 +858,11 @@ body { overflow: hidden; }
       '..#..##....#....', '.#..#..#....#...', '.#...##.....#...', '.#..........#...',
       '..#........#....', '...########.....', '................', '................',
     ],
-    bubble: [
-      '................', '.############...', '#............#..', '#..##....##..#..',
-      '#..##....##..#..', '#............#..', '#...######...#..', '#............#..',
-      '.#####..######..', '.....#.#........', '.....##.........', '.....#..........',
-      '................', '................', '................', '................',
+    bubble: [ // speech bubble with a question mark — no eyes, so it never reads as an emoji face
+      '................', '..############..', '.#............#.', '.#....####....#.',
+      '.#...##..##...#.', '.#.......##...#.', '.#......##....#.', '.#.....##.....#.',
+      '.#............#.', '.#.....##.....#.', '.#............#.', '..####.#######..',
+      '.....#.#........', '.....##.........', '.....#..........', '................',
     ],
   };
 
