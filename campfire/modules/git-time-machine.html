@@ -10,12 +10,13 @@
   html, body { min-height: 100%; }
   body {
     font-size: clamp(15px, 0.6vw + 10px, 20px);
-    padding: clamp(10px, 1.6vw, 24px);
-    display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 14px);
+    padding: clamp(8px, 1.6vw, 24px);
+    display: flex; flex-direction: column; gap: clamp(6px, 1.2vw, 14px);
     min-height: 100vh;
   }
+  .px-label { font-size: 13px; }
   .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; }
-  .top h1 { margin: 0; font-size: clamp(32px, 4.4vw, 64px); color: var(--fire-3); }
+  .top h1 { margin: 0; font-size: clamp(30px, 4.4vw, 64px); color: var(--fire-3); }
   .top p { margin: 0; color: var(--muted); }
   .top b { color: var(--ink); font-weight: 600; }
 
@@ -59,6 +60,7 @@
   .say b { font-family: var(--pixel); font-weight: 400; font-size: 1.35em; color: var(--fire-3); letter-spacing: 0.02em; }
   .detail { margin: 0; color: var(--muted); }
   .feed { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; border-top: 2px solid var(--night-4); padding-top: 8px; }
+  .feed:empty { display: none; }
   .feed li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.92em; }
   .feed li svg { flex: none; width: 20px; height: 20px; margin-top: 2px; }
   .feed li.crit { color: var(--fire-4); }
@@ -70,19 +72,50 @@
   .cap { margin: 0; text-align: center; font-size: 0.92em; }
   .cap strong { display: block; font: 1.25em/1.1 var(--pixel); color: var(--ink); font-weight: 400; }
   .cap span { color: var(--muted); }
-  .url { margin: 0; font-family: var(--mono); font-size: 0.8em; color: var(--lcd-e); text-align: center; word-break: break-all; }
+  .url { margin: 0; font-family: var(--mono); font-size: max(13px, 0.8em); color: var(--lcd-e); text-align: center; word-break: break-all; }
   [hidden] { display: none !important; }
 
+  /* Projector: 24px text, a larger history graph, a larger poster */
+  @media (min-width: 1024px) and (min-height: 600px) {
+    body { font-size: 24px; height: 100vh; }
+    .px-label { font-size: 16px; }
+    .top p { font-size: 22px; }
+    .words li { font-size: 32px; }
+    .controls .px-btn { font-size: 26px; min-height: 52px; padding: 12px 18px; }
+    main { grid-template-columns: minmax(0, 1fr) 300px; }
+    .gwrap { zoom: 1.3; }
+    .lane-label { font-size: 20px; }
+    .tag { font-size: 18px; }
+    .say { font-size: 28px; }
+    .detail { font-size: 24px; line-height: 1.35; }
+    .feed li { font-size: 22px; }
+    .feed li svg { width: 24px; height: 24px; }
+    .poster { gap: 8px; }
+    .poster svg.art, .poster-wrap { max-width: 168px; }
+    .poster-wrap .tag.live { font-size: 28px; }
+    .cap { font-size: 22px; }
+    .url { font-size: 16px; }
+    .poster .px-btn { font-size: 24px; min-height: 48px; padding: 10px 14px; }
+  }
+  /* Narrow: buttons and lanes first, the poster beside the lanes, the explanation below */
   @media (max-width: 760px) {
-    main { grid-template-columns: minmax(0, 1fr) 132px; grid-template-rows: auto auto; grid-template-areas: "graph graph" "explain poster"; }
-    .top h1 { font-size: 34px; }
+    main { grid-template-columns: minmax(0, 1fr) 116px; grid-template-rows: auto auto; grid-template-areas: "graph poster" "explain explain"; }
+    .top h1 { font-size: 30px; }
     .top .more { display: none; }
     .words { gap: 4px 8px; }
     .words li { font-size: 1.1em; padding: 3px 4px 1px; }
-    .px-btn { font-size: 18px; padding: 10px 12px; }
+    .controls { gap: 6px; }
+    .px-btn { font-size: 17px; padding: 8px 10px; min-height: 38px; }
     .controls .sep { display: none; }
+    .panel { padding: 8px; }
     .say { font-size: 1em; }
-    .poster svg.art, .poster-wrap { max-width: 110px; }
+    .detail, .feed li { font-size: 14px; }
+    .poster { gap: 6px; }
+    .poster > .px-label { display: none; }
+    .poster svg.art, .poster-wrap { max-width: 84px; }
+    .poster-wrap .tag.live { font-size: 1em; right: -8px; top: -10px; padding: 3px 6px; }
+    .cap { font-size: 13px; }
+    .poster .px-btn { font-size: 14px; padding: 6px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .node.new i, .tag.live { animation: none !important; }
@@ -127,7 +160,7 @@
       <span class="tag live" id="poster-live" hidden>LIVE</span>
     </div>
     <p class="cap" id="cap"></p>
-    <p class="url" id="url" hidden>your-studio.github.io/poster</p>
+    <p class="url" id="url" hidden>your-studio.github.io/<wbr>poster</p>
     <button class="px-btn" id="b-latest" type="button" hidden>Back to latest</button>
   </aside>
 </main>
