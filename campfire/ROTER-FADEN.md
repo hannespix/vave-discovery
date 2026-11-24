@@ -190,11 +190,14 @@ review, same checks, any AI can take the next shift. That's the antidote to the 
 - Pieces travel between them with AI as the courier: *"Take the mascot from pix-el, adapt it to PixiNotes' grid, note
   where it came from."*
 - **Examples:**
-  - Pix: pix-el → PixiNotes → this talk.
-  - Liquid type: liquidtype → PixiNotes and pix-el.
-  - Slides: Vibe Studio → PixiNotes.
-  - Flame: pixletics → this talk.
-  - Survey and prototype: discovery → vave.log.
+  - **Pix moves house:** a 16 × 16 mascot from pix-el's icon file became a PixiNotes card whose eyes follow your finger.
+    Its LCD palette now dresses a whole PixiNotes theme, the email-checker and this talk.
+  - **Liquid letters:** a WebGL experiment (liquidtype) was ported file by file into PixiNotes, each file with a line
+    saying where it came from, tuned values included. It also became the hero of pix-el.de.
+  - **Audience in, bubbles out:** people type ideas on their phones into pix·el, and they float as bubbles on a Vibe
+    Studio slide. Then the whole Vibe Studio editor moved into PixiNotes as one card.
+  - **Small loans:** the flame comes from pixletics, the board is built through PixiNotes' MCP plug, and vave.log grew
+    out of the discovery survey and prototype.
 - **Plugs between repos:** single HTML files that run anywhere (these modules run inside PixiNotes cards), JSON
   exports, and MCP servers.
 - **House rules for remixing:** one job per repo, note the origin, same routine everywhere (branch → pull request →
@@ -207,7 +210,65 @@ I described the quest; it wrote the cards and laid them out." Show `campfire/too
 
 ## 7 · QUEST LOG: vave.log (1:07–1:17) · *Advanced*
 
-*(filled from the repo history; see the deck* Quest log *and the board frame)*
+**Goal:** Show the real thing: how VAVE's own tool came to be, what it can do, and where it could go next. Honest,
+with numbers from the repository. [⇢ deck *Quest log*, `art/vavelog-quest.svg`, board frame 7]
+
+**The trigger.** On 29 September the discovery survey went out as one HTML file, and a clickable prototype went live.
+No survey answers came back yet. So vave.log was built on assumptions and public research, on purpose as a phase-one
+draft to be tested with real people. *Say it:* "Every feature in here is a hypothesis until you've used it."
+
+**The quest log** (from the repository's history, 105 commits, pull requests up to #91):
+
+| Date | What happened |
+|---|---|
+| **13 Oct · Day 1** | From an empty repo to a working app: login, database with row-level security, the MCP foundation, first screens, finance in three languages, the animated logo |
+| **14 Oct** | About 40 pull requests in one day: demo agency, connected workflows and forecasts, app install, auto-deploy, global timer, then audit milestones (fixes, invoices, e-invoice and DATEV export, time and capacity) |
+| **15 Oct** | Quotes that turn into projects, in-app help, bank import, kanban, accessibility to WCAG 2.2 AA |
+| **21 Oct** | Eight milestones in one day: holidays, leave planning, work-time model, capacity cockpit, long-term capacity, a "where is it burning?" board, strength profiles, AI time suggestions |
+| **16–17 Nov** | A deck for project leads, an audit with about 60 findings, and the capacity plan rebuilt after **watching one real user work** (Excel import, phases, service types) |
+| **19–20 Nov** | Group of companies, holidays for China, Dubai and Singapore, timeline drag, five polish rounds (#87–#91) |
+
+**What it does today:**
+- **Time:** timer, approvals, flextime account.
+- **Leave:** requests, team calendar, holidays for DE/AT/CH/CN/SG/UAE.
+- **Capacity:** cockpit heatmap, long-term scenarios, an Excel-style plan.
+- **Projects:** budgets, forecasts, kanban, timeline.
+- **Finance:** quotes that become projects, invoices with e-invoice and DATEV export, bank import.
+- **Team and rights:** seven rights templates.
+- **Languages:** English, German, Chinese.
+
+**How it's built, in one picture:**
+- A web app on GitHub Pages talks to a database with login (Supabase). Row-level security means everybody only sees
+  what they may see.
+- An **MCP server with 68 tools** lets an AI assistant log time or ask "where is it burning?", with exactly the rights
+  of the person asking.
+- About 70 test files, and every change passes checks, a security audit and browser tests before it goes live.
+
+**Remix inside the story:**
+- The survey and prototype from the discovery project led to vave.log.
+- The same house routine runs as in PixiNotes, liquidtype, email-checker and Vibe Studio: branch → pull request →
+  checks → merge → live check.
+- The same MCP idea as PixiNotes (an AI plugs into the app), built differently: remote over the web with login, instead
+  of local.
+
+**Where it could go: proposals, not decisions** (to discuss with Tobias; agents propose, humans decide):
+
+| | Proposal | Why for VAVE |
+|---|---|---|
+| **Now** | AI time entry live: connect the AI assistant through MCP with a proper consent screen (built, not yet switched on) | "Log two hours on the Frankfurt booth" from the chat you already use |
+| **Now** | Capacity plan v2: rates per service type, euros per phase, choose the phase at the timer | Came straight from watching a real user |
+| **Next** | **Build-up radar:** crews, trucks and hall slots for build-up and dismantling, conflicts across parallel fairs | VAVE's busiest weeks happen on site, not in the office |
+| **Next** | **Fair deadline radar:** AI reads the fair's technical guidelines and proposes milestones; a human confirms | Deadlines hide on page 47 |
+| **Next** | **Modular inventory:** reusable frames, LED tiles and furniture as assets, with location, condition and next booking | Reuse saves money and CO₂ |
+| **Next** | **Site reports from the phone:** photos and notes per day on site, offline-ready | Documentation where it happens |
+| **Next** | **Client approvals:** render variants as approval rounds, like pull requests for clients | Fewer mail threads, clear sign-off |
+| **Later** | Group of companies: cross-company staffing and internal charging, one group capacity view | Several companies, one team reality |
+| **Later** | Multi-currency invoices and local formats, only with tax advice | Studios in different countries |
+
+**Lesson for the room:** The best feature came from watching one real person use the tool for an hour. Not from a
+prompt.
+
+**Save point:** "Quest log updated. Next quest: your feedback."
 
 ## 8 · BOSS FIGHT: risks and sensible use (1:17–1:25)
 
