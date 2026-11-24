@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quest Log: vave.log · Playing with Fire</title>
+<link rel="stylesheet" href="../vendor/reveal/reset.css">
+<link rel="stylesheet" href="../vendor/reveal/reveal.css">
+<link rel="stylesheet" href="../shared/campfire.css">
+<link rel="stylesheet" href="../shared/deck.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ── Level 7 · Quest log: vave.log ───────────────────────────────── -->
+<!-- Numbers from the repository's history, as in ROTER-FADEN.md. No person is named. -->
+
+<section class="level">
+  <div class="cols wr">
+    <div class="pic"><svg data-px="pixfire" data-scale="10" aria-label="Pix sitting by the campfire"></svg></div>
+    <div>
+      <p class="lvl">Level 7</p>
+      <h1>Quest log: vave.log</h1>
+      <p class="lead">How VAVE's own tool came to be, what it does, where it could go.</p>
+      <p class="clock">1:07 · Advanced · <a href="https://hannespix.github.io/vave.log/">public demo</a></p>
+    </div>
+  </div>
+  <aside class="notes">
+    Level seven: the quest log of vave.log, VAVE's own tool. I'll show the real thing: how it came to be,
+    what it can do, and where it could go next. Honest, with numbers from the repository.
+    The public demo is open in a tab, with demo data only.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">The trigger</p>
+  <h2 class="sm">The survey went out. Then: silence.</h2>
+  <ol class="steps mt">
+    <li><strong>29 Sep</strong>The survey ships as one HTML file. A clickable prototype goes live.</li>
+    <li><strong>No answers</strong>Nothing came back yet.</li>
+    <li class="hot-step"><strong>Phase one</strong>A draft on purpose, built on assumptions and public research, to be tested with real people.</li>
+  </ol>
+  <p class="lead mt-lg">"Every feature in here is a hypothesis until you've used it."</p>
+  <aside class="notes">
+    On 29 September the discovery survey went out as one HTML file, and a clickable prototype went live.
+    No answers came back yet. So vave.log was built on assumptions and public research, on purpose,
+    as a phase-one draft to be tested with real people. Every feature in here is a hypothesis until you've used it.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">The quest log · from the repository's history</p>
+  <img class="art art-sm" src="../art/vavelog-quest.svg" alt="A pixel quest path from an empty repository to a working app, with milestones along the way">
+  <div class="stats mt" style="grid-template-columns: 1fr 1fr;">
+    <div class="stat"><p class="n">105</p><p class="t">commits</p></div>
+    <div class="stat"><p class="n">#91</p><p class="t">pull requests, so far</p></div>
+  </div>
+  <aside class="notes">
+    Here's the quest log, straight from the repository's history: 105 commits, pull requests up to number 91.
+    Let's walk the path, day by day.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">The quest log · October</p>
+  <table class="qlog">
+    <tr><td class="d">13 Oct</td><td><b>Day 1.</b> From an empty repo to a working app: login, database with row-level security, the MCP foundation, first screens, finance in three languages, the animated logo.</td></tr>
+    <tr><td class="d">14 Oct</td><td>About 40 pull requests in one day: demo agency, connected workflows and forecasts, app install, auto-deploy, global timer, then audit milestones.</td></tr>
+    <tr><td class="d">15 Oct</td><td>Quotes that turn into projects, in-app help, bank import, kanban, accessibility to WCAG 2.2 AA.</td></tr>
+  </table>
+  <aside class="notes">
+    Day one, 13 October: from an empty repo to a working app with login, a secured database, the MCP foundation and finance in three languages.
+    The next day about forty pull requests, from a demo agency to audit milestones for fixes, invoices, e-invoice and DATEV export, time and capacity.
+    On the 15th: quotes that turn into projects, bank import, kanban, and accessibility to WCAG 2.2 AA.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">The quest log · October to November</p>
+  <table class="qlog">
+    <tr><td class="d">21 Oct</td><td>Eight milestones in one day: holidays, leave planning, work-time model, capacity cockpit, long-term capacity, a "where is it burning?" board, strength profiles, AI time suggestions.</td></tr>
+    <tr><td class="d">16–17 Nov</td><td>A deck for project leads, an audit with about 60 findings, and the capacity plan rebuilt after <strong>watching one real user work</strong>.</td></tr>
+    <tr><td class="d">19–20 Nov</td><td>Group of companies, holidays for China, Dubai and Singapore, timeline drag, five polish rounds (#87–#91).</td></tr>
+  </table>
+  <aside class="notes">
+    21 October: eight milestones in one day, including a "where is it burning?" board.
+    Mid-November: a deck for project leads, an audit with about sixty findings, and the capacity plan rebuilt after watching one real user work,
+    with Excel import, phases and service types. Then group of companies, more holidays, and five polish rounds.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">What it does today</p>
+  <dl class="sheet">
+    <dt>Time</dt><dd>timer, approvals, flextime account</dd>
+    <dt>Leave</dt><dd>requests, team calendar, holidays for DE/AT/CH/CN/SG/UAE</dd>
+    <dt>Capacity</dt><dd>cockpit heatmap, long-term scenarios, an Excel-style plan</dd>
+    <dt>Projects</dt><dd>budgets, forecasts, kanban, timeline</dd>
+    <dt>Finance</dt><dd>quotes that become projects, invoices with e-invoice and DATEV export, bank import</dd>
+    <dt>Team</dt><dd>seven rights templates</dd>
+    <dt>Languages</dt><dd>English, German, Chinese</dd>
+  </dl>
+  <aside class="notes">
+    What it does today: time with timer, approvals and a flextime account; leave with a team calendar and holidays for six countries;
+    capacity as a heatmap, scenarios and an Excel-style plan; projects; finance; seven rights templates; and three languages.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">How it's built · one picture</p>
+  <h2 class="sm">An app with a plug for AI</h2>
+  <ol class="steps plain both mt">
+    <li><svg data-item-icon="deploy" data-scale="3"></svg><strong>Web app</strong>on GitHub Pages</li>
+    <li><svg data-item-icon="api" data-scale="3"></svg><strong>Database</strong>with login. Everybody only sees what they may see.</li>
+    <li class="hot-step"><svg data-item-icon="mcp" data-scale="3" class="hot"></svg><strong>MCP</strong>a server with 68 tools</li>
+    <li><svg data-item-icon="agent" data-scale="3"></svg><strong>AI assistant</strong>with exactly the rights of the person asking</li>
+  </ol>
+  <p class="small mt-lg">About 70 test files. Every change passes checks, a security audit and browser tests before it goes live.</p>
+  <aside class="notes">
+    How it's built: a web app on GitHub Pages talks to a database with login, Supabase. Row-level security means everybody only sees what they may see.
+    An MCP server with 68 tools lets an AI assistant log time or ask "where is it burning?", with exactly the rights of the person asking.
+    About seventy test files, and every change passes checks, a security audit and browser tests before it goes live.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">Remix inside the story</p>
+  <h2 class="sm">Nothing here started from zero</h2>
+  <ul class="cards mt">
+    <li><h3>Origin</h3><p>The discovery survey and prototype led to vave.log.</p></li>
+    <li><h3>Routine</h3><p>Same house routine as PixiNotes, liquidtype, email-checker and Vibe Studio: branch, pull request, checks, merge, live check.</p></li>
+    <li class="hot-card"><h3>Plug</h3><p>Same MCP idea as PixiNotes, built differently: remote over the web with login, not local.</p></li>
+  </ul>
+  <aside class="notes">
+    Remix inside the story: the survey and prototype from the discovery project led to vave.log.
+    The same house routine runs as in my other repos: branch, pull request, checks, merge, live check.
+    And the same MCP idea as PixiNotes, built differently: remote over the web with login, instead of local.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">Where it could go · Now</p>
+  <h2 class="sm">Proposals, not decisions</h2>
+  <table class="qlog props">
+    <tr><th></th><th>Proposal</th><th>Why for VAVE</th></tr>
+    <tr><td class="tag">Now</td><td><b>AI time entry live:</b> connect the AI assistant through MCP with a proper consent screen (built, not yet switched on)</td><td class="why">"Log two hours on the Frankfurt booth" from the chat you already use</td></tr>
+    <tr><td class="tag">Now</td><td><b>Capacity plan v2:</b> rates per service type, euros per phase, choose the phase at the timer</td><td class="why">Came straight from watching a real user</td></tr>
+  </table>
+  <p class="small mt">To discuss with VAVE's CEO. Agents propose, humans decide.</p>
+  <aside class="notes">
+    Where could it go? These are proposals, not decisions. Agents propose, humans decide, and this goes to VAVE's CEO.
+    Now: switch on AI time entry with a proper consent screen, so you can say "log two hours on the Frankfurt booth" in the chat you already use.
+    And capacity plan version two, which came straight from watching a real user.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">Where it could go · Next</p>
+  <h2 class="sm">Proposals, not decisions</h2>
+  <table class="qlog props">
+    <tr><th></th><th>Proposal</th><th>Why for VAVE</th></tr>
+    <tr><td class="tag">Next</td><td><b>Build-up radar:</b> crews, trucks and hall slots for build-up and dismantling, conflicts across parallel fairs</td><td class="why">VAVE's busiest weeks happen on site, not in the office</td></tr>
+    <tr><td class="tag">Next</td><td><b>Fair deadline radar:</b> AI reads the fair's technical guidelines and proposes milestones; a human confirms</td><td class="why">Deadlines hide on page 47</td></tr>
+    <tr><td class="tag">Next</td><td><b>Modular inventory:</b> reusable frames, LED tiles and furniture as assets, with location, condition and next booking</td><td class="why">Reuse saves money and CO₂</td></tr>
+  </table>
+  <aside class="notes">
+    Next, for the fair floor: a build-up radar for crews, trucks and hall slots, because VAVE's busiest weeks happen on site.
+    A fair deadline radar, because deadlines hide on page 47; the AI proposes, a human confirms.
+    And a modular inventory for frames, LED tiles and furniture, because reuse saves money and CO2.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">Where it could go · Next and later</p>
+  <h2 class="sm">Proposals, not decisions</h2>
+  <table class="qlog props">
+    <tr><th></th><th>Proposal</th><th>Why for VAVE</th></tr>
+    <tr><td class="tag">Next</td><td><b>Site reports from the phone:</b> photos and notes per day on site, offline-ready</td><td class="why">Documentation where it happens</td></tr>
+    <tr><td class="tag">Next</td><td><b>Client approvals:</b> render variants as approval rounds, like pull requests for clients</td><td class="why">Fewer mail threads, clear <span style="white-space: nowrap;">sign-off</span></td></tr>
+    <tr><td class="tag">Later</td><td><b>Group of companies:</b> cross-company staffing and internal charging, one group capacity view</td><td class="why">Several companies, one team reality</td></tr>
+    <tr><td class="tag">Later</td><td><b>Multi-currency invoices</b> and local formats, only with tax advice</td><td class="why">Studios in different countries</td></tr>
+  </table>
+  <aside class="notes">
+    Also next: site reports from the phone, and client approvals that work like pull requests for clients.
+    Later: the group of companies with one capacity view, and multi-currency invoices, but only with tax advice.
+    Again: proposals. You decide which, if any.
+  </aside>
+</section>
+
+<section class="statement">
+  <p class="kicker center">The lesson</p>
+  <p class="big">Watch one real user</p>
+  <p class="lead">The best feature came from watching one real person use the tool for an hour. Not from a prompt.</p>
+  <aside class="notes">
+    The lesson for the room: the best feature came from watching one real person use the tool for an hour.
+    Not from a prompt. That's why your feedback is the next quest.
+  </aside>
+</section>
+
+<section data-savepoint="Quest log updated. Next quest: your feedback." data-level="7">
+  <aside class="notes">
+    Saving game. Quest log updated. Next quest: your feedback.
+    Now, every good game has bosses. Let's meet them.
+  </aside>
+</section>
+
+</div>
+</div>
+<script src="../vendor/reveal/reveal.js"></script>
+<script src="../vendor/reveal/plugin/notes.js"></script>
+<script src="../shared/pixel.js"></script>
+<script src="../shared/lore.js"></script>
+<script src="../shared/deck.js"></script>
+</body>
+</html>

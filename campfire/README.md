@@ -1,22 +1,29 @@
 # campfire/: der Campfire-Vortrag bei VAVE
 
-90 Minuten Impulsvortrag auf Englisch über KI und Vibecoding. Den Ablauf, die Kernsätze und den Sprechtext enthält
-[`ROTER-FADEN.md`](ROTER-FADEN.md). Dieser Ordner hängt nicht an der Discovery-Schleife (STATE/ROADMAP) und ändert
-nichts an Umfrage oder Prototyp.
+90 Minuten Impulsvortrag auf Englisch über KI und Vibecoding, gebaut als Spiel: **PLAYING WITH FIRE – a campfire quest
+through AI**. Den Ablauf in zehn Leveln, die Kernsätze und den Sprechtext enthält [`ROTER-FADEN.md`](ROTER-FADEN.md).
+Dieser Ordner hängt nicht an der Discovery-Schleife (STATE/ROADMAP) und ändert nichts an Umfrage oder Prototyp.
 
 **Online:** <https://hannespix.github.io/vave-discovery/campfire/>. Das ist die Hub-Seite mit allen Decks, Modulen,
 PDFs, Grafiken und der Board-Datei.
+
+## Version 2 in einem Satz
+
+Mehr Fachbegriffe als Spiel-Items erklärt, mehr KI-Geschichte und Gerüchte, weniger Anbieter-Fokus, GitHub als Gildenhalle
+für viele Konten und viele KIs, Beispiele aus der Kommunikation im Raum (Showroom, Messestand, Markenraum), das Repo
+vave.log als eigenes Quest-Level samt Vorschlägen zur Weiterentwicklung und modulares Arbeiten über viele Repos hinweg.
 
 ## Was hier liegt
 
 | Pfad | Inhalt |
 |---|---|
-| `ROTER-FADEN.md` | Ablauf in neun Stationen, Zeiten, Sprechtext, Beispiele mit Ampel, Checkliste für den Vortag |
+| `ROTER-FADEN.md` | Ablauf in zehn Leveln (0 PRESS START … 9 NEW GAME+), Zeiten, Sprechtext, Running Gags, Checkliste |
+| `shared/lore.js` | **einzige Inhaltsquelle:** 30 Items (Fachbegriffe), 15 Stationen KI-Geschichte, 14 Mythen und Gerüchte, 7 Bosse (Risiken), 8 Raum-Quests, 7 Hausregeln |
 | `index.html` | Hub-Seite (englisch) |
-| `decks/*.html` | sechs reveal.js-Kurzdecks: opening, spark, kindling, forge, smoke, embers |
-| `modules/*.html` | fünf interaktive Module: token-oracle, context-circle, prompt-forge, git-time-machine, fireplace-check |
-| `art/*.svg` · `art/*.png` | Pixel-Art: Lagerfeuer-Szene, Wanderkarte, Lebenslauf-Streifen, Repo-Wand, Feuerstellen-Regeln, Pix, Stations-Icons |
-| `shared/` | gemeinsames Aussehen: `campfire.css` (Farben, Schrift), `pixel.js` (Sprites als Textraster, 5×7-Pixelschrift), `deck.css`/`deck.js` (reveal-Thema), Jersey 10 (OFL) |
+| `decks/*.html` | acht reveal.js-Kurzdecks: press-start, lore, inventory, kindling, guild, questlog, bossfight, newgame |
+| `modules/*.html` | acht interaktive Module: myth-or-fact, inventory, token-oracle, context-circle, prompt-forge, git-time-machine, fireplace-check, booth-builder |
+| `art/*.svg` · `art/*.png` | Pixel-Art: Titelbild, Weltkarte, Messestand, Item-Bogen, Gildenhalle, Remix-Karte, Quest-Log vave.log, Bosse, Lagerfeuer-Szene u. a. |
+| `shared/` | gemeinsames Aussehen: `campfire.css` (Farben, Schrift), `pixel.js` (Sprites und 30 Item-Icons als Textraster, 5×7-Pixelschrift), `deck.css`/`deck.js` (reveal-Thema), Jersey 10 (OFL) |
 | `vendor/reveal/` | reveal.js 5.2 (MIT), lokal, damit alles offline läuft |
 | `tools/` | Build-Skripte, siehe unten |
 | `dist/` | **gebaute Einzeldateien.** Genau das geht online, und genau das steckt in der Board-Datei |
@@ -24,17 +31,19 @@ PDFs, Grafiken und der Board-Datei.
 ## Bauen
 
 ```bash
-node campfire/tools/art.mjs                     # Pixel-Art neu erzeugen (SVG)
+node campfire/tools/art.mjs [name …]            # Pixel-Art neu erzeugen (SVG + PNG), optional nur einzelne Bilder
 node campfire/tools/build.mjs                   # Decks, Module, Hub → dist/ (alles eingebettet, offline)
 PLAYWRIGHT_CORE=… CHROMIUM=… node campfire/tools/pdf.mjs     # Decks → dist/pdf/*.pdf
 node campfire/tools/board.mjs --mcp pixinotes-mcp.mjs         # PixiNotes-Board → dist/campfire.pixiboard.json
 ```
 
 - **Reihenfolge:** art → build → pdf → board. Das Board bettet die gebauten Decks, Module und PDFs ein.
+- **Inhalte ändern:** Begriffe, Geschichte, Mythen, Bosse und Quests nur in `shared/lore.js` pflegen. Module, Art und
+  Board lesen von dort.
 - **MCP-Server:** `pixinotes-mcp.mjs` gibt es unter <https://hannespix.github.io/pixinotes/pixinotes-mcp.mjs>.
-  Über ihn legt das Board-Skript alle Textkarten an: Stationsköpfe, Notizen, Diagramme, Ideen-Bubbles, Kanban und
-  Tabellen, samt Pfeilen. Danach ergänzt dasselbe Skript in der Datei, was die MCP-Sprache nicht kennt: App-Karten,
-  Bilder, PDFs, Pix, flüssige Schrift, Layout und den gestrichelten Pfad.
+  Über ihn legt das Board-Skript alle Textkarten an: Levelköpfe, Notizen, Diagramme, Zeitleisten, Ideen-Bubbles,
+  Kanban und Tabellen, samt Pfeilen. Danach ergänzt dasselbe Skript in der Datei, was die MCP-Sprache nicht kennt:
+  App-Karten, Bilder, PDFs, Pix, flüssige Schrift, Layout und den gestrichelten Pfad.
 - **Deploy:** `dist/` wird mit eingecheckt. `.github/workflows/pages.yml` kopiert es nach `/campfire/`.
 
 ## Das Board in PixiNotes
@@ -42,7 +51,10 @@ node campfire/tools/board.mjs --mcp pixinotes-mcp.mjs         # PixiNotes-Board 
 `dist/campfire.pixiboard.json` auf ein beliebiges Board ziehen. Es kommt als **neues** Board dazu, vorhandene Boards
 bleiben unberührt.
 
-- **Aufbau:** Oben liegt die Übersicht (Titel, Szene, Wanderkarte, Agenda). Darunter folgen neun Stations-Rahmen im
-  3×3-Raster.
+- **Aufbau:** Oben liegt die Übersicht (Titel, Weltkarte, Agenda, Messestand, Item-Bogen). Darunter folgen zehn
+  Level-Rahmen, fünf pro Reihe, verbunden durch einen gestrichelten Pfad. Ganz unten liegt ein Rahmen mit den PDFs.
 - **Präsentation:** Der Präsentationsmodus geht die Rahmen zeilenweise durch und folgt in jedem Rahmen den Pfeilen.
+  Die PDFs sind nicht verbunden und erscheinen daher nicht als eigene Folien.
+- **Mitmachen:** Warm-up, Gerüchteküche, Raum-Quests und Fragen sind Ideen-Bubbles. Über Live → Einladungslink
+  (ohne Konto) → QR-Code kann das Publikum mitschreiben.
 - **Offline:** Decks, Module und PDFs reisen in der Datei mit und laufen in den Karten ohne Netz.

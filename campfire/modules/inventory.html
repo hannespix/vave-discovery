@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventory · Campfire</title>
+<link rel="stylesheet" href="../shared/campfire.css">
+<script src="../shared/pixel.js"></script>
+<script src="../shared/lore.js"></script>
+<style>
+  html, body { height: 100%; }
+  body {
+    --r-common: var(--muted); --r-rare: var(--lcd-d); --r-epic: var(--fire-2); --r-legendary: var(--fire-3);
+    --cols: 6; --rows: 5; --icon: 26px;
+    height: 100vh; padding: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 15px;
+  }
+  .px-label { font-size: 13px; }
+
+  /* Header: title, filter tabs, loot drop in one row */
+  .top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  .top h1 { margin: 0; font-size: 26px; color: var(--fire-3); }
+  .top .sub { margin: 0; color: var(--muted); display: none; }
+  .tabs { display: flex; gap: 4px; margin-left: auto; }
+  .tab {
+    font: 600 14px/1 var(--sans); color: var(--ink); background: var(--night-3); border: 2px solid var(--night-4);
+    min-height: 36px; min-width: 36px; padding: 6px 9px; cursor: pointer; border-radius: 0;
+  }
+  .tab:hover { background: var(--night-4); }
+  .tab[aria-selected="true"] { background: var(--lcd-d); border-color: var(--lcd-d); color: var(--night-0); }
+  .tab .n { font-weight: 400; opacity: 0.85; }
+  #loot { font-size: 17px; min-height: 36px; padding: 8px 12px; }
+
+  /* The bag: fixed rows so slot size stays put when a filter shows fewer items */
+  .bag { position: relative; flex: 1; min-height: 0; }
+  .grid {
+    list-style: none; margin: 0; padding: 0; height: 100%; display: grid; gap: 4px;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+  }
+  .grid li { min-width: 0; min-height: 0; display: flex; }
+  .slot {
+    --rc: var(--r-common);
+    position: relative; flex: 1; min-width: 0; min-height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; padding: 3px 2px; cursor: pointer; border-radius: 0; text-align: center;
+    background: var(--night-0); color: var(--ink); border: 3px solid var(--rc);
+    font: 600 13px/1.1 var(--sans);
+  }
+  .slot.rare { --rc: var(--r-rare); }
+  .slot.epic { --rc: var(--r-epic); }
+  .slot.legendary { --rc: var(--r-legendary); animation: inv-glow calc(var(--step) * 12) steps(1, end) infinite; }
+  @keyframes inv-glow {
+    0% { box-shadow: 0 0 0 0 transparent; }
+    50% { box-shadow: 0 0 0 2px var(--fire-2); }
+    75% { box-shadow: 0 0 0 4px rgba(255, 224, 106, 0.4); }
+  }
+  .slot:hover { background: var(--night-3); }
+  .slot:focus-visible { outline: 3px solid var(--ink); outline-offset: 1px; z-index: 2; background: var(--night-3); }
+  .slot[aria-current="true"] { background: var(--night-4); }
+  .slot .ico { display: block; width: var(--icon); height: var(--icon); color: var(--rc); flex: none; }
+  .slot .ico svg { display: block; width: 100%; height: 100%; }
+  .slot .nm { max-width: 100%; overflow-wrap: anywhere; hyphens: manual; }
+  .slot .pips { position: absolute; top: 2px; right: 2px; display: flex; gap: 1px; }
+  .slot .pips i { display: block; width: 4px; height: 4px; background: var(--rc); }
+
+  /* Dialog: dark box, pixel border; on cards it overlays the bag */
+  .dlg {
+    position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 5; max-height: calc(100vh - 16px); overflow: auto;
+    background: var(--night-0); border: 4px solid var(--ink);
+    box-shadow: 0 0 0 4px var(--night-0), inset 0 0 0 4px var(--night-2);
+    padding: 10px 12px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px;
+  }
+  .dlg.dock-top { bottom: auto; top: 8px; }
+  .dlg[hidden], .dlg [hidden] { display: none !important; }
+  .portrait { grid-row: span 2; width: 48px; height: 48px; padding: 4px; background: var(--night-2); border: 2px solid var(--night-4); }
+  .portrait svg { display: block; width: 100%; height: 100%; }
+  .dlg h2 { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; font-weight: 400; padding-right: 64px; min-height: 34px; }
+  .dlg h2 .nm { font: 26px/1 var(--pixel); color: var(--fire-3); }
+  .dlg h2 .full { font-size: 14px; color: var(--ink); font-weight: 600; }
+  .dlg h2 .rar { font: 13px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+  .dlg .body { grid-column: 2; display: grid; gap: 4px; }
+  .dlg p { margin: 0; font-size: 14px; line-height: 1.35; }
+  .dlg .fun { color: var(--ink); font-weight: 600; }
+  .dlg .px-label { color: var(--lcd-d); letter-spacing: 0.1em; margin-right: 4px; }
+  .tw-off { color: transparent; }
+  .dlg .close { position: absolute; top: 6px; right: 6px; font-size: 16px; min-height: 36px; padding: 6px 10px; }
+  .dlg .more { position: absolute; right: 12px; bottom: 8px; width: 12px; height: 8px; background: var(--fire-3);
+    clip-path: polygon(0 0, 100% 0, 50% 100%); animation: px-blink calc(var(--step) * 8) steps(1, end) infinite; }
+  .dlg .more[hidden] { display: none; }
+
+  /* Loot drop: a chest over the bag */
+  .chest { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; background: rgba(5, 10, 5, 0.78); }
+  .chest[hidden] { display: none; }
+  .chest svg { width: 150px; height: auto; }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (min-width: 761px) { body { --cols: 8; --rows: 4; --icon: 36px; } .slot { font-size: 14px; } }
+
+  /* Projector: 10 × 3 bag, the dialog gets its own band at the bottom */
+  @media (min-width: 1024px) and (min-height: 600px) {
+    body { --cols: 10; --rows: 3; --icon: 48px; padding: 16px 20px; gap: 12px; font-size: 22px; }
+    .px-label { font-size: 16px; }
+    .top h1 { font-size: 52px; }
+    .top .sub { display: block; font-size: 24px; }
+    .tab { font-size: 20px; min-height: 48px; padding: 8px 16px; }
+    #loot { font-size: 26px; min-height: 48px; padding: 10px 18px; }
+    .grid { gap: 8px; }
+    .slot { font-size: 17px; gap: 6px; border-width: 4px; padding: 6px 4px; }
+    .slot .pips { top: 4px; right: 4px; gap: 2px; }
+    .slot .pips i { width: 6px; height: 6px; }
+    .dlg { position: relative; left: auto; right: auto; bottom: auto; top: auto; flex: none; min-height: 252px; max-height: none; overflow: visible;
+      padding: 16px 20px; gap: 6px 20px; }
+    .dlg.dock-top { top: auto; }
+    .portrait { width: 104px; height: 104px; padding: 8px; }
+    .dlg h2 { padding-right: 120px; }
+    .dlg h2 .nm { font-size: 44px; }
+    .dlg h2 .full { font-size: 22px; }
+    .dlg h2 .rar { font-size: 16px; }
+    .dlg p { font-size: 22px; line-height: 1.3; }
+    .dlg .fun { font-size: 24px; }
+    .dlg .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .dlg .px-label { display: block; margin: 0 0 2px; }
+    .dlg .close { top: 12px; right: 12px; font-size: 22px; min-height: 44px; }
+    .idle { grid-column: 1 / -1; align-self: center; font-size: 24px; color: var(--muted); margin: 0; }
+    .idle b { color: var(--ink); }
+    .chest svg { width: 260px; }
+  }
+  @media not all and (min-width: 1024px) and (min-height: 600px) { .idle { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .slot.legendary { animation: none !important; box-shadow: 0 0 0 2px var(--fire-2); }
+    .dlg .more { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="px-title">Your inventory</h1>
+  <p class="sub"><span id="count">30</span> items for the quest.</p>
+  <div class="tabs" role="tablist" aria-label="Filter items" id="tabs"></div>
+  <button class="px-btn fire" id="loot" type="button">Loot drop</button>
+</header>
+
+<div class="bag">
+  <ul class="grid" id="grid" role="list" aria-label="Items"></ul>
+  <div class="chest pixelart" id="chest" hidden aria-hidden="true"><svg id="chest-svg" viewBox="0 0 24 32" shape-rendering="crispEdges"></svg></div>
+</div>
+
+<section class="dlg" id="dlg" aria-labelledby="d-name">
+  <p class="idle" id="idle"><b>Pick an item.</b> Click it, or use the arrow keys and Enter. Feeling lucky? Loot drop.</p>
+  <div class="portrait pixelart" aria-hidden="true" id="d-ico" hidden></div>
+  <h2 id="d-name" hidden><span class="nm"></span><span class="full"></span><span class="rar"></span></h2>
+  <div class="body" id="d-body" hidden>
+    <p class="fun" id="d-fun"></p>
+    <div class="cols">
+      <p><span class="px-label">In the booth world:</span> <span id="d-space"></span></p>
+      <p><span class="px-label">Watch out:</span> <span id="d-watch"></span></p>
+    </div>
+  </div>
+  <button class="px-btn close" id="d-close" type="button" hidden>Close</button>
+  <span class="more" id="d-more" hidden></span>
+</section>
+<p class="sr" id="live" aria-live="polite"></p>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const ITEMS = LORE.ITEMS;
+  const RC = { common: PX.PAL.t, rare: PX.PAL.d, epic: PX.PAL.o, legendary: PX.PAL.y };
+  const PIPS = { common: 1, rare: 2, epic: 3, legendary: 4 };
+  const KIND = { ai: 'AI', code: 'Code', github: 'GitHub' };
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Icons: PX.ITEMS[id] when the art set has it, else a generic icon per kind ── */
+  function grid16(fn) { const r = []; for (let y = 0; y < 16; y++) { let s = ''; for (let x = 0; x < 16; x++) s += fn(x, y) ? '#' : '.'; r.push(s); } return r; }
+  const FALLBACK = {
+    ai: ['................', '................', '................', '....########....', '...#..#..#..#...', '..#..#....#..#..', '.##############.', '..#...#..#...#..',
+      '...#...##...#...', '....#..##..#....', '.....#.##.#.....', '......####......', '.......##.......', '................', '................', '................'],
+    code: grid16((x, y) => {
+      if (y < 4 || y > 11) return (y >= 3 && y <= 12) && (x === Math.round(10 - (y - 3) * 0.45) || x === Math.round(10 - (y - 3) * 0.45) + 1);
+      const l = Math.round(1 + Math.abs(y - 7.5)), r = 14 - l;
+      const s = Math.round(10 - (y - 3) * 0.45);
+      return x === l || x === l + 1 || x === r || x === r + 1 || x === s || x === s + 1;
+    }),
+    github: grid16((x, y) => (x >= 3 && x <= 6 && ((y >= 1 && y <= 4) || (y >= 11 && y <= 14)))
+      || (x >= 4 && x <= 5 && y >= 4 && y <= 11) || (x >= 10 && x <= 13 && y >= 2 && y <= 5)
+      || (x >= 11 && x <= 12 && y >= 5 && y <= 7) || (y >= 7 && y <= 10 && (x === 12 - (y - 6) || x === 13 - (y - 6)))),
+  };
+
+  /** Inner SVG markup (16×16 space) for an item; mono icons use currentColor */
+  function art(it) {
+    const src = PX.ITEMS ? PX.ITEMS[it.id] : null;
+    try {
+      if (typeof src === 'string' && src.trim().charAt(0) === '<') return src.replace(/<svg\b/, '<svg width="16" height="16"');
+      const rows = Array.isArray(src) ? src : src && Array.isArray(src.rows) ? src.rows : null;
+      if (rows && typeof rows[0] === 'string') {
+        return /^[.#]+$/.test(rows.join('')) ? `<path fill="currentColor" d="${PX.runPath(rows, '#', 0, 0)}"/>` : PX.sprite(rows, { pal: src.pal });
+      }
+    } catch (e) { /* malformed art: fall back */ }
+    return `<path fill="currentColor" d="${PX.runPath(FALLBACK[it.kind] || FALLBACK.ai, '#', 0, 0)}"/>`;
+  }
+  /* Long names get soft hyphens between syllables (vowel | consonant vowel), display only */
+  const soft = (name) => name.replace(/[A-Za-z]{10,}/g, (w) => w.replace(/(?<=[aeiouy])(?=[^aeiouy][aeiouy])/g, (m, off) => (off >= 3 && w.length - off >= 3 ? '\u00ad' : '')));
+  const svg = (it) => `<svg viewBox="0 0 16 16" class="pixelart" shape-rendering="crispEdges" aria-hidden="true" style="color:${RC[it.rarity]}">${art(it)}</svg>`;
+
+  /* ── Tabs ── */
+  const FILTERS = [['all', 'All'], ['ai', 'AI'], ['code', 'Code'], ['github', 'GitHub']];
+  let filter = 'all';
+  FILTERS.forEach(([k, label], i) => {
+    const n = k === 'all' ? ITEMS.length : ITEMS.filter((it) => it.kind === k).length;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'tab'; b.setAttribute('role', 'tab'); b.dataset.k = k;
+    b.setAttribute('aria-selected', String(i === 0)); b.tabIndex = i === 0 ? 0 : -1; b.setAttribute('aria-controls', 'grid');
+    b.innerHTML = `${label} <span class="n">${n}</span>`;
+    b.addEventListener('click', () => setFilter(k));
+    b.addEventListener('keydown', (e) => {
+      const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      const tabs = [...document.querySelectorAll('.tab')];
+      const next = tabs[(tabs.indexOf(b) + d + tabs.length) % tabs.length];
+      setFilter(next.dataset.k); next.focus();
+    });
+    $('tabs').appendChild(b);
+  });
+  $('count').textContent = ITEMS.length;
+
+  function setFilter(k) {
+    filter = k;
+    document.querySelectorAll('.tab').forEach((t) => { const on = t.dataset.k === k; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+    render();
+  }
+
+  /* ── Bag ── */
+  let cursor = 0;            // index in the visible list
+  let openId = null;         // item shown in the dialog
+  const visible = () => ITEMS.filter((it) => filter === 'all' || it.kind === filter);
+
+  function render() {
+    const list = visible();
+    cursor = Math.min(cursor, list.length - 1);
+    const keep = list.findIndex((it) => it.id === openId);
+    if (keep >= 0) cursor = keep;
+    $('grid').innerHTML = list.map((it, i) => `<li><button type="button" class="slot ${it.rarity}" data-id="${it.id}" tabindex="${i === cursor ? 0 : -1}"
+      aria-label="${it.name}, ${it.rarity}"${it.id === openId ? ' aria-current="true"' : ''}><span class="pips" aria-hidden="true">${'<i></i>'.repeat(PIPS[it.rarity])}</span>
+      <span class="ico">${svg(it)}</span><span class="nm">${soft(it.name)}</span></button></li>`).join('');
+    $('live').textContent = `${list.length} items.`;
+  }
+  const slots = () => [...document.querySelectorAll('.slot')];
+  const cols = () => getComputedStyle($('grid')).gridTemplateColumns.split(' ').length;
+
+  function moveTo(i) {
+    const s = slots();
+    if (!s.length) return;
+    cursor = Math.max(0, Math.min(s.length - 1, i));
+    s.forEach((el, j) => { el.tabIndex = j === cursor ? 0 : -1; });
+    s[cursor].focus();
+  }
+
+  $('grid').addEventListener('click', (e) => {
+    const b = e.target.closest('.slot');
+    if (!b) return;
+    cursor = slots().indexOf(b);
+    if (b.dataset.id === openId && typing) { finishTyping(); return; }
+    open(b.dataset.id, b);
+  });
+  $('grid').addEventListener('keydown', (e) => {
+    const c = cols();
+    const map = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: c, ArrowUp: -c };
+    if (e.key in map) { e.preventDefault(); moveTo(cursor + map[e.key]); }
+    else if (e.key === 'Home') { e.preventDefault(); moveTo(0); }
+    else if (e.key === 'End') { e.preventDefault(); moveTo(slots().length - 1); }
+  });
+
+  /* ── Dialog with typewriter text ── */
+  let typing = null;
+  const TW = ['d-fun', 'd-space', 'd-watch'];
+
+  function open(id, fromSlot) {
+    const it = ITEMS.find((x) => x.id === id);
+    if (!it) return;
+    openId = id;
+    slots().forEach((s) => { if (s.dataset.id === id) s.setAttribute('aria-current', 'true'); else s.removeAttribute('aria-current'); });
+    const d = $('dlg');
+    $('idle').hidden = true;
+    ['d-ico', 'd-name', 'd-body', 'd-close'].forEach((k) => { $(k).hidden = false; });
+    $('d-ico').innerHTML = svg(it);
+    const h = $('d-name');
+    h.querySelector('.nm').textContent = it.name;
+    h.querySelector('.full').textContent = it.full;
+    h.querySelector('.rar').textContent = `${it.rarity} · ${KIND[it.kind]}`;
+    h.querySelector('.rar').style.color = RC[it.rarity];
+    $('d-fun').textContent = it.fun; $('d-space').textContent = it.space; $('d-watch').textContent = it.watch;
+    $('live').textContent = `Opened ${it.name}, ${it.full}.`;
+    // On cards the dialog overlays the bag: dock it away from the chosen slot
+    const small = !matchMedia('(min-width: 1024px) and (min-height: 600px)').matches;
+    const r = fromSlot && fromSlot.getBoundingClientRect();
+    d.classList.toggle('dock-top', !!(small && r && r.top + r.height / 2 > innerHeight / 2));
+    d.hidden = false;
+    startTyping();
+  }
+
+  function startTyping() {
+    stopTyping();
+    const parts = TW.map((k) => { const el = $(k); const t = el.textContent; el.innerHTML = '<span class="tw-on"></span><span class="tw-off"></span>'; el.lastChild.textContent = t; return { el, t }; });
+    if (reduced()) { finishTyping(parts); return; }
+    let p = 0, n = 0;
+    $('d-more').hidden = true;
+    typing = { parts, timer: setInterval(() => {
+      n += 3;
+      while (p < parts.length && n >= parts[p].t.length) { show(parts[p], parts[p].t.length); p++; n = 0; }
+      if (p >= parts.length) { finishTyping(parts); return; }
+      show(parts[p], n);
+    }, 33) };
+  }
+  function show(part, k) { part.el.firstChild.textContent = part.t.slice(0, k); part.el.lastChild.textContent = part.t.slice(k); }
+  function stopTyping() { if (typing) clearInterval(typing.timer); typing = null; }
+  function finishTyping(parts) {
+    const ps = parts || (typing && typing.parts) || [];
+    stopTyping();
+    ps.forEach((x) => show(x, x.t.length));
+    $('d-more').hidden = false;
+  }
+
+  function close() {
+    stopTyping();
+    openId = null;
+    const big = matchMedia('(min-width: 1024px) and (min-height: 600px)').matches;
+    ['d-ico', 'd-name', 'd-body', 'd-close', 'd-more'].forEach((k) => { $(k).hidden = true; });
+    $('idle').hidden = false;
+    if (!big) $('dlg').hidden = true;
+    slots().forEach((s) => s.removeAttribute('aria-current'));
+    moveTo(cursor);
+  }
+  $('d-close').addEventListener('click', close);
+  $('dlg').addEventListener('click', (e) => { if (typing && e.target.id !== 'd-close') finishTyping(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && openId) { e.preventDefault(); close(); }
+    else if ((e.key === 'Enter' || e.key === ' ') && typing && document.activeElement && document.activeElement.dataset.id === openId) { e.preventDefault(); finishTyping(); }
+  });
+  function syncDialog() { // on the projector the band is always there (idle text), on cards only when open
+    const big = matchMedia('(min-width: 1024px) and (min-height: 600px)').matches;
+    $('dlg').hidden = !big && !openId;
+  }
+  addEventListener('resize', syncDialog);
+
+  /* ── Loot drop: stepped chest, then a random item from the current filter ── */
+  const CHEST_LID_SHUT = ['................', '................', '..WWWWWWWWWWWW..', '.WnnnnnnnnnnnnW.', '.WmmmmmmmmmmmmW.', '.WmmmmmmmmmmmmW.'];
+  const CHEST_LID_OPEN = ['................', '..WWWWWWWWWWWW..', '.WnnnnnnnnnnnnW.', '.WWWWWWWWWWWWWW.', '.WywwwwwwwwwwyW.', '.WooyyyyyyyyooW.'];
+  const CHEST_BODY = ['.WWWWWWMMWWWWWW.', '.WnnnnnMyMnnnnW.', '.WmmmmmMMMmmmmW.', '.WmmmmmmmmmmmmW.', '.WmmmmmmmmmmmmW.', '.WWWWWWWWWWWWWW.'];
+  let looting = false;
+  function chestFrame(openLid, dx, it, rise) {
+    const item = it ? `<svg x="4" y="${18 - rise}" width="16" height="16" viewBox="0 0 16 16" style="color:${RC[it.rarity]}">${art(it)}</svg>` : '';
+    const sparks = it && rise >= 12 ? PX.sprite('spark', { x: 1, y: 6 }) + PX.sprite('spark', { x: 20, y: 3 }) + PX.sprite('spark', { x: 18, y: 14 }) : '';
+    return item + PX.sprite((openLid ? CHEST_LID_OPEN : CHEST_LID_SHUT).concat(CHEST_BODY), { x: 4 + dx, y: 16 }) + sparks;
+  }
+  $('loot').addEventListener('click', () => {
+    if (looting) return;
+    const list = visible().filter((it) => it.id !== openId);
+    const it = list[Math.floor(Math.random() * list.length)];
+    if (!it) return;
+    const reveal = () => {
+      $('chest').hidden = true; looting = false; $('loot').disabled = false;
+      cursor = visible().findIndex((x) => x.id === it.id);
+      moveTo(cursor);
+      open(it.id, slots()[cursor]);
+    };
+    if (reduced()) { reveal(); return; }
+    looting = true; $('loot').disabled = true;
+    const frames = [[0, 0, 0], [0, -1, 0], [0, 1, 0], [0, -1, 0], [0, 1, 0], [0, 0, 0], [1, 0, 0], [1, 0, 4], [1, 0, 8], [1, 0, 12], [1, 0, 14], [1, 0, 14], [1, 0, 14], [1, 0, 14]];
+    $('chest').hidden = false;
+    let f = 0;
+    (function step() {
+      if (f >= frames.length) { reveal(); return; }
+      const [o, dx, rise] = frames[f++];
+      $('chest-svg').innerHTML = chestFrame(o, dx, o ? it : null, rise);
+      setTimeout(step, 110);
+    })();
+  });
+
+  render();
+  syncDialog();
+})();
+</script>
+</body>
+</html>
