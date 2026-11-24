@@ -41,7 +41,8 @@ function inlinePage(file) {
     const attrs = `${a}${b}`.replace(/\s+/g, ' ').trim();
     return `<script${attrs ? ' ' + attrs : ''}>/* ${relative(root, f)} */\n${scriptSafe(readFileSync(f, 'utf8'))}\n</script>`;
   });
-  html = html.replace(/(<img\b[^>]*\bsrc=["'])([^"']+)(["'])/gi, (m, a, src, b) => (isLocal(src) ? `${a}${dataUri(resolve(base, src))}${b}` : m));
+  // <img data-link> stays a link (the hub page shows the art files it also offers for download)
+  html = html.replace(/<img\b[^>]*>/gi, (tag) => (/\bdata-link\b/i.test(tag) ? tag : tag.replace(/(\bsrc=["'])([^"']+)(["'])/i, (m, a, src, b) => (isLocal(src) ? `${a}${dataUri(resolve(base, src))}${b}` : m))));
   // url() inside the page's own <style> blocks
   html = html.replace(/<style>([\s\S]*?)<\/style>/gi, (m, css) => `<style>${inlineCssUrls(css, base)}</style>`);
   return html;
@@ -50,7 +51,7 @@ function inlinePage(file) {
 /** Left-over local references would break the single-file promise */
 function leftovers(html) {
   const bad = [];
-  for (const m of html.matchAll(/<(?:script|img|link|source|video|audio|iframe)\b[^>]*\b(?:src|href)=["']([^"']+)["']/gi)) if (isLocal(m[1])) bad.push(m[1]);
+  for (const m of html.matchAll(/<(?:script|img|link|source|video|audio|iframe)\b[^>]*\b(?:src|href)=["']([^"']+)["'][^>]*>/gi)) if (isLocal(m[1]) && !/\bdata-link\b/i.test(m[0])) bad.push(m[1]);
   return bad;
 }
 

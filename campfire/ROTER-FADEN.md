@@ -154,7 +154,8 @@ reliable.
   ⚑ It contains publicly named VAVE people with made-up numbers: clear this with Tobias first, test the login the day
   before, and keep a screen recording as backup.
 - **The reveal (big moment):** "By the way: this board you've been looking at all evening was built by an AI, through
-  PixiNotes' own MCP server. I described the talk; it laid out the cards." Show `tools/board.mjs` for ten seconds.
+  PixiNotes' own MCP server. I described the talk; it wrote the cards and laid them out, and the same script tucked the
+  decks and tools inside." Show `campfire/tools/board.mjs` for ten seconds.
 - **Where to work:** Claude Code (terminal, web, phone), Cursor / VS Code, GitHub, a database when needed
   (Supabase/Firebase), Pages for hosting.
 - **Deck:** [⇢ `decks/forge.html`] 9 slides.

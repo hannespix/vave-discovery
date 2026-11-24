@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Playing with Fire · Campfire talk</title>
+<link rel="stylesheet" href="shared/campfire.css">
+<style>
+  body { min-height: 100vh; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter) 96px; }
+  header.hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 32px; align-items: end; padding: 64px 0 48px; border-bottom: var(--px) solid var(--line); }
+  .hero h1 { font: clamp(56px, 11vw, 132px)/0.85 var(--pixel); margin: 12px 0 18px; color: var(--fire-3); letter-spacing: 0.01em; }
+  .hero p { max-width: 56ch; margin: 0; color: var(--ink); font-size: 19px; }
+  .hero .meta { margin-top: 18px; }
+  .fire { width: clamp(140px, 22vw, 240px); height: auto; }
+  h2 { font: 44px/1 var(--pixel); color: var(--lcd-e); margin: 72px 0 8px; }
+  .lead { color: var(--muted); max-width: 60ch; margin: 0 0 28px; }
+
+  .trail { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; list-style: none; padding: 0; margin: 0; }
+  .station { padding: 20px 22px 22px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 8px; }
+  .station .top { display: flex; align-items: center; gap: 12px; }
+  .station .ico { width: 40px; height: 40px; color: var(--fire-2); flex: none; }
+  .station .nr { font: 22px/1 var(--pixel); color: var(--muted); }
+  .station h3 { font: 34px/0.95 var(--pixel); margin: 0; color: var(--ink); }
+  .station p { margin: 0; color: var(--muted); font-size: 16px; }
+  .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .links a { font: 18px/1 var(--pixel); color: var(--night-0); background: var(--lcd-d); padding: 10px 12px; min-height: 44px; display: inline-flex; align-items: center; text-decoration: none; }
+  .links a.mod { background: var(--fire-2); }
+  .links a.pdf { background: var(--lcd-f); }
+  .links a:hover { filter: brightness(1.12); }
+
+  .take { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+  .take ol { margin: 0; padding-left: 1.3em; }
+  .take li { margin: 0 0 10px; }
+  .take .px-btn { display: inline-flex; align-items: center; text-decoration: none; margin: 8px 0 14px; }
+  code { font-family: var(--mono); font-size: 0.92em; color: var(--lcd-e); }
+
+  .art { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+  .art figure { margin: 0; padding: 12px; }
+  .art img { width: 100%; height: auto; display: block; image-rendering: pixelated; background: var(--night-0); }
+  .art figcaption { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; font-size: 15px; color: var(--muted); }
+  .art figcaption a { color: var(--lcd-e); }
+  footer { margin-top: 80px; padding-top: 24px; border-top: var(--px) solid var(--line); color: var(--muted); font-size: 15px; }
+  a { color: var(--lcd-e); }
+  @media (max-width: 760px) { header.hero { grid-template-columns: 1fr; } .take { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { .fire * { animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <span class="px-label">Campfire talk · VAVE · 90 minutes · English</span>
+      <h1>PLAYING<br>WITH FIRE</h1>
+      <p>Fire was humanity's first technology. AI might be its latest. Both give warmth and light, both need fuel, tending and fireplace rules. And both burn the house down if nobody watches them.</p>
+      <p class="meta px-label">A talk on AI &amp; vibecoding by Hannes · pix·el</p>
+    </div>
+    <svg class="fire pixelart" id="hero-fire" viewBox="0 0 24 24" role="img" aria-label="A crackling pixel campfire"></svg>
+  </header>
+
+  <h2>The trail</h2>
+  <p class="lead">Nine stations, from the spark to the open fire. Every deck and every tool is a single file: it works offline, on a phone, and inside the PixiNotes board.</p>
+  <ol class="trail">
+    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="tent" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">00 · 0:00</span></div><h3>Gather round</h3><p>A meeting room becomes a campfire circle. One word each: how does AI make you feel?</p><div class="links"><a href="decks/opening.html">Deck</a><a class="pdf" href="pdf/opening.pdf">PDF</a></div></li>
+    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="pix" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">01 · 0:05</span></div><h3>Who's by the fire</h3><p>From hippie parents and a winery to 41 repositories in a year. A translator between problems and machines.</p><div class="links"><a href="decks/opening.html#/3">Deck</a></div></li>
+    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="spark" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">02 · 0:12 · Beginner</span></div><h3>The spark</h3><p>What an LLM really is: it predicts, it only sees the circle of light, and with tools it can act.</p><div class="links"><a href="decks/spark.html">Deck</a><a class="mod" href="modules/token-oracle.html">Token Oracle</a><a class="mod" href="modules/context-circle.html">Context Circle</a><a class="pdf" href="pdf/spark.pdf">PDF</a></div></li>
+    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="kindling" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">03 · 0:25 · Beginner</span></div><h3>Kindling</h3><p>Your first builds: one HTML file, one good prompt. Same AI, very different fire.</p><div class="links"><a href="decks/kindling.html">Deck</a><a class="mod" href="modules/prompt-forge.html">Prompt Forge</a><a class="pdf" href="pdf/kindling.pdf">PDF</a></div></li>
+    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="fire" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">04 · 0:40 · Casual</span></div><h3>Feeding the fire</h3><p>The loop: describe, build, look, give feedback. AI forgets, files remember.</p><div class="links"><a href="decks/kindling.html">Deck, 2nd half</a></div></li>
+    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="forge" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">05 · 0:55 · Advanced</span></div><h3>The forge</h3><p>What, how, where: GitHub in six words, an agent team, trust from checks, and a board built through MCP.</p><div class="links"><a href="decks/forge.html">Deck</a><a class="mod" href="modules/git-time-machine.html">Git Time Machine</a><a class="pdf" href="pdf/forge.pdf">PDF</a></div></li>
+    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="smoke" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">06 · 1:10</span></div><h3>Smoke signals</h3><p>Risks and sensible use: seven signals, seven fireplace rules. Leave with rules, not worries.</p><div class="links"><a href="decks/smoke.html">Deck</a><a class="mod" href="modules/fireplace-check.html">Fireplace Check</a><a class="pdf" href="pdf/smoke.pdf">PDF</a></div></li>
+    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="ember" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">07 · 1:20</span></div><h3>Embers</h3><p>Where should VAVE light the first fire? Ideas, dots, and one small experiment for Monday.</p><div class="links"><a href="decks/embers.html">Deck</a><a class="pdf" href="pdf/embers.pdf">PDF</a></div></li>
+    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="bubble" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">08 · 1:25</span></div><h3>Open fire</h3><p>Questions, the parking lot, and the last line: keep your taste, feed the fire, mind the smoke.</p><div class="links"><a href="decks/embers.html">Deck</a></div></li>
+  </ol>
+
+  <h2>Take the whole campfire</h2>
+  <div class="take">
+    <div>
+      <p class="lead">The talk also exists as a ready-made <strong>PixiNotes</strong> board: a trail map with nine frames, decks and tools as live cards, idea bubbles, kanban boards and PDFs. It was laid out by an AI through PixiNotes' own MCP server.</p>
+      <a class="px-btn fire" href="campfire.pixiboard.json" download>Download the board</a>
+      <ol>
+        <li>Open <a href="https://hannespix.github.io/pixinotes/">PixiNotes</a> (web or the offline file).</li>
+        <li>Drag <code>campfire.pixiboard.json</code> onto any board.</li>
+        <li>It arrives as a <strong>new</strong> board. Your other boards stay untouched.</li>
+        <li>Presentation mode walks the frames row by row and follows the arrows inside each frame.</li>
+      </ol>
+    </div>
+    <div class="px-frame" style="padding:20px">
+      <span class="px-label">What's inside</span>
+      <ul>
+        <li>6 reveal.js decks, also as PDF handouts</li>
+        <li>5 interactive modules: Token Oracle, Context Circle, Prompt Forge, Git Time Machine, Fireplace Check</li>
+        <li>Pixel art: campfire scene, trail map, life strip, repo wall, fireplace rules</li>
+        <li>Idea bubbles with dot voting, a "Try on Monday" kanban, a build-or-buy napkin sheet</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Pixel art</h2>
+  <p class="lead">Every image is SVG: sharp at any size, animated in steps, still when your system asks for less motion. PNG versions are four times the pixel size.</p>
+  <div class="art">
+    <figure class="px-frame"><img data-link src="art/campfire-scene.svg" alt="Night campfire with Pix, the pix·el mascot" loading="lazy"><figcaption><span>Campfire scene</span><span><a href="art/campfire-scene.svg" download>SVG</a> · <a href="art/campfire-scene.png" download>PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/trail-map.svg" alt="The talk as a game map with nine stations" loading="lazy"><figcaption><span>Trail map</span><span><a href="art/trail-map.svg" download>SVG</a> · <a href="art/trail-map.png" download>PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/life-strip.svg" alt="Six panels from farm kid to vibecoder" loading="lazy"><figcaption><span>Life strip</span><span><a href="art/life-strip.svg" download>SVG</a> · <a href="art/life-strip.png" download>PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/repo-wall.svg" alt="41 tiles, one per repository" loading="lazy"><figcaption><span>Repo wall</span><span><a href="art/repo-wall.svg" download>SVG</a> · <a href="art/repo-wall.png" download>PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/fireplace-rules.svg" alt="Seven fireplace rules on a sign" loading="lazy"><figcaption><span>Fireplace rules</span><span><a href="art/fireplace-rules.svg" download>SVG</a> · <a href="art/fireplace-rules.png" download>PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/pix-wave.svg" alt="Pix hopping and waving" loading="lazy"><figcaption><span>Pix waves</span><span><a href="art/pix-wave.svg" download>SVG</a> · <a href="art/pix-wave.png" download>PNG</a></span></figcaption></figure>
+  </div>
+
+  <footer>
+    Built with Claude Code. Pixel kit after <a href="https://pix-el.de">pix·el</a> (Pix and the LCD palette), flame after pixletics.
+    reveal.js (MIT) · Jersey 10 (SIL Open Font License). No tracking, no external requests.
+  </footer>
+</div>
+<script src="shared/pixel.js"></script>
+<script>
+(function () {
+  'use strict';
+  for (const svg of document.querySelectorAll('svg[data-px-icon]')) {
+    const name = svg.dataset.pxIcon;
+    svg.innerHTML = name === 'pix' ? PX.sprite('pix') : PX.icon(name);
+  }
+  // Hero: logs + three fire frames swapped in steps (8 fps); still frame when motion is reduced
+  const hero = document.getElementById('hero-fire');
+  const frames = ['fire1', 'fire2', 'fire3'].map((f) => PX.sprite(f, { x: 4, y: 2 }));
+  const logs = PX.sprite('logs', { x: 2, y: 17 });
+  let i = 0;
+  const draw = () => { hero.innerHTML = logs + frames[i % 3]; i += 1; };
+  draw();
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) setInterval(draw, 160);
+})();
+</script>
+</body>
+</html>
