@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kindling · Playing with Fire</title>
+<title>Kindling and Crafting · Playing with Fire</title>
 <link rel="stylesheet" href="../vendor/reveal/reset.css">
 <link rel="stylesheet" href="../vendor/reveal/reveal.css">
 <link rel="stylesheet" href="../shared/campfire.css">
@@ -13,35 +13,37 @@
 <div class="reveal">
 <div class="slides">
 
-<!-- ── Part 1 · Station 03 ─────────────────────────────────────────── -->
+<!-- ── Level 4 · Kindling: your first builds ───────────────────────── -->
 
-<section class="station">
+<section class="level">
   <div class="cols wr">
     <div class="pic"><svg data-px-icon="kindling" data-scale="22" class="hot"></svg></div>
     <div>
-      <p class="num">03</p>
+      <p class="lvl">Level 4</p>
       <h1>Kindling</h1>
-      <p class="lead">Your first builds. A first useful tool is one conversation away.</p>
+      <p class="lead">Your first builds. A small, useful fire, lit in one conversation.</p>
+      <p class="clock">0:35 · Beginner</p>
     </div>
   </div>
   <aside class="notes">
-    Station three: kindling. I want to show you that a first useful tool is one conversation away,
-    and how to ask for it well.
+    Level four: kindling. Your first builds.
+    I want to show you that a small, useful tool is one conversation away, and how to ask for it well.
   </aside>
 </section>
 
 <section>
-  <p class="kicker">03 · Vibecoding, defined</p>
-  <blockquote class="quote">“Fully give in to the vibes … and forget that the code even exists.”
-    <cite>Andrej Karpathy, February 2025</cite>
-  </blockquote>
-  <p class="lead mt-lg">You describe the result. The AI writes the code. <strong>You judge by looking at it.</strong></p>
+  <p class="kicker">Level 4 · Vibecoding</p>
+  <h2>Vibecoding</h2>
+  <ol class="steps mt">
+    <li><strong>Describe</strong>the result.</li>
+    <li><strong>Build</strong>The AI writes the code.</li>
+    <li class="hot-step"><strong>Judge</strong>by looking at it.</li>
+  </ol>
+  <p class="lead mt-lg">Andrej Karpathy, February 2025, meant for weekend projects. Collins made it Word of the Year 2025.</p>
   <aside class="notes">
-    Andrej Karpathy coined the word in February 2025: fully give in to the vibes and forget that the code even exists.
-    He meant it for throwaway weekend projects, and that's exactly where to start. The rest of tonight is about what it
-    takes to go further than a weekend.
-    You describe the result, the AI writes the code, and you judge by looking at it.
-    That last part is where designers are already experts.
+    Vibecoding: you describe the result, the AI writes the code, and you judge by looking at it.
+    Andrej Karpathy named it in February 2025, meant for weekend projects, and Collins made it Word of the Year.
+    The judging part is where designers are already experts.
   </aside>
 </section>
 
@@ -49,26 +51,26 @@
   <div class="cols wr">
     <div class="pic"><svg data-px="file" data-scale="24" aria-label="A single file"></svg></div>
     <div>
-      <p class="kicker">03 · The beginner rule</p>
+      <p class="kicker">Level 4 · The beginner rule</p>
       <h2>One HTML file</h2>
       <ul class="lead">
         <li>Double-click, it works.</li>
-        <li>Offline, on any laptop or phone.</li>
-        <li>No server, no install.</li>
+        <li>Offline.</li>
+        <li>Any laptop, any phone.</li>
       </ul>
     </div>
   </div>
   <aside class="notes">
-    The beginner rule: one HTML file. You double-click it and it works, offline, on any laptop or phone.
-    No server, no install, nothing to break. Everything I show you next started like this.
+    The beginner rule: one HTML file. You double-click it and it works, offline, on any laptop and any phone.
+    No server, no install, nothing to break.
   </aside>
 </section>
 
 <section>
-  <p class="kicker">03 · The prompt recipe</p>
+  <p class="kicker">Level 4 · The prompt recipe</p>
   <h2 class="sm">Six lines, and the AI stops guessing</h2>
   <ul class="cards mt">
-    <li><h3>Who is it for</h3><p>The person who will use it.</p></li>
+    <li><h3>Who</h3><p>The person who will use it.</p></li>
     <li><h3>Goal</h3><p>What should be possible afterwards.</p></li>
     <li><h3>Context</h3><p>What the AI can't know.</p></li>
     <li><h3>Constraints</h3><p>One file, offline, no logins.</p></li>
@@ -76,87 +78,91 @@
     <li class="hot-card"><h3>Look &amp; feel</h3><p>Your taste, in words.</p></li>
   </ul>
   <aside class="notes">
-    Here's the recipe: who is it for, the goal, the context, the constraints, when it's done, and the look and feel.
-    Six lines, and the AI stops guessing. The Prompt Forge module lets us build one together.
+    The prompt recipe: who, goal, context, constraints, done when, and look and feel.
+    It's a good client brief, written for a machine. The Prompt Forge module lets us build one together.
   </aside>
 </section>
 
 <section>
-  <p class="kicker">03 · Weak and strong</p>
+  <p class="kicker">Level 4 · Weak and strong</p>
   <h2 class="sm">Same AI, very different fire</h2>
-  <div class="cols wr top">
-    <div class="box">
-      <p class="label">Weak</p>
-      <p class="prompt">Make me a campfire thing.</p>
-    </div>
-    <div class="box hot">
-      <p class="label">Strong</p>
-      <p class="prompt"><b>For:</b> our team, on a big screen.<br>
-        <b>Goal:</b> a pixel campfire that crackles and grows on every click.<br>
-        <b>Context:</b> shown live in a talk.<br>
-        <b>Constraints:</b> one HTML file, offline.<br>
-        <b>Done when:</b> it runs by double-click on a phone.<br>
-        <b>Look &amp; feel:</b> night greens, warm fire, chunky pixels.</p>
-    </div>
+  <div class="box">
+    <p class="prompt"><b>Weak:</b> Make me a booth thing.</p>
+  </div>
+  <div class="box hot mt">
+    <p class="label">Strong</p>
+    <p class="prompt"><b>Who:</b> our project lead, at the client meeting.<br>
+      <b>Goal:</b> compare three counter positions on a 6 × 4 m booth.<br>
+      <b>Context:</b> the aisle runs along the long side.<br>
+      <b>Constraints:</b> one HTML file, offline.<br>
+      <b>Done when:</b> it runs by double-click on a phone.<br>
+      <b>Look &amp; feel:</b> calm, clean lines, our colours.</p>
   </div>
   <aside class="notes">
-    Two prompts, side by side. The weak one makes the AI guess everything; the strong one answers the six questions.
-    Same AI, very different fire.
+    Two prompts for the same job. The weak one makes the AI guess everything.
+    The strong one answers the six questions, like a good booth briefing. Same AI, very different fire.
   </aside>
 </section>
 
 <section>
-  <div class="cols wr">
-    <div class="pic"><svg data-px="campfire" data-scale="14"></svg></div>
+  <div class="cols">
+    <div class="pic"><img class="art art-square" src="../art/booth-scene.svg" alt="A pixel booth seen from above: counter, lounge and LED wall"></div>
     <div>
       <p class="kicker">Live mini-build · 5 minutes</p>
-      <h2>Let's light one</h2>
+      <h2 class="sm">Let's light one</h2>
       <div class="box">
-        <p class="prompt">A single HTML file: a pixel-art campfire that crackles and grows when you click.</p>
+        <p class="prompt">A single HTML file: a top view of a 6 × 4 m booth where I can drag a counter, a lounge and an LED wall, and it shows the walking paths.</p>
       </div>
     </div>
   </div>
   <aside class="notes">
-    Now live: I ask the AI for one HTML file, a pixel-art campfire that crackles and grows when you click.
-    If the Wi-Fi fails, the pre-built campfire scene is the fallback, already open in a tab.
+    Now live, and spatial on purpose: one HTML file with a top view of a six by four metre booth,
+    where I can drag a counter, a lounge and an LED wall, and it shows the walking paths.
+    If the Wi-Fi fails, the finished Booth Builder from level nine is the fallback.
   </aside>
 </section>
 
 <section>
-  <p class="kicker">03 · Tiny to real</p>
+  <p class="kicker">Level 4 · Tiny to real</p>
   <h2>Three fires, three sizes</h2>
   <ol class="steps mt">
-    <li><strong>email-checker</strong>Tiny. One file that fixes e-mail typos, with pixel branding.</li>
-    <li><strong>VAVE survey</strong>One HTML file, made for a CEO's phone: no install, no login, no server.</li>
-    <li class="hot-step"><strong>pixoodle</strong>A scheduling poll with real users and its own domain.
-      <br><a href="https://pixoodle.de">pixoodle.de</a></li>
+    <li><strong>email-checker</strong>Tiny.</li>
+    <li><strong>VAVE survey</strong>One file, made for a CEO's phone.</li>
+    <li class="hot-step"><strong>pixoodle.de</strong>Real users, its own domain.</li>
   </ol>
   <aside class="notes">
-    From tiny to real. The email-checker is one file, sixty seconds, with dummy data.
-    The VAVE survey is one HTML file too, made to be answered on a phone, no install and no login.
-    pixoodle is a scheduling poll with real users and its own domain. The first fire is easy; keeping it burning is the craft.
+    From tiny to real. The email-checker is tiny. The VAVE survey is one file, made for a CEO's phone.
+    And pixoodle.de has real users and its own domain. The first fire is easy; keeping it burning is the craft.
   </aside>
 </section>
 
-<!-- ── Part 2 · Station 04 ─────────────────────────────────────────── -->
+<section data-savepoint="A small fire is still a fire." data-level="4">
+  <aside class="notes">
+    Saving game. A small fire is still a fire.
+    Next level: crafting, where we learn to keep it burning.
+  </aside>
+</section>
 
-<section class="station">
+<!-- ── Level 5 · Crafting: the loop ────────────────────────────────── -->
+
+<section class="level">
   <div class="cols wr">
-    <div class="pic"><svg data-px="pixfire" data-scale="10"></svg></div>
+    <div class="pic"><svg data-px="pixfire" data-scale="10" aria-label="Pix sitting by the campfire"></svg></div>
     <div>
-      <p class="num">04</p>
-      <h1>Feeding the fire</h1>
-      <p class="lead">The real skill isn't prompting. It's iterating with taste.</p>
+      <p class="lvl">Level 5</p>
+      <h1>Crafting</h1>
+      <p class="lead">The loop. Taste beats prompting.</p>
+      <p class="clock">0:45 · Casual</p>
     </div>
   </div>
   <aside class="notes">
-    Station four: feeding the fire. The real skill isn't prompting, it's iterating with taste.
+    Level five: crafting. The real skill isn't the first prompt, it's the loop that comes after.
     That's design work, and designers are good at it.
   </aside>
 </section>
 
 <section>
-  <p class="kicker">04 · The loop</p>
+  <p class="kicker">Level 5 · The loop</p>
   <h2>Small steps, each one visible</h2>
   <ol class="steps s5 mt">
     <li><strong>Describe</strong></li>
@@ -165,78 +171,79 @@
     <li><strong>Feedback</strong></li>
     <li><strong>Repeat</strong></li>
   </ol>
-  <p class="lead mt-lg">Screenshots beat words.</p>
+  <p class="lead mt-lg">Screenshots beat words. That's design work, and designers are good at it.</p>
   <aside class="notes">
-    The loop: describe, build, look, give feedback, repeat. Small steps, each one visible.
+    The loop: describe, build, look, feedback, repeat.
     For feedback, a screenshot beats a paragraph: show the AI what you see.
+    That's design work, and designers are good at it.
   </aside>
 </section>
 
 <section>
-  <p class="kicker">04 · Memory</p>
+  <p class="kicker">Level 5 · Memory</p>
   <h2>AI forgets, files remember</h2>
   <ul class="cards mt">
-    <li><h3>CLAUDE.md</h3><p>Project memory.</p></li>
-    <li><h3>Design principles</h3><p>Your CD, written as rules.</p></li>
-    <li><h3>STATE.md</h3><p>Where we are right now.</p></li>
+    <li><h3>CLAUDE.md<br>AGENTS.md</h3><p>How we work here.</p></li>
+    <li><h3>Design principles</h3><p>The CD as rules.</p></li>
+    <li class="hot-card"><h3>STATE.md</h3><p>Where we are.</p></li>
   </ul>
-  <p class="lead mt-lg center">The rules <em>are</em> the design brief.</p>
+  <p class="lead mt-lg center">Every coding AI reads them, whichever brand.</p>
   <aside class="notes">
-    Remember the circle of light: chats forget, files don't.
-    A project memory file, a design-principles file with your CD as rules, and a state file that says where we are.
-    In the VAVE discovery repo the rules are the design brief. Show the rules files only, not the state file or the research folder.
+    Remember the circle of light: chats forget, files remember.
+    A file that says how we work here, design principles with the CD as rules, and a state file that says where we are.
+    Every coding AI reads them, whichever brand is on it.
   </aside>
 </section>
 
 <section>
   <div class="cols wl">
     <div>
-      <p class="kicker">04 · Brand in, brand out</p>
+      <p class="kicker">Level 5 · Brand in, brand out</p>
       <h2>Give it your CD, it follows it</h2>
-      <p class="lead">The clickable VAVE prototype: violet and lime, Readex Pro, built from the brand tokens.</p>
+      <p class="lead">The clickable VAVE prototype: violet and lime, Readex Pro.</p>
       <p class="mt"><a href="https://hannespix.github.io/vave-discovery/prototyp/">open the prototype</a></p>
     </div>
-    <div>
-      <ul class="cards c2">
-        <li><h3>⌘K</h3><p>Command palette</p></li>
-        <li><h3>t</h3><p>Starts the timer</p></li>
-      </ul>
-    </div>
+    <div class="pic"><svg data-px="phone" data-scale="22" aria-label="A phone"></svg></div>
   </div>
   <aside class="notes">
-    Give it your corporate design and it follows it. This clickable VAVE prototype uses violet and lime and Readex Pro,
-    straight from the brand tokens.
-    Try command K for the command palette, and the t key starts the timer.
-  </aside>
-</section>
-
-<section>
-  <p class="kicker">04 · From phone to production</p>
-  <h2 class="sm">Asked on the train, live minutes later</h2>
-  <ol class="steps mt">
-    <li><strong>Ask</strong>A change, requested from the phone.</li>
-    <li><strong>Review</strong>It arrives as a pull request.</li>
-    <li class="hot-step"><strong>Live</strong>Merged, published, minutes later.</li>
-  </ol>
-  <div class="stat mt-lg">
-    <p class="n">19</p>
-    <p class="t">pull requests merged and live on this project in one day, 29 September 2026.</p>
-  </div>
-  <aside class="notes">
-    From phone to production: a change requested from the train, reviewed as a pull request, live minutes later.
-    On 29 September 2026, nineteen pull requests were merged and went live on this project in a single day.
+    Give it your corporate design and it follows it.
+    The clickable VAVE prototype uses violet and lime and Readex Pro, straight from the brand rules.
   </aside>
 </section>
 
 <section class="statement">
-  <p class="kicker center">Design wow</p>
+  <p class="kicker center">Design wow for spaces</p>
   <p class="big xl">liquidtype</p>
-  <p class="lead">Type “VAVE”, pull the letters, hold to burst.<br>Physics and shaders by a non-developer.</p>
+  <p class="lead">Letters you can pull and burst. Imagine it on an LED wall that reacts to visitors.</p>
   <p class="mt"><a href="https://hannespix.github.io/liquidtype/">hannespix.github.io/liquidtype</a></p>
   <aside class="notes">
-    One for the designers: type VAVE, pull the letters, hold to make them burst.
-    Physics and shaders, built by a non-developer. Main page only, not the sub-page.
-    Now, how does a hobby fire become a forge that ships real software?
+    One for spaces: liquid type, letters you can pull and burst.
+    Now imagine it on an LED wall that reacts to visitors walking past the booth.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">Level 5 · From phone to production</p>
+  <h2 class="sm">Asked on the train, live minutes later</h2>
+  <ol class="steps mt">
+    <li><strong>Ask</strong>A change, requested from the phone.</li>
+    <li><strong>Review</strong>It arrives as a pull request.</li>
+    <li class="hot-step"><strong>Live</strong>Merged and published, minutes later.</li>
+  </ol>
+  <div class="stat mt-lg">
+    <p class="n">19</p>
+    <p class="t">pull requests in one day on the discovery project.</p>
+  </div>
+  <aside class="notes">
+    From phone to production: a change requested from the train, reviewed as a pull request, live minutes later.
+    Nineteen pull requests in one day on the discovery project.
+  </aside>
+</section>
+
+<section data-savepoint="Taste is the real skill." data-level="5">
+  <aside class="notes">
+    Saving game. Taste is the real skill.
+    Next level: the guild hall, where people and many AIs work together.
   </aside>
 </section>
 
@@ -245,6 +252,7 @@
 <script src="../vendor/reveal/reveal.js"></script>
 <script src="../vendor/reveal/plugin/notes.js"></script>
 <script src="../shared/pixel.js"></script>
+<script src="../shared/lore.js"></script>
 <script src="../shared/deck.js"></script>
 </body>
 </html>
