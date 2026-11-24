@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smoke signals · Playing with Fire</title>
+<link rel="stylesheet" href="../vendor/reveal/reset.css">
+<link rel="stylesheet" href="../vendor/reveal/reveal.css">
+<link rel="stylesheet" href="../shared/campfire.css">
+<link rel="stylesheet" href="../shared/deck.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<section class="station">
+  <div class="cols wr">
+    <div class="pic"><svg data-px-icon="smoke" data-scale="22" class="dim"></svg></div>
+    <div>
+      <p class="num">06</p>
+      <h1>Smoke signals</h1>
+      <p class="lead">Risks and sensible use. Rules, not worries.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    Station six: smoke signals. Honest and practical, no fear-mongering.
+    Seven signals, and for each one what to do. You should leave with rules, not worries.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">06 · Smoke 1 and 2</p>
+  <div class="cols top">
+    <div class="box">
+      <h3>Confidential data</h3>
+      <p class="muted">Client briefs, NDAs, personal data in consumer chats.</p>
+      <p class="mt"><strong>Do:</strong> business plans only. Anonymise. Ask before pasting.</p>
+    </div>
+    <div class="box">
+      <h3>Secrets</h3>
+      <p class="muted">API keys and passwords end up in code, even in private repos.</p>
+      <p class="mt"><strong>Do:</strong> keys in a vault or env, never in files. Rotate when exposed.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    First, confidential data: client briefs, NDAs and personal data don't belong in consumer chats.
+    Use business plans, anonymise, and ask before pasting.
+    Second, secrets: keys and passwords end up in code, even in private repos. Keep them in a vault, never in files,
+    and rotate them when exposed.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">06 · Smoke 3 and 4</p>
+  <div class="cols top">
+    <div class="box">
+      <h3>Confident errors</h3>
+      <p class="muted">It sounds right. It's wrong.</p>
+      <p class="mt"><strong>Do:</strong> verify facts, test behaviour, ask for sources.</p>
+    </div>
+    <div class="box">
+      <h3>Shipped insecurity</h3>
+      <p class="muted">Logins, databases, prompt injection.</p>
+      <p class="mt"><strong>Do:</strong> row-level security, reviews. Never trust outside text.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    Third, confident errors: remember the next-word machine, it sounds right and can be wrong.
+    Verify facts, test behaviour, ask for sources.
+    Fourth, shipped insecurity: logins, databases and prompt injection. Use row-level security and reviews,
+    and never trust text that comes from outside.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">06 · Smoke 5 and 6</p>
+  <div class="cols top">
+    <div class="box">
+      <h3>Rights</h3>
+      <p class="muted">Fonts, images, code licences, real people's photos.</p>
+      <p class="mt"><strong>Do:</strong> use what you own or what's licensed. Credit sources.</p>
+    </div>
+    <div class="box">
+      <h3>Orphan tools</h3>
+      <p class="muted">Who fixes it in six months?</p>
+      <p class="mt"><strong>Do:</strong> every tool has an owner. Docs live in the repo.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    Fifth, rights: fonts, images, code licences and real people's photos. Use what you own or what's licensed,
+    and credit your sources.
+    Sixth, orphan tools: who fixes it in six months? Every tool needs an owner, and the docs live in the repo.
+  </aside>
+</section>
+
+<section class="statement">
+  <p class="kicker center">06 · Smoke 7: lost craft</p>
+  <p class="big xl">AI amplifies taste</p>
+  <p class="lead">The risk: people stop thinking.<br><strong>Keep the taste human.</strong></p>
+  <aside class="notes">
+    The seventh signal is the quietest: lost craft, when people stop thinking.
+    AI amplifies taste, it doesn't replace it. Keep the taste human.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">A true story, anonymised</p>
+  <blockquote class="quote">“While preparing this talk, an AI audit of my own private repositories found live keys in three of them.”</blockquote>
+  <p class="lead mt-lg"><strong>Private is not the same as safe.</strong></p>
+  <aside class="notes">
+    OPTIONAL: only tell this story if you want to, and only after the keys have been rotated. Otherwise skip this slide.
+    While preparing this talk, an AI audit of my own private repositories found live keys in three of them.
+    Private is not the same as safe.
+  </aside>
+</section>
+
+<section>
+  <p class="kicker">06 · Fireplace check</p>
+  <h2 class="sm">Five questions about a real task</h2>
+  <ol class="steps s5 mt">
+    <li>Client data?</li>
+    <li>Personal data?</li>
+    <li>Public output?</li>
+    <li>Who maintains it?</li>
+    <li class="hot-step">Reviewed?</li>
+  </ol>
+  <p class="lead mt-lg">You get green, yellow or red, with advice.</p>
+  <aside class="notes">
+    Let's try it on a real task from the room. The Fireplace Check module asks five questions:
+    client data, personal data, public output, who maintains it, and was it reviewed.
+    The answer is green, yellow or red, with advice.
+  </aside>
+</section>
+
+<section>
+  <div class="cols wr">
+    <div class="pic"><img class="art art-tall" src="../art/fireplace-rules.svg" alt="The fireplace rules as a pixel-art sign by the campfire"></div>
+    <div>
+      <p class="kicker">06 · For VAVE</p>
+      <h2 class="sm">Fireplace rules</h2>
+      <ol class="rules">
+        <li>No client secrets in consumer chats.</li>
+        <li>Keys never live in code.</li>
+        <li>Every tool has an owner.</li>
+        <li>Ship small, review always.</li>
+        <li>Test what matters.</li>
+        <li>Respect licences and people.</li>
+        <li><strong>Humans decide.</strong></li>
+      </ol>
+    </div>
+  </div>
+  <aside class="notes">
+    Seven fireplace rules for VAVE. No client secrets in consumer chats, keys never live in code, every tool has an owner.
+    Ship small and review always, test what matters, respect licences and people. And humans decide.
+    So where should VAVE light the first fire?
+  </aside>
+</section>
+
+</div>
+</div>
+<script src="../vendor/reveal/reveal.js"></script>
+<script src="../vendor/reveal/plugin/notes.js"></script>
+<script src="../shared/pixel.js"></script>
+<script src="../shared/deck.js"></script>
+</body>
+</html>
