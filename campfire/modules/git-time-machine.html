@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Git Time Machine · Campfire</title>
+<link rel="stylesheet" href="../shared/campfire.css">
+<script src="../shared/pixel.js"></script>
+<style>
+  html, body { min-height: 100%; }
+  body {
+    font-size: clamp(15px, 0.6vw + 10px, 20px);
+    padding: clamp(10px, 1.6vw, 24px);
+    display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 14px);
+    min-height: 100vh;
+  }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; }
+  .top h1 { margin: 0; font-size: clamp(32px, 4.4vw, 64px); color: var(--fire-3); }
+  .top p { margin: 0; color: var(--muted); }
+  .top b { color: var(--ink); font-weight: 600; }
+
+  .words { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .words { gap: 4px 14px; }
+  .words li { font: 1.3em/1 var(--pixel); padding: 4px 6px 2px; color: var(--muted); border-bottom: var(--px) solid var(--night-4); }
+  .words li.on { color: var(--night-0); background: var(--fire-3); border-bottom-color: var(--fire-1); }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .controls .sep { width: 4px; align-self: stretch; background: var(--night-4); margin: 0 4px; }
+  .px-btn:disabled, .px-btn:disabled:hover { background: var(--night-3); color: var(--muted); box-shadow: none; cursor: not-allowed; transform: none; }
+
+  main { flex: 1; display: grid; gap: clamp(10px, 1.4vw, 18px); grid-template-columns: minmax(0, 1fr) clamp(200px, 24vw, 320px); grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "graph poster" "explain poster"; min-height: 0; }
+  .panel { padding: clamp(10px, 1.2vw, 16px); min-width: 0; }
+  .graph-panel { grid-area: graph; }
+  .explain { grid-area: explain; display: flex; flex-direction: column; gap: 8px; overflow: auto; }
+  .poster { grid-area: poster; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+  .gwrap { position: relative; }
+  .labels { position: absolute; inset: 0 auto 0 0; pointer-events: none; }
+  .scroller { overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; }
+  .graph { position: relative; height: 164px; }
+  .graph svg.edges { position: absolute; inset: 0; }
+  .lane-label { position: absolute; left: 0; white-space: nowrap; box-shadow: 0 0 0 4px var(--night-2); transform: translateY(-50%); font: 1.15em/1 var(--pixel); color: var(--muted); padding: 4px 6px; background: var(--night-2); }
+  .lane-label.cur { color: var(--night-0); background: var(--lcd-d); }
+  .lane-label.f.cur { background: var(--fire-2); }
+  .node { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; padding: 0; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; }
+  .node i { display: block; width: 20px; height: 20px; background: var(--lcd-d); box-shadow: 0 0 0 4px var(--night-2); }
+  .node.feat i { background: var(--fire-2); }
+  .node.merge i { background: var(--lcd-d); box-shadow: 0 0 0 4px var(--night-2), inset 0 0 0 4px var(--fire-2); }
+  .node:hover i { transform: translateY(-2px); }
+  .node[aria-current="true"] i { box-shadow: 0 0 0 4px var(--night-2), 0 0 0 8px var(--marker); }
+  .node.new i { animation: gtm-pop calc(var(--step) * 3) steps(3, end); }
+  @keyframes gtm-pop { from { transform: scale(0.4); } to { transform: scale(1); } }
+  .tag { position: absolute; transform: translate(-50%, -100%); font: 1em/1 var(--pixel); padding: 3px 5px; white-space: nowrap; pointer-events: none; }
+  .tag.live { background: #c42f27; color: #fff; animation: gtm-blink 1s steps(1, end) infinite; }
+  .tag.pr { background: var(--marker); color: var(--night-0); }
+  @keyframes gtm-blink { 0%, 59% { background-color: #c42f27; } 60%, 100% { background-color: #6e1813; } }
+
+  .say { margin: 0; font-size: 1.15em; line-height: 1.35; }
+  .say b { font-family: var(--pixel); font-weight: 400; font-size: 1.35em; color: var(--fire-3); letter-spacing: 0.02em; }
+  .detail { margin: 0; color: var(--muted); }
+  .feed { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; border-top: 2px solid var(--night-4); padding-top: 8px; }
+  .feed li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.92em; }
+  .feed li svg { flex: none; width: 20px; height: 20px; margin-top: 2px; }
+  .feed li.crit { color: var(--fire-4); }
+  .feed li.bot { color: var(--lcd-e); }
+
+  .poster svg.art { width: 100%; max-width: 180px; height: auto; display: block; box-shadow: 0 0 0 var(--px) var(--night-0), var(--px) var(--px) 0 var(--px) var(--night-0); }
+  .poster-wrap { position: relative; width: 100%; max-width: 180px; }
+  .poster-wrap .tag.live { position: absolute; left: auto; right: -14px; top: -14px; transform: none; font-size: 1.4em; padding: 4px 10px; box-shadow: var(--px) var(--px) 0 var(--night-0); }
+  .cap { margin: 0; text-align: center; font-size: 0.92em; }
+  .cap strong { display: block; font: 1.25em/1.1 var(--pixel); color: var(--ink); font-weight: 400; }
+  .cap span { color: var(--muted); }
+  .url { margin: 0; font-family: var(--mono); font-size: 0.8em; color: var(--lcd-e); text-align: center; word-break: break-all; }
+  [hidden] { display: none !important; }
+
+  @media (max-width: 760px) {
+    main { grid-template-columns: minmax(0, 1fr) 132px; grid-template-rows: auto auto; grid-template-areas: "graph graph" "explain poster"; }
+    .top h1 { font-size: 34px; }
+    .top .more { display: none; }
+    .words { gap: 4px 8px; }
+    .words li { font-size: 1.1em; padding: 3px 4px 1px; }
+    .px-btn { font-size: 18px; padding: 10px 12px; }
+    .controls .sep { display: none; }
+    .say { font-size: 1em; }
+    .poster svg.art, .poster-wrap { max-width: 110px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .node.new i, .tag.live { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="px-title">Git Time Machine</h1>
+  <p><b>GitHub in six words.</b> <span class="more">Press the buttons, or play the whole story.</span></p>
+</header>
+
+<ul class="words" aria-label="Six words">
+  <li data-w="repo">Repository</li><li data-w="commit">Commit</li><li data-w="branch">Branch</li><li data-w="pr">Pull request</li><li data-w="actions">Actions</li><li data-w="pages">Pages</li>
+</ul>
+
+<div class="controls" role="group" aria-label="Actions">
+  <button class="px-btn" id="b-commit" type="button">Commit</button>
+  <button class="px-btn" id="b-branch" type="button">Branch</button>
+  <button class="px-btn" id="b-pr" type="button">Open pull request</button>
+  <button class="px-btn" id="b-deploy" type="button">Deploy</button>
+  <span class="sep" aria-hidden="true"></span>
+  <button class="px-btn fire" id="b-play" type="button">Play story</button>
+  <button class="px-btn" id="b-reset" type="button">Reset</button>
+</div>
+
+<main>
+  <section class="panel px-frame graph-panel" aria-label="History. Click a save point to travel back in time.">
+    <div class="gwrap"><div class="scroller" id="scroller"><div class="graph" id="graph"></div></div><div class="labels" id="labels" aria-hidden="true"></div></div>
+  </section>
+
+  <section class="panel px-frame explain" aria-label="What just happened">
+    <p class="say" id="say" aria-live="polite"></p>
+    <p class="detail" id="detail"></p>
+    <ol class="feed" id="feed" aria-label="Activity"></ol>
+  </section>
+
+  <aside class="panel px-frame poster" aria-label="Poster preview">
+    <span class="px-label">The design</span>
+    <div class="poster-wrap pixelart">
+      <svg class="art" id="poster" viewBox="0 0 12 16" shape-rendering="crispEdges" role="img" aria-label="Poster preview"></svg>
+      <span class="tag live" id="poster-live" hidden>LIVE</span>
+    </div>
+    <p class="cap" id="cap"></p>
+    <p class="url" id="url" hidden>your-studio.github.io/poster</p>
+    <button class="px-btn" id="b-latest" type="button" hidden>Back to latest</button>
+  </aside>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const VIOLET = '#9d7bff';
+
+  /* Designer language: one sentence per word */
+  const WORDS = {
+    repo: ['Repository', 'a project folder with a perfect memory.'],
+    commit: ['Commit', 'a save point with a note.'],
+    branch: ['Branch', 'a parallel sketch. The main version stays safe.'],
+    pr: ['Pull request', 'a critique round before anything goes live.'],
+    actions: ['Actions', 'robots that test and publish on every change.'],
+    pages: ['Pages', 'free hosting. The link you send to the client.'],
+  };
+  const MAIN_CHANGES = [
+    ['Warmer background', { bg: '#ffe06a' }],
+    ['Bigger headline', { head: 3 }],
+    ['Shape: circle', { shape: 'circle' }],
+    ['Add the date', { date: true }],
+    ['Night version', { bg: '#0f380f', ink: '#e3efa8' }],
+    ['Shape: triangle', { shape: 'tri' }],
+    ['Red accent', { accent: '#e8483f' }],
+  ];
+  const FEATURE_CHANGES = [
+    ['Logo: try a circle', { logo: 'circle' }],
+    ['Logo: violet', { logoColor: VIOLET }],
+    ['Logo: bigger', { logoBig: true }],
+    ['Logo: outline only', { logo: 'ring' }],
+  ];
+  const BRANCH_NAMES = ['new-logo', 'logo-tweaks', 'logo-final'];
+  const BASE = { bg: '#e3efa8', ink: '#0f380f', accent: '#ff5a36', shape: 'square', head: 1, date: false, logo: 'square', logoColor: '#0f380f', logoBig: false };
+
+  let st;
+  function fresh() {
+    st = {
+      commits: [{ id: 1, lane: 0, parents: [], msg: 'First layout', state: { ...BASE } }],
+      lane: 0, branchName: null, branchFrom: null, branchCount: 0,
+      heads: [1, null], mainChanges: 0, featChanges: 0,
+      pr: null, prCount: 0, live: null, view: 1, fresh: 1,
+      feed: [], word: 'repo',
+      say: '', detail: 'Every version of this poster lives in here. Nothing gets lost.',
+    };
+  }
+  const byId = (id) => st.commits.find((c) => c.id === id);
+  const headOf = (lane) => byId(st.heads[lane]);
+
+  function log(kind, text) { st.feed.unshift({ kind, text }); st.feed.length = Math.min(st.feed.length, 4); }
+
+  /* ── Actions ─────────────────────────────────────────────────────────────── */
+  function commit() {
+    const lane = st.lane;
+    const parent = lane === 1 && !st.heads[1] ? byId(st.branchFrom) : headOf(lane);
+    const list = lane === 0 ? MAIN_CHANGES : FEATURE_CHANGES;
+    const n = lane === 0 ? st.mainChanges++ : st.featChanges++;
+    const [msg, change] = list[n % list.length];
+    const c = { id: st.commits.length + 1, lane, parents: [parent.id], msg, state: { ...parent.state, ...change } };
+    st.commits.push(c); st.heads[lane] = c.id; st.view = c.id; st.fresh = c.id;
+    st.word = 'commit';
+    st.detail = `“${msg}” is saved on ${lane ? st.branchName : 'main'}. You can always come back to it.`;
+    log('commit', `c${c.id} · ${msg} (${lane ? st.branchName : 'main'})`);
+  }
+  function branch() {
+    st.branchName = BRANCH_NAMES[st.branchCount++ % BRANCH_NAMES.length];
+    st.branchFrom = st.heads[0]; st.heads[1] = null; st.lane = 1; st.featChanges = st.featChanges % FEATURE_CHANGES.length;
+    st.word = 'branch';
+    st.detail = `Sketch on “${st.branchName}” as wildly as you like. Main still holds the approved poster.`;
+    log('branch', `Branch “${st.branchName}” starts at c${st.branchFrom}`);
+  }
+  function openPr() {
+    st.pr = { n: ++st.prCount, checks: 'running' };
+    st.word = 'pr';
+    st.detail = `Pull request #${st.pr.n}: “${st.branchName}” → main. The team looks at it before it counts.`;
+    log('pr', `Pull request #${st.pr.n} opened: ${st.branchName} → main`);
+    log('crit', 'Critic: The circle logo reads well from two metres. Check the violet on the night version.');
+  }
+  function checksPass() {
+    if (!st.pr) return;
+    st.pr.checks = 'passed';
+    st.word = 'actions';
+    st.detail = 'Robot check: file size ok, contrast ok, links ok. Ready to merge.';
+    log('bot', 'Robot (Actions): 3 of 3 checks passed');
+  }
+  function merge() {
+    const main = headOf(0), feat = headOf(1), from = byId(st.branchFrom);
+    const diff = {};
+    for (const k in feat.state) if (feat.state[k] !== from.state[k]) diff[k] = feat.state[k];
+    const c = { id: st.commits.length + 1, lane: 0, parents: [main.id, feat.id], msg: `Merge ${st.branchName}`, state: { ...main.state, ...diff }, merge: true };
+    st.commits.push(c); st.heads[0] = c.id; st.lane = 0; st.view = c.id; st.fresh = c.id;
+    st.word = 'pr';
+    st.detail = `The sketch joins the main version. Pull request #${st.pr.n} is closed.`;
+    log('merge', `Merged ${st.branchName} into main (c${c.id})`);
+    st.pr = null; st.branchFrom = null; st.heads[1] = null; st.closedBranch = st.branchName;
+  }
+  function deploy() {
+    st.live = st.heads[0]; st.view = st.live;
+    st.word = 'pages';
+    st.detail = `c${st.live} is live. Actions published it to Pages; send the link to the client.`;
+    log('live', `Deployed c${st.live} to Pages: LIVE`);
+  }
+
+  let prTimer = null;
+  function doPr() {
+    if (!st.pr) {
+      openPr();
+      clearTimeout(prTimer);
+      prTimer = setTimeout(() => { checksPass(); render(); }, 1400);
+    } else if (st.pr.checks === 'passed') merge();
+    render();
+  }
+
+  /* ── Rendering ───────────────────────────────────────────────────────────── */
+  const X0 = 112, DX = 58, Y = [54, 126];
+  const xOf = (c) => X0 + (c.id - 1) * DX;
+
+  function rect(x, y, w, h, fill) { return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}"/>`; }
+  /** Pixel edge: horizontal + vertical runs, 4 px thick */
+  function edge(x1, y1, x2, y2, fill, vFirst) {
+    const t = 4, h = (ya, xa, xb) => rect(Math.min(xa, xb), ya - 2, Math.abs(xb - xa) + t, t, fill), v = (xa, ya, yb) => rect(xa - 2, Math.min(ya, yb), t, Math.abs(yb - ya), fill);
+    if (y1 === y2) return h(y1, x1, x2);
+    return vFirst ? v(x1, y1, y2) + h(y2, x1, x2) : h(y1, x1, x2) + v(x2, y1, y2);
+  }
+
+  function renderGraph() {
+    const g = $('graph');
+    const last = st.commits[st.commits.length - 1];
+    const width = xOf(last) + DX + 60;
+    let svg = '';
+    const LG = '#4c7420', FG = '#ff5a36';
+    for (const c of st.commits) {
+      for (const pid of c.parents) {
+        const p = byId(pid);
+        const col = c.lane === 1 || p.lane === 1 ? FG : LG;
+        svg += edge(xOf(p), Y[p.lane], xOf(c), Y[c.lane], col, p.lane === 0 && c.lane === 1);
+      }
+    }
+    if (st.branchFrom && !st.heads[1]) { // fresh branch, no commits yet: a stub
+      const p = byId(st.branchFrom);
+      svg += edge(xOf(p), Y[0], xOf(p) + DX * 0.6, Y[1], FG, true);
+    }
+    if (st.pr) { // dashed pull-request arrow from feature head towards main
+      const f = headOf(1), x = xOf(f) + DX;
+      for (let y = Y[1] - 4; y > Y[0] + 10; y -= 12) svg += rect(x - 2, y - 6, 4, 6, '#ffe45e');
+      svg += rect(xOf(f) + 12, Y[1] - 2, DX - 12, 4, '#ffe45e');
+    }
+    let html = `<svg class="edges" width="${width}" height="164" viewBox="0 0 ${width} 164" shape-rendering="crispEdges" aria-hidden="true">${svg}</svg>`;
+    let labels = `<span class="lane-label${st.lane === 0 ? ' cur' : ''}" style="top:${Y[0]}px">main</span>`;
+    const fName = st.branchName && (st.lane === 1 ? st.branchName : st.closedBranch || st.branchName);
+    if (fName) labels += `<span class="lane-label f${st.lane === 1 ? ' cur' : ''}" style="top:${Y[1]}px">${fName}</span>`;
+    $('labels').innerHTML = labels;
+    for (const c of st.commits) {
+      const cls = ['node', c.lane ? 'feat' : '', c.merge ? 'merge' : '', c.id === st.fresh ? 'new' : ''].join(' ').trim();
+      const where = c.lane ? 'on a branch' : 'on main';
+      html += `<button type="button" class="${cls}" data-id="${c.id}" style="left:${xOf(c)}px;top:${Y[c.lane]}px" aria-current="${c.id === st.view}" title="c${c.id} · ${c.msg}" aria-label="Save point c${c.id}, ${c.msg}, ${where}. Show this version."><i></i></button>`;
+    }
+    if (st.live) { const c = byId(st.live); html += `<span class="tag live" style="left:${xOf(c)}px;top:${Y[0] - 24}px">LIVE</span>`; }
+    if (st.pr) { const f = headOf(1); html += `<span class="tag pr" style="left:${xOf(f) + DX}px;top:${Y[1] + 34}px">PR #${st.pr.n} · ${st.pr.checks === 'passed' ? 'checks ok' : 'checking'}</span>`; }
+    g.style.width = width + 'px';
+    g.innerHTML = html;
+    g.querySelectorAll('.node').forEach((b) => b.addEventListener('click', () => travel(+b.dataset.id)));
+    st.fresh = null;
+  }
+
+  function travel(id) {
+    if (playing) return;
+    st.view = id;
+    const c = byId(id), head = headOf(st.lane);
+    if (head && id !== head.id) { st.word = 'repo'; st.detail = `Time travel: this is c${id}, “${c.msg}”. Nothing is lost; the newer versions are still there.`; }
+    render(true);
+  }
+
+  function posterSvg(s) {
+    let out = rect(0, 0, 12, 16, s.bg);
+    for (let i = 0; i < s.head; i++) out += rect(1, 1 + i * 2, i === 0 ? 10 : 7 - i, 1, s.ink);
+    const top = 2 + s.head * 2; // shapes sit left, rows top..top+4, x 1..6
+    if (s.shape === 'square') out += rect(1, top, 5, 5, s.accent);
+    if (s.shape === 'circle') out += rect(2, top, 3, 5, s.accent) + rect(1, top + 1, 5, 3, s.accent);
+    if (s.shape === 'tri') [2, 2, 4, 4, 6].forEach((w, r) => { out += rect(4 - w / 2, top + r, w, 1, s.accent); });
+    if (s.date) out += rect(1, 14, 4, 1, s.accent);
+    const big = s.logoBig ? 1 : 0, n = 5 + big, lx = 11 - n, ly = 15 - n; // logo bottom right
+    if (s.logo === 'square') out += rect(lx + 1, ly + 1, n - 1, n - 1, s.logoColor);
+    if (s.logo === 'circle') out += rect(lx + 1, ly, n - 2, n, s.logoColor) + rect(lx, ly + 1, n, n - 2, s.logoColor);
+    if (s.logo === 'ring') out += rect(lx + 1, ly, n - 2, 1, s.logoColor) + rect(lx + 1, ly + n - 1, n - 2, 1, s.logoColor) + rect(lx, ly + 1, 1, n - 2, s.logoColor) + rect(lx + n - 1, ly + 1, 1, n - 2, s.logoColor);
+    return out;
+  }
+
+  function renderPoster() {
+    const c = byId(st.view), head = headOf(st.lane) || headOf(0);
+    $('poster').innerHTML = posterSvg(c.state);
+    $('poster').setAttribute('aria-label', `Poster at save point c${c.id}: ${c.msg}`);
+    const isLive = st.live === c.id;
+    $('poster-live').hidden = !isLive;
+    $('url').hidden = !isLive;
+    const status = c.id === head.id ? 'latest version' : isLive ? 'the live version' : 'an older version';
+    $('cap').innerHTML = `<strong>c${c.id} · ${c.msg}</strong><span>${status}${c.lane ? ' on ' + (st.branchName || 'a branch') : ' on main'}</span>`;
+    $('b-latest').hidden = c.id === head.id;
+  }
+
+  const ICON = { commit: 'spark', branch: 'kindling', pr: 'bubble', crit: 'bubble', bot: 'forge', merge: 'fire', live: 'fire' };
+  function renderText() {
+    const [w, s] = WORDS[st.word];
+    $('say').innerHTML = `<b>${w}:</b> ${s}`;
+    $('detail').textContent = st.detail;
+    document.querySelectorAll('.words li').forEach((li) => li.classList.toggle('on', li.dataset.w === st.word));
+    $('feed').innerHTML = st.feed.map((f) => `<li class="${f.kind}"><svg viewBox="0 0 16 16" class="pixelart" aria-hidden="true">${PX.icon(ICON[f.kind], { fill: 'currentColor' })}</svg><span>${f.text}</span></li>`).join('');
+  }
+
+  function renderButtons() {
+    const busy = playing;
+    $('b-commit').disabled = busy || (st.lane === 1 && !!st.pr);
+    $('b-branch').disabled = busy || st.lane === 1;
+    const pr = $('b-pr');
+    if (!st.pr) { pr.textContent = 'Open pull request'; pr.disabled = busy || st.lane !== 1 || !st.heads[1]; }
+    else if (st.pr.checks === 'running') { pr.textContent = 'Checks running…'; pr.disabled = true; }
+    else { pr.textContent = 'Merge'; pr.disabled = busy; }
+    $('b-deploy').disabled = busy || st.live === st.heads[0];
+    $('b-play').textContent = busy ? 'Stop' : 'Play story';
+    $('b-reset').disabled = busy;
+  }
+
+  function render(keepScroll) {
+    renderGraph(); renderPoster(); renderText(); renderButtons();
+    if (!keepScroll) { const sc = $('scroller'); sc.scrollLeft = sc.scrollWidth; }
+  }
+
+  $('b-commit').addEventListener('click', () => { commit(); render(); });
+  $('b-branch').addEventListener('click', () => { branch(); render(); });
+  $('b-pr').addEventListener('click', doPr);
+  $('b-deploy').addEventListener('click', () => { deploy(); render(); });
+  $('b-reset').addEventListener('click', () => { clearTimeout(prTimer); fresh(); render(); });
+  $('b-latest').addEventListener('click', () => { st.view = (headOf(st.lane) || headOf(0)).id; render(true); });
+
+  /* ── Play story ──────────────────────────────────────────────────────────── */
+  let playing = false, playTimer = null;
+  const STORY = [
+    () => commit(), () => commit(), () => branch(), () => commit(), () => commit(),
+    () => openPr(), () => checksPass(), () => merge(), () => deploy(),
+  ];
+  function stopPlay() { playing = false; clearTimeout(playTimer); render(true); }
+  $('b-play').addEventListener('click', () => {
+    if (playing) { stopPlay(); return; }
+    clearTimeout(prTimer); fresh(); playing = true; render();
+    let i = 0;
+    const next = () => {
+      if (!playing) return;
+      if (i >= STORY.length) { playing = false; render(true); return; }
+      STORY[i++](); render();
+      playTimer = setTimeout(next, i === 6 ? 1900 : 1400);
+    };
+    playTimer = setTimeout(next, 900);
+  });
+
+  fresh(); render();
+})();
+</script>
+</body>
+</html>
