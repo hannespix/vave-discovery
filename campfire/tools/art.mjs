@@ -11,7 +11,9 @@ import vm from 'node:vm';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 vm.runInThisContext(readFileSync(join(root, 'shared/pixel.js'), 'utf8'), { filename: 'pixel.js' });
+vm.runInThisContext(readFileSync(join(root, 'shared/lore.js'), 'utf8'), { filename: 'lore.js' });
 const PX = globalThis.PX;
+const LORE = globalThis.LORE;
 const OUT = join(root, 'art');
 mkdirSync(OUT, { recursive: true });
 
@@ -688,10 +690,845 @@ function icons() {
   }
 }
 
-scene();
-fireplaceRules();
-repoWall();
-trailMap();
-lifeStrip();
-pixWave();
-icons();
+/* ══ Version 2: the pixel RPG quest ══════════════════════════════════════════ */
+/* Shared bits for the v2 screens. All scenes are 320×180 (16:9) unless noted. */
+const RAR = { common: '4', rare: 'c', epic: 'd', legendary: 'M' };
+/** Double frame like the trail map */
+function frame2(W, H) {
+  const fr = new Cv(W, H);
+  fr.rect(0, 0, W, 2, 'k').rect(0, H - 2, W, 2, 'k').rect(0, 0, 2, H, 'k').rect(W - 2, 0, 2, H, 'k');
+  fr.rect(3, 3, W - 6, 1, '4').rect(3, H - 4, W - 6, 1, '4').rect(3, 3, 1, H - 6, '4').rect(W - 4, 3, 1, H - 6, '4');
+  return fr.svg();
+}
+/** Static dim stars + three groups of twinkling stars; skip(x, y) keeps areas clear */
+function stars(cv, W, yMax, seed, n, skip = () => false) {
+  const rnd = rng(seed);
+  for (let i = 0; i < n; i++) {
+    const x = Math.floor(rnd() * W), y = Math.floor(rnd() * yMax);
+    if (!skip(x, y) && cv.get(x, y) !== '.') cv.px(x, y, rnd() < 0.5 ? '4' : 'a');
+  }
+  const tw = [[], [], []];
+  for (let i = 0; i < Math.round(n / 3); i++) {
+    const x = Math.floor(rnd() * W), y = Math.floor(rnd() * yMax);
+    if (!skip(x, y)) tw[i % 3].push([x, y]);
+  }
+  let svg = '', css = '';
+  tw.forEach((pts, i) => {
+    svg += `<path class="tw${i}" d="${dotD(pts)}"/>`;
+    css += seqKF(`tw${i}`, ['fill:' + C.i, 'fill:' + C.i, 'fill:' + C.a, 'fill:' + C.e, 'fill:' + C.i].slice(i % 2, 5));
+    css += `.tw${i}{fill:${C.i};${anim(`tw${i}`, 1.7 + i * 0.9, -i * 0.4)}}`;
+  });
+  return { svg, css };
+}
+/** Two-frame toggle: a visible first, b hidden; period in s */
+function flip(cls, a, b, period, delay = 0) {
+  const svg = `<g class="${cls}a">${a}</g><g class="${cls}b">${b}</g>`;
+  const css = seqKF(`${cls}a`, ['opacity:1', 'opacity:0']) + seqKF(`${cls}b`, ['opacity:0', 'opacity:1'])
+    + `.${cls}a{${anim(cls + 'a', period, delay)}}.${cls}b{opacity:0;${anim(cls + 'b', period, delay)}}`;
+  return { svg, css };
+}
+/** Blink: on 2/3 of the time */
+function blinkCss(cls, period = 1.2) { return seqKF(cls, ['opacity:1', 'opacity:1', 'opacity:0']) + `.${cls}{${anim(cls, period)}}`; }
+/** Pix with a blink every few seconds */
+function pixBlinking(cls, x, y, period = 4, delay = 0) {
+  const svg = `<g class="${cls}o">${PX.sprite('pix', { x, y })}</g><g class="${cls}c">${PX.sprite('pixBlink', { x, y })}</g>`;
+  const slots = Array(16).fill(0); slots[11] = 1;
+  const css = seqKF(`${cls}o`, slots.map((s) => `opacity:${s ? 0 : 1}`)) + seqKF(`${cls}c`, slots.map((s) => `opacity:${s}`))
+    + `.${cls}o{${anim(cls + 'o', period, delay)}}.${cls}c{opacity:0;${anim(cls + 'c', period, delay)}}`;
+  return { svg, css };
+}
+/** Plate behind text: dark box with a 1px border */
+function plate(cv, x, y, w, h, border = '4', fill = 'k') { cv.rect(x, y, w, h, border).rect(x + 1, y + 1, w - 2, h - 2, fill); }
+
+/* ── v2 · 1 · Inventory sheet: all items, labelled ────────────────────────── */
+function itemsSheet() {
+  const ids = LORE.ITEMS.map((it) => it.id);
+  const missing = ids.filter((id) => !PX.ITEMS[id]);
+  if (missing.length) throw new Error('PX.ITEMS missing: ' + missing.join(', '));
+  ids.forEach((id) => { const r = PX.ITEMS[id]; if (r.length !== 16 || r.some((l) => l.length !== 16)) throw new Error(`item ${id} is not 16×16`); });
+  const COLS = 6, CW = 88, CH = 60, M = 8, TOP = 30;
+  const W = M * 2 + COLS * CW, NR = Math.ceil(ids.length / COLS), H = TOP + NR * CH + 18;
+  const cv = new Cv(W, H, 'N');
+  let ink = '';
+  LORE.ITEMS.forEach((it, i) => {
+    const cx = M + (i % COLS) * CW + CW / 2, y = TOP + Math.floor(i / COLS) * CH, tx = cx - 19;
+    cv.rect(tx, y, 38, 38, RAR[it.rarity]).rect(tx + 1, y + 1, 36, 36, 'k');
+    [[0, 0], [37, 0], [0, 37], [37, 37]].forEach(([dx, dy]) => cv.px(tx + dx, y + dy, 'N'));
+    ink += `<g transform="translate(${tx + 3} ${y + 3}) scale(2)">${PX.item(it.id, { fill: C.o })}</g>`;
+    ink += PX.text(it.name, { x: cx, y: y + 43, fill: C.i, align: 'center' });
+  });
+  ink += PX.text('INVENTORY', { x: M + 4, y: 8, scale: 2, fill: C.i });
+  ink += PX.text(`${ids.length} ITEMS`, { x: W - M - 4, y: 12, fill: C.t, align: 'right' });
+  // rarity legend
+  let lx = M + 4;
+  const ly = H - 13;
+  for (const [k, c] of Object.entries(RAR)) {
+    cv.rect(lx, ly, 7, 7, c).rect(lx + 1, ly + 1, 5, 5, 'k');
+    ink += PX.text(k.toUpperCase(), { x: lx + 10, y: ly, fill: C.t });
+    lx += 10 + PX.textWidth(k) + 12;
+  }
+  write('items-sheet.svg', {
+    w: W, h: H, body: cv.svg() + ink,
+    title: 'The inventory: AI and GitHub terms as items',
+    desc: `A grid of ${ids.length} single-colour pixel item icons in fire orange on night green, each in a frame coloured by rarity and labelled with its name: ${LORE.ITEMS.map((it) => it.name).join(', ')}.`,
+  });
+}
+
+/** 5×7 text drawn onto a char canvas; col(row 0..7*s-1) → palette char. Returns width. */
+function textCv(cv, str, x, y, s, col) {
+  let cx = x;
+  for (const ch of String(str)) {
+    const rows = PX.FONT5x7[ch] || PX.FONT5x7[ch.toUpperCase()] || PX.FONT5x7['?'];
+    rows.forEach((r, ry) => [...r].forEach((p, rx) => { if (p === '#') cv.rect(cx + rx * s, y + ry * s, s, s, col(ry * s)); }));
+    cx += (rows[0].length + 1) * s;
+  }
+  return cx - x - s;
+}
+/** Outline every non-transparent pixel of `src` with colour c into `dst` (8-neighbourhood), then copy src on top */
+function outlined(src, dst, c) {
+  for (let y = 0; y < src.h; y++) for (let x = 0; x < src.w; x++) {
+    if (src.get(x, y) !== '.') continue;
+    let n = false;
+    for (let j = -1; j <= 1 && !n; j++) for (let i = -1; i <= 1; i++) if ((i || j) && src.get(x + i, y + j) !== '.') { n = true; break; }
+    if (n) dst.px(x, y, c);
+  }
+  for (let y = 0; y < src.h; y++) for (let x = 0; x < src.w; x++) if (src.get(x, y) !== '.') dst.px(x, y, src.get(x, y));
+}
+/* Small extra mono icons for the map (16×16, '#') */
+const MAPICON = {
+  start: [
+    '................', '................', '..############..', '.#............#.', '.#....#.......#.', '.#....##......#.', '.#....###.....#.', '.#....####....#.',
+    '.#....####....#.', '.#....###.....#.', '.#....##......#.', '.#....#.......#.', '.#............#.', '..############..', '................', '................',
+  ],
+  sword: [
+    '.............###', '............#..#', '...........#..#.', '..........#..#..', '.........#..#...', '..#.....#..#....', '..##...#..#.....', '...##.#..#......',
+    '....##..#.......', '.....##.........', '....#.##........', '...#...##.......', '..#.....#.......', '.##.............', '##..............', '#...............',
+  ],
+};
+const monoRows = (id) => MAPICON[id] || PX.ITEMS[id] || PX.ICONS[id];
+
+/* ── v2 · 2 · World map: ten levels, overworld and cave ───────────────────── */
+function worldMap() {
+  const W = 320, H = 180, rnd = rng(21);
+  const TOPY = 70, LOWY = 130, GROUND1 = 82, GROUND2 = 142, XS = [54, 108, 162, 216, 270];
+  const LV = [
+    ['PRESS\nSTART', 'start'], ['CHARACTER', 'pix'], ['LORE', 'llm'], ['INVENTORY', 'repo'], ['KINDLING', 'kindling'],
+    ['CRAFTING', 'forge'], ['GUILD\nHALL', 'org'], ['QUEST\nLOG', 'system'], ['BOSS\nFIGHT', 'sword'], ['NEW\nGAME+', 'spark'],
+  ].map(([label, ic], i) => ({ label, ic, x: i < 5 ? XS[i] : XS[9 - i], y: i < 5 ? TOPY : LOWY }));
+  const cv = new Cv(W, H, 'N');
+  // sky
+  for (let y = 0; y < 14; y++) cv.rect(0, y, W, 1, 'k');
+  for (let x = 0; x < W; x++) for (let y = 14; y < 17; y++) if ((x + y) % (y - 12) === 0) cv.px(x, y, 'k');
+  // moon
+  for (let y = 4; y < 26; y++) for (let x = 280; x < 304; x++) {
+    const d1 = Math.hypot(x - 292, y - 14), d2 = Math.hypot(x - 295, y - 12);
+    if (d1 <= 6.4 && d2 > 5.6) cv.px(x, y, d2 < 6.6 ? 'e' : 'f');
+  }
+  // far mountains
+  const mt = (x) => 46 + Math.round(8 * Math.sin(x / 31) + 5 * Math.sin(x / 13 + 1) + 3 * Math.sin(x / 5.3));
+  for (let x = 0; x < W; x++) { cv.rect(x, mt(x), 1, GROUND1 - mt(x), 'g'); if (mt(x + 1) > mt(x)) cv.px(x, mt(x), 'a'); }
+  for (let x = -2; x < W + 3; x += 4 + Math.floor(rnd() * 5)) pine(cv, x, GROUND1, 6 + Math.floor(rnd() * 7), 'k');
+  // overworld plateau: grass edge, earth with stones
+  cv.rect(0, GROUND1, W, 26, '3').rect(0, GROUND1, W, 1, 'c').rect(0, GROUND1 + 1, W, 1, 'b');
+  for (let x = 0; x < W; x += 3) if (rnd() < 0.5) cv.px(x, GROUND1 - 1, 'b');
+  for (let i = 0; i < 40; i++) cv.rect(Math.floor(rnd() * W), GROUND1 + 4 + Math.floor(rnd() * 20), 2, 1, rnd() < 0.5 ? '4' : '2');
+  // cave below: back wall bricks, stalactites, floor
+  cv.rect(0, 108, W, GROUND2 - 108, '2');
+  for (let y = 112; y < GROUND2; y += 6) for (let x = (y / 6) % 2 ? 0 : 6; x < W; x += 12) cv.rect(x, y, 11, 1, 'N').rect(x, y, 1, 5, 'N');
+  for (let x = 2; x < W; x += 7 + Math.floor(rnd() * 6)) { const h = 2 + Math.floor(rnd() * 4); for (let j = 0; j < h; j++) cv.rect(x + (j > h / 2 ? 1 : 0), 108 + j, j > h / 2 ? 1 : 2, 1, '3'); }
+  cv.rect(0, GROUND2, W, H - GROUND2, 'g').rect(0, GROUND2, W, 1, '4');
+  for (let i = 0; i < 30; i++) cv.rect(Math.floor(rnd() * W), GROUND2 + 3 + Math.floor(rnd() * 30), 2, 1, '3');
+  // ladder down on the right
+  const LX = 304;
+  cv.rect(LX - 4, GROUND1 - 2, 1, GROUND2 - GROUND1 + 2, 'm').rect(LX + 4, GROUND1 - 2, 1, GROUND2 - GROUND1 + 2, 'm');
+  for (let y = GROUND1; y < GROUND2; y += 4) cv.rect(LX - 3, y, 7, 1, 'n');
+  // dotted path
+  const way = [[30, TOPY], ...XS.map((x) => [x, TOPY]), [LX, TOPY], [LX, LOWY], ...[...XS].reverse().map((x) => [x, LOWY]), [24, LOWY]];
+  for (let i = 1; i < way.length; i++) {
+    const [x0, y0] = way[i - 1], [x1, y1] = way[i], len = Math.hypot(x1 - x0, y1 - y0);
+    for (let s = 0; s < len; s += 5) cv.rect(Math.round(x0 + ((x1 - x0) * s) / len), Math.round(y0 + ((y1 - y0) * s) / len), 2, 2, 'd');
+  }
+  // torches in the cave (between levels), two-frame flicker
+  const torchA = ['.r.', 'ror', 'oyo', '.W.', '.W.', '.W.'], torchB = ['r..', '.ro', 'roy', '.W.', '.W.', '.W.'];
+  let tA = '', tB = '';
+  [81, 135, 189, 243].forEach((x) => { tA += PX.sprite(torchA, { x: x - 1, y: 114 }); tB += PX.sprite(torchB, { x: x - 1, y: 114 }); });
+  // level plates
+  let top = '';
+  LV.forEach(({ label, ic, x, y }, i) => {
+    const edge = i === 0 ? 'M' : i === 8 ? 'R' : 'a';
+    cv.rect(x - 11, y - 11, 22, 22, edge).rect(x - 10, y - 10, 20, 20, 'k');
+    [[-11, -11], [10, -11], [-11, 10], [10, 10]].forEach(([dx, dy]) => cv.px(x + dx, y + dy, y === TOPY ? '3' : '2'));
+    if (ic === 'pix') cv.spr(PX.SPRITES.pix, x - 8, y - 8);
+    else cv.spr(monoRows(ic), x - 8, y - 8, { '#': i === 8 ? 'r' : 'o' });
+    cv.rect(x - 17, y - 18, 15, 11, 'k').rect(x - 16, y - 17, 13, 9, 'M');
+    top += PX.text(String(i).padStart(2, '0'), { x: x - 15, y: y - 16, fill: C.k });
+    top += PX.text(label, { x, y: y + 15, fill: C.i, align: 'center' });
+  });
+  // save point: campfire at the end of the cave
+  const SX = 22, camp = new Cv(W, H);
+  camp.spr(PX.SPRITES.logs, SX - 10, GROUND2 - 6);
+  const fire = fireFrames('wf', SX - 8, GROUND2 - 19);
+  let body = cv.svg();
+  body += `<path fill="${C.o}" fill-opacity=".12" d="${ellD(SX, GROUND2 - 6, 18, 12)}"/><path fill="${C.o}" fill-opacity=".1" d="${ellD(SX, GROUND2 - 6, 10, 7)}"/>`;
+  body += fire.svg + camp.svg();
+  top += PX.text('SAVE', { x: SX, y: GROUND2 + 4, fill: C.y, align: 'center' });
+  let css = fire.css;
+  const tor = flip('tc', tA, tB, 0.5);
+  body += tor.svg; css += tor.css;
+  // stars
+  { const sk = new Cv(W, 44); for (let i = 0; i < 40; i++) { const x = Math.floor(rnd() * W), y = Math.floor(rnd() * 40); if (y < mt(x) - 3 && Math.hypot(x - 292, y - 14) > 9) sk.px(x, y, rnd() < 0.4 ? 'a' : '4'); } body += sk.svg(); }
+  const tw = [[], [], []];
+  for (let i = 0; i < 15; i++) { const x = Math.floor(rnd() * W), y = 2 + Math.floor(rnd() * 34); if (y < mt(x) - 4 && Math.hypot(x - 292, y - 14) > 10 && !(x > 60 && x < 260 && y < 30)) tw[i % 3].push([x, y]); }
+  tw.forEach((pts, i) => {
+    body += `<path class="tw${i}" d="${dotD(pts)}"/>`;
+    css += seqKF(`tw${i}`, ['fill:' + C.i, 'fill:' + C.a, 'fill:' + C.e, 'fill:' + C.i].slice(i % 2)) + `.tw${i}{fill:${C.i};${anim(`tw${i}`, 1.7 + i * 0.9, -i * 0.4)}}`;
+  });
+  body += top;
+  // Pix waiting at the start
+  const pix = pixBlinking('wp', 18, TOPY - 4);
+  body += pix.svg; css += pix.css;
+  // blinking cursor over level 00
+  const cur = `<path fill="${C.M}" d="${dotD([[XS[0] - 4, 44, 9, 1], [XS[0] - 3, 45, 7, 1], [XS[0] - 2, 46, 5, 1], [XS[0] - 1, 47, 3, 1], [XS[0], 48, 1, 1]])}"/>`;
+  body += `<g class="cur">${cur}</g>`;
+  css += blinkCss('cur', 1);
+  // title
+  body += `<path fill="${C.k}" d="${dotD([[66, 6, 188, 21]])}"/>`;
+  body += PX.text('PLAYING WITH FIRE', { x: 160, y: 10, scale: 2, fill: C.i, align: 'center' });
+  body += frame2(W, H);
+  write('world-map.svg', {
+    w: W, h: H, css, body,
+    title: 'Playing with Fire: the world map',
+    desc: 'A pixel game world map at night in side view. On the grassy overworld a dotted path runs past levels 00 Press start, 01 Character, 02 Lore, 03 Inventory and 04 Kindling; a ladder leads down into a torch-lit cave with 05 Crafting, 06 Guild hall, 07 Quest log, 08 Boss fight and 09 New game plus, ending at a campfire save point. Pix waits at the start, a yellow cursor blinks over level 00.',
+  });
+}
+
+/* ── v2 · 3 · Title screen ────────────────────────────────────────────────── */
+function titleScreen() {
+  const W = 320, H = 180, HZ = 132, rnd = rng(33);
+  const cv = new Cv(W, H, 'k');
+  for (let y = 60; y < HZ; y++) for (let x = 0; x < W; x++) if (y > 96 || (x * 7 + y * 3) % (100 - y) === 0) cv.px(x, y, y > 112 ? '3' : 'N');
+  for (let y = 96; y < 100; y++) for (let x = 0; x < W; x++) if ((x + y) % 2) cv.px(x, y, 'k');
+  // hills and treeline
+  for (let x = 0; x < W; x++) { const y = 112 + Math.round(4 * Math.sin(x / 19) + 3 * Math.sin(x / 7 + 1)); cv.rect(x, y, 1, HZ - y, '2'); }
+  for (let x = -2; x < W + 3; x += 3 + Math.floor(rnd() * 5)) { const e = x < 70 ? (70 - x) / 70 : x > 250 ? (x - 250) / 70 : 0; pine(cv, x, HZ + 1, 6 + Math.floor(rnd() * 6) + Math.round(e * 14), 'k'); }
+  cv.rect(0, HZ, W, H - HZ, '3');
+  for (let y = HZ + 30; y < H; y++) for (let x = 0; x < W; x++) if ((x + y) % 2 || y > HZ + 33) cv.px(x, y, '2');
+  // static stars, away from the logo
+  for (let i = 0; i < 70; i++) { const x = Math.floor(rnd() * W), y = Math.floor(rnd() * 100); if (cv.get(x, y) === 'k') cv.px(x, y, rnd() < 0.5 ? '4' : 'a'); }
+  // logo: PLAYING / WITH (LCD greens) and FIRE in flame colours, dark outline + drop shadow
+  const S = 4;
+  const logo = new Cv(W, H);
+  const green = (r) => (r < 8 ? 'f' : r < 16 ? 'e' : r < 24 ? 'd' : 'c');
+  const flame = (r) => (r < 6 ? 'w' : r < 12 ? 'y' : r < 20 ? 'o' : 'r');
+  const w1 = PX.textWidth('PLAYING', S), w2 = PX.textWidth('WITH FIRE', S), wWith = PX.textWidth('WITH ', S);
+  const L1X = Math.floor((W - w1) / 2), L2X = Math.floor((W - w2) / 2);
+  textCv(logo, 'PLAYING', L1X, 14, S, green);
+  textCv(logo, 'WITH', L2X, 50, S, green);
+  textCv(logo, 'FIRE', L2X + wWith, 50, S, flame);
+  const shadow = new Cv(W, H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (logo.get(x, y) !== '.') shadow.rect(x + 2, y + 2, 1, 1, 'g');
+  const lg = new Cv(W, H);
+  outlined(shadow, lg, 'k');
+  outlined(logo, lg, 'k');
+  // campfire + Pix
+  const FX = 150, camp = new Cv(W, H);
+  [[-15, 9], [-12, 6], [11, 6], [13, 9], [-6, 10], [6, 10]].forEach(([dx, dy]) => camp.spr(['.tt.', 'tsss', '.ss.'], FX + dx - 2, HZ + 4 + dy));
+  camp.spr(PX.SPRITES.logs, FX - 10, HZ + 8);
+  const fire = fireFrames('tf', FX - 8, HZ - 5);
+  let body = cv.svg();
+  body += [[40, 12], [26, 8], [14, 5]].map(([rx, ry]) => `<path fill="${C.o}" fill-opacity=".09" d="${ellD(FX, HZ + 12, rx, ry, HZ)}"/>`).join('');
+  body += lg.svg();
+  let css = fire.css;
+  const tw = [[], [], []];
+  for (let i = 0; i < 24; i++) { const x = Math.floor(rnd() * W), y = Math.floor(rnd() * 100); if (lg.get(x, y) === '.' && lg.get(x + 2, y) === '.' && lg.get(x - 2, y) === '.') tw[i % 3].push([x, y]); }
+  tw.forEach((pts, i) => {
+    body += `<path class="tw${i}" d="${dotD(pts)}"/>`;
+    css += seqKF(`tw${i}`, ['fill:' + C.i, 'fill:' + C.a, 'fill:' + C.e, 'fill:' + C.i].slice(i % 2)) + `.tw${i}{fill:${C.i};${anim(`tw${i}`, 1.7 + i * 0.9, -i * 0.4)}}`;
+  });
+  body += fire.svg + camp.svg();
+  const pix = pixBlinking('tp', FX + 16, HZ - 2);
+  body += pix.svg; css += pix.css;
+  body += PX.text('A CAMPFIRE QUEST THROUGH AI', { x: W / 2, y: 88, fill: C.t, align: 'center' });
+  // PRESS START, blinking, with a cursor
+  const ps = PX.text('PRESS START', { x: W / 2 + 4, y: 104, scale: 1, fill: C.y, align: 'center' })
+    + `<path fill="${C.y}" d="${dotD([[W / 2 - 37, 104, 1, 7], [W / 2 - 36, 105, 1, 5], [W / 2 - 35, 106, 1, 3], [W / 2 - 34, 107, 1, 1]])}"/>`;
+  body += `<g class="ps">${ps}</g>`;
+  css += seqKF('ps', ['opacity:1', 'opacity:1', 'opacity:0']) + `.ps{${anim('ps', 1)}}`;
+  body += PX.text('1 PLAYER  ·  90 MIN  ·  FOR VAVE', { x: W / 2, y: H - 10, fill: C.a, align: 'center' });
+  write('title-screen.svg', {
+    w: W, h: H, bg: C.k, css, body,
+    title: 'Playing with Fire: title screen',
+    desc: 'A pixel game title screen at night. Big pixel letters read Playing with fire, with the word fire in flame colours. Below: a campfire quest through AI, and a blinking press start. A starry sky, a dark treeline, and Pix sitting by a crackling campfire. Bottom line: 1 player, 90 minutes, for VAVE.',
+  });
+}
+
+/* Tiny people (5×14): H hair, h skin, U top, L legs; two leg frames for walking. No faces. */
+const PERSON = ['.HHH.', 'HhhhH', '.hhh.', '.UUU.', 'UUUUU', 'UUUUU', 'hUUUh', '.UUU.', '.UUU.', '.LLL.'];
+const LEGS = [['.L.L.', '.L.L.', '.L.L.', '.k.k.'], ['.L.L.', 'L...L', 'L...L', 'k...k']];
+const person = (frame, map) => [...PERSON, ...LEGS[frame]].map((r) => [...r].map((c) => map[c] || c).join(''));
+const LOOKS = [
+  { H: 'W', h: 'p', U: 'u', L: 'z' }, { H: 'k', h: 'q', U: 'v', L: 'g' }, { H: 's', h: 'p', U: 'x', L: 'z' },
+  { H: 'm', h: 'p', U: 'b', L: 'k' }, { H: 'k', h: 'q', U: 'x', L: 'u' }, { H: 'W', h: 'q', U: 'u', L: 'g' },
+];
+/** A walker: group translated in pixel steps along x, legs flipping. dir 1 = right. */
+function walker(cls, rowsA, rowsB, x0, y, dir, xFrom, xTo, dur, delay) {
+  const flipRows = (r) => (dir < 0 ? r.map((l) => [...l].reverse().join('')) : r);
+  const dist = Math.abs(xTo - xFrom), n = Math.round(dist / 2), stepT = dur / n;
+  const a = PX.sprite(flipRows(rowsA), { x: x0, y }), b = PX.sprite(flipRows(rowsB), { x: x0, y });
+  const svg = `<g class="${cls}"><g class="${cls}a">${a}</g><g class="${cls}b">${b}</g></g>`;
+  const css = `@keyframes ${cls}{from{transform:translate(${xFrom - x0}px,0)}to{transform:translate(${xTo - x0}px,0)}}`
+    + `.${cls}{animation:${cls} ${+dur.toFixed(3)}s steps(${n}) ${(-delay).toFixed(3)}s infinite}`
+    + seqKF(`${cls}a`, ['opacity:1', 'opacity:0']) + seqKF(`${cls}b`, ['opacity:0', 'opacity:1'])
+    + `.${cls}a{${anim(cls + 'a', stepT * 2)}}.${cls}b{opacity:0;${anim(cls + 'b', stepT * 2)}}`;
+  return { svg, css };
+}
+
+/* ── v2 · 4 · Booth scene: VAVE's world, a stand at night ─────────────────── */
+function boothScene() {
+  const W = 320, H = 180, rnd = rng(44);
+  const FLOOR = 136, CARPET = 118, BX0 = 56, BX1 = 264;
+  const cv = new Cv(W, H, 'k');
+  // hall: roof beams, hall lamps, back wall
+  cv.rect(0, 12, W, FLOOR - 12, 'N');
+  for (let x = -40; x < W + 40; x += 40) { cv.line(x, 0, x + 20, 12, '2'); cv.line(x + 40, 0, x + 20, 12, '2'); }
+  cv.rect(0, 12, W, 1, '2');
+  for (let x = 12; x < W; x += 24) cv.rect(x, 4, 3, 1, 'a');
+  for (let y = 44; y < FLOOR; y += 8) for (let x = 0; x < W; x += 2) if (y % 16 === 4) cv.px(x, y, '2');
+  // neighbour stands, dim
+  cv.rect(4, 64, 44, FLOOR - 64, 'g').rect(4, 64, 44, 1, '4').rect(12, 72, 26, 10, '2').rect(14, 74, 22, 1, '4').rect(14, 77, 16, 1, '4');
+  cv.rect(276, 58, 40, FLOOR - 58, 'g').rect(276, 58, 40, 1, '4').rect(284, 66, 24, 18, '3').rect(286, 68, 20, 14, '4');
+  // hall floor with aisle stripes
+  cv.rect(0, FLOOR, W, H - FLOOR, '3');
+  for (let y = FLOOR + 1; y < H; y++) for (let x = 0; x < W; x++) if ((x * 3 + y * 7) % 23 === 0) cv.px(x, y, '2');
+  cv.rect(0, H - 8, W, 1, '4');
+  for (let x = 0; x < W; x += 12) cv.rect(x, H - 7, 6, 1, '2');
+  // booth: back wall, side returns, carpet, platform edge
+  cv.rect(BX0 + 4, 42, BX1 - BX0 - 8, CARPET - 42, 'b').rect(BX0 + 4, 42, BX1 - BX0 - 8, 2, 'c');
+  cv.rect(BX0, 46, 4, CARPET - 46, 'a').rect(BX1 - 4, 46, 4, CARPET - 46, 'a');
+  for (let x = BX0 + 4; x < BX1 - 4; x += 26) cv.rect(x, 44, 1, CARPET - 44, 'a');
+  cv.rect(BX0, CARPET, BX1 - BX0, FLOOR - CARPET - 2, 'a');
+  for (let y = CARPET; y < FLOOR - 2; y++) for (let x = BX0; x < BX1; x++) if ((x + 2 * y) % 5 === 0) cv.px(x, y, 'b');
+  cv.rect(BX0, FLOOR - 2, BX1 - BX0, 1, 't').rect(BX0, FLOOR - 1, BX1 - BX0, 1, 's');
+  // LED wall: frame and dark modules
+  const LX = 108, LY = 50, LW = 100, LH = 52;
+  cv.rect(LX - 2, LY - 2, LW + 4, LH + 4, 's').rect(LX, LY, LW, LH, 'k');
+  for (let y = LY; y < LY + LH; y += 13) for (let x = LX; x < LX + LW; x += 2) cv.px(x, y, 'N');
+  for (let x = LX + 25; x < LX + LW; x += 25) for (let y = LY; y < LY + LH; y += 2) cv.px(x, y, 'N');
+  // truss with chains, spot cans; banner below
+  const TY = 14;
+  for (let x = 64; x <= 256; x += 192) for (let y = 0; y < TY; y += 2) cv.px(x, y, 's');
+  cv.rect(48, TY, 224, 1, 't').rect(48, TY + 7, 224, 1, 't');
+  for (let x = 48; x < 272; x += 8) { cv.line(x, TY + 1, x + 4, TY + 6, 's'); cv.line(x + 4, TY + 6, x + 8, TY + 1, 's'); }
+  cv.rect(48, TY, 1, 8, 't').rect(271, TY, 1, 8, 't');
+  const SPOTS = [84, 150, 202, 240];
+  SPOTS.forEach((x) => cv.rect(x - 1, TY + 8, 3, 3, 's').rect(x - 1, TY + 11, 3, 1, 'f'));
+  cv.rect(124, TY + 8, 1, 2, 't').rect(195, TY + 8, 1, 2, 't');
+  cv.rect(122, TY + 10, 76, 15, 'f').rect(122, TY + 24, 76, 1, 't');
+  // counter with a host behind it and a tablet
+  cv.spr(person(0, LOOKS[1]), 84, 88);
+  cv.rect(68, 98, 42, 2, 't').rect(70, 100, 38, 22, 'f').rect(70, 120, 38, 2, 'e').rect(104, 100, 4, 20, 'i');
+  cv.rect(74, 104, 22, 1, 'i').rect(96, 96, 5, 2, 'k');
+  // tall plant
+  cv.rect(114, 112, 7, 8, 'W').rect(115, 112, 5, 1, 'm');
+  [[117, 92, 'c'], [114, 98, 'b'], [119, 100, 'b'], [116, 104, 'c'], [113, 106, 'b'], [120, 106, 'c']].forEach(([x, y, c]) => cv.ell(x, y, 2, 3, c));
+  cv.rect(117, 96, 1, 16, 'a');
+  // plinth with product, lit by a spot
+  cv.rect(196, 96, 14, 24, 'f').rect(206, 96, 4, 24, 't').rect(195, 95, 16, 1, 'i');
+  cv.rect(199, 86, 8, 9, 'd').rect(199, 86, 8, 2, 'e').rect(205, 88, 2, 7, 'c');
+  // lounge: two chairs and a round table
+  const chair = (x, flip) => {
+    const bx = flip ? x + 10 : x;
+    cv.rect(bx, 104, 2, 16, 'a').rect(x, 112, 12, 4, 'a').rect(x, 112, 12, 1, 'c').rect(x + 1, 116, 1, 4, 's').rect(x + 10, 116, 1, 4, 's');
+    cv.rect(flip ? x : x + 9, 109, 3, 3, 'b');
+  };
+  chair(220, false); chair(248, true);
+  cv.rect(236, 110, 10, 2, 'f').rect(240, 112, 2, 7, 's').rect(237, 119, 8, 1, 's');
+  cv.rect(238, 108, 2, 2, 'i');
+  // booth number
+  cv.rect(BX1 - 26, 48, 18, 9, 'e');
+  // a visitor looking at the LED wall, a second one in the lounge
+  cv.spr(person(0, LOOKS[2]), 156, 112);
+  { const L = LOOKS[4], up = person(0, L).slice(0, 9); cv.spr(up, 251, 102); cv.rect(246, 110, 7, 2, L.L).rect(246, 112, 2, 6, L.L).rect(245, 118, 3, 1, 'k'); }
+  let body = cv.svg(), css = '';
+  body += PX.text('B12', { x: BX1 - 17, y: 49, fill: C.g, align: 'center' });
+  body += PX.text('BRAND SPACE', { x: 160, y: TY + 14, fill: C.g, align: 'center' });
+  // spot beam on the plinth and a light pool on the carpet
+  const beam = [];
+  for (let y = TY + 12; y < 96; y++) { const hw = 1 + Math.floor((y - TY - 12) / 9); beam.push([203 - hw, y, hw * 2 + 1, 1]); }
+  body += `<path fill="${C.f}" fill-opacity=".1" d="${dotD(beam)}"/><path fill="${C.f}" fill-opacity=".12" d="${ellD(203, 126, 16, 3)}"/>`;
+  [84, 150].forEach((x) => { const b = []; for (let y = TY + 12; y < 44; y++) { const hw = 1 + Math.floor((y - TY - 12) / 6); b.push([x - hw, y, hw * 2 + 1, 1]); } body += `<path fill="${C.f}" fill-opacity=".07" d="${dotD(b)}"/>`; });
+  // LED wall: two lines of type flowing in pixel steps, clipped to the wall
+  const T1 = 'COMMUNICATION IN SPACE  ·  ', T2 = 'BRAND · SPACE · STORY · PEOPLE · ';
+  const w1 = PX.textWidth(T1, 2) + 6, w2 = PX.textWidth(T2) + 4;
+  body += `<clipPath id="boothLed"><rect x="${LX}" y="${LY}" width="${LW}" height="${LH}"/></clipPath><g clip-path="url(#boothLed)">`;
+  body += `<g class="ld1">${[0, 1, 2].map((k) => PX.text(T1, { x: LX + 4 + k * w1, y: LY + 10, scale: 2, fill: C.e })).join('')}</g>`;
+  body += `<g class="ld2">${[0, 1, 2, 3].map((k) => PX.text(T2, { x: LX - w2 + k * w2, y: LY + 34, fill: C.c })).join('')}</g>`;
+  body += `<g class="ld3"><path fill="${C.a}" d="${dotD(Array.from({ length: 24 }, (_, i) => [LX + 2 + i * 4, LY + 46 - (i * 7 % 5), 2, 1 + (i * 7 % 5)]))}"/></g></g>`;
+  css += `@keyframes ld1{to{transform:translate(-${w1}px,0)}}.ld1{animation:ld1 ${(w1 / 18).toFixed(2)}s steps(${w1}) infinite}`;
+  css += `@keyframes ld2{to{transform:translate(${w2}px,0)}}.ld2{animation:ld2 ${(w2 / 12).toFixed(2)}s steps(${w2}) infinite}`;
+  css += seqKF('ld3', ['opacity:1', 'opacity:.5', 'opacity:1', 'opacity:.7']) + `.ld3{${anim('ld3', 1.2)}}`;
+  // visitors and Pix walking the aisle
+  const walkers = [
+    [0, 150, 1, 14, 0], [1, 158, -1, 18, 5], [3, 166, 1, 11, 7], [5, 150, -1, 16, 9], [2, 162, -1, 21, 2],
+  ];
+  walkers.forEach(([look, y, dir, dur, delay], i) => {
+    const w = walker(`vw${i}`, person(0, LOOKS[look]), person(1, LOOKS[look]), 30 + i * 60, y - 14, dir, dir > 0 ? -10 : W + 4, dir > 0 ? W + 4 : -10, dur, delay);
+    body += w.svg; css += w.css;
+  });
+  const pixA = PX.SPRITES.pix, pixB = [...pixA.slice(0, 13), '...ggg....gg....', '....gg....ggg...', '................'];
+  const pw = walker('pw', pixA, pixB, 120, 154, 1, -18, W + 4, 24, 13);
+  body += pw.svg; css += pw.css;
+  body += frame2(W, H);
+  write('booth-scene.svg', {
+    w: W, h: H, bg: C.k, css, body,
+    title: 'A stand at the fair, at night',
+    desc: 'Pixel art of a trade-fair hall at night with an open stand: a rigging truss with spotlights and a hanging banner reading Brand space, an LED wall where pixel type flows (Communication in space), a white reception counter with a host, a tall plant, a lit product plinth, two lounge chairs with a small table, and carpet on a raised floor. Tiny visitors walk along the aisle, and Pix walks among them.',
+  });
+}
+
+/** Two frames of the same small canvas drawing → svg + css (frame b shown `share` of the time) */
+function frames2(cls, draw, w, h, x, y, scale, period, share = 0.5, delay = 0) {
+  const g = (f) => { const c = new Cv(w, h); draw(c, f); return c.svg(); };
+  const tr = (s) => (scale === 1 ? `<g transform="translate(${x} ${y})">${s}</g>` : `<g transform="translate(${x} ${y}) scale(${scale})">${s}</g>`);
+  const n = Math.max(2, Math.round(1 / share)), slots = Array(n).fill(0); slots[n - 1] = 1;
+  const svg = `<g class="${cls}a">${tr(g(0))}</g><g class="${cls}b">${tr(g(1))}</g>`;
+  const css = seqKF(`${cls}a`, slots.map((s) => `opacity:${s ? 0 : 1}`)) + seqKF(`${cls}b`, slots.map((s) => `opacity:${s}`))
+    + `.${cls}a{${anim(cls + 'a', period, delay)}}.${cls}b{opacity:0;${anim(cls + 'b', period, delay)}}`;
+  return { svg, css };
+}
+
+/* ── v2 · 5 · Lore strip: AI history in twelve pixel icons ────────────────── */
+const LORE_ICONS = {
+  teletype: (c) => c.spr(['................', '.....ffffff.....', '.....faaaaf.....', '.....ffffff.....', '.....faaaff.....', '..tttttttttttt..',
+    '.tsssssssssssst.', '.tsksksksksksst.', '.tsskskskskssst.', '.tsksksksksksst.', '.tsssssssssssst.', '..tttttttttttt..', '..k..........k..'], 0, 1),
+  sun: (c) => { [[7, 0, 7, 2], [7, 13, 7, 15], [0, 7, 2, 7], [13, 7, 15, 7], [2, 2, 3, 3], [12, 2, 11, 3], [2, 12, 3, 11], [12, 12, 11, 11]].forEach(([a, b, d, e]) => c.line(a, b, d, e, 'd')); c.ell(7, 7, 4, 4, 'e'); c.ell(7, 7, 2, 2, 'f'); },
+  eliza: (c, f) => {
+    c.rect(1, 1, 14, 11, 't').rect(2, 2, 12, 8, 'k').rect(1, 11, 14, 1, 's').rect(6, 12, 4, 1, 's').rect(4, 13, 8, 2, 't');
+    c.px(3, 3, 'd').px(4, 4, 'd').px(3, 5, 'd').rect(6, 3, 6, 1, 'c').rect(6, 5, 4, 1, 'c').rect(3, 7, 7, 1, 'c');
+    if (!f) c.rect(11, 7, 2, 1, 'e');
+  },
+  winter: (c, f) => {
+    c.line(7, 0, 7, 14, 'f').line(0, 7, 14, 7, 'f').line(2, 2, 12, 12, 'i').line(12, 2, 2, 12, 'i');
+    [[6, 1], [8, 1], [6, 13], [8, 13], [1, 6], [1, 8], [13, 6], [13, 8]].forEach(([x, y]) => c.px(x, y, 'f'));
+    c.rect(6, 6, 3, 3, 'e');
+    if (f) [[2, 0], [14, 3], [0, 13], [12, 14]].forEach(([x, y]) => c.px(x, y, 'i'));
+  },
+  knight: (c) => c.spr(['......ee........', '.....eeee.......', '....eeeeee......', '...eeeekeee.....', '..eeeeeeeeee....', '..eeeeeeeeeee...', '..eee...eeeee...',
+    '........eeeee...', '.......eeeeee...', '......eeeeeee...', '.....eeeeeeee...', '....eeeeeeeeee..', '...dddddddddddd.', '...eeeeeeeeeeee.'], 0, 1),
+  cat: (c, f) => c.spr(['..t.t...........', '..tttt..........', '..tktt..........', '..tttt..........', '...tt...........', '..ttttt.........', '..tttttt........', '..ttttttt.......',
+    '..tttttttt......', '..tttttttt....' + (f ? '.t' : 't.'), '..tttttttt....t.', '..ttttttttt..t..', '..tt.tt.tttttt..'], 0, 1),
+  go: (c) => {
+    c.rect(0, 0, 16, 16, 'n');
+    for (let k = 2; k < 16; k += 4) { c.rect(k, 1, 1, 14, 'W'); c.rect(1, k, 14, 1, 'W'); }
+    [[2, 2, 'k'], [6, 6, 'f'], [10, 6, 'k'], [6, 10, 'k'], [10, 10, 'f'], [14, 2, 'f'], [2, 14, 'f'], [14, 10, 'k']].forEach(([x, y, s]) => c.rect(x - 1, y, 3, 1, s).rect(x, y - 1, 1, 3, s));
+  },
+  eye: (c, f) => {
+    if (f) { c.rect(1, 7, 14, 1, 'e').rect(3, 8, 10, 1, 'e'); return; }
+    for (let x = 0; x < 16; x++) { const hh = Math.round(4.6 * Math.sin((Math.PI * (x + 0.5)) / 16)); if (hh) c.rect(x, 7 - hh + 1, 1, hh * 2 - 1, 'f').px(x, 7 - hh, 'e').px(x, 7 + hh, 'e'); }
+    c.ell(7, 7, 3, 3, 'c'); c.rect(7, 6, 2, 3, 'k'); c.px(6, 5, 'i');
+  },
+  chat: (c, f) => {
+    c.rect(1, 2, 14, 9, 'f').px(1, 2, '.').px(14, 2, '.').px(1, 10, '.').px(14, 10, '.').rect(3, 11, 3, 1, 'f').rect(3, 12, 2, 1, 'f').px(3, 13, 'f');
+    [4, 7, 10].forEach((x, i) => c.rect(x, (f + i) % 2 ? 5 : 6, 2, 2, 'a'));
+  },
+  pizza: (c, f) => {
+    c.rect(1, 1, 14, 2, 'n').rect(1, 3, 14, 1, 'm');
+    for (let y = 4; y < 13; y++) { const hw = Math.round(6.5 * (1 - (y - 4) / 9)); c.rect(8 - hw - 1, y, hw * 2 + 1, 1, 'e'); }
+    [[4, 5], [9, 6], [6, 8]].forEach(([x, y]) => c.rect(x, y, 2, 2, 'm'));
+    c.rect(10, 4, 1, 3, 'i').rect(7, 12, 1, f ? 3 : 2, 'i');
+    if (f) c.px(7, 15, 'i');
+  },
+  vibes: (c, f) => {
+    c.rect(4, 2, 8, 1, 't').px(3, 3, 't').px(12, 3, 't').rect(2, 4, 1, 4, 't').rect(13, 4, 1, 4, 't');
+    c.rect(1, 8, 4, 6, 'c').rect(11, 8, 4, 6, 'c').rect(2, 9, 2, 4, 'b').rect(12, 9, 2, 4, 'b');
+    const y = f ? 4 : 6;
+    c.rect(7, y, 1, 5, 'e').rect(8, y, 2, 1, 'e').rect(6, y + 4, 2, 2, 'e');
+  },
+  pix: (c, f) => c.spr(f ? PX.SPRITES.pixBlink : PX.SPRITES.pix, 0, 0),
+};
+function loreStrip() {
+  const E = [
+    ['1950', 'TURING', 'teletype'], ['1956', 'ONE\nSUMMER', 'sun'], ['1966', 'ELIZA', 'eliza', 1.1], ['1974', 'AI\nWINTER', 'winter', 1.6],
+    ['1997', 'DEEP\nBLUE', 'knight'], ['2012', 'CAT\nPAPER', 'cat', 1.4], ['2016', 'MOVE 37', 'go'], ['2017', 'ATTENTION', 'eye', 3.6, 0.15],
+    ['2022', 'CHAT', 'chat', 1], ['2024', 'GLUE\nPIZZA', 'pizza', 1.8], ['2025', 'VIBES', 'vibes', 0.6], ['2026', 'YOU ARE\nHERE', 'pix', 4, 0.1],
+  ];
+  const CW = 54, M = 8, TY = 16, LINE = 59, W = M * 2 + E.length * CW, H = 90;
+  const cv = new Cv(W, H, 'N');
+  for (let x = M; x < W - M; x += 3) cv.rect(x, LINE, 2, 1, 'a');
+  let body = '', css = '', ink = '';
+  E.forEach(([year, cap, ic, period, share], i) => {
+    const cx = M + i * CW + CW / 2, tx = cx - 18, now = i === E.length - 1;
+    cv.rect(tx, TY, 36, 36, now ? 'M' : 'a').rect(tx + 1, TY + 1, 34, 34, 'k');
+    [[0, 0], [35, 0], [0, 35], [35, 35]].forEach(([dx, dy]) => cv.px(tx + dx, TY + dy, 'N'));
+    cv.rect(cx - 1, TY + 36, 2, LINE - TY - 37, '4').rect(cx - 2, LINE - 1, 4, 3, now ? 'M' : 'd');
+    if (period) { const r = frames2(`ls${i}`, LORE_ICONS[ic], 16, 16, tx + 2, TY + 2, 2, period, share || 0.5); body += r.svg; css += r.css; }
+    else { const c = new Cv(16, 16); LORE_ICONS[ic](c, 0); body += `<g transform="translate(${tx + 2} ${TY + 2}) scale(2)">${c.svg()}</g>`; }
+    ink += PX.text(year, { x: cx, y: 5, fill: now ? C.M : C.t, align: 'center' });
+    ink += PX.text(cap, { x: cx, y: LINE + 6, fill: now ? C.M : C.i, align: 'center' });
+  });
+  body = cv.svg() + body + ink;
+  write('lore-strip.svg', {
+    w: W, h: H, css, body,
+    title: 'The lore: AI history in twelve pixel icons',
+    desc: 'A timeline of framed pixel icons with years: 1950 a teletype (Turing), 1956 a sun (one summer), 1966 a terminal (ELIZA), 1974 a snowflake (AI winter), 1997 a chess knight (Deep Blue), 2012 a cat (the cat paper), 2016 go stones (move 37), 2017 an eye (attention), 2022 a chat bubble, 2024 a pizza slice dripping glue, 2025 headphones (vibes), and 2026 Pix: you are here.',
+  });
+}
+
+/* ── v2 · 6 · Bosses: the risks as friendly monsters, 2-frame idle ────────── */
+const BOSS_DRAW = {
+  hallucinator: (c, f) => {
+    const y = 13 + f;
+    c.ell(17, 33, f ? 5 : 7, 1, '2');
+    [[5, y - 2], [26, y - 2]].forEach(([x, yy], k) => c.rect(x, yy + (f ^ k ? 1 : 0), 5, 2, 'a').rect(x + (k ? 3 : 0), yy + 2, 2, 2, 'a'));
+    c.ell(17, y, 9, 9, 'g'); c.ell(17, y, 8, 8, 'f'); c.ell(17, y, 4, 4, 'c');
+    const sw = f ? [[15, y - 2], [19, y - 2], [20, y + 1], [14, y + 2]] : [[17, y - 3], [20, y], [17, y + 3], [14, y]];
+    sw.forEach(([x, yy]) => c.rect(x, yy, 1, 1, 'e'));
+    c.rect(16, y - 1, 3, 3, 'k').px(13, y - 5, 'i').px(14, y - 5, 'i');
+    const cube = (x, yy) => c.rect(x, yy, 4, 1, 'e').rect(x, yy + 1, 4, 3, 'd').rect(x + 3, yy + 1, 1, 3, 'c');
+    cube(5, 26 - f); cube(27, 24 + f);
+  },
+  leaker: (c, f) => {
+    c.ell(17, 33, 9, 1, 'a');
+    c.line(8, 11, 12, 5, 's').line(12, 5, 22, 5, 's').line(22, 5, 27, 11, 's');
+    c.rect(13, 3 + f, 9, 9, 'f'); [5, 7, 9].forEach((yy) => c.rect(14, yy + f, 6, 1, 'a'));
+    for (let y = 10; y < 30; y++) { const i = Math.floor((y - 10) / 5); c.rect(8 + i, y, 20 - 2 * i, 1, y % 5 === 4 ? 's' : 't'); }
+    c.rect(7, 10, 22, 1, 'i');
+    c.rect(13, 15, 2, 2, 'g').rect(21, 15, 2, 2, 'g');
+    [[11, 21], [18, 24], [24, 20]].forEach(([x, y], k) => { c.px(x, y, 'k'); const d = (f + k) % 2 ? 3 : 6; c.rect(x, y + d, 1, 2, 'e'); });
+  },
+  goblin: (c, f) => {
+    c.ell(17, 33, 9, 1, '2');
+    c.rect(11, 28, 4, 4, 'b').rect(20, 28, 4, 4, 'b');
+    c.ell(17, 22, 8, 7, 'b');
+    c.ell(17, 10, 6, 5, 'c');
+    c.spr(f ? ['ccc..', '.ccc.', '..cc.'] : ['cc...', '.ccc.', '..cc.'], 6, 7 - f);
+    c.spr(f ? ['..ccc', '.ccc.', '.cc..'] : ['...cc', '.ccc.', '.cc..'], 24, 7 - f);
+    c.rect(14, 9, 2, 2, 'k').rect(19, 9, 2, 2, 'k').px(14, 9, 'e').px(19, 9, 'e');
+    c.ell(17, 21, 4, 4, 'f'); c.ell(17, 21, 2, 2, 'b');
+    // keys: ring + shaft + bit, pointing outwards, jingling
+    [[10, 18, -1], [24, 17, 1], [11, 25, -1], [23, 25, 1]].forEach(([x, y, d], k) => {
+      const yy = y + ((f + k) % 2);
+      c.rect(x - 1, yy - 1, 3, 3, 'f').px(x, yy, 'k');
+      const sx = d > 0 ? x + 2 : x - 5;
+      c.rect(sx, yy, 4, 1, 't').px(d > 0 ? x + 5 : x - 5, yy + 1, 't').px(d > 0 ? x + 4 : x - 4, yy + 1, 't');
+    });
+    c.rect(7, 18, 4, 3, 'c').rect(24, 18, 4, 3, 'c');
+  },
+  lich: (c, f) => {
+    const y = f ? 1 : 0;
+    c.ell(17, 34, 8, 1, '2');
+    for (let r = 0; r < 18; r++) { const hw = 5 + Math.floor(r / 2.4); c.rect(17 - hw, 14 + r - y, hw * 2 + 1, 1, r % 6 === 5 ? 'q' : 'v'); }
+    for (let x = 8; x < 27; x += 3) c.px(x + (f ? 1 : 0), 32 - y, '.');
+    c.ell(17, 9 - y, 6, 6, 'v'); c.ell(17, 9 - y, 4, 4, 'f'); c.rect(15, 8 - y, 2, 2, 'k').rect(19, 8 - y, 2, 2, 'k').rect(16, 12 - y, 3, 1, 'g');
+    c.rect(22, 16 - y, 11, 9, 'f').rect(22, 16 - y, 11, 1, 't').rect(22, 24 - y, 11, 1, 't').rect(21, 15 - y, 1, 11, 'n').rect(33, 15 - y, 1, 11, 'n');
+    c.spr(['.ggggg.', 'g.....g', 'g.ggg.g', 'g.g...g', 'g.ggg.g', 'g.....g', '.ggggg.'], 24, 17 - y);
+    c.rect(19, 18 - y, 4, 2, 'f');
+  },
+  golem: (c, f) => {
+    c.ell(17, 33, 10, 1, '2');
+    c.rect(12, 28, 4, 5, 's').rect(19, 28, 4, 5, 's');
+    c.rect(9, 13, 17, 15, 's').rect(10, 14, 15, 13, 't').rect(13, 17, 9, 6, 's').rect(14, 18, 2, 2, 'm').rect(18, 20, 3, 1, 'm');
+    c.rect(5, 14, 4, 11, 's').rect(26, 14, 4, 11, 's').rect(5, 25, 4, 2, 't').rect(26, 25, 4, 2, 't');
+    c.rect(11, 3, 13, 9, 't').rect(11, 11, 13, 1, 's').rect(14, 6, 3, 2, f ? 'e' : 'a').rect(19, 6, 3, 2, 'a').px(12, 4, 'm');
+    c.line(17, 2, 17, 1, 's').line(17, 1, 20, 0, 's');
+    // cobwebs
+    c.line(9, 3, 11, 5, 'i').line(9, 3, 9, 8, 'i').line(9, 5, 11, 4, 'i');
+    c.line(26, 13, 29, 13, 'i').line(26, 13, 26, 16, 'i').line(26, 15, 28, 13, 'i');
+    c.px(28 + f, 18 + f, 'k').px(28 + f, 17 + f, 'i');
+  },
+  dragon: (c, f) => {
+    c.ell(17, 33, 11, 1, '2');
+    c.line(11, 16, 11, 9, 's').line(11, 9, 14, 6, 's').line(14, 6, 20, 6, 's').line(20, 6, 23, 9, 's').line(23, 9, 23, 16, 's');
+    c.line(12, 16, 12, 10, 't').line(22, 16, 22, 10, 't');
+    c.rect(9, 16, 17, 13, 't').rect(9, 16, 17, 1, 'i').rect(16, 20, 3, 3, 'k').rect(17, 23, 1, 3, 'k');
+    c.rect(4, 26, 27, 5, 'b').rect(4, 26, 27, 1, 'c');
+    for (let x = 6; x < 30; x += 4) c.px(x, 28, 'a');
+    c.rect(28, 12, 4, 15, 'b').rect(28, 12, 1, 15, 'c');
+    c.rect(24, 6, 10, 7, 'b').rect(24, 6, 10, 1, 'c').rect(31, 9, 3, 1, 'k').px(30, 8, 'k').px(30, 7, 'e');
+    c.px(25, 4, 'c').px(26, 5, 'c').px(29, 4, 'c').px(29, 5, 'c');
+    c.rect(1 + f, 22, 4, 4, 'b').px(0 + f, 21, 'c').px(f ? 2 : 1, 20, 'c');
+    c.spr(['.aaa.', 'aaaaa', '.a.a.'], 3, 12 + f);
+    if (f) c.spr(['..y', '.yo', 'yor', '.r.'], 33, 9);
+  },
+  drain: (c, f) => {
+    c.rect(30, 6, 2, 10, 's').rect(24, 5, 8, 2, 's').rect(24, 7, 2, 2, 't').px(24, 9 + f, 'e');
+    c.ell(17, 21 + f, 8, 6, 'f');
+    [[12, 17], [16, 16], [20, 18], [14, 21], [19, 22], [11, 22]].forEach(([x, y]) => c.rect(x, y + f, 3, 1, 'c').px(x + 1, y + 1 + f, 'c'));
+    c.rect(17, 15 + f, 1, 10, 'c');
+    for (let y = 22; y < 32; y++) { const i = Math.floor((y - 22) / 3); c.rect(4 + i, y, 27 - 2 * i, 1, y === 22 ? 'i' : 't'); }
+    c.rect(3, 22, 29, 1, 'i').rect(3, 23, 29, 1, 's');
+    c.rect(8, 24, 19, 3, 'u');
+    const sw = f ? [[10, 24], [15, 25], [21, 24], [24, 26]] : [[12, 25], [17, 24], [22, 25], [9, 26]];
+    sw.forEach(([x, y]) => c.rect(x, y, 3, 1, 'a'));
+    c.rect(16, 26, 3, 1, 'k');
+    [[9, 12 - f * 2], [26, 15 - f]].forEach(([x, y]) => c.px(x, y, 'i'));
+  },
+};
+const BCW = 120, BCH = 98;
+function bossCard(b, x, y, cls) {
+  const cv = new Cv(BCW, BCH);
+  cv.rect(0, 0, BCW, BCH, 'a').rect(1, 1, BCW - 2, BCH - 2, 'k').px(0, 0, '.').px(BCW - 1, 0, '.').px(0, BCH - 1, '.').px(BCW - 1, BCH - 1, '.');
+  cv.rect(20, BCH - 9, 94, 4, '2').rect(20, BCH - 9, 62, 4, 'r').rect(20, BCH - 9, 62, 1, 'o');
+  const name = b.name.toUpperCase();
+  const fr = frames2(cls, BOSS_DRAW[b.id], 36, 36, x + 24, y + 2, 2, 0.9);
+  return { svg: `<g transform="translate(${x} ${y})">${cv.svg()}${PX.text(name, { x: BCW / 2, y: BCH - 21, fill: C.i, align: 'center' })}${PX.text('HP', { x: 6, y: BCH - 11, fill: C.t })}</g>` + fr.svg, css: fr.css };
+}
+function bosses() {
+  const all = LORE.BOSSES;
+  const missing = all.filter((b) => !BOSS_DRAW[b.id]);
+  if (missing.length) throw new Error('boss art missing: ' + missing.map((b) => b.id).join(', '));
+  const descs = {
+    hallucinator: 'a floating eyeball with a swirly iris and little wings, two impossible cubes drift beside it',
+    leaker: 'a dripping bucket with a document sticking out, drops leaking from its holes',
+    goblin: 'a green goblin hugging a bundle of keys',
+    lich: 'a skeleton in a plum robe holding a scroll marked with a copyright sign',
+    golem: 'an abandoned grey robot covered in cobwebs, one eye flickering, a spider dangling',
+    dragon: 'a green dragon coiled around a big padlock, puffing a tiny flame',
+    drain: 'a brain sinking into a sink while the drain swirls',
+  };
+  let gbody = '', gcss = '';
+  all.forEach((b, i) => {
+    const one = bossCard(b, 0, 0, 'bo');
+    write(`boss-${b.id}.svg`, {
+      w: BCW, h: BCH, css: one.css, body: one.svg,
+      title: `Boss: ${b.name}`,
+      desc: `A friendly pixel monster on a name plate with a red HP bar: ${descs[b.id]}. The risk: ${b.hp}. Beat it: ${b.weakness}`,
+    });
+    const col = i % 4, row = Math.floor(i / 4);
+    const x = 8 + col * (BCW + 8) + (row ? (BCW + 8) / 2 : 0), y = 26 + row * (BCH + 8);
+    const r = bossCard(b, x, y, `b${i}`);
+    gbody += r.svg; gcss += r.css.replace(/(steps\(1\) )/g, `$1${(-i * 0.13).toFixed(2)}s `);
+  });
+  const W = 8 + 4 * (BCW + 8), H = 26 + 2 * (BCH + 8) + 2;
+  const bg = new Cv(W, H, 'N');
+  write('bosses.svg', {
+    w: W, h: H, css: gcss, body: bg.svg() + PX.text('BOSS FIGHT', { x: 10, y: 7, scale: 2, fill: C.i }) + PX.text(`${all.length} RISKS · ALL BEATABLE`, { x: W - 10, y: 11, fill: C.t, align: 'right' }) + gbody,
+    title: 'Boss fight: the risks as friendly monsters',
+    desc: `Seven pixel monsters on name plates with HP bars: ${all.map((b) => `${b.name}, ${descs[b.id]}`).join('; ')}.`,
+  });
+}
+
+/** Text label on a dark plate (for scenes); returns svg. */
+function tag(cv, str, x, y, { fill = C.i, border = '4', align = 'center' } = {}) {
+  const lines = String(str).split('\n'), w = PX.textWidth(str) + 6, h = lines.length * 9 + 3;
+  const x0 = align === 'center' ? x - Math.floor(w / 2) : align === 'right' ? x - w : x;
+  plate(cv, x0, y, w, h, border);
+  return PX.text(str, { x: x0 + 3, y: y + 2, fill });
+}
+const ROBOT = ['....e....', '....s....', '..sssss..', '.sttttts.', '.stdtdts.', '.sttttts.', '..sssss..', '...sss...', '.ttttttt.',
+  't.tsdst.t', 't.ttttt.t', 't.ttttt.t', '..ss.ss..', '..ss.ss..', '.sss.sss.'];
+
+/* ── v2 · 7 · Guild hall: the team's place for repos ──────────────────────── */
+function guildHall() {
+  const W = 320, H = 180, FL = 108, rnd = rng(77);
+  const cv = new Cv(W, H, 'k');
+  // back wall: stone blocks; ceiling beams; wooden floor
+  cv.rect(0, 14, W, FL - 14, 'g');
+  for (let y = 16; y < FL; y += 6) for (let x = (y / 6) % 2 ? 0 : 7; x < W; x += 14) cv.rect(x, y, 13, 5, rnd() < 0.3 ? '4' : 'g').rect(x, y + 5, 14, 1, '2');
+  cv.rect(0, 10, W, 4, 'W').rect(0, 10, W, 1, 'm');
+  for (let x = 20; x < W; x += 60) cv.rect(x, 0, 4, 10, 'W');
+  cv.rect(0, FL, W, H - FL, 'm');
+  for (let y = FL; y < H; y += 5) { cv.rect(0, y, W, 1, 'W'); for (let x = (y * 7) % 23; x < W; x += 31) cv.rect(x, y + 1, 1, 4, 'W'); }
+  cv.rect(0, FL, W, 1, 'n');
+  // quest board: ISSUES
+  cv.rect(14, 38, 2, FL - 38, 'W').rect(66, 38, 2, FL - 38, 'W');
+  cv.rect(10, 32, 62, 56, 'W').rect(12, 34, 58, 52, 'n').rect(12, 34, 58, 9, 'm');
+  const notes = [[15, 46, 'f'], [27, 48, 'e'], [39, 45, 'f'], [52, 47, 'd'], [17, 62, 'e'], [30, 64, 'f'], [44, 61, 'f'], [56, 65, 'e'], [22, 76, 'd'], [41, 76, 'f']];
+  notes.forEach(([x, y, c]) => { cv.rect(x, y, 10, 9, c).rect(x + 2, y + 3, 6, 1, 'a').rect(x + 2, y + 5, 4, 1, 'a').px(x + 4, y, 'k'); });
+  // shop window: PAGES
+  cv.rect(80, 46, 44, 40, 'W').rect(82, 48, 40, 34, '2').rect(80, 84, 44, 3, 'n');
+  for (let x = 78; x < 126; x += 6) cv.rect(x, 40, 3, 6, 'c').rect(x + 3, 40, 3, 6, 'f');
+  cv.rect(78, 39, 48, 1, 'a');
+  [[86, 58], [98, 54], [110, 60]].forEach(([x, y]) => cv.rect(x, y, 8, 11, 'f').rect(x + 1, y + 2, 6, 1, 'a').rect(x + 1, y + 4, 5, 1, 'a').rect(x + 1, y + 6, 6, 1, 'a').rect(x, y + 20 - (y - 54), 8, 1, '4'));
+  cv.rect(84, 74, 36, 1, '4');
+  // castle gate with portcullis: CHECKS
+  cv.rect(136, 28, 52, FL - 28, 's');
+  for (let y = 30; y < FL; y += 5) for (let x = (y / 5) % 2 ? 136 : 140; x < 188; x += 8) cv.rect(x, y, 7, 4, 't');
+  cv.ell(162, 54, 16, 16, 'k'); cv.rect(146, 54, 33, FL - 54, 'k');
+  for (let x = 149; x < 178; x += 5) cv.rect(x, 40, 1, 44, 'a');
+  for (let y = 46; y < 86; y += 6) cv.rect(146, y, 33, 1, 'a');
+  for (let x = 149; x < 178; x += 5) cv.px(x, 84, 'f');
+  // robot guard with a check shield
+  cv.spr(ROBOT, 190, FL - 15);
+  cv.rect(197, FL - 10, 7, 8, 'f').rect(198, FL - 3, 5, 1, 'f').rect(199, FL - 2, 3, 1, 'f');
+  [[198, FL - 6], [199, FL - 5], [200, FL - 6], [201, FL - 7], [202, FL - 8]].forEach(([x, y]) => cv.px(x, y, 'b'));
+  // vault: SECRETS
+  cv.rect(252, 34, 56, 60, 's').rect(254, 36, 52, 56, 't');
+  cv.ell(280, 64, 21, 21, 's'); cv.ell(280, 64, 19, 19, 'i'); cv.ell(280, 64, 17, 17, 't');
+  for (let a = 0; a < 6; a++) cv.line(280, 64, 280 + Math.round(9 * Math.cos(a * Math.PI / 3)), 64 + Math.round(9 * Math.sin(a * Math.PI / 3)), 's');
+  cv.ell(280, 64, 3, 3, 'k'); cv.rect(296, 60, 4, 9, 's');
+  for (let x = 258; x < 304; x += 8) cv.rect(x, 92, 4, FL - 92, 's');
+  // torches between (fire)
+  const torchA = ['.r.', 'ror', 'oyo', '.W.', 'WWW', '.W.'], torchB = ['r..', '.ro', 'roy', '.W.', 'WWW', '.W.'];
+  // humans around the round table (behind it first)
+  const TX = 162, TY = 132;
+  cv.spr(person(0, LOOKS[0]), TX - 24, TY - 16);
+  cv.spr(person(0, LOOKS[1]), TX + 18, TY - 16);
+  cv.ell(TX, TY + 4, 40, 3, 'W'); cv.rect(TX - 3, TY + 4, 6, 14, 'W').rect(TX - 10, TY + 18, 20, 2, 'W');
+  cv.ell(TX, TY, 40, 6, 'n'); cv.ell(TX, TY - 1, 38, 4, 'm');
+  cv.rect(TX - 14, TY - 3, 16, 5, 'f').rect(TX - 12, TY - 2, 5, 1, 'a').rect(TX - 5, TY, 6, 1, 'a').rect(TX + 8, TY - 2, 6, 4, 'e').line(TX + 8, TY - 2, TX + 11, TY, 'a').line(TX + 14, TY - 2, TX + 11, TY, 'a');
+  cv.spr(person(1, LOOKS[3]), TX - 52, TY + 6);
+  cv.spr(person(0, LOOKS[5]), TX + 46, TY + 6);
+  // AI agent robots: one reading the quest board, one at the table with a pull request
+  cv.spr(ROBOT, 70, FL + 8);
+  cv.spr(ROBOT, TX + 64, TY + 4).rect(TX + 72, TY + 10, 7, 5, 'f').line(TX + 72, TY + 10, TX + 75, TY + 12, 'a').line(TX + 78, TY + 10, TX + 75, TY + 12, 'a');
+  // chandelier with candles
+  cv.rect(TX - 1, 0, 1, 16, 's').rect(TX - 22, 16, 44, 2, 'W').rect(TX - 22, 14, 2, 2, 'W').rect(TX + 20, 14, 2, 2, 'W');
+  [-20, -8, 4, 16].forEach((dx) => cv.rect(TX + dx, 12, 2, 4, 'f'));
+  let body = cv.svg(), css = '';
+  const cA = [-20, -8, 4, 16].map((dx) => PX.sprite(['.o', 'oy'], { x: TX + dx, y: 10 })).join(''), cB = [-20, -8, 4, 16].map((dx) => PX.sprite(['o.', 'yo'], { x: TX + dx, y: 10 })).join('');
+  const ch = flip('gc', cA, cB, 0.6); body += ch.svg; css += ch.css;
+  const tA = [128, 238].map((x) => PX.sprite(torchA, { x, y: 50 })).join(''), tB = [128, 238].map((x) => PX.sprite(torchB, { x, y: 50 })).join('');
+  const to = flip('gt', tA, tB, 0.5, -0.2); body += to.svg; css += to.css;
+  body += `<path fill="${C.o}" fill-opacity=".1" d="${ellD(TX, 22, 30, 8)}"/>`;
+  // labels
+  const lab = new Cv(W, H);
+  let ink = '';
+  ink += PX.text('ISSUES', { x: 41, y: 35, fill: C.f, align: 'center' });
+  ink += tag(lab, 'PAGES', 102, 26, { fill: C.f });
+  ink += tag(lab, 'CHECKS', 162, 17, { fill: C.f });
+  ink += tag(lab, 'SECRETS', 280, 22, { fill: C.f });
+  ink += tag(lab, 'OWNER', TX - 22, TY - 30, { fill: C.M, border: 'M' });
+  ink += tag(lab, 'DESIGN', TX + 20, TY - 30, { fill: C.M, border: 'M' });
+  ink += tag(lab, 'BUILD', TX - 50, TY - 8, { fill: C.M, border: 'M' });
+  ink += tag(lab, 'GUEST', TX + 48, TY - 8, { fill: C.M, border: 'M' });
+  ink += tag(lab, 'AI AGENT', 74, FL - 6, { fill: C.e, border: 'c' });
+  ink += tag(lab, 'AI AGENT', TX + 70, TY + 22, { fill: C.e, border: 'c' });
+  body += lab.svg() + ink;
+  // the guard's eye light blinks
+  const eyes = flip('ge', `<path fill="${C.d}" d="${dotD([[193, FL - 11, 1, 1], [195, FL - 11, 1, 1]])}"/>`, `<path fill="${C.f}" d="${dotD([[193, FL - 11, 1, 1], [195, FL - 11, 1, 1]])}"/>`, 1.4);
+  body += eyes.svg; css += eyes.css;
+  body += frame2(W, H);
+  write('guild-hall.svg', {
+    w: W, h: H, bg: C.k, css, body,
+    title: 'The guild hall: a team account for repos',
+    desc: 'Pixel art of a medieval guild hall at night, lit by candles and torches. Left, a quest board titled Issues full of sticky notes, with an AI agent robot reading it. A shop window labelled Pages. In the middle a castle gate with a portcullis labelled Checks, guarded by a robot with a check-mark shield. Right, a round vault door labelled Secrets. In front, four people at a round table with role badges: owner, design, build, guest, and a second AI agent robot bringing a pull request envelope.',
+  });
+}
+
+/* ── v2 · 8 · Remix map: what moved between repos ─────────────────────────── */
+function remixMap() {
+  const W = 320, H = 180, rnd = rng(88);
+  const N = {
+    LIQUIDTYPE: [44, 44], 'PIX-EL': [160, 44], PIXLETICS: [276, 44],
+    VIBESTUDIO: [44, 102], PIXINOTES: [160, 102], CAMPFIRE: [276, 102],
+    DISCOVERY: [44, 154], 'VAVE.LOG': [276, 154],
+  };
+  // [from, to, label, label x, label y, align]
+  const EDGES = [
+    ['LIQUIDTYPE', 'PIX-EL', 'LIQUID\nHERO', 102, 24, 'center'],
+    ['LIQUIDTYPE', 'PIXINOTES', 'LIQUID\nTYPE', 94, 61, 'center'],
+    ['VIBESTUDIO', 'PIXINOTES', 'SLIDES', 102, 91, 'center'],
+    ['PIX-EL', 'PIXINOTES', 'PIX\nMASCOT', 165, 63, 'left'],
+    ['PIX-EL', 'CAMPFIRE', 'PALETTE\n+ FONT', 232, 66, 'center'],
+    ['PIXLETICS', 'CAMPFIRE', 'FLAME', 276, 59, 'center'],
+    ['PIXINOTES', 'CAMPFIRE', 'MCP\nBOARD', 218, 106, 'center'],
+    ['DISCOVERY', 'VAVE.LOG', 'SURVEY + PROTOTYPE', 160, 143, 'center'],
+  ];
+  const BW = 64, BH = 22;
+  const cv = new Cv(W, H, 'N');
+  for (let i = 0; i < 160; i++) { const x = Math.floor(rnd() * (W - 4)), y = Math.floor(rnd() * H); cv.rect(x, y, 3, 1, rnd() < 0.5 ? '2' : '3'); }
+  // edge endpoints on the block borders
+  const clip = ([cx, cy], [dx, dy]) => { const tx = dx ? (BW / 2 + 1) / Math.abs(dx) : 1e9, ty = dy ? (BH / 2 + 2) / Math.abs(dy) : 1e9, t = Math.min(tx, ty); return [cx + dx * t, cy + dy * t]; };
+  let css = '', moving = '';
+  EDGES.forEach(([a, b], i) => {
+    const A = N[a], B = N[b], len0 = Math.hypot(B[0] - A[0], B[1] - A[1]), u = [(B[0] - A[0]) / len0, (B[1] - A[1]) / len0];
+    const [x0, y0] = clip(A, u), [x1, y1] = clip(B, [-u[0], -u[1]]);
+    const len = Math.hypot(x1 - x0, y1 - y0);
+    for (let s = 0; s < len - 5; s += 4) cv.rect(Math.round(x0 + u[0] * s), Math.round(y0 + u[1] * s), 2, 2, 'd');
+    // arrowhead
+    const px = -u[1], py = u[0];
+    for (let k = 0; k < 5; k++) { const bx = x1 - u[0] * k, by = y1 - u[1] * k; cv.line(Math.round(bx + px * k * 0.8), Math.round(by + py * k * 0.8), Math.round(bx - px * k * 0.8), Math.round(by - py * k * 0.8), 'e'); }
+    // a packet travelling along the edge in pixel steps
+    const n = Math.round(len / 3), dur = len / 14;
+    moving += `<rect class="mv${i}" x="${Math.round(x0) - 1}" y="${Math.round(y0) - 1}" width="3" height="3" fill="${C.M}"/>`;
+    css += `@keyframes mv${i}{from{transform:translate(0,0)}to{transform:translate(${Math.round(x1 - x0)}px,${Math.round(y1 - y0)}px)}}.mv${i}{animation:mv${i} ${dur.toFixed(2)}s steps(${n}) ${(-i * 0.37).toFixed(2)}s infinite}`;
+  });
+  // repo blocks: grass top, earth body, name; little props
+  let ink = '';
+  for (const [name, [cx, cy]] of Object.entries(N)) {
+    const x = cx - BW / 2, y = cy - BH / 2, hot = name === 'VAVE.LOG';
+    cv.rect(x + 2, y + BH, BW - 2, 2, 'k');
+    cv.rect(x, y, BW, BH, 'a').rect(x, y, BW, 4, hot ? 'M' : 'c').rect(x, y + 4, BW, 1, hot ? 'y' : 'b').rect(x, y + BH - 2, BW, 2, 'g');
+    for (let k = 0; k < 6; k++) cv.px(x + 3 + Math.floor(rnd() * (BW - 6)), y + 7 + Math.floor(rnd() * 10), '4');
+    ink += PX.text(name, { x: cx, y: y + 9, fill: C.f, align: 'center' });
+  }
+  cv.spr(PX.SPRITES.pix, 160 + 14, 44 - 11 - 15);
+  let body = cv.svg() + ink;
+  const fire = fireFrames('rf', 276 - 8 + 20, 102 - 11 - 15);
+  body += PX.sprite(['..WW....WW..', '...WWmmWW...', '....WWWW....'], { x: 276 + 14, y: 102 - 11 - 2 });
+  body += fire.svg; css += fire.css;
+  body += `<path fill="${C.M}" d="${dotD([[276 + 22, 154 - 11 - 12, 1, 12], [276 + 23, 154 - 11 - 12, 6, 4]])}"/>`;
+  const lab = new Cv(W, H);
+  let labels = '';
+  EDGES.forEach(([, , text, lx, ly, align]) => { labels += tag(lab, text, lx, ly, { fill: C.i, align }); });
+  body += lab.svg() + labels + moving;
+  body += PX.text('WHAT MOVED BETWEEN REPOS', { x: 8, y: 6, fill: C.t });
+  body += frame2(W, H);
+  write('remix-map.svg', {
+    w: W, h: H, css, body,
+    title: 'Remix map: what moved between repos',
+    desc: `Repositories as pixel islands on a dark sea, linked by dotted arrows that say what moved, with small yellow packets travelling along them: ${EDGES.map(([a, b, l]) => `${a} to ${b}: ${l.replace('\n', ' ').toLowerCase()}`).join('; ')}. Pix stands on PIX-EL, a little fire burns on CAMPFIRE, and VAVE.LOG flies a flag.`,
+  });
+}
+
+/* ── v2 · 9 · Quest log: the making of vave.log ───────────────────────────── */
+function vavelogQuest() {
+  const W = 320, H = 180, ROAD = 112, rnd = rng(99);
+  const STOPS = [
+    ['SEP 29', 'SURVEY +\nPROTOTYPE'], ['OCT 13', 'DAY 1'], ['OCT 14', '~40 PRS'],
+    ['OCT 21', '8 MILESTONES'], ['NOV 20', 'PR #91'], ['NEXT', '?'],
+  ];
+  const XS = [34, 86, 138, 190, 242, 290];
+  const cv = new Cv(W, H, 'k');
+  for (let y = 40; y < ROAD; y++) for (let x = 0; x < W; x++) if (y > 60 || (x * 5 + y * 11) % (64 - y) === 0) cv.px(x, y, 'N');
+  for (let i = 0; i < 50; i++) { const x = Math.floor(rnd() * W), y = Math.floor(rnd() * 56); cv.px(x, y, rnd() < 0.5 ? '4' : 'a'); }
+  for (let x = 0; x < W; x++) { const y = 80 + Math.round(6 * Math.sin(x / 26) + 3 * Math.sin(x / 9 + 2)); cv.rect(x, y, 1, ROAD - y, 'g'); if (Math.sin((x + 1) / 26) * 6 + 3 * Math.sin((x + 1) / 9 + 2) > Math.sin(x / 26) * 6 + 3 * Math.sin(x / 9 + 2)) cv.px(x, y, 'a'); }
+  for (let x = -2; x < W + 3; x += 4 + Math.floor(rnd() * 5)) pine(cv, x, ROAD - 4, 5 + Math.floor(rnd() * 6), '2');
+  cv.rect(0, ROAD - 4, W, H - ROAD + 4, '3');
+  // road: cobbles
+  cv.rect(0, ROAD, W, 10, 's').rect(0, ROAD, W, 1, 't').rect(0, ROAD + 9, W, 1, 'k');
+  for (let y = ROAD + 2; y < ROAD + 9; y += 3) for (let x = (y % 2) * 3; x < W; x += 6) cv.rect(x, y, 4, 2, 't');
+  for (let i = 0; i < 30; i++) cv.spr(['a.a', '.a.'], Math.floor(rnd() * W), ROAD + 14 + Math.floor(rnd() * 40));
+  let ink = '';
+  const lab = new Cv(W, H);
+  STOPS.forEach(([date, label], i) => {
+    const x = XS[i], last = i === STOPS.length - 1;
+    if (!last) {
+      cv.rect(x, ROAD - 22, 1, 22, 'W').rect(x + 1, ROAD - 22, 8, 5, 'c').rect(x + 1, ROAD - 17, 5, 1, 'c').rect(x + 1, ROAD - 22, 8, 1, 'd');
+      cv.rect(x - 2, ROAD - 1, 5, 1, 'W');
+    } else {
+      cv.rect(x - 9, ROAD - 14, 18, 6, 'n').rect(x - 9, ROAD - 14, 18, 1, 'W').rect(x - 9, ROAD - 8, 18, 8, 'm').rect(x - 9, ROAD - 9, 18, 1, 't').rect(x - 1, ROAD - 10, 3, 4, 't').px(x, ROAD - 8, 'k');
+      cv.rect(x - 9, ROAD - 14, 1, 14, 't').rect(x + 8, ROAD - 14, 1, 14, 't');
+    }
+    const below = i % 2 === 1;
+    const ly = below ? ROAD + 16 : ROAD - 58;
+    ink += tag(lab, date, x, ly, { fill: C.M, border: last ? 'M' : '4' });
+    ink += PX.text(label, { x, y: ly + 14, fill: C.i, align: 'center' });
+  });
+  let body = cv.svg() + lab.svg() + ink, css = '';
+  // sparkle over the chest
+  const sp = flip('qs', `<path fill="${C.M}" d="${dotD([[XS[5] - 6, ROAD - 20, 1, 1], [XS[5] + 6, ROAD - 24, 1, 1]])}"/>`,
+    `<path fill="${C.M}" d="${dotD([[XS[5] - 7, ROAD - 20, 3, 1], [XS[5] - 6, ROAD - 21, 1, 3], [XS[5] + 5, ROAD - 24, 3, 1], [XS[5] + 6, ROAD - 25, 1, 3]])}"/>`, 0.8);
+  body += sp.svg; css += sp.css;
+  // Pix walks the road
+  const pixA = PX.SPRITES.pix, pixB = [...pixA.slice(0, 13), '...ggg....gg....', '....gg....ggg...', '................'];
+  const pw = walker('qw', pixA, pixB, XS[0] + 4, ROAD - 15, 1, 0, XS[5] - 24, 16, 0);
+  body += pw.svg; css += pw.css;
+  body += PX.text('QUEST LOG', { x: 10, y: 8, scale: 2, fill: C.i });
+  body += PX.text('VAVE.LOG · THE MAKING OF', { x: W - 10, y: 12, fill: C.t, align: 'right' });
+  body += frame2(W, H);
+  write('vavelog-quest.svg', {
+    w: W, h: H, bg: C.k, css, body,
+    title: 'Quest log: the making of vave.log',
+    desc: 'A pixel quest road at night with milestone flags: Sep 29, survey and prototype; Oct 13, day 1; Oct 14, about 40 pull requests; Oct 21, 8 milestones; Nov 20, pull request number 91; next: a treasure chest with a question mark that sparkles. Pix walks along the road.',
+  });
+}
+
+/* node campfire/tools/art.mjs [name …] renders only the named pieces (default: all) */
+const ONLY = process.argv.slice(2);
+const JOBS = {
+  scene, fireplaceRules, repoWall, trailMap, lifeStrip, pixWave, icons,
+  itemsSheet, worldMap, titleScreen, boothScene, loreStrip, bosses, guildHall, remixMap, vavelogQuest,
+};
+for (const [name, fn] of Object.entries(JOBS)) if (!ONLY.length || ONLY.includes(name)) fn();
