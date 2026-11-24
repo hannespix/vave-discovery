@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fireplace Check · Campfire</title>
+<link rel="stylesheet" href="../shared/campfire.css">
+<script src="../shared/pixel.js"></script>
+<style>
+  html, body { min-height: 100%; }
+  body {
+    font-size: clamp(15px, 0.5vw + 10px, 19px);
+    padding: clamp(10px, 1.6vw, 24px);
+    display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 14px);
+    min-height: 100vh;
+  }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; }
+  .top h1 { margin: 0; font-size: clamp(32px, 4.4vw, 64px); color: var(--fire-3); }
+  .top p { margin: 0; color: var(--muted); }
+  .top b { color: var(--ink); font-weight: 600; }
+
+  main { flex: 1; display: grid; gap: clamp(10px, 1.4vw, 18px); grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: start; }
+  .panel { padding: clamp(10px, 1.2vw, 16px); min-width: 0; }
+
+  .qs { display: flex; flex-direction: column; gap: 4px; }
+  .qs-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  fieldset.q { margin: 0; padding: 5px 0; border: 0; border-top: 2px solid var(--night-4); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; align-items: center; }
+  fieldset.q:first-of-type { border-top: 0; }
+  fieldset.q legend { float: left; padding: 0; font-weight: 600; line-height: 1.3; }
+  fieldset.q legend .hint { display: block; font-weight: 400; font-size: 0.82em; color: var(--muted); }
+  .opts { display: flex; gap: 6px; }
+  .opts input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+  .opts label {
+    min-height: 44px; min-width: 52px; padding: 0 10px; display: grid; place-items: center; cursor: pointer;
+    font: 1.15em/1 var(--pixel); color: var(--ink); background: var(--night-3); border: 2px solid var(--night-4); white-space: nowrap;
+  }
+  .opts label:hover { background: var(--night-4); }
+  .opts input:checked + label { color: var(--night-0); background: var(--lcd-d); border-color: var(--lcd-e); box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--lcd-b); }
+  .opts input:focus-visible + label { outline: 3px solid var(--marker); outline-offset: 2px; }
+
+  .result { display: flex; flex-direction: column; gap: 10px; }
+  .lamp { display: flex; gap: 14px; align-items: center; }
+  .lamp svg { flex: none; width: clamp(64px, 7vw, 104px); height: auto; }
+  .verdict { margin: 0; font: clamp(26px, 2.4vw, 38px)/1 var(--pixel); color: var(--ink); }
+  .sub { margin: 4px 0 0; color: var(--muted); }
+  .lv-0 .verdict { color: var(--lcd-e); }
+  .lv-1 .verdict { color: var(--fire-3); }
+  .lv-2 .verdict { color: #ff8a70; }
+
+  .advice { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .advice li { display: grid; grid-template-columns: 4.6em 1fr; gap: 8px; font-size: 0.9em; line-height: 1.35; }
+  .advice .lv { font: 1.1em/1.2 var(--pixel); text-align: center; color: var(--night-0); align-self: start; padding: 1px 0; }
+  .advice .lv.l0 { background: var(--lcd-d); }
+  .advice .lv.l1 { background: var(--fire-2); }
+  .advice .lv.l2 { background: #ff8a70; }
+  .disclaimer { margin: 0; font-size: 0.82em; color: var(--muted); border-top: 2px solid var(--night-4); padding-top: 8px; }
+
+  .rules { grid-column: 1 / -1; }
+  .rules ol { margin: 6px 0 0; padding: 0; list-style: none; counter-reset: r; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+  .rules li { counter-increment: r; background: var(--night-1); border: 2px solid var(--night-4); padding: 6px 8px; font-size: 0.85em; line-height: 1.3; }
+  .rules li::before { content: counter(r); font: 1.5em/1 var(--pixel); color: var(--fire-2); margin-right: 6px; }
+
+  .mini { display: none; }
+  .glow { animation: fc-flicker calc(var(--step) * 4) steps(1, end) infinite; }
+  @keyframes fc-flicker { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.7; } }
+
+  @media (max-width: 900px) { .rules ol { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; }
+    .top h1 { font-size: 34px; }
+    .top .more { display: none; }
+    fieldset.q { grid-template-columns: 1fr; }
+    .mini { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 6px 10px; margin: -4px 0 0; background: var(--night-0); border: 2px solid var(--night-4); font-size: 0.9em; }
+    .mini svg { width: 28px; height: auto; flex: none; }
+    .mini strong { font: 1.3em/1 var(--pixel); font-weight: 400; }
+  }
+  @media (prefers-reduced-motion: reduce) { .glow { animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="px-title">Fireplace Check</h1>
+  <p><b>Is it OK to use AI for this?</b> <span class="more">Think of one real task and answer six questions.</span></p>
+</header>
+
+<div class="mini" id="mini" aria-hidden="true"></div>
+
+<main>
+  <form class="panel px-frame qs" id="form" aria-label="Six questions">
+    <div class="qs-head"><span class="px-label" id="count">0 of 6 answered</span><button class="px-btn" type="reset" id="reset">Reset</button></div>
+  </form>
+
+  <section class="panel px-frame result" id="result" aria-labelledby="verdict">
+    <div class="lamp">
+      <svg id="lantern" viewBox="0 0 22 24" class="pixelart" shape-rendering="crispEdges" aria-hidden="true"></svg>
+      <div><p class="verdict" id="verdict" aria-live="polite"></p><p class="sub" id="sub"></p></div>
+    </div>
+    <ul class="advice" id="advice" aria-label="Advice"></ul>
+    <p class="disclaimer">A conversation starter, not legal advice. Client contracts and your data protection contact have the last word.</p>
+  </section>
+
+  <section class="panel px-frame rules" aria-labelledby="rules-h">
+    <h2 class="px-label" id="rules-h" style="margin:0">Fireplace rules for VAVE</h2>
+    <ol>
+      <li>No client secrets in consumer chats.</li>
+      <li>Keys never live in code.</li>
+      <li>Every tool has an owner.</li>
+      <li>Ship small, review always.</li>
+      <li>Test what matters.</li>
+      <li>Respect licences and people.</li>
+      <li>Humans decide.</li>
+    </ol>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const QUESTIONS = [
+    ['conf', 'Does it involve confidential client material?', 'Briefs, unreleased designs, figures, anything under NDA.'],
+    ['pers', 'Does it involve personal data?', 'Names, e-mail addresses, photos or voices of real people.'],
+    ['pub', 'Will the output be public or client-facing?', 'Exhibition texts, pitch decks, a tool the client uses.'],
+    ['plan', 'Are you on a business plan that doesn’t train on your data?', 'A team or enterprise account with a data agreement.'],
+    ['owner', 'Is it clear who maintains it afterwards?', 'A named person who can fix it in six months.'],
+    ['review', 'Will a human review it before it’s used?', 'Someone who checks facts, rights and tone.'],
+  ];
+  const OPTS = [['yes', 'Yes'], ['no', 'No'], ['unsure', 'Not sure']];
+
+  const form = $('form');
+  QUESTIONS.forEach(([id, q, hint]) => {
+    const fs = document.createElement('fieldset');
+    fs.className = 'q';
+    fs.innerHTML = `<legend>${q}<span class="hint">${hint}</span></legend><div class="opts">` +
+      OPTS.map(([v, l]) => `<input type="radio" name="${id}" id="${id}-${v}" value="${v}"><label for="${id}-${v}">${l}</label>`).join('') + '</div>';
+    form.appendChild(fs);
+  });
+
+  /** One piece of advice per answer: [level 0 green · 1 yellow · 2 red, text] */
+  function advise(a) {
+    const safe = a.plan === 'yes';
+    const out = [];
+    const add = (lv, t) => out.push([lv, t]);
+    if (a.conf === 'yes') add(safe ? 1 : 2, safe ? 'Confidential material: fine on your business plan. Share only what the task needs and follow the client’s rules.'
+      : 'Confidential material without a business plan: don’t paste it. Use a business plan, or strip names, figures and visuals first.');
+    if (a.conf === 'unsure') add(1, 'Not sure if it’s confidential? Treat it as confidential until the project lead says otherwise.');
+    if (a.conf === 'no') add(0, 'No confidential material. Still a good habit: keep client names out of prompts.');
+    if (a.pers === 'yes') add(safe ? 1 : 2, safe ? 'Personal data: use only what’s needed, anonymise where you can, and check your data agreement covers it.'
+      : 'Personal data on a personal or free plan: don’t. Replace names and faces with placeholders first.');
+    if (a.pers === 'unsure') add(1, 'If someone could be identified from it, it counts as personal data. Anonymise first.');
+    if (a.pers === 'no') add(0, 'No personal data. One less thing to worry about.');
+    if (a.pub === 'yes') add(1, 'Public or client-facing: check facts, rights (fonts, images, code licences) and the brand before it goes out.');
+    if (a.pub === 'unsure') add(1, 'Assume it might travel. Check facts and rights as if it were public.');
+    if (a.pub === 'no') add(0, 'Internal only: room to experiment.');
+    if (a.plan === 'yes') add(0, 'Business plan: your work stays out of training. Client rules still apply.');
+    if (a.plan === 'no') add(1, 'Personal or free plan: fine for public information and general questions. Keep client and personal data out.');
+    if (a.plan === 'unsure') add(1, 'Ask whoever manages your AI accounts which plan you’re on before using real work data.');
+    if (a.owner === 'yes') add(0, 'Owner named. Keep a short how-to next to the tool.');
+    if (a.owner === 'no') add(1, 'No owner yet: name one, or treat it as a throwaway nobody relies on.');
+    if (a.owner === 'unsure') add(1, 'Agree on an owner before others start relying on it.');
+    const outside = a.pub === 'yes' || a.pub === 'unsure';
+    if (a.review === 'yes') add(0, 'Human review planned. That’s what catches confident errors.');
+    if (a.review === 'no') add(outside ? 2 : 1, outside ? 'Nothing AI-made goes to a client unchecked. Plan a second pair of eyes.'
+      : 'Fine for a quick internal draft, but have someone check it before anyone relies on it.');
+    if (a.review === 'unsure') add(1, 'Decide who reviews it. It takes minutes and saves embarrassment.');
+    return out;
+  }
+
+  const VERDICT = [
+    ['Green: go ahead.', 'Use AI for this, with the usual care.'],
+    ['Yellow: go, with care.', 'Fine to use once you’ve handled the yellow points.'],
+    ['Red: not like this.', 'Change the setup first (see the red points). Then it can work.'],
+  ];
+  const LEVEL = ['Green', 'Yellow', 'Red'];
+
+  /* Lantern sprite: t metal, G glass, F flame, H flame core */
+  const LANTERN = [
+    '.....tttt.....', '....t....t....', '....t....t....', '...tttttttt...', '..tttttttttt..',
+    '..tGGGGGGGGt..', '..tGGGGGGGGt..', '..tGGGFFGGGt..', '..tGGFFFFGGt..', '..tGGFHHFGGt..',
+    '..tGFFHHFFGt..', '..tGFHHHHFGt..', '..tGFHHHHFGt..', '..tGGFFFFGGt..', '..tGGGGGGGGt..',
+    '..tttttttttt..', '...tttttttt...', '....tttttt....',
+  ];
+  const LAMP_PAL = [
+    { G: '#306230', F: '#a9c431', H: '#e3efa8', halo: '#1b2d17' },
+    { G: '#6b4226', F: '#ffae00', H: '#fff6c8', halo: '#3a2414' },
+    { G: '#3a2414', F: '#e8483f', H: '#ffae00', halo: '#2e1210' },
+  ];
+  const DARK = { G: '#12210f', F: '#2a4123', H: '#306230', halo: 'none' };
+
+  function lanternSvg(lv) {
+    const p = lv == null ? DARK : LAMP_PAL[lv];
+    const halo = p.halo === 'none' ? '' : `<g class="glow"><rect x="1" y="5" width="20" height="16" fill="${p.halo}"/><rect x="0" y="8" width="22" height="10" fill="${p.halo}"/></g>`;
+    return halo + PX.sprite(LANTERN, { x: 4, y: 3, pal: { t: '#9fb48f', G: p.G, F: p.F, H: p.H } });
+  }
+
+  function answers() {
+    const a = {};
+    QUESTIONS.forEach(([id]) => { const el = form.querySelector(`input[name="${id}"]:checked`); if (el) a[id] = el.value; });
+    return a;
+  }
+
+  function render() {
+    const a = answers();
+    const n = Object.keys(a).length;
+    const list = advise(a);
+    const lv = list.length ? Math.max(...list.map((x) => x[0])) : null;
+    $('count').textContent = `${n} of 6 answered`;
+    $('result').className = 'panel px-frame result' + (lv == null ? '' : ' lv-' + lv);
+    $('lantern').innerHTML = lanternSvg(lv);
+    $('verdict').textContent = lv == null ? 'The lantern is dark.' : VERDICT[lv][0];
+    $('sub').textContent = lv == null ? 'Answer the questions to light it.' : VERDICT[lv][1] + (n < 6 ? ` (${6 - n} still open.)` : '');
+    list.sort((x, y) => y[0] - x[0]);
+    $('advice').innerHTML = list.map(([l, t]) => `<li><span class="lv l${l}">${LEVEL[l]}</span><span>${t}</span></li>`).join('');
+    $('mini').innerHTML = `<svg viewBox="0 0 22 24" class="pixelart" shape-rendering="crispEdges">${lanternSvg(lv)}</svg><strong>${lv == null ? 'Lantern dark' : VERDICT[lv][0]}</strong><span>${n} of 6</span>`;
+  }
+
+  form.addEventListener('change', render);
+  form.addEventListener('reset', () => setTimeout(() => { render(); form.querySelector('input').focus(); }, 0));
+  render();
+})();
+</script>
+</body>
+</html>
