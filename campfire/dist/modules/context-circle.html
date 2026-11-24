@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Context Circle · Campfire</title>
+<style>/* shared/campfire.css */
+/* Campfire — shared look for every page, deck and module of the talk.
+   pix·el LCD night (greens) + one warm thing: the fire. Everything blocky moves in steps(); nothing eases smoothly.
+   Single source for colours and type: decks and modules link this file, tools/build.mjs inlines it. */
+
+@font-face {
+  font-family: "Jersey 10";
+  src: url("data:font/woff2;base64,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") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  /* Night: the LCD greens of pix·el, darkened for a campfire evening */
+  --night-0: #050a05;
+  --night-1: #0c170b;
+  --night-2: #12210f;
+  --night-3: #1b2d17;
+  --night-4: #2a4123;
+  --lcd-a: #306230;
+  --lcd-b: #4c7420;
+  --lcd-c: #7a9a1c;
+  --lcd-d: #a9c431;
+  --lcd-e: #d4ef78;
+  --lcd-f: #e3efa8;
+  /* Fire: the only warm colours (pixletics flame + pix·el LED) */
+  --fire-0: #e8483f;
+  --fire-1: #ff5a36;
+  --fire-2: #ffae00;
+  --fire-3: #ffe06a;
+  --fire-4: #fff6c8;
+  --wood-0: #3a2414;
+  --wood-1: #6b4226;
+  --wood-2: #9a6a3c;
+  /* Text and lines */
+  --ink: #e2f0c6;
+  --muted: #9fb48f;
+  --line: #2a4123;
+  --marker: #ffe45e;
+  --bg: var(--night-1);
+  --card: var(--night-2);
+
+  --pixel: "Jersey 10", "Courier New", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Courier New", monospace;
+
+  --px: 4px;            /* one art pixel on screen (scenes scale in whole multiples) */
+  --step: 125ms;        /* one animation frame = 8 fps */
+  --gutter: max(16px, 4vw);
+  --radius: 0;          /* pixel world: no rounded corners */
+}
+
+/* Light variant for projectors that wash out dark slides: add data-theme="light" on <html> */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f7ef;
+  --card: #ffffff;
+  --ink: #12280f;
+  --muted: #56654f;
+  --line: #d3dcc4;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 18px/1.55 var(--sans);
+}
+
+/* Headlines and labels in the pixel font — big, never for long sentences */
+.px-title { font-family: var(--pixel); font-weight: 400; letter-spacing: 0.02em; line-height: 0.95; }
+.px-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+/* Pixel art: crisp at every scale */
+.pixelart, .pixelart svg, svg.pixelart { image-rendering: pixelated; shape-rendering: crispEdges; }
+
+/* Pixel frame: a 1-art-pixel border with cut corners, like an old handheld UI */
+.px-frame {
+  background: var(--card);
+  border: var(--px) solid var(--night-4);
+  box-shadow: 0 0 0 var(--px) var(--night-0), var(--px) var(--px) 0 var(--px) var(--night-0);
+}
+
+/* Buttons that feel like hardware keys */
+.px-btn {
+  font: 20px/1 var(--pixel);
+  color: var(--night-0);
+  background: var(--lcd-d);
+  border: 0;
+  padding: 12px 18px;
+  min-height: 44px;
+  cursor: pointer;
+  box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--lcd-b), 0 var(--px) 0 var(--night-0);
+}
+.px-btn:hover { background: var(--lcd-e); }
+.px-btn:active { transform: translateY(var(--px)); box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--lcd-b); }
+.px-btn.fire { background: var(--fire-2); box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--fire-1), 0 var(--px) 0 var(--night-0); }
+.px-btn.fire:hover { background: var(--fire-3); }
+
+:focus-visible { outline: 3px solid var(--marker); outline-offset: 3px; }
+
+/* Flicker helpers for HTML (SVG scenes carry their own copy of these keyframes) */
+@keyframes px-flicker { 0% { opacity: 1; } 50% { opacity: 0.82; } 100% { opacity: 1; } }
+@keyframes px-frames-3 { from { transform: translateX(0); } to { transform: translateX(-300%); } }
+@keyframes px-blink { 0%, 92% { opacity: 1; } 93%, 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+<script>/* shared/pixel.js */
+/* Campfire pixel kit — sprites as text grids, rendered to crisp SVG paths.
+   Classic script (no modules): in the browser it sets window.PX, in Node tools/*.mjs load it with vm and read
+   globalThis.PX. Same idea as pix·el's iconPath(): every run of equal pixels in a row becomes one rect path.
+   One character = one colour from PAL; '.' is transparent. */
+(function (root) {
+  'use strict';
+
+  /* Palette: pix·el LCD night + fire. Same values as shared/campfire.css (standalone SVGs can't read CSS vars). */
+  const PAL = {
+    k: '#050a05', // night-0, outlines in the dark
+    g: '#0f380f', // LCD ink, Pix outline
+    a: '#306230', b: '#4c7420', c: '#7a9a1c', d: '#a9c431', e: '#d4ef78', f: '#e3efa8',
+    R: '#e8483f', r: '#ff5a36', o: '#ffae00', y: '#ffe06a', w: '#fff6c8',
+    W: '#3a2414', m: '#6b4226', n: '#9a6a3c',
+    M: '#ffe45e', // marker / spark yellow
+    i: '#e2f0c6', // text ink on night
+    s: '#56654f', t: '#9fb48f', // smoke / stone greys
+    N: '#0c170b', // night-1 background
+  };
+
+  /* ── Sprites ─────────────────────────────────────────────────────────────── */
+  const SPRITES = {
+    /* Pix, the pix·el mascot (hannespix/pix-el site/icons.js MASCOT), as colour rows. 16×16. */
+    pix: [
+      '.........M......',
+      '........g.......',
+      '...gggggggggg...',
+      '..gffffffffffg..',
+      '.gffffffffffffg.',
+      '.gffggffffggffg.',
+      '.gffggffffggffg.',
+      '.gffffffffffffg.',
+      '.gffffgffgffffg.',
+      '.gfccffggffccfg.',
+      '.gffffffffffffg.',
+      '..gffffffffffg..',
+      '...gggggggggg...',
+      '....gg....gg....',
+      '...ggg....ggg...',
+      '................',
+    ],
+    /* Pix with closed eyes (blink frame) */
+    pixBlink: [
+      '.........M......',
+      '........g.......',
+      '...gggggggggg...',
+      '..gffffffffffg..',
+      '.gffffffffffffg.',
+      '.gffffffffffffg.',
+      '.gffggffffggffg.',
+      '.gffffffffffffg.',
+      '.gffffgffgffffg.',
+      '.gfccffggffccfg.',
+      '.gffffffffffffg.',
+      '..gffffffffffg..',
+      '...gggggggggg...',
+      '....gg....gg....',
+      '...ggg....ggg...',
+      '................',
+    ],
+    /* Flame icon from pixletics (index.html, 12×14) */
+    flame: [
+      '.....rr.....',
+      '....rrrr....',
+      '....rror....',
+      '...rroorr...',
+      '...rooor....',
+      '..rrooorr...',
+      '..rooooor...',
+      '.rroooyoor..',
+      '.roooyyoor..',
+      '.roooyyyor..',
+      '.rroooyoor..',
+      '..rooooor...',
+      '..rrooorr...',
+      '...rrrrr....',
+    ],
+    /* Campfire flames, three frames (16×16) — cycle with steps() for a crackle */
+    fire1: [
+      '.......r........',
+      '.......r....r...',
+      '......rr....r...',
+      '..r...ror..rr...',
+      '..r..rroor.rr...',
+      '..rr.roooorror..',
+      '..rrrooyoooorr..',
+      '.rrooooyyoooorr.',
+      '.rroooyyyyoooor.',
+      '.rooooyywyyooor.',
+      '.roooyywwyyooor.',
+      '.rooyyywwwyyoor.',
+      '..rooyywwyyoor..',
+      '..rrooyyyyoorr..',
+      '...rrooooooor...',
+      '....rrrrrrrr....',
+    ],
+    fire2: [
+      '....r...........',
+      '....r......r....',
+      '...rr.....rr....',
+      '...ror...rror...',
+      '..rroor..roor...',
+      '..roooorrooor...',
+      '..rooyooooyor...',
+      '.rrooyyooyyorr..',
+      '.roooyyyyyyoor..',
+      '.rooyyywyyyoorr.',
+      '.rooyywwwyyooor.',
+      '.rooyywwwwyyoor.',
+      '..rooyywwyyoor..',
+      '..rrooyyyyoorr..',
+      '...rrooooooor...',
+      '....rrrrrrrr....',
+    ],
+    fire3: [
+      '..........r.....',
+      '...r......r.....',
+      '...r.....rr.....',
+      '..rr....ror..r..',
+      '..ror..rroor.r..',
+      '.rroor.roooorr..',
+      '.rooooroooyoor..',
+      '.roooyyooyyoorr.',
+      '.rooyyyyyyyooor.',
+      '.rooyywwyyyooor.',
+      '.roooyywwwyyoor.',
+      '.rooyyywwwyyoor.',
+      '..rooyywwyyoor..',
+      '..rrooyyyyoorr..',
+      '...rrooooooor...',
+      '....rrrrrrrr....',
+    ],
+    /* Crossed logs under the fire (20×6) */
+    logs: [
+      '..WW............WW..',
+      '.WmmWW........WWmmW.',
+      '.WnmmmWWW..WWWmmmnW.',
+      '..WWmmmmmWWmmmmmWW..',
+      '....WWWmmmmmmWWW....',
+      '.......WWWWWW.......',
+    ],
+    /* A single spark / ember (3×3) */
+    spark: [
+      '.y.',
+      'yMy',
+      '.y.',
+    ],
+  };
+
+  /* Single-colour 16×16 icons, '#' = pixel (pix·el icon format). One per station of the talk. */
+  const ICONS = {
+    tent: [
+      '................', '.......##.......', '......#..#......', '.....#....#.....',
+      '.....#.##.#.....', '....#..##..#....', '....#.#..#.#....', '...#..#..#..#...',
+      '...#.#....#.#...', '..#..#....#..#..', '..#.#......#.#..', '.#..#......#..#.',
+      '################', '................', '................', '................',
+    ],
+    spark: [ // pix·el icons.js "spark"
+      '......#.........', '......#.........', '.....###........', '.....###........',
+      '....#####.......', '..#########.....', '#############...', '..#########.....',
+      '....#####.......', '.....###........', '.....###....#...', '......#.....#...',
+      '......#...#####.', '............#...', '............#...', '................',
+    ],
+    kindling: [
+      '................', '.......#........', '......##........', '......#.#.......',
+      '.....#..#.......', '.....#.##.......', '......##........', '................',
+      '..#..........#..', '...##......##...', '.....##..##.....', '.......##.......',
+      '.....##..##.....', '...##......##...', '..#..........#..', '................',
+    ],
+    fire: [
+      '.......#........', '......##........', '......#.#....#..', '.....#...#..##..',
+      '....#....#.#.#..', '....#.##..#..#..', '...#.#..#....#..', '...#.#..#...#...',
+      '...#..##....#...', '....#......#....', '.....######.....', '................',
+      '.##############.', '#..#........#..#', '.##############.', '................',
+    ],
+    forge: [
+      '................', '..........#.....', '.........#.#....', '........#...#...',
+      '.........#.#.#..', '..........#...#.', '...........#.#..', '............#...',
+      '.##########.....', '#..........###..', '.#.............#', '..#########.###.',
+      '.....#....#.....', '....#......#....', '...##########...', '................',
+    ],
+    smoke: [
+      '................', '.........###....', '........#...#...', '.....###.....#..',
+      '....#.........#.', '...#..........#.', '....#........#..', '.....##....##...',
+      '.......####.....', '......#.........', '.....#..........', '.....#..........',
+      '......#.........', '.......#........', '......###.......', '.....#####......',
+    ],
+    ember: [
+      '....#.......#...', '................', '..#....#........', '..........#.....',
+      '.....#..........', '................', '....######......', '...#......#.....',
+      '..#..##....#....', '.#..#..#....#...', '.#...##.....#...', '.#..........#...',
+      '..#........#....', '...########.....', '................', '................',
+    ],
+    bubble: [
+      '................', '.############...', '#............#..', '#..##....##..#..',
+      '#..##....##..#..', '#............#..', '#...######...#..', '#............#..',
+      '.#####..######..', '.....#.#........', '.....##.........', '.....#..........',
+      '................', '................', '................', '................',
+    ],
+  };
+
+  /* ── Rendering ───────────────────────────────────────────────────────────── */
+
+  function check(name, rows) {
+    const w = rows[0].length;
+    rows.forEach((r, i) => { if (r.length !== w) throw new Error(`PX: sprite "${name}" row ${i} has ${r.length} px, expected ${w}`); });
+    return w;
+  }
+
+  /** Path data for every pixel equal to `ch` (runs merged), offset by ox/oy */
+  function runPath(rows, ch, ox, oy) {
+    let d = '';
+    rows.forEach((row, y) => {
+      for (let x = 0; x < row.length; x++) {
+        if (row[x] !== ch) continue;
+        let n = 1;
+        while (row[x + n] === ch) n++;
+        d += `M${ox + x} ${oy + y}h${n}v1h-${n}z`;
+        x += n - 1;
+      }
+    });
+    return d;
+  }
+
+  /** Sprite → '<path fill=… d=…/>' per colour. opts: { x, y, pal (overrides), cls } */
+  function sprite(nameOrRows, opts) {
+    const o = opts || {};
+    const rows = typeof nameOrRows === 'string' ? SPRITES[nameOrRows] : nameOrRows;
+    if (!rows) throw new Error(`PX: unknown sprite "${nameOrRows}"`);
+    check(String(nameOrRows), rows);
+    const pal = Object.assign({}, PAL, o.pal || {});
+    const chars = [...new Set(rows.join(''))].filter((c) => c !== '.');
+    const cls = o.cls ? ` class="${o.cls}"` : '';
+    return `<g${cls}>${chars.map((c) => `<path fill="${pal[c] || c}" d="${runPath(rows, c, o.x || 0, o.y || 0)}"/>`).join('')}</g>`;
+  }
+
+  /** Icon → one path (fill = currentColor unless given) */
+  function icon(name, opts) {
+    const o = opts || {};
+    const rows = ICONS[name];
+    if (!rows) throw new Error(`PX: unknown icon "${name}"`);
+    check(name, rows);
+    return `<path fill="${o.fill || 'currentColor'}" d="${runPath(rows, '#', o.x || 0, o.y || 0)}"/>`;
+  }
+
+  /** A complete, self-contained SVG document (for files and <img>) */
+  function svgDoc(o) {
+    const title = o.title ? `<title>${o.title}</title>` : '';
+    const desc = o.desc ? `<desc>${o.desc}</desc>` : '';
+    const style = o.css ? `<style>${o.css}</style>` : '';
+    const bg = o.bg ? `<rect width="${o.w}" height="${o.h}" fill="${o.bg}"/>` : '';
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${o.w} ${o.h}" width="${o.w * (o.scale || 1)}" height="${o.h * (o.scale || 1)}" shape-rendering="crispEdges" role="img">${title}${desc}${style}${bg}${o.body}</svg>`;
+  }
+
+  root.PX = { PAL, SPRITES, ICONS, sprite, icon, svgDoc, runPath };
+
+  /* ── Additions (art set): Pix as mono icon, 5×7 pixel font ───────────────── */
+
+  /* Pix as a single-colour icon (outline, eyes, mouth, antenna) — station 01 */
+  ICONS.pix = [
+    '.........#......', '........#.......', '...##########...', '..#..........#..',
+    '.#............#.', '.#..##....##..#.', '.#..##....##..#.', '.#............#.',
+    '.#....#..#....#.', '.#.##..##..##.#.', '.#............#.', '..#..........#..',
+    '...##########...', '....##....##....', '...###....###...', '................',
+  ];
+
+  /* 5×7 pixel font, caps only (lower case is upper-cased). '#' = pixel. Narrow glyphs keep their own width.
+     Advance = glyph width + 1. Unknown characters render as '?'. */
+  const FONT5x7 = {};
+  const F = (chars, rows) => { FONT5x7[chars] = rows; };
+  F('A', ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#']);
+  F('B', ['####.', '#...#', '#...#', '####.', '#...#', '#...#', '####.']);
+  F('C', ['.###.', '#...#', '#....', '#....', '#....', '#...#', '.###.']);
+  F('D', ['####.', '#...#', '#...#', '#...#', '#...#', '#...#', '####.']);
+  F('E', ['#####', '#....', '#....', '####.', '#....', '#....', '#####']);
+  F('F', ['#####', '#....', '#....', '####.', '#....', '#....', '#....']);
+  F('G', ['.###.', '#...#', '#....', '#.###', '#...#', '#...#', '.####']);
+  F('H', ['#...#', '#...#', '#...#', '#####', '#...#', '#...#', '#...#']);
+  F('I', ['###', '.#.', '.#.', '.#.', '.#.', '.#.', '###']);
+  F('J', ['..###', '...#.', '...#.', '...#.', '#..#.', '#..#.', '.##..']);
+  F('K', ['#...#', '#..#.', '#.#..', '##...', '#.#..', '#..#.', '#...#']);
+  F('L', ['#....', '#....', '#....', '#....', '#....', '#....', '#####']);
+  F('M', ['#...#', '##.##', '#.#.#', '#.#.#', '#...#', '#...#', '#...#']);
+  F('N', ['#...#', '#...#', '##..#', '#.#.#', '#..##', '#...#', '#...#']);
+  F('O', ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.']);
+  F('P', ['####.', '#...#', '#...#', '####.', '#....', '#....', '#....']);
+  F('Q', ['.###.', '#...#', '#...#', '#...#', '#.#.#', '#..#.', '.##.#']);
+  F('R', ['####.', '#...#', '#...#', '####.', '#.#..', '#..#.', '#...#']);
+  F('S', ['.####', '#....', '#....', '.###.', '....#', '....#', '####.']);
+  F('T', ['#####', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..']);
+  F('U', ['#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.']);
+  F('V', ['#...#', '#...#', '#...#', '#...#', '#...#', '.#.#.', '..#..']);
+  F('W', ['#...#', '#...#', '#...#', '#.#.#', '#.#.#', '#.#.#', '.#.#.']);
+  F('X', ['#...#', '#...#', '.#.#.', '..#..', '.#.#.', '#...#', '#...#']);
+  F('Y', ['#...#', '#...#', '.#.#.', '..#..', '..#..', '..#..', '..#..']);
+  F('Z', ['#####', '....#', '...#.', '..#..', '.#...', '#....', '#####']);
+  F('0', ['.###.', '#...#', '#..##', '#.#.#', '##..#', '#...#', '.###.']);
+  F('1', ['.#.', '##.', '.#.', '.#.', '.#.', '.#.', '###']);
+  F('2', ['.###.', '#...#', '....#', '...#.', '..#..', '.#...', '#####']);
+  F('3', ['#####', '...#.', '..#..', '...#.', '....#', '#...#', '.###.']);
+  F('4', ['...#.', '..##.', '.#.#.', '#..#.', '#####', '...#.', '...#.']);
+  F('5', ['#####', '#....', '####.', '....#', '....#', '#...#', '.###.']);
+  F('6', ['..##.', '.#...', '#....', '####.', '#...#', '#...#', '.###.']);
+  F('7', ['#####', '....#', '...#.', '..#..', '.#...', '.#...', '.#...']);
+  F('8', ['.###.', '#...#', '#...#', '.###.', '#...#', '#...#', '.###.']);
+  F('9', ['.###.', '#...#', '#...#', '.####', '....#', '...#.', '.##..']);
+  F(' ', ['...', '...', '...', '...', '...', '...', '...']);
+  F('.', ['.', '.', '.', '.', '.', '.', '#']);
+  F(',', ['..', '..', '..', '..', '.#', '.#', '#.']);
+  F(':', ['.', '.', '#', '.', '.', '#', '.']);
+  F('!', ['#', '#', '#', '#', '#', '.', '#']);
+  F('?', ['.###.', '#...#', '....#', '...#.', '..#..', '.....', '..#..']);
+  F('-', ['....', '....', '....', '####', '....', '....', '....']);
+  F('·', ['..', '..', '..', '##', '##', '..', '..']);
+  F('/', ['....#', '...#.', '...#.', '..#..', '.#...', '.#...', '#....']);
+  F('&', ['.##..', '#..#.', '#.#..', '.#...', '#.#.#', '#..#.', '.##.#']);
+  F("'", ['#', '#', '.', '.', '.', '.', '.']);
+
+  const glyph = (ch) => FONT5x7[ch] || FONT5x7[ch.toUpperCase()] || FONT5x7['?'];
+  const LINE_H = 9; // 7 px glyph + 2 px leading
+
+  /** Width of one line (or the widest line) in px at the given scale (default 1) */
+  function textWidth(str, scale) {
+    const s = scale || 1;
+    return Math.max(...String(str).split('\n').map((line) => {
+      const w = [...line].reduce((a, ch) => a + glyph(ch)[0].length + 1, 0);
+      return Math.max(0, w - 1) * s;
+    }));
+  }
+
+  /** Text → one '<path>' of merged pixel runs. opts: { x, y (top edge), fill, scale, align: 'left'|'center'|'right' }.
+      '\n' starts a new line (9 px line height × scale). Default fill = PAL.i (ink on night). */
+  function text(str, opts) {
+    const o = opts || {};
+    const s = o.scale || 1;
+    let d = '';
+    String(str).split('\n').forEach((line, li) => {
+      const lw = textWidth(line, s);
+      let cx = (o.x || 0) - (o.align === 'center' ? Math.floor(lw / 2) : o.align === 'right' ? lw : 0);
+      const cy = (o.y || 0) + li * LINE_H * s;
+      for (const ch of line) {
+        const rows = glyph(ch);
+        rows.forEach((row, ry) => {
+          for (let x = 0; x < row.length; x++) {
+            if (row[x] !== '#') continue;
+            let n = 1;
+            while (row[x + n] === '#') n++;
+            d += `M${cx + x * s} ${cy + ry * s}h${n * s}v${s}h-${n * s}z`;
+            x += n - 1;
+          }
+        });
+        cx += (rows[0].length + 1) * s;
+      }
+    });
+    return `<path fill="${o.fill || PAL.i}" d="${d}"/>`;
+  }
+
+  Object.assign(root.PX, { FONT5x7, text, textWidth });
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<style>
+  html, body { min-height: 100%; }
+  body {
+    font-size: clamp(14px, 0.5vw + 10px, 19px);
+    padding: clamp(10px, 1.6vw, 24px);
+    display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 14px);
+    min-height: 100vh;
+  }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; }
+  .top h1 { margin: 0; font-size: clamp(32px, 4.4vw, 64px); color: var(--fire-3); }
+  .top p { margin: 0; color: var(--muted); }
+  .top b { color: var(--ink); font-weight: 600; }
+
+  main { flex: 1; min-height: 0; display: grid; gap: clamp(10px, 1.4vw, 18px); grid-template-columns: minmax(0, 1fr) clamp(260px, 27vw, 380px); grid-template-rows: minmax(0, 1fr); }
+
+  /* Stage: night, a pixel pool of light, the chat and the fire */
+  .stage { position: relative; overflow: hidden; background: var(--night-0); border: var(--px) solid var(--night-3); display: flex; flex-direction: column; min-height: 260px; }
+  .stage svg.pool { position: absolute; left: 0; top: 0; pointer-events: none; }
+  .chat { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; padding: 10px 12px 4px; width: 100%; max-width: 680px; margin: 0 auto; overflow: hidden; }
+  .msg { position: relative; max-width: 84%; padding: 5px 10px 6px; font-size: 0.88em; line-height: 1.35; border: 2px solid transparent; transition: background-color calc(var(--step) * 2) steps(2, end), color calc(var(--step) * 2) steps(2, end); }
+  .msg.you { margin-left: auto; }
+  .msg .who { font: 1.05em/1 var(--pixel); margin-right: 6px; }
+  .msg .tok { float: right; margin: 1px 0 0 10px; font: 0.8em/1.3 var(--mono); }
+  .msg.lit { background: var(--fire-4); color: #1d1408; border-color: var(--fire-2); }
+  .msg.lit .tok { color: #5a4020; }
+  .msg.lit.ai { background: var(--lcd-f); border-color: var(--lcd-c); }
+  .msg.dark { background: transparent; color: #8fa382; border: 2px dashed var(--night-4); }
+  .msg.dark .tok { color: #8fa382; }
+  .msg .fact { display: inline-block; font: 0.95em/1 var(--pixel); padding: 2px 4px; margin-right: 6px; background: #6a3fd0; color: #fff; }
+  .msg.dark .fact { background: transparent; color: #b69cff; border: 2px solid #6a3fd0; }
+  .msg.enter { animation: cc-enter calc(var(--step) * 3) steps(3, end); }
+  @keyframes cc-enter { from { transform: translateY(18px); opacity: 0.3; } to { transform: translateY(0); opacity: 1; } }
+  .msg.answer { background: var(--night-2); color: var(--ink); border: 2px solid var(--marker); max-width: 92%; }
+  .msg.answer.wrong { border-color: #ff8a70; }
+  .msg.answer .why { display: block; margin-top: 4px; color: var(--marker); font-size: 0.9em; }
+  .msg.answer.wrong .why { color: #ffb4a3; }
+  .hint { margin: auto; color: var(--muted); text-align: center; }
+
+  .hearth { position: relative; display: flex; align-items: flex-end; justify-content: center; gap: 12px; padding: 2px 10px 8px; }
+  .hearth svg.fire { width: 72px; height: auto; display: block; }
+  .pin { font-size: 0.8em; line-height: 1.3; padding: 4px 8px; background: #2b1f4d; color: #efe8ff; border: 2px solid #9d7bff; max-width: 46%; }
+  .pin b { font: 1.15em/1 var(--pixel); font-weight: 400; display: block; color: #d9ccff; }
+
+  /* Side panel */
+  .side { padding: clamp(10px, 1.2vw, 16px); display: flex; flex-direction: column; gap: 10px; min-width: 0; overflow: auto; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .px-btn:disabled, .px-btn:disabled:hover { background: var(--night-3); color: var(--muted); box-shadow: none; cursor: not-allowed; transform: none; }
+  .knob { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .knob output { font: 1.6em/1 var(--pixel); color: var(--fire-3); }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 44px; background: transparent; cursor: pointer; margin: 0; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--night-4); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 32px; margin-top: -12px; background: var(--fire-2); border: 0; box-shadow: inset 0 -4px 0 var(--fire-1); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--night-4); }
+  input[type=range]::-moz-range-thumb { width: 20px; height: 32px; background: var(--fire-2); border: 0; border-radius: 0; }
+  input[type=range]:focus-visible { outline: 3px solid var(--marker); outline-offset: 2px; }
+
+  .switch { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; font-weight: 600; line-height: 1.25; }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch .box { flex: none; width: 48px; height: 28px; background: var(--night-3); border: var(--px) solid var(--night-4); position: relative; }
+  .switch .box::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: var(--muted); }
+  .switch input:checked + .box { background: #6a3fd0; border-color: #9d7bff; }
+  .switch input:checked + .box::after { left: 22px; background: #efe8ff; }
+  .switch input:focus-visible + .box { outline: 3px solid var(--marker); outline-offset: 3px; }
+
+  .stats { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 0.9em; }
+  .stats dt { color: var(--muted); }
+  .stats dd { margin: 0; font-weight: 600; text-align: right; }
+  .gauge { display: flex; gap: 2px; height: 14px; }
+  .gauge i { flex: 1; background: var(--night-3); }
+  .gauge i.on { background: var(--fire-2); }
+  .gauge i.pin { background: #9d7bff; }
+  .lesson { margin: 0; padding: 8px 10px; background: var(--night-1); border-left: var(--px) solid var(--fire-2); font-size: 0.9em; }
+
+  .glow { animation: cc-glow calc(var(--step) * 4) steps(1, end) infinite; }
+  @keyframes cc-glow { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.88; } }
+  .fr { opacity: 0; animation: cc-frames calc(var(--step) * 3) steps(1, end) infinite; }
+  .fr.f1 { opacity: 1; }
+  .fr.f2 { animation-delay: calc(var(--step) * -2); }
+  .fr.f3 { animation-delay: calc(var(--step) * -1); }
+  @keyframes cc-frames { 0% { opacity: 1; } 33.333% { opacity: 0; } 100% { opacity: 0; } }
+
+  @media (min-width: 761px) and (min-height: 560px) { body { height: 100vh; } }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+    .top h1 { font-size: 34px; }
+    .top .more { display: none; }
+    .stage { height: 300px; min-height: 0; }
+    .hearth svg.fire { width: 48px; }
+    .msg { font-size: 0.82em; max-width: 90%; }
+  }
+  @media (prefers-reduced-motion: reduce) { .glow, .fr, .msg.enter { animation: none !important; } .msg { transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="px-title">Context Circle</h1>
+  <p><b>It only sees what's inside the circle of light.</b> <span class="more">Everything in the dark doesn't exist for it.</span></p>
+</header>
+
+<main>
+  <section class="stage" id="stage" aria-label="The chat around the fire">
+    <svg class="pool pixelart" id="pool" shape-rendering="crispEdges" aria-hidden="true"></svg>
+    <div class="chat" id="chat" aria-live="polite"></div>
+    <div class="hearth" id="hearth">
+      <div class="pin" id="pin" hidden><b>CLAUDE.md · pinned</b>Client: coffee roaster. Logo colour: violet. <span class="tok">14 tok</span></div>
+      <svg class="fire pixelart" id="fire" viewBox="0 0 20 22" shape-rendering="crispEdges" aria-hidden="true"></svg>
+    </div>
+  </section>
+
+  <section class="side px-frame" aria-label="Controls">
+    <div class="row">
+      <button class="px-btn fire" id="next" type="button">Next</button>
+      <button class="px-btn" id="play" type="button">Play</button>
+      <button class="px-btn" id="reset" type="button">Reset</button>
+    </div>
+    <div>
+      <div class="knob"><label class="px-label" for="cap">Context window</label><output id="capout" for="cap">120 tokens</output></div>
+      <input type="range" id="cap" min="40" max="260" step="10" value="120">
+    </div>
+    <label class="switch"><input type="checkbox" id="pinbox"><span class="box" aria-hidden="true"></span><span>Pin memory file (CLAUDE.md)</span></label>
+    <div class="gauge" id="gauge" aria-hidden="true"></div>
+    <dl class="stats" id="stats"></dl>
+    <p class="lesson" id="lesson"></p>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const CHAT = [
+    ['you', 'We’re designing a trade-fair stand for a coffee roaster. Can you help me plan it?'],
+    ['ai', 'Happy to. What do we know about the brand so far?'],
+    ['you', 'The client’s logo colour is violet. Everything should match it.', 'fact'],
+    ['ai', 'Noted, violet it is. How big is the stand?'],
+    ['you', 'Six by four metres, open on two sides, with a coffee bar in one corner.'],
+    ['ai', 'Then the bar can anchor the corner and pull people in from the aisle.'],
+    ['you', 'We also need a wall for the product story, about four metres long.'],
+    ['ai', 'A story wall on the long side, in three chapters: bean, roast, cup.'],
+    ['you', 'Lighting should feel warm, like a café in the evening.'],
+    ['ai', 'Warm white spots on the wall and a glowing front for the bar.'],
+    ['you', 'Budget is tight, so we reuse the modular frames from last year.'],
+    ['ai', 'Good call. Reused frames also save build time on site.'],
+    ['you', 'Now the print files. What colour was the logo?'],
+  ];
+  const tokens = (s) => Math.ceil(s.length / 4); // rule of thumb: about 4 characters per token
+  const MSGS = CHAT.map(([who, text, kind], i) => ({ i, who, text, kind, tok: tokens(text) }));
+  const PIN_TOK = 14;
+  const LAST = MSGS.length + 1; // one extra step: the answer
+
+  const st = { step: 1, pinned: false, cap: 120, entered: 0 };
+
+  function compute() {
+    const shown = MSGS.slice(0, Math.min(st.step, MSGS.length));
+    const room = st.cap - (st.pinned ? PIN_TOK : 0);
+    let used = 0; const lit = new Set();
+    for (let k = shown.length - 1; k >= 0; k--) {
+      const m = shown[k];
+      if (used + m.tok > room && lit.size) break;
+      used += m.tok; lit.add(m.i);
+    }
+    const factLit = lit.has(2);
+    const darkTok = shown.filter((m) => !lit.has(m.i)).reduce((s, m) => s + m.tok, 0);
+    return { shown, lit, used, room, factLit, darkTok, darkN: shown.length - lit.size };
+  }
+
+  const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+  function render() {
+    const r = compute();
+    const chat = $('chat');
+    let html = r.shown.map((m) => {
+      const on = r.lit.has(m.i);
+      const cls = ['msg', m.who, on ? 'lit' : 'dark', m.i >= st.entered ? 'enter' : ''].join(' ');
+      const fact = m.kind === 'fact' ? '<span class="fact">KEY FACT</span>' : '';
+      const where = on ? '' : '<span class="sr" style="position:absolute;left:-9999px">(in the dark) </span>';
+      return `<div class="${cls}" data-i="${m.i}">${where}<span class="tok">${m.tok} tok</span>${fact}<span class="who">${m.who === 'you' ? 'You' : 'AI'}</span>${esc(m.text)}</div>`;
+    }).join('');
+    if (st.step >= LAST) {
+      const right = r.factLit || st.pinned;
+      const text = right ? (r.factLit ? 'The logo is violet, as you said at the start. I’ll set the print files to violet.'
+        : 'The logo is violet: it’s in CLAUDE.md. I’ll set the print files to violet.')
+        : 'Probably a warm coffee brown? That would suit a coffee roaster. I’ll set the print files to brown.';
+      const why = right ? (r.factLit ? 'Correct: the fact was still in the light.' : 'Correct: the pinned memory file kept the fact in the light.')
+        : 'Plausible, confident and wrong. The fact had walked into the dark.';
+      html += `<div class="msg ai answer${right ? '' : ' wrong'}${st.entered <= MSGS.length ? ' enter' : ''}"><span class="who">AI</span>${esc(text)}<span class="why">${why}</span></div>`;
+    }
+    if (!r.shown.length) html = '<p class="hint">Press Next: the first message walks up to the fire.</p>';
+    chat.innerHTML = html;
+    st.entered = st.step;
+    $('pin').hidden = !st.pinned;
+
+    // side panel
+    const cells = 26, per = st.cap / cells;
+    const pinCells = st.pinned ? Math.round(PIN_TOK / per) : 0, onCells = Math.min(cells - pinCells, Math.round(r.used / per));
+    $('gauge').innerHTML = Array.from({ length: cells }, (_, k) => `<i class="${k < pinCells ? 'pin' : k < pinCells + onCells ? 'on' : ''}"></i>`).join('');
+    const inLight = r.used + (st.pinned ? PIN_TOK : 0);
+    $('stats').innerHTML =
+      `<dt>In the light</dt><dd>${inLight} / ${st.cap} tokens</dd>` +
+      `<dt>In the dark</dt><dd>${r.darkN} message${r.darkN === 1 ? '' : 's'}, ${r.darkTok} tokens</dd>` +
+      `<dt>Key fact</dt><dd>${st.step < 3 ? 'not said yet' : st.pinned ? 'pinned in CLAUDE.md' : r.factLit ? 'in the light' : 'in the dark'}</dd>`;
+    $('lesson').textContent = st.step >= LAST
+      ? (r.factLit || st.pinned ? 'Shrink the circle or unpin the file and ask again: the answer changes.' : 'Widen the context window, or pin the memory file. Then ask again.')
+      : st.pinned ? 'Pinned files stay in the light, whatever the chat does. That’s why projects keep their memory in files.'
+      : 'Long chats push old messages into the dark. The model can’t see them any more.';
+    $('next').disabled = st.step >= LAST;
+    $('next').textContent = st.step === MSGS.length ? 'Answer' : 'Next';
+    $('play').textContent = playTimer ? 'Pause' : 'Play';
+    requestAnimationFrame(drawPool);
+  }
+
+  /* ── Pixel pool of light from the fire up to the oldest lit message ─────── */
+  const CELL = 8;
+  function drawPool() {
+    const stage = $('stage'), pool = $('pool');
+    const W = stage.clientWidth, H = stage.clientHeight;
+    const lit = stage.querySelectorAll('.msg.lit, .msg.answer');
+    const sTop = stage.getBoundingClientRect().top;
+    let top = $('hearth').getBoundingClientRect().top - sTop - 24;
+    if (lit.length) top = Math.min(top, lit[0].getBoundingClientRect().top - sTop - 14);
+    top = Math.max(0, top);
+    const cols = Math.ceil(W / CELL), rows = Math.ceil(H / CELL);
+    const cx = W / 2, cy = H - 20, ry = Math.max(40, cy - top);
+    const chatW = $('chat').clientWidth;
+    const rx = Math.min(W / 2 + 40, Math.max(ry * 1.15, chatW / 2 + 36));
+    const grid = [];
+    for (let y = 0; y < rows; y++) {
+      let row = '';
+      for (let x = 0; x < cols; x++) {
+        const dx = (x * CELL + CELL / 2 - cx) / rx, dy = (y * CELL + CELL / 2 - cy) / ry;
+        const d = dx * dx + dy * dy;
+        row += d < 0.42 ? '3' : d < 0.72 ? '2' : d < 1 ? '1' : '.';
+      }
+      grid.push(row);
+    }
+    pool.setAttribute('width', cols * CELL); pool.setAttribute('height', rows * CELL);
+    pool.setAttribute('viewBox', `0 0 ${cols} ${rows}`);
+    pool.innerHTML = `<g class="glow">${PX.sprite(grid, { pal: { 1: '#1a170b', 2: '#2a210f', 3: '#3a2c13' } })}</g>`;
+  }
+
+  $('fire').innerHTML = PX.sprite('fire1', { x: 2, y: 0, cls: 'fr f1' }) + PX.sprite('fire2', { x: 2, y: 0, cls: 'fr f2' }) + PX.sprite('fire3', { x: 2, y: 0, cls: 'fr f3' }) + PX.sprite('logs', { x: 0, y: 16 });
+
+  /* ── Controls ────────────────────────────────────────────────────────────── */
+  let playTimer = null;
+  function stop() { clearInterval(playTimer); playTimer = null; }
+  function next() { if (st.step < LAST) st.step++; if (st.step >= LAST) stop(); render(); }
+  $('next').addEventListener('click', () => { stop(); next(); });
+  $('play').addEventListener('click', () => {
+    if (playTimer) { stop(); render(); return; }
+    if (st.step >= LAST) { st.step = 0; st.entered = 0; }
+    playTimer = setInterval(next, 1300); next();
+  });
+  $('reset').addEventListener('click', () => { stop(); st.step = 1; st.entered = 0; render(); });
+  $('cap').addEventListener('input', (e) => { st.cap = +e.target.value; $('capout').textContent = st.cap + ' tokens'; render(); });
+  $('pinbox').addEventListener('change', (e) => { st.pinned = e.target.checked; render(); });
+  window.addEventListener('resize', () => requestAnimationFrame(drawPool));
+
+  st.cap = +$('cap').value; st.pinned = $('pinbox').checked;
+  $('capout').textContent = st.cap + ' tokens';
+  render();
+})();
+</script>
+</body>
+</html>

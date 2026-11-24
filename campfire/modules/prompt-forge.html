@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prompt Forge · Campfire</title>
+<link rel="stylesheet" href="../shared/campfire.css">
+<script src="../shared/pixel.js"></script>
+<style>
+  html, body { min-height: 100%; }
+  body {
+    font-size: clamp(15px, 0.5vw + 10px, 19px);
+    padding: clamp(10px, 1.6vw, 24px);
+    display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 14px);
+    min-height: 100vh;
+  }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; }
+  .top h1 { margin: 0; font-size: clamp(32px, 4.4vw, 64px); color: var(--fire-3); }
+  .top p { margin: 0; color: var(--muted); }
+  .top b { color: var(--ink); font-weight: 600; }
+
+  .bar { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
+  .seg { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .seg .px-label { margin-right: 6px; }
+  .seg button { font: 1.15em/1 var(--pixel); min-height: 44px; padding: 0 12px; color: var(--ink); background: var(--night-3); border: 2px solid var(--night-4); cursor: pointer; }
+  .seg button:hover { background: var(--night-4); }
+  .seg button[aria-pressed="true"] { color: var(--night-0); background: var(--fire-3); border-color: var(--fire-2); }
+
+  main { flex: 1; min-height: 0; display: grid; gap: clamp(10px, 1.4vw, 18px); grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); grid-template-rows: minmax(0, 1fr); }
+  .panel { padding: clamp(10px, 1.2vw, 16px); min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  [hidden] { display: none !important; }
+
+  .blocks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .block {
+    text-align: left; min-height: 44px; padding: 8px 10px 8px 40px; position: relative; cursor: pointer;
+    color: var(--ink); background: var(--night-1); border: 2px solid var(--night-4); font: inherit;
+  }
+  .block::before { content: ""; position: absolute; left: 10px; top: 12px; width: 16px; height: 16px; border: 4px solid var(--night-4); background: var(--night-0); }
+  .block[aria-pressed="true"] { background: var(--night-3); border-color: var(--fire-2); }
+  .block[aria-pressed="true"]::before { border-color: var(--fire-2); background: var(--fire-3); }
+  .block:hover { border-color: var(--lcd-c); }
+  .block b { display: block; font: 1.3em/1.1 var(--pixel); font-weight: 400; }
+  .block span { display: block; font-size: 0.78em; color: var(--muted); line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+  .meter { display: flex; align-items: flex-end; gap: 14px; margin-top: auto; padding: 10px; background: var(--night-0); border: var(--px) solid var(--night-3); min-height: 120px; }
+  .meter svg { display: block; height: auto; flex: none; }
+  .meter .info { display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; }
+  .meter .lvl { font: 1.8em/1 var(--pixel); color: var(--fire-3); }
+  .segs { display: flex; gap: 4px; }
+  .segs i { width: 18px; height: 14px; background: var(--night-3); }
+  .segs i.on { background: var(--fire-2); }
+  .segs i.on:nth-child(n+5) { background: var(--fire-1); }
+
+  .preview {
+    flex: 1; min-height: 120px; margin: 0; padding: 12px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+    font: 0.92em/1.5 var(--mono); color: var(--ink); background: var(--night-0); border: 2px solid var(--night-4);
+  }
+  .preview:focus-visible { outline: 3px solid var(--marker); outline-offset: 2px; }
+  .preview .k { color: var(--fire-3); }
+  .preview .weak { color: var(--muted); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .status { color: var(--muted); font-size: 0.9em; margin: 0; }
+
+  .cmp { display: grid; grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr); gap: clamp(10px, 1.4vw, 18px); grid-column: 1 / -1; min-height: 0; }
+  .cmp .head { display: flex; align-items: flex-end; gap: 12px; }
+  .cmp h2 { margin: 0; font: clamp(28px, 2.6vw, 40px)/1 var(--pixel); font-weight: 400; }
+  .cmp .weak-p h2 { color: var(--muted); }
+  .cmp .strong-p h2 { color: var(--fire-3); }
+  .cmp .panel { min-height: 0; }
+  .cmp .preview { min-height: 0; font-size: 0.85em; }
+  .weak-p .preview { flex: none; }
+  .likely { margin: 0; padding: 8px 10px; border-left: var(--px) solid var(--fire-2); background: var(--night-1); font-size: 0.92em; }
+  .weak-p .likely { border-left-color: var(--night-4); }
+  .likely b { font-weight: 600; }
+
+  .fr { opacity: 0; animation: pf-frames calc(var(--step) * 3) steps(1, end) infinite; }
+  .fr.f1 { opacity: 1; }
+  .fr.f2 { animation-delay: calc(var(--step) * -2); }
+  .fr.f3 { animation-delay: calc(var(--step) * -1); }
+  @keyframes pf-frames { 0% { opacity: 1; } 33.333% { opacity: 0; } 100% { opacity: 0; } }
+  .smoke { animation: pf-smoke calc(var(--step) * 6) steps(3, end) infinite; }
+  @keyframes pf-smoke { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+
+  @media (min-width: 761px) and (min-height: 560px) { body { height: 100vh; } }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; }
+    .top h1 { font-size: 34px; }
+    .top .more { display: none; }
+    .block span { display: none; }
+    .block b { font-size: 1.15em; }
+    .meter { min-height: 0; padding: 6px 10px; }
+    .preview { max-height: 300px; }
+    .cmp { grid-template-columns: 1fr; }
+    .cmp .preview { max-height: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .fr, .smoke { animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="px-title">Prompt Forge</h1>
+  <p><b>Same AI, very different fire.</b> <span class="more">Add the six parts of the recipe and watch the prompt grow.</span></p>
+</header>
+
+<div class="bar">
+  <div class="seg" role="group" aria-label="Example task"><span class="px-label">Task</span>
+    <button type="button" data-task="printer" aria-pressed="true">3D printer booking</button>
+    <button type="button" data-task="contrast" aria-pressed="false">Contrast checker</button>
+  </div>
+  <div class="seg" role="group" aria-label="View"><span class="px-label">View</span>
+    <button type="button" data-view="build" aria-pressed="true">Build</button>
+    <button type="button" data-view="compare" aria-pressed="false">Weak vs strong</button>
+  </div>
+</div>
+
+<main>
+  <section class="panel px-frame" id="build-left" aria-label="Recipe blocks">
+    <span class="px-label">Recipe: click to add or remove</span>
+    <div class="blocks" id="blocks"></div>
+    <div class="meter" id="meter"></div>
+  </section>
+
+  <section class="panel px-frame" id="build-right" aria-label="Assembled prompt">
+    <span class="px-label" id="prompt-label">Your prompt</span>
+    <div class="preview" id="preview" tabindex="0" role="region" aria-label="Prompt text"></div>
+    <div class="row">
+      <button class="px-btn fire" type="button" id="copy">Copy prompt</button>
+      <p class="status" id="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div class="cmp" id="cmp" hidden>
+    <section class="panel px-frame weak-p" aria-label="Weak prompt">
+      <div class="head"><div class="mtr" id="m-weak"></div><h2>Weak</h2></div>
+      <div class="preview" id="p-weak" tabindex="0" role="region" aria-label="Weak prompt text"></div>
+      <p class="likely" id="l-weak"></p>
+    </section>
+    <section class="panel px-frame strong-p" aria-label="Strong prompt">
+      <div class="head"><div class="mtr" id="m-strong"></div><h2>Strong</h2></div>
+      <div class="preview" id="p-strong" tabindex="0" role="region" aria-label="Strong prompt text"></div>
+      <p class="likely" id="l-strong"></p>
+    </section>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const PARTS = [['who', 'Who it’s for'], ['goal', 'Goal'], ['context', 'Context'], ['constraints', 'Constraints'], ['done', 'Done when'], ['look', 'Look & feel']];
+  const TASKS = {
+    printer: {
+      weak: 'make a booking app for our 3d printer',
+      who: 'The 12 people in our design studio. Most are not technical and will book from their phones.',
+      goal: 'A one-page tool where the team books the studio’s 3D printer in time slots.',
+      context: 'Print jobs run from 1 to 12 hours. Today we book in a group chat, and jobs collide.',
+      constraints: 'One HTML file for the first version, no login, works offline. Keep bookings in the browser for now; we’ll connect a shared database later.',
+      done: 'I can book a slot, see the whole week at a glance, and two bookings can never overlap.',
+      look: 'Calm and clear like our studio: off-white background, black type, one violet accent, big touch targets.',
+      weakResult: 'A generic form with invented fields, random colours and nothing that stops double bookings. Then an hour of explaining what you meant.',
+      strongResult: 'A week view with slots, a short booking form, overlap protection and your studio look. Ready to try with the team the same day.',
+    },
+    contrast: {
+      weak: 'make a colour checker',
+      who: 'Designers and project managers who check client palettes before a pitch.',
+      goal: 'A one-page tool that shows whether two brand colours are readable together.',
+      context: 'Palettes arrive as hex codes in client briefs. Today we guess, and accessibility problems show up late.',
+      constraints: 'One HTML file, works offline, no libraries. Use the WCAG contrast formula. Nothing leaves the browser.',
+      done: 'I paste two hex codes and instantly see the ratio, pass or fail for normal and large text, and a live preview.',
+      look: 'Precise like a lab instrument: monospace numbers, big colour swatches, no decoration.',
+      weakResult: 'A colour picker that shows some number. Which standard? What about large text? Unclear.',
+      strongResult: 'Two hex fields, the contrast ratio, pass or fail for normal and large text, and a preview. Works offline.',
+    },
+  };
+  const LEVELS = ['Cold ashes', 'A spark', 'Smouldering', 'Kindling catches', 'Steady fire', 'Roaring', 'Forge-hot'];
+
+  const st = { task: 'printer', view: 'build', on: new Set() };
+
+  /* ── Fire meter: whole campfire grows with the level ─────────────────────── */
+  function fireSvg(level, unit) {
+    let body = PX.sprite('logs', { x: 2, y: 22 });
+    if (level === 0) body += `<g class="smoke">${PX.sprite(['..s.', '.sss', 's.s.', '.s..'], { x: 10, y: 14 })}</g>`;
+    if (level === 1) body += PX.sprite('spark', { x: 10, y: 19 });
+    if (level === 2) body += PX.sprite('flame', { x: 6, y: 9 });
+    if (level >= 3) body += PX.sprite('fire1', { x: 4, y: 6, cls: 'fr f1' }) + PX.sprite('fire2', { x: 4, y: 6, cls: 'fr f2' }) + PX.sprite('fire3', { x: 4, y: 6, cls: 'fr f3' });
+    if (level >= 5) body += PX.sprite('spark', { x: 2, y: 3 }) + PX.sprite('spark', { x: 19, y: 1 });
+    if (level >= 6) body += PX.sprite('spark', { x: 11, y: 0 });
+    const w = 24 * unit * (0.5 + level / 6 * 0.5);
+    return `<svg viewBox="0 0 24 28" width="${Math.round(w / 4) * 4}" class="pixelart" shape-rendering="crispEdges" aria-hidden="true">${body}</svg>`;
+  }
+  function meterHtml(level, unit, withInfo) {
+    const segs = Array.from({ length: 6 }, (_, i) => `<i class="${i < level ? 'on' : ''}"></i>`).join('');
+    return fireSvg(level, unit) + (withInfo ? `<div class="info"><span class="px-label">Fire strength</span><span class="lvl">${level} / 6 · ${LEVELS[level]}</span><div class="segs" aria-hidden="true">${segs}</div></div>` : '');
+  }
+
+  /* ── Prompt assembly ─────────────────────────────────────────────────────── */
+  const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  function promptParts(on, sep) {
+    sep = sep || '\n\n';
+    const t = TASKS[st.task];
+    const parts = PARTS.filter(([k]) => on.has(k));
+    if (!parts.length) return { text: t.weak, html: `<span class="weak">${esc(t.weak)}</span>` };
+    return {
+      text: parts.map(([k, l]) => `${l}: ${t[k]}`).join(sep),
+      html: parts.map(([k, l]) => `<span class="k">${esc(l)}:</span> ${esc(t[k])}`).join(sep),
+    };
+  }
+  const narrow = () => window.matchMedia('(max-width: 760px)').matches;
+
+  function renderBuild() {
+    const t = TASKS[st.task];
+    $('blocks').innerHTML = PARTS.map(([k, l]) => `<button type="button" class="block" data-k="${k}" aria-pressed="${st.on.has(k)}"><b>${esc(l)}</b><span>${esc(t[k])}</span></button>`).join('');
+    const p = promptParts(st.on);
+    $('preview').innerHTML = p.html;
+    const n = st.on.size;
+    $('prompt-label').textContent = n ? `Your prompt: ${n} of 6 parts, ${p.text.split(/\s+/).length} words` : 'Your prompt: the weak one-liner. Add parts.';
+    $('meter').innerHTML = meterHtml(n, narrow() ? 2 : 6, true);
+  }
+  function renderCompare() {
+    const t = TASKS[st.task];
+    const unit = narrow() ? 2 : 4;
+    $('m-weak').innerHTML = meterHtml(0, unit, false);
+    $('m-strong').innerHTML = meterHtml(6, unit, false);
+    $('p-weak').innerHTML = promptParts(new Set()).html;
+    $('p-strong').innerHTML = promptParts(new Set(PARTS.map((x) => x[0])), '\n').html;
+    $('l-weak').innerHTML = `<b>What you’ll probably get:</b> ${esc(t.weakResult)}`;
+    $('l-strong').innerHTML = `<b>What you’ll probably get:</b> ${esc(t.strongResult)}`;
+  }
+  function render() {
+    const cmp = st.view === 'compare';
+    $('build-left').hidden = cmp; $('build-right').hidden = cmp; $('cmp').hidden = !cmp;
+    document.querySelectorAll('[data-task]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.task === st.task)));
+    document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === st.view)));
+    if (cmp) renderCompare(); else renderBuild();
+  }
+
+  $('blocks').addEventListener('click', (e) => {
+    const b = e.target.closest('.block');
+    if (!b) return;
+    const k = b.dataset.k;
+    if (st.on.has(k)) st.on.delete(k); else st.on.add(k);
+    $('status').textContent = '';
+    render();
+    const again = $('blocks').querySelector(`[data-k="${k}"]`);
+    if (again) again.focus();
+  });
+  document.querySelectorAll('[data-task]').forEach((b) => b.addEventListener('click', () => { st.task = b.dataset.task; $('status').textContent = ''; render(); }));
+  document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => { st.view = b.dataset.view; render(); }));
+
+  /* ── Copy: clipboard API, else select the text so Ctrl+C works ───────────── */
+  function selectPreview() {
+    const range = document.createRange();
+    range.selectNodeContents($('preview'));
+    const sel = window.getSelection();
+    sel.removeAllRanges(); sel.addRange(range);
+  }
+  $('copy').addEventListener('click', async () => {
+    const text = promptParts(st.on).text;
+    let ok = false;
+    // In a sandboxed tool card the Clipboard API is blocked by policy; ask first so the browser logs no violation
+    const policy = document.permissionsPolicy || document.featurePolicy;
+    let allowed = true;
+    try { allowed = !policy || !policy.allowsFeature || policy.allowsFeature('clipboard-write'); } catch (e) { allowed = true; }
+    try {
+      if (allowed && navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); ok = true; }
+    } catch (e) { ok = false; }
+    if (!ok) {
+      try { selectPreview(); ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    }
+    if (ok) $('status').textContent = 'Copied. Paste it into your AI chat.';
+    else { selectPreview(); $('status').textContent = 'Text selected. Press Ctrl+C (Cmd+C on a Mac) to copy.'; }
+  });
+
+  let lastNarrow = narrow();
+  window.addEventListener('resize', () => { if (narrow() !== lastNarrow) { lastNarrow = narrow(); render(); } });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+/* Campfire — shared look for every page, deck and module of the talk.
+   pix·el LCD night (greens) + one warm thing: the fire. Everything blocky moves in steps(); nothing eases smoothly.
+   Single source for colours and type: decks and modules link this file, tools/build.mjs inlines it. */
+
+@font-face {
+  font-family: "Jersey 10";
+  src: url("./fonts/jersey-10.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  /* Night: the LCD greens of pix·el, darkened for a campfire evening */
+  --night-0: #050a05;
+  --night-1: #0c170b;
+  --night-2: #12210f;
+  --night-3: #1b2d17;
+  --night-4: #2a4123;
+  --lcd-a: #306230;
+  --lcd-b: #4c7420;
+  --lcd-c: #7a9a1c;
+  --lcd-d: #a9c431;
+  --lcd-e: #d4ef78;
+  --lcd-f: #e3efa8;
+  /* Fire: the only warm colours (pixletics flame + pix·el LED) */
+  --fire-0: #e8483f;
+  --fire-1: #ff5a36;
+  --fire-2: #ffae00;
+  --fire-3: #ffe06a;
+  --fire-4: #fff6c8;
+  --wood-0: #3a2414;
+  --wood-1: #6b4226;
+  --wood-2: #9a6a3c;
+  /* Text and lines */
+  --ink: #e2f0c6;
+  --muted: #9fb48f;
+  --line: #2a4123;
+  --marker: #ffe45e;
+  --bg: var(--night-1);
+  --card: var(--night-2);
+
+  --pixel: "Jersey 10", "Courier New", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Courier New", monospace;
+
+  --px: 4px;            /* one art pixel on screen (scenes scale in whole multiples) */
+  --step: 125ms;        /* one animation frame = 8 fps */
+  --gutter: max(16px, 4vw);
+  --radius: 0;          /* pixel world: no rounded corners */
+}
+
+/* Light variant for projectors that wash out dark slides: add data-theme="light" on <html> */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f7ef;
+  --card: #ffffff;
+  --ink: #12280f;
+  --muted: #56654f;
+  --line: #d3dcc4;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 18px/1.55 var(--sans);
+}
+
+/* Headlines and labels in the pixel font — big, never for long sentences */
+.px-title { font-family: var(--pixel); font-weight: 400; letter-spacing: 0.02em; line-height: 0.95; }
+.px-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+/* Pixel art: crisp at every scale */
+.pixelart, .pixelart svg, svg.pixelart { image-rendering: pixelated; shape-rendering: crispEdges; }
+
+/* Pixel frame: a 1-art-pixel border with cut corners, like an old handheld UI */
+.px-frame {
+  background: var(--card);
+  border: var(--px) solid var(--night-4);
+  box-shadow: 0 0 0 var(--px) var(--night-0), var(--px) var(--px) 0 var(--px) var(--night-0);
+}
+
+/* Buttons that feel like hardware keys */
+.px-btn {
+  font: 20px/1 var(--pixel);
+  color: var(--night-0);
+  background: var(--lcd-d);
+  border: 0;
+  padding: 12px 18px;
+  min-height: 44px;
+  cursor: pointer;
+  box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--lcd-b), 0 var(--px) 0 var(--night-0);
+}
+.px-btn:hover { background: var(--lcd-e); }
+.px-btn:active { transform: translateY(var(--px)); box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--lcd-b); }
+.px-btn.fire { background: var(--fire-2); box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--fire-1), 0 var(--px) 0 var(--night-0); }
+.px-btn.fire:hover { background: var(--fire-3); }
+
+:focus-visible { outline: 3px solid var(--marker); outline-offset: 3px; }
+
+/* Flicker helpers for HTML (SVG scenes carry their own copy of these keyframes) */
+@keyframes px-flicker { 0% { opacity: 1; } 50% { opacity: 0.82; } 100% { opacity: 1; } }
+@keyframes px-frames-3 { from { transform: translateX(0); } to { transform: translateX(-300%); } }
+@keyframes px-blink { 0%, 92% { opacity: 1; } 93%, 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

@@ -1,6 +1,7 @@
 # STATE — lebender Zustand (max. 150 Zeilen, wird jede Runde fortgeschrieben)
 
 Stand: Ende r08 → **r09** (Prototyp in kleinen Deploys) · 2026-09-29 · **M1** · **verschickt, Antwort ausstehend**
+Nebenstrang 2026-11-24: Campfire-Vortrag in `campfire/` (Roter Faden, Decks, Module, PixiNotes-Board), live unter /campfire/; kein Teil der Discovery.
 
 ## Aktueller Meilenstein
 M1 — Umfrage, **live und eingefroren**. Hannes (Chat, 2026-09-29): „Jetzt mach mal fertig! Ich will es abschicken!“
