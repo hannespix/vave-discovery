@@ -29,29 +29,32 @@ const scriptSafe = (js) => js.replace(/<\/script/gi, '<\\/script');
 function inlinePage(file) {
   const base = dirname(file);
   let html = readFileSync(file, 'utf8');
+  // Scripts come LAST: inlined libraries contain markup in strings (reveal's notes plugin builds `<img src="${…}">`),
+  // which the steps before must never see.
+  // url() inside the page's own <style> blocks (relative to the page)
+  html = html.replace(/<style>([\s\S]*?)<\/style>/gi, (m, css) => `<style>${inlineCssUrls(css, base)}</style>`);
   html = html.replace(/<link\b[^>]*rel=["']stylesheet["'][^>]*>/gi, (tag) => {
     const href = (tag.match(/href=["']([^"']+)["']/i) || [])[1];
     if (!isLocal(href)) return tag;
     const f = resolve(base, href);
     return `<style>/* ${relative(root, f)} */\n${inlineCssUrls(readFileSync(f, 'utf8'), dirname(f))}</style>`;
   });
+  // <img data-link> stays a link (the hub page shows the art files it also offers for download)
+  html = html.replace(/<img\b[^>]*>/gi, (tag) => (/\bdata-link\b/i.test(tag) ? tag : tag.replace(/(\bsrc=["'])([^"']+)(["'])/i, (m, a, src, b) => (isLocal(src) ? `${a}${dataUri(resolve(base, src))}${b}` : m))));
   html = html.replace(/<script\b([^>]*)\bsrc=["']([^"']+)["']([^>]*)><\/script>/gi, (tag, a, src, b) => {
     if (!isLocal(src)) return tag;
     const f = resolve(base, src);
     const attrs = `${a}${b}`.replace(/\s+/g, ' ').trim();
     return `<script${attrs ? ' ' + attrs : ''}>/* ${relative(root, f)} */\n${scriptSafe(readFileSync(f, 'utf8'))}\n</script>`;
   });
-  // <img data-link> stays a link (the hub page shows the art files it also offers for download)
-  html = html.replace(/<img\b[^>]*>/gi, (tag) => (/\bdata-link\b/i.test(tag) ? tag : tag.replace(/(\bsrc=["'])([^"']+)(["'])/i, (m, a, src, b) => (isLocal(src) ? `${a}${dataUri(resolve(base, src))}${b}` : m))));
-  // url() inside the page's own <style> blocks
-  html = html.replace(/<style>([\s\S]*?)<\/style>/gi, (m, css) => `<style>${inlineCssUrls(css, base)}</style>`);
   return html;
 }
 
-/** Left-over local references would break the single-file promise */
+/** Left-over local references would break the single-file promise (script bodies are code, not markup) */
 function leftovers(html) {
   const bad = [];
-  for (const m of html.matchAll(/<(?:script|img|link|source|video|audio|iframe)\b[^>]*\b(?:src|href)=["']([^"']+)["'][^>]*>/gi)) if (isLocal(m[1]) && !/\bdata-link\b/i.test(m[0])) bad.push(m[1]);
+  const markup = html.replace(/(<script\b[^>]*>)[\s\S]*?<\/script>/gi, '$1</script>');
+  for (const m of markup.matchAll(/<(?:script|img|link|source|video|audio|iframe)\b[^>]*\b(?:src|href)=["']([^"']+)["'][^>]*>/gi)) if (isLocal(m[1]) && !/\bdata-link\b/i.test(m[0])) bad.push(m[1]);
   return bad;
 }
 
