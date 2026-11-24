@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Booth builder · Campfire</title>
+<link rel="stylesheet" href="../shared/campfire.css">
+<script src="../shared/pixel.js"></script>
+<script src="../shared/lore.js"></script>
+<style>
+  html, body { height: 100%; }
+  /* Card layout: header, floor with the tools beside it, one status line. Results overlay the floor. */
+  body {
+    height: 100vh; padding: 6px; font-size: 14px;
+    display: grid; gap: 4px;
+    grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "head head" "stage tools" "status status";
+  }
+  .px-label { font-size: 13px; }
+  .top { grid-area: head; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+  .top h1 { margin: 0; font-size: 24px; color: var(--fire-3); }
+  .top .sub { margin: 0; color: var(--muted); display: none; }
+  .acts { display: flex; gap: 4px; margin-left: auto; }
+  .acts .px-btn { font-size: 16px; min-height: 36px; padding: 6px 10px; }
+  .px-btn[aria-pressed="true"] { background: var(--lcd-e); box-shadow: inset 0 0 0 3px var(--night-0); }
+
+  .tools { grid-area: tools; display: flex; flex-direction: column; gap: 2px; }
+  .tool {
+    display: flex; align-items: center; gap: 8px; min-width: 36px; min-height: 36px; padding: 2px; cursor: pointer; border-radius: 0;
+    font: 600 14px/1.1 var(--sans); color: var(--ink); background: var(--night-3); border: 2px solid var(--night-4);
+  }
+  .tool:hover { background: var(--night-4); }
+  .tool[aria-pressed="true"] { background: var(--lcd-d); border-color: var(--lcd-e); color: var(--night-0); }
+  .tool svg { width: 28px; height: 28px; flex: none; }
+  .tool .t { display: none; }
+
+  .stage { grid-area: stage; container-type: size; min-width: 0; min-height: 0; }
+  .floorwrap { --cell: min(100cqw / 14, 100cqh / 10); position: relative; width: calc(var(--cell) * 14); height: calc(var(--cell) * 10); }
+  .floor { display: grid; grid-template-columns: repeat(14, var(--cell)); grid-template-rows: repeat(10, var(--cell)); width: 100%; height: 100%; }
+  .c {
+    --wall: max(3px, calc(var(--cell) / 14));
+    position: relative; margin: 0; padding: 0; border: 0; border-radius: 0; cursor: pointer; min-width: 0;
+    background: var(--night-0); color: inherit;
+  }
+  .c.b { background: var(--night-3); box-shadow: inset 0 0 0 1px var(--night-2); }
+  .c.b:hover { background: var(--night-4); }
+  .c.a { background-image: linear-gradient(var(--night-1), var(--night-1)); background-size: 50% 50%; background-position: 25% 25%; background-repeat: no-repeat; }
+  .c::before { content: ""; position: absolute; inset: 0; pointer-events: none; }
+  .c.wt::before { border-top: var(--wall) solid var(--lcd-f); }
+  .c.wb::before { border-bottom: var(--wall) solid var(--lcd-f); }
+  .c.wl::before { border-left: var(--wall) solid var(--lcd-f); }
+  .c.wr::before { border-right: var(--wall) solid var(--lcd-f); }
+  .c.ot::before { border-top: 2px dashed var(--lcd-c); }
+  .c.ob::before { border-bottom: 2px dashed var(--lcd-c); }
+  .c.ol::before { border-left: 2px dashed var(--lcd-c); }
+  .c.or::before { border-right: 2px dashed var(--lcd-c); }
+  .c svg { position: absolute; inset: 8%; width: 84%; height: 84%; pointer-events: none; }
+  .c:focus-visible { outline: 3px solid var(--marker); outline-offset: -3px; box-shadow: inset 0 0 0 6px var(--night-0); z-index: 2; }
+  /* Heat map: five stepped fire levels */
+  .c.h1 { background: var(--wood-1); } .c.h2 { background: var(--fire-0); } .c.h3 { background: var(--fire-1); }
+  .c.h4 { background: var(--fire-2); } .c.h5 { background: var(--fire-3); }
+  .people { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  .status { grid-area: status; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .status b { color: var(--ink); }
+
+  /* Results: overlay on cards */
+  .panel { position: fixed; left: 6px; right: 6px; bottom: 6px; z-index: 5; max-height: calc(100vh - 56px); overflow: auto; padding: 8px 10px;
+    display: none; flex-direction: column; gap: 4px; background: var(--night-0); border-color: var(--ink); }
+  .panel.show { display: flex; }
+  .panel h2 { margin: 0; }
+  .panel p { margin: 0; }
+  .howto { display: none; }
+  .howto ol { margin: 0; padding-left: 1.3em; }
+  .headline { font-size: 15px; }
+  .headline b { font: 22px/1 var(--pixel); color: var(--fire-3); font-weight: 400; }
+  .scores { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; }
+  .scores li { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0 6px; }
+  .scores .k { font: 13px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .scores b { grid-row: 1; grid-column: 2; font: 22px/1 var(--pixel); font-weight: 400; color: var(--ink); text-align: right; }
+  .scores .bar { grid-column: 1 / -1; height: 8px; background: var(--night-3);
+    background-image: linear-gradient(90deg, transparent calc(100% - 2px), var(--night-0) 0); background-size: 10% 100%; }
+  .scores .bar i { display: block; height: 100%; background: var(--fire-2);
+    background-image: linear-gradient(90deg, transparent calc(100% - 2px), var(--night-0) 0); background-size: calc(100% / var(--n, 10)) 100%; }
+  .crit { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; }
+  .note { color: var(--muted); font-size: 13px; }
+  .lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .lines li { padding-left: 14px; position: relative; font-weight: 600; line-height: 1.3; }
+  .lines li::before { content: ""; position: absolute; left: 0; top: 0.45em; width: 6px; height: 6px; background: var(--fire-2); }
+  .legend { display: none; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
+  .legend i { display: inline-block; width: 16px; height: 12px; }
+  #close { position: absolute; top: 6px; right: 6px; font-size: 16px; min-height: 36px; padding: 6px 12px; }
+  .headline { padding-right: 76px; min-height: 40px; }
+  .panel .row { display: flex; align-items: center; gap: 8px; }
+  .panel .row .lines { flex: 1; }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* Projector: tools in a row, results beside the floor */
+  @media (min-width: 1024px) and (min-height: 600px) {
+    body { padding: 14px 18px; gap: 10px 18px; font-size: 22px;
+      grid-template-columns: minmax(0, 1fr) 430px; grid-template-rows: auto auto minmax(0, 1fr) auto;
+      grid-template-areas: "head head" "tools tools" "stage panel" "stage status"; }
+    .px-label { font-size: 16px; }
+    .top { gap: 4px 18px; }
+    .top h1 { font-size: 50px; }
+    .top .sub { display: block; font-size: 26px; }
+    .acts { gap: 10px; }
+    .acts .px-btn { font-size: 24px; min-height: 48px; padding: 10px 16px; }
+    .tools { flex-direction: row; gap: 6px; }
+    .tool { flex: 1; min-height: 48px; padding: 4px 8px; font-size: 17px; gap: 6px; }
+    .tool svg { width: 32px; height: 32px; }
+    .tool .t { display: block; }
+    .panel { position: static; display: flex; max-height: none; overflow: hidden; padding: 14px 16px; gap: 10px; background: var(--card); border-color: var(--night-4); }
+    .panel:not(.show) .res, .panel.show .howto { display: none; }
+    .howto { display: block; }
+    .howto p, .howto li { font-size: 22px; line-height: 1.3; }
+    .howto li { margin-bottom: 8px; }
+    .headline { font-size: 22px; padding-right: 0; min-height: 0; }
+    .headline b { font-size: 40px; }
+    .scores { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .scores li { grid-template-columns: 5.2em 1fr 2.4em; gap: 10px; }
+    .scores .k { font-size: 16px; }
+    .scores b { grid-row: auto; grid-column: auto; font-size: 34px; }
+    .scores .bar { grid-column: auto; height: 22px; }
+    .note { font-size: 16px; }
+    .lines li { font-size: 22px; padding-left: 20px; }
+    .lines li::before { width: 10px; height: 10px; }
+    .legend { display: flex; font-size: 16px; margin-top: auto; }
+    .legend i { width: 28px; height: 18px; }
+    #close { display: none; }
+    .status { font-size: 18px; white-space: normal; }
+    .res { display: flex; flex-direction: column; gap: 10px; min-height: 0; flex: 1; }
+  }
+  @media not all and (min-width: 1024px) and (min-height: 600px) { .res { display: contents; } }
+  @media (prefers-reduced-motion: reduce) { .c, .people { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="px-title">Booth builder</h1>
+  <p class="sub">Will they stop?</p>
+  <div class="acts">
+    <button class="px-btn" type="button" id="p-fortress">Fortress</button>
+    <button class="px-btn" type="button" id="p-stage">Open stage</button>
+    <button class="px-btn fire" type="button" id="go">Open the doors</button>
+  </div>
+</header>
+
+<div class="tools" role="toolbar" aria-label="Elements" id="tools"></div>
+
+<div class="stage">
+  <div class="floorwrap">
+    <div class="floor" id="floor" role="group" aria-label="Fair floor: a 12 by 8 booth with an aisle around it"></div>
+    <svg class="people pixelart" id="people" viewBox="0 0 112 80" shape-rendering="crispEdges" aria-hidden="true"></svg>
+  </div>
+</div>
+
+<section class="panel px-frame" id="panel" aria-label="Result">
+  <div class="howto">
+    <h2 class="px-label">How to play</h2>
+    <ol>
+      <li>Pick an element, then click a booth cell. Keys: 1 to 9 pick, arrows move, Enter places.</li>
+      <li>Open side: click the booth edge to open or close that side.</li>
+      <li>Open the doors and watch where people go.</li>
+    </ol>
+  </div>
+  <div class="res">
+    <p class="headline" id="headline"></p>
+    <ul class="scores" id="scores"></ul>
+    <div class="crit"><h2 class="px-label">Critic</h2><p class="note">Rule-based critic — not a real AI, about 40 lines of if/else.</p></div>
+    <div class="row"><ul class="lines" id="lines"></ul></div>
+    <div class="legend" aria-hidden="true">Heat: cold <i style="background:var(--wood-1)"></i><i style="background:var(--fire-0)"></i><i style="background:var(--fire-1)"></i><i style="background:var(--fire-2)"></i><i style="background:var(--fire-3)"></i> hot</div>
+    <button class="px-btn" type="button" id="close">Close</button>
+  </div>
+</section>
+<p class="status" id="status"></p>
+<p class="sr" id="live" aria-live="polite"></p>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Floor: 14 × 10 cells, the booth is 12 × 8 inside a one-cell aisle. Bottom = front aisle. ── */
+  const COLS = 14, ROWS = 10, BX0 = 1, BX1 = 12, BY0 = 1, BY1 = 8;
+  const inFloor = (x, y) => x >= 0 && x < COLS && y >= 0 && y < ROWS;
+  const inBooth = (x, y) => x >= BX0 && x <= BX1 && y >= BY0 && y <= BY1;
+  const K = (x, y) => y * COLS + x;
+  const XY = (k) => [k % COLS, Math.floor(k / COLS)];
+
+  /* Elements: 8×8 pixel sprites (PX.PAL letters). pull/range = how strongly they draw people in, dwell = ticks spent there. */
+  const EL = {
+    counter: { name: 'Counter', block: true, pull: 0.05, range: 3, dwell: 5,
+      art: ['........', 'nnnnnnnn', 'nmmmmmmn', 'nddddddn', 'ndeeeedn', 'nddddddn', 'nnnnnnnn', '........'] },
+    led: { name: 'LED wall', block: true, pull: 0.30, range: 7, dwell: 7,
+      art: ['ssssssss', 'syyooyys', 'sowwwwos', 'srwyywrs', 'sowwwwos', 'syyooyys', 'ssssssss', '..s..s..'] },
+    lounge: { name: 'Lounge', block: false, pull: 0.12, range: 4, dwell: 14,
+      art: ['........', '.cccccc.', '.cddddc.', 'ccddddcc', 'cddddddc', 'cccccccc', 'c......c', '........'] },
+    plinth: { name: 'Product plinth', block: true, pull: 0.22, range: 5, dwell: 6,
+      art: ['...oo...', '..oyyo..', '...oo...', '.ffffff.', '.fiiiit.', '.fiiiit.', '.fiiiit.', '.tttttt.'] },
+    plant: { name: 'Plant', block: true, pull: 0.02, range: 2, dwell: 1,
+      art: ['...d....', '.d.dc.d.', '.cdcdcd.', '..cdcd..', '...cc...', '..mnnm..', '..mnnm..', '...mm...'] },
+    screen: { name: 'Screen', block: true, pull: 0.12, range: 4, dwell: 4,
+      art: ['........', 'ssssssss', 'seeeeees', 'sedddees', 'seeeeees', 'ssssssss', '...ss...', '..ssss..'] },
+    storage: { name: 'Storage', block: true, pull: 0, range: 0, dwell: 0,
+      art: ['........', '.nnnnnn.', '.nmmmmn.', '.nmnnmn.', 'nnnnnnnn', 'nmmnnmmn', 'nmmnnmmn', 'nnnnnnnn'] },
+  };
+  const TOOLS = ['counter', 'led', 'lounge', 'plinth', 'plant', 'screen', 'storage', 'open', 'erase'];
+  const TOOL_NAME = { open: 'Open side', erase: 'Remove' };
+  const TOOL_ART = {
+    open: ['...ee...', '...ee...', '.eeeeee.', '..eeee..', '...ee...', '........', 'fff..fff', 'fff..fff'],
+    erase: ['R......R', '.R....R.', '..R..R..', '...RR...', '...RR...', '..R..R..', '.R....R.', 'R......R'],
+  };
+  const nameOf = (t) => (EL[t] ? EL[t].name : TOOL_NAME[t]);
+  const icon = (t) => `<svg viewBox="0 0 8 8" class="pixelart" shape-rendering="crispEdges" aria-hidden="true">${PX.sprite(EL[t] ? EL[t].art : TOOL_ART[t])}</svg>`;
+
+  let grid = new Array(COLS * ROWS).fill(null);
+  let open = { top: false, bottom: true, left: false, right: false };
+  let tool = 'plinth';
+  let cursor = K(6, 5);
+  let heat = null, running = null, result = null;
+
+  const blocked = (x, y) => inBooth(x, y) && !!grid[K(x, y)] && EL[grid[K(x, y)]].block;
+  const sideOf = (bx, by, ox, oy) => (oy < by ? 'top' : oy > by ? 'bottom' : ox < bx ? 'left' : 'right');
+  const edgeSide = (x, y) => (y === BY1 ? 'bottom' : y === BY0 ? 'top' : x === BX0 ? 'left' : x === BX1 ? 'right' : null);
+  /** One step from a to b: no walking through elements, and into the booth only across an open side */
+  function canStep(ax, ay, bx, by) {
+    if (!inFloor(bx, by) || blocked(bx, by)) return false;
+    const ai = inBooth(ax, ay), bi = inBooth(bx, by);
+    if (ai === bi) return true;
+    return ai ? open[sideOf(ax, ay, bx, by)] : open[sideOf(bx, by, ax, ay)];
+  }
+  const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  /** Breadth-first path from (sx,sy) to the first cell where goal() holds; [] if already there, null if unreachable */
+  function bfs(sx, sy, goal, allow) {
+    if (goal(sx, sy)) return [];
+    const prev = new Int16Array(COLS * ROWS).fill(-1), s = K(sx, sy), q = [s];
+    prev[s] = s;
+    for (let qi = 0; qi < q.length; qi++) {
+      const [x, y] = XY(q[qi]);
+      for (const [dx, dy] of DIRS) {
+        const nx = x + dx, ny = y + dy;
+        if (!canStep(x, y, nx, ny) || (allow && !allow(nx, ny)) || prev[K(nx, ny)] !== -1) continue;
+        prev[K(nx, ny)] = q[qi]; q.push(K(nx, ny));
+        if (goal(nx, ny)) { const path = []; for (let c = K(nx, ny); c !== s; c = prev[c]) path.unshift(XY(c)); return path; }
+      }
+    }
+    return null;
+  }
+
+  /* ── Floor UI ── */
+  const floor = $('floor');
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'c ' + (inBooth(x, y) ? 'b' : 'a'); b.dataset.k = K(x, y);
+    floor.appendChild(b);
+  }
+  const cells = [...floor.children];
+
+  function drawFloor() {
+    let max = 0;
+    if (heat) heat.forEach((h) => { if (h > max) max = h; });
+    cells.forEach((el, k) => {
+      const [x, y] = XY(k), t = grid[k], b = inBooth(x, y);
+      let cls = 'c ' + (b ? 'b' : 'a');
+      if (b) {
+        if (y === BY0) cls += open.top ? ' ot' : ' wt';
+        if (y === BY1) cls += open.bottom ? ' ob' : ' wb';
+        if (x === BX0) cls += open.left ? ' ol' : ' wl';
+        if (x === BX1) cls += open.right ? ' or' : ' wr';
+      }
+      const lvl = heat && heat[k] > 0 ? Math.max(1, Math.ceil(5 * Math.sqrt(heat[k] / max))) : 0;
+      if (lvl) cls += ' h' + lvl;
+      if (el.className !== cls) el.className = cls;
+      const want = t ? icon(t) : '';
+      if (el.dataset.t !== (t || '')) { el.innerHTML = want; el.dataset.t = t || ''; }
+      el.tabIndex = k === cursor ? 0 : -1;
+      const side = b && edgeSide(x, y);
+      el.setAttribute('aria-label', `${b ? 'Booth' : 'Aisle'}, row ${y + 1}, column ${x + 1}: ${t ? EL[t].name : 'empty'}${side ? ', ' + side + ' edge ' + (open[side] ? 'open' : 'wall') : ''}${lvl ? ', heat ' + lvl + ' of 5' : ''}`);
+    });
+  }
+
+  const toolsEl = $('tools');
+  TOOLS.forEach((t, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'tool'; b.dataset.t = t;
+    b.setAttribute('aria-pressed', String(t === tool)); b.setAttribute('aria-label', `${nameOf(t)} (key ${i + 1})`); b.title = nameOf(t);
+    b.innerHTML = icon(t) + `<span class="t">${nameOf(t)}</span>`;
+    b.addEventListener('click', () => pick(t));
+    toolsEl.appendChild(b);
+  });
+  function pick(t) {
+    tool = t;
+    toolsEl.querySelectorAll('.tool').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.t === t)));
+    say(`<b>${nameOf(t)}</b>: ${t === 'open' ? 'click the booth edge to open or close that side.' : t === 'erase' ? 'click an element to remove it.' : 'click a booth cell, or arrows + Enter.'}`);
+  }
+
+  function say(html) { $('status').innerHTML = html; $('live').textContent = $('status').textContent; }
+
+  function place(k) {
+    if (running) { say('Doors are open. Wait, or press <b>Skip</b>.'); return; }
+    const [x, y] = XY(k);
+    if (!inBooth(x, y)) { say('That is the aisle. The fire marshal says no.'); return; }
+    if (tool === 'open') {
+      const s = edgeSide(x, y);
+      if (!s) { say('Open sides go on the <b>edge</b> of the booth.'); return; }
+      open[s] = !open[s];
+      say(`${s[0].toUpperCase() + s.slice(1)} side is now <b>${open[s] ? 'open' : 'a wall'}</b>.`);
+    } else if (tool === 'erase') {
+      if (!grid[k]) return;
+      say(`Removed the ${EL[grid[k]].name.toLowerCase()}.`); grid[k] = null;
+    } else {
+      grid[k] = grid[k] === tool ? null : tool;
+      say(grid[k] ? `Placed: <b>${EL[tool].name}</b>, row ${y + 1}, column ${x + 1}.` : `Removed the ${EL[tool].name.toLowerCase()}.`);
+    }
+    changed();
+  }
+  function changed() { heat = null; result = null; showPanel(false); $('people').innerHTML = ''; drawFloor(); }
+
+  floor.addEventListener('click', (e) => { const c = e.target.closest('.c'); if (!c) return; cursor = +c.dataset.k; place(cursor); });
+  floor.addEventListener('keydown', (e) => {
+    const m = { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] }[e.key];
+    if (!m) return;
+    e.preventDefault();
+    const [x, y] = XY(cursor), nx = Math.max(0, Math.min(COLS - 1, x + m[0])), ny = Math.max(0, Math.min(ROWS - 1, y + m[1]));
+    cursor = K(nx, ny);
+    cells.forEach((el, k) => { el.tabIndex = k === cursor ? 0 : -1; });
+    cells[cursor].focus();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const n = +e.key;
+    if (n >= 1 && n <= TOOLS.length) { e.preventDefault(); pick(TOOLS[n - 1]); }
+    else if (e.key === 'Escape' && $('panel').classList.contains('show')) showPanel(false);
+  });
+
+  /* ── Presets ── */
+  const PRESETS = {
+    fortress: { open: { bottom: true }, items: [
+      ['counter', [[2, 8], [3, 8], [4, 8], [5, 8], [6, 8], [7, 8], [8, 8], [9, 8], [10, 8], [11, 8], [12, 8]]],
+      ['storage', [[2, 7], [3, 7], [11, 7]]], ['led', [[5, 1], [6, 1], [7, 1], [8, 1]]], ['plinth', [[11, 2]]],
+      ['screen', [[7, 7]]], ['plant', [[12, 7]]] ] },
+    stage: { open: { bottom: true, left: true, right: true }, items: [
+      ['led', [[4, 1], [5, 1], [6, 1], [7, 1], [8, 1], [9, 1]]], ['plinth', [[5, 5], [8, 5], [11, 2]]],
+      ['lounge', [[2, 2], [3, 2], [2, 3]]], ['counter', [[12, 6]]], ['plant', [[1, 1], [12, 1]]], ['storage', [[10, 1]]], ['screen', [[3, 6]]] ] },
+  };
+  function preset(name) {
+    if (running) stop();
+    const p = PRESETS[name];
+    grid = new Array(COLS * ROWS).fill(null);
+    open = { top: false, bottom: false, left: false, right: false, ...p.open };
+    p.items.forEach(([t, list]) => list.forEach(([x, y]) => { grid[K(x, y)] = t; }));
+    $('p-fortress').setAttribute('aria-pressed', String(name === 'fortress'));
+    $('p-stage').setAttribute('aria-pressed', String(name === 'stage'));
+    changed();
+    say(`Loaded <b>${name === 'fortress' ? 'Fortress' : 'Open stage'}</b>. Now open the doors.`);
+  }
+  $('p-fortress').addEventListener('click', () => preset('fortress'));
+  $('p-stage').addEventListener('click', () => preset('stage'));
+
+  /* ── Simulation: deterministic (seeded), one cell per tick ── */
+  function mulberry32(a) { return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  const VISITORS = 36, SPAWN_EVERY = 3, MAX_TICKS = 320, MAX_DETOUR = 12;
+  const line = (x0, y0, x1, y1) => { const r = [], n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) r.push([x0 + Math.sign(x1 - x0) * i, y0 + Math.sign(y1 - y0) * i]); return r; };
+  const ROUTES = [ // front aisle is the busy one
+    [0.2, line(0, 9, 13, 9)], [0.2, line(13, 9, 0, 9)], [0.1, line(0, 0, 13, 0)], [0.1, line(13, 0, 0, 0)],
+    [0.1, line(0, 0, 0, 9)], [0.1, line(0, 9, 0, 0)], [0.1, line(13, 0, 13, 9)], [0.1, line(13, 9, 13, 0)],
+  ];
+
+  function newSim() {
+    const rnd = mulberry32(20261124);
+    const attr = [];
+    grid.forEach((t, k) => { if (t && EL[t].pull > 0) { const [x, y] = XY(k); attr.push({ i: attr.length, x, y, t }); } });
+    // where a visitor stands to use an attraction: on it (lounge) or next to it, also from the aisle across an open side
+    attr.forEach((a) => {
+      a.view = new Set();
+      if (!EL[a.t].block) { a.view.add(K(a.x, a.y)); return; }
+      DIRS.forEach(([dx, dy]) => {
+        const nx = a.x + dx, ny = a.y + dy;
+        if (!inFloor(nx, ny) || blocked(nx, ny)) return;
+        if (inBooth(nx, ny) || open[sideOf(a.x, a.y, nx, ny)]) a.view.add(K(nx, ny));
+      });
+    });
+    return { rnd, attr, t: 0, people: [], spawned: 0, entries: 0, bounces: 0, stopped: 0, dwellTicks: 0, exits: 0, through: 0, heat: new Array(COLS * ROWS).fill(0) };
+  }
+
+  function pathTo(v, a, max) { const p = bfs(v.x, v.y, (x, y) => a.view.has(K(x, y))); return p && p.length <= max ? p : null; }
+  const atFace = (v) => !inBooth(v.x, v.y) && DIRS.some(([dx, dy]) => inBooth(v.x + dx, v.y + dy) && open[sideOf(v.x + dx, v.y + dy, v.x, v.y)]);
+
+  function consider(S, v) {
+    let pull = 0; const opts = [];
+    S.attr.forEach((a) => {
+      const e = EL[a.t], d = Math.abs(a.x - v.x) + Math.abs(a.y - v.y);
+      if (v.seen.has(a.i) || d > e.range) return;
+      const s = e.pull * (1 - d / (e.range + 1)); pull += s; opts.push([s, a]);
+    });
+    if (!opts.length || S.rnd() >= Math.min(0.6, pull)) return;
+    v.decided = true;
+    opts.sort((p, q) => q[0] - p[0]);
+    let first = true;
+    for (const [, a] of opts) {
+      const p = pathTo(v, a, MAX_DETOUR);
+      if (p) { if (!first) { v.bounce = 3; S.bounces++; } go(S, v, a, p); return; }
+      first = false;
+    }
+    v.bounce = 3; S.bounces++; // wanted the best thing in view, no way through: a bounce (shown as a red '!')
+  }
+  function go(S, v, a, path) {
+    if (!v.stopped) { v.stopped = true; S.stopped++; }
+    v.mode = 'go'; v.target = a; v.path = path;
+    if (!path.length) arrive(v);
+  }
+  function arrive(v) { v.mode = 'dwell'; v.dwell = EL[v.target.t].dwell; v.seen.add(v.target.i); }
+  function after(S, v) {
+    if (S.rnd() < 0.6) {
+      let best = null;
+      S.attr.forEach((a) => {
+        if (v.seen.has(a.i)) return;
+        const p = pathTo(v, a, 10);
+        if (p) { const s = EL[a.t].pull / (1 + p.length); if (!best || s > best[0]) best = [s, a, p]; }
+      });
+      if (best) { go(S, v, best[1], best[2]); return; }
+    }
+    const end = v.route[v.route.length - 1];
+    const out = inBooth(v.x, v.y) ? bfs(v.x, v.y, (x, y) => !inBooth(x, y)) : [];
+    if (!out) { v.mode = 'done'; return; }
+    const [ox, oy] = out.length ? out[out.length - 1] : [v.x, v.y];
+    const home = bfs(ox, oy, (x, y) => x === end[0] && y === end[1], (x, y) => !inBooth(x, y)) || [];
+    v.mode = 'leave'; v.path = out.concat(home);
+  }
+
+  function tick(S) {
+    if (S.spawned < VISITORS && S.t % SPAWN_EVERY === 0) {
+      let r = S.rnd(), route = ROUTES[0][1];
+      for (const [w, rt] of ROUTES) { if (r < w) { route = rt; break; } r -= w; }
+      S.people.push({ id: S.spawned++, x: route[0][0], y: route[0][1], route, ri: 0, mode: 'aisle', path: [], seen: new Set(), dwell: 0, bounce: 0, decided: false, stopped: false, entered: false });
+    }
+    S.people.forEach((v) => {
+      const px = v.x, py = v.y;
+      if (v.bounce) v.bounce--;
+      if (v.mode === 'aisle') {
+        v.ri++;
+        if (v.ri >= v.route.length) { v.mode = 'done'; return; }
+        [v.x, v.y] = v.route[v.ri];
+        if (!v.decided && atFace(v)) consider(S, v);
+      } else if (v.mode === 'go') {
+        [v.x, v.y] = v.path.shift();
+        if (!v.path.length) arrive(v);
+      } else if (v.mode === 'dwell') {
+        S.dwellTicks++;
+        if (--v.dwell <= 0) after(S, v);
+      } else if (v.mode === 'leave') {
+        if (!v.path.length) { v.mode = 'done'; return; }
+        [v.x, v.y] = v.path.shift();
+      }
+      if (inBooth(v.x, v.y) !== inBooth(px, py)) { // crossed a booth edge
+        const side = inBooth(v.x, v.y) ? sideOf(v.x, v.y, px, py) : sideOf(px, py, v.x, v.y);
+        if (inBooth(v.x, v.y)) v.inSide = v.inSide || side; else if (v.inSide) { S.exits++; if (side !== v.inSide) S.through++; }
+      }
+      if (inBooth(v.x, v.y) && !v.entered) { v.entered = true; S.entries++; }
+      if (v.mode !== 'done' && (inBooth(v.x, v.y) || v.mode === 'dwell')) S.heat[K(v.x, v.y)]++;
+    });
+    S.people = S.people.filter((v) => v.mode !== 'done');
+    S.t++;
+    return S.t < MAX_TICKS && (S.spawned < VISITORS || S.people.length > 0);
+  }
+
+  /* Visitors: 4×6 sprites, two walking frames */
+  const BODY = ['o', 'r', 'd', 'e', 'y', 't', 'w'], HEAD = ['w', 'n', 'y', 'f'];
+  const FR = [['.HH.', 'BBBB', 'BBBB', '.BB.', 't..t', 't..t'], ['.HH.', 'BBBB', 'BBBB', '.BB.', '.tt.', '.tt.']];
+  function drawPeople(S) {
+    $('people').innerHTML = S.people.map((v) => {
+      const rows = FR[v.mode === 'dwell' ? 1 : (S.t + v.id) % 2].map((r) => r.replace(/H/g, HEAD[v.id % HEAD.length]).replace(/B/g, BODY[v.id % BODY.length]));
+      const px = v.x * 8 + 2 + ((v.id % 3) - 1) * 2, py = v.y * 8 + 1;
+      return PX.sprite(rows, { x: px, y: py }) + (v.bounce ? PX.sprite(['R', 'R', 'R', '.', 'R'], { x: px + 1, y: Math.max(0, py - 6) }) : '');
+    }).join('');
+  }
+
+  function start() {
+    if (running) { finish(true); return; }
+    const S = newSim();
+    heat = S.heat; showPanel(false);
+    if (reduced()) { while (tick(S)); running = { S }; finish(false); return; }
+    running = { S, timer: setInterval(() => { const more = tick(S); drawPeople(S); if (S.t % 2 === 0) drawFloor(); if (!more) finish(false); }, 70) };
+    $('go').textContent = 'Skip';
+    say(`Doors open. Visitors walking in&hellip; <b>Skip</b> jumps to the result.`);
+    drawFloor();
+  }
+  function stop() { if (running && running.timer) clearInterval(running.timer); running = null; $('go').textContent = 'Open the doors'; }
+  function finish(skip) {
+    const S = running.S;
+    if (skip) while (tick(S));
+    stop();
+    $('people').innerHTML = '';
+    heat = S.heat;
+    result = score(S);
+    $('panel').dataset.ticks = S.t;
+    drawFloor(); renderResult(result); showPanel(true);
+    say(`Done: <b>${result.stopped} of ${VISITORS}</b> stopped. Bright cells = where people spent time.`);
+  }
+  $('go').addEventListener('click', start);
+
+  /* ── Scores and the rule-based critic ── */
+  function score(S) {
+    const door = [], free = [];
+    for (let y = BY0; y <= BY1; y++) for (let x = BX0; x <= BX1; x++) {
+      if (!blocked(x, y)) free.push(K(x, y));
+      const s = [y === BY0 && 'top', y === BY1 && 'bottom', x === BX0 && 'left', x === BX1 && 'right'].filter((z) => z && open[z]);
+      if (s.length) door.push(K(x, y));
+    }
+    const count = (t) => grid.filter((g) => g === t).length;
+    const near = (k, set, d) => set.some((j) => Math.abs(XY(j)[0] - XY(k)[0]) + Math.abs(XY(j)[1] - XY(k)[1]) <= d);
+    // back corner = the 3×3 corner farthest (on foot) from any open door cell
+    const dist = (k) => { const [x, y] = XY(k); const p = blocked(x, y) ? null : bfs(x, y, (a, b) => door.includes(K(a, b)) && !blocked(a, b), inBooth); return p ? p.length : 99; };
+    const corners = [[BX0, BY0], [BX1 - 2, BY0], [BX0, BY1 - 2], [BX1 - 2, BY1 - 2]].map(([cx, cy]) => {
+      const ks = []; for (let y = cy; y < cy + 3; y++) for (let x = cx; x < cx + 3; x++) ks.push(K(x, y));
+      return { ks, d: Math.min(...ks.map(dist)) };
+    }).sort((a, b) => b.d - a.d);
+    const openSides = Object.values(open).filter(Boolean).length;
+    const wanted = S.entries + S.bounces;
+    return {
+      stopped: S.stopped, entries: S.entries, bounces: S.bounces, openSides,
+      reach: free.length ? Math.round(100 * free.filter((k) => S.heat[k] > 0).length / free.length) : 0,
+      dwell: Math.min(100, Math.round(S.dwellTicks / VISITORS * 5)),
+      // flow: got in without bouncing, and could walk through instead of turning back at the same side
+      flow: openSides && wanted ? Math.round(100 * S.entries / wanted * (0.6 + 0.4 * (S.exits ? S.through / S.exits : 0))) : 0,
+      counterOnDoor: door.length ? door.filter((k) => grid[k] === 'counter').length / door.length : 0,
+      storageAtDoor: grid.some((t, k) => t === 'storage' && near(k, door, 1)),
+      attractors: count('led') + count('plinth') + count('screen'), lounges: count('lounge'), plants: count('plant'),
+      ledCells: count('led'), fill: 1 - free.length / ((BX1 - BX0 + 1) * (BY1 - BY0 + 1)),
+      backCornerEmpty: corners[0].ks.every((k) => !S.heat[k]),
+    };
+  }
+
+  function critic(r) {
+    const L = [];
+    const add = (t) => { if (L.length < 3) L.push(t); };
+    if (!r.openSides) add('No open side, no visitors. It is a very exclusive cube. Open at least one side.');
+    else {
+      if (r.counterOnDoor >= 0.5) add('Your counter is a fortress. Visitors bounce off it like pinballs.');
+      else if (r.bounces > r.entries) add('People want in and give up on the way. Clear a short path from the aisle to what they are looking at.');
+      if (!r.attractors) add('Nothing to look at. A plinth or an LED wall gives people a reason to step in.');
+      if (r.entries >= 3 && r.backCornerEmpty) add('Nobody reaches the back corner. Put the hero product there and they will.');
+      if (r.storageAtDoor) add('The first thing guests see is your storage. Hide the boxes at the back.');
+      if (r.fill > 0.45) add('This is a warehouse, not a booth. Keep about half the floor free to walk.');
+      if (r.ledCells >= 8) add('So much LED, it is a stadium. One wall with a story beats a wall of noise.');
+      if (!r.lounges && r.entries >= 3 && r.dwell < 50) add('They look and they leave. A lounge turns a glance into a conversation.');
+      if (r.openSides === 1 && r.entries >= 10) add('One way in, same way out: the entrance clogs. Open a second side.');
+      if (r.entries >= 3 && r.reach < 60 && !r.backCornerEmpty) add('Part of the floor stays cold. Spread the attractions so people walk past more of it.');
+      if (r.reach >= 45 && r.flow >= 60) add('Open, readable, walkable. People drift in without being asked.');
+    }
+    if (L.length < 2 && !r.plants) add('Add a plant. Nobody knows why, but it always helps.');
+    if (L.length < 2) add('Move one thing and open the doors again: the heat map is the real critic.');
+    return L;
+  }
+
+  function renderResult(r) {
+    $('headline').innerHTML = `<b>${r.stopped}</b> of ${VISITORS} visitors stopped, <b>${r.entries}</b> came in${r.bounces ? `, <b>${r.bounces}</b> bounced off` : ''}.`;
+    $('scores').innerHTML = [['Reach', r.reach], ['Dwell', r.dwell], ['Flow', r.flow]].map(([k, v]) => {
+      const n = Math.round(v / 10);
+      return `<li><span class="k">${k}</span><span class="bar" aria-hidden="true"><i style="width:${n * 10}%;--n:${n || 1}"></i></span><b>${v}</b></li>`;
+    }).join('');
+    $('lines').innerHTML = critic(r).map((t) => `<li>${t}</li>`).join('');
+  }
+  function showPanel(on) {
+    $('panel').classList.toggle('show', !!on && !!result);
+    if (on && result) $('live').textContent = `Reach ${result.reach}, dwell ${result.dwell}, flow ${result.flow}. ` + critic(result).join(' ');
+  }
+  $('close').addEventListener('click', () => { showPanel(false); cells[cursor].focus(); });
+
+  drawFloor();
+  pick(tool);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Myth or fact? · Campfire</title>
+<link rel="stylesheet" href="../shared/campfire.css">
+<script src="../shared/pixel.js"></script>
+<script src="../shared/lore.js"></script>
+<style>
+  html, body { height: 100%; }
+  body {
+    /* Verdict colours, all from the campfire palette. There is no violet in it: rumours are smoke (pale, dashed). */
+    --v-fact: var(--lcd-d); --v-myth: var(--fire-0); --v-half: var(--fire-3); --v-rumour: var(--fire-4); --v-depends: var(--muted);
+    height: 100vh; padding: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 15px;
+  }
+  .px-label { font-size: 13px; }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; }
+  .top h1 { margin: 0; font-size: 28px; color: var(--fire-3); }
+  .top .sub { margin: 0; color: var(--muted); }
+  .top .score { margin-left: auto; font: 600 14px/1.2 var(--sans); color: var(--ink); }
+  .top .score b { font: 22px/1 var(--pixel); color: var(--lcd-e); font-weight: 400; }
+
+  /* The claim card */
+  .card { position: relative; flex: 1; min-height: 0; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+  .card.thump { animation: mf-thump calc(var(--step) * 2) steps(1, end) calc(var(--step) * 2); }
+  @keyframes mf-thump { 0% { transform: translate(3px, 3px); } 50% { transform: translate(-1px, 0); } 100% { transform: none; } }
+  .count { font: 20px/1 var(--pixel); color: var(--lcd-d); }
+  .count b { color: var(--fire-3); font-weight: 400; }
+  .claim { margin: 0; font: 700 20px/1.25 var(--sans); color: var(--ink); text-wrap: balance; }
+  .result { display: flex; align-items: flex-start; gap: 12px; min-height: 0; }
+  .hint { margin: 0; color: var(--muted); font-size: 15px; }
+  .why { margin: 0; font-size: 14px; line-height: 1.35; color: var(--ink); }
+  .verdict { margin: 4px 0 0; font: 600 14px/1.3 var(--sans); }
+  .verdict.right { color: var(--lcd-d); }
+  .verdict.wrong { color: var(--fire-2); }
+  .verdict .mark { font: 20px/1 var(--pixel); margin-right: 6px; }
+
+  .stamp {
+    --c: var(--v-fact);
+    flex: none; transform: rotate(-6deg); margin: 6px 4px 0 2px;
+    font: 28px/1 var(--pixel); letter-spacing: 0.04em; white-space: nowrap;
+    padding: 6px 10px 4px; color: var(--night-0); background: var(--c); border: 3px solid var(--c);
+    box-shadow: inset 0 0 0 3px var(--night-0), 4px 4px 0 var(--night-0);
+  }
+  .stamp.myth { --c: var(--v-myth); }
+  .stamp.half { --c: var(--v-half); }
+  .stamp.depends { --c: var(--v-depends); }
+  .stamp.rumour { --c: var(--v-rumour); background: var(--night-0); color: var(--c); border-style: dashed; box-shadow: 4px 4px 0 var(--night-0); }
+  .stamp.hit { animation: mf-stamp calc(var(--step) * 4) steps(1, end) both; }
+  @keyframes mf-stamp {
+    0% { transform: rotate(-6deg) scale(2.4); opacity: 0; }
+    25% { transform: rotate(-9deg) scale(1.6); opacity: 0.6; }
+    50% { transform: rotate(-5deg) scale(0.9); opacity: 1; }
+    75% { transform: rotate(-6deg) scale(1.04); }
+    100% { transform: rotate(-6deg) scale(1); opacity: 1; }
+  }
+  .stamp[hidden], .why[hidden], .hint[hidden], .verdict[hidden] { display: none; }
+
+  /* Controls */
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+  .row > .px-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .g {
+    --c: var(--v-fact);
+    font: 600 14px/1 var(--sans); color: var(--ink); background: var(--night-3); border: 2px solid var(--night-4); border-left: 8px solid var(--c);
+    min-height: 36px; padding: 6px 9px; cursor: pointer; border-radius: 0;
+  }
+  .g:hover { background: var(--night-4); }
+  .g u { text-decoration-thickness: 2px; text-underline-offset: 2px; }
+  .g[data-v="myth"] { --c: var(--v-myth); }
+  .g[data-v="half"] { --c: var(--v-half); }
+  .g[data-v="rumour"] { --c: var(--v-rumour); border-left-style: dashed; }
+  .g[data-v="depends"] { --c: var(--v-depends); }
+  .g[aria-pressed="true"] { background: var(--c); border-color: var(--c); color: var(--night-0); }
+  .g[disabled] { cursor: default; opacity: 0.55; }
+  .row .px-btn { font-size: 17px; min-height: 36px; padding: 8px 12px; }
+  .px-btn[disabled] { opacity: 0.5; cursor: default; }
+  #reveal { margin-left: auto; }
+  .keys { margin-left: auto; display: none; }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* Projector: the claim is the slide */
+  @media (min-width: 1024px) and (min-height: 600px) {
+    body { padding: 18px 24px; gap: 14px; font-size: 22px; }
+    .px-label { font-size: 16px; }
+    .top h1 { font-size: 56px; }
+    .top .sub { font-size: 26px; }
+    .top .score { font-size: 22px; }
+    .top .score b { font-size: 40px; }
+    .card { padding: 22px 30px; gap: 18px; }
+    .count { font-size: 34px; }
+    .claim { font-size: 52px; line-height: 1.12; }
+    .result { gap: 30px; }
+    .hint { font-size: 26px; }
+    .why { font-size: 26px; line-height: 1.35; }
+    .verdict { font-size: 24px; margin-top: 10px; }
+    .verdict .mark { font-size: 34px; }
+    .stamp { font-size: 64px; padding: 12px 20px 8px; border-width: 6px; box-shadow: inset 0 0 0 5px var(--night-0), 8px 8px 0 var(--night-0); margin: 14px 8px 0 4px; }
+    .stamp.rumour { box-shadow: 8px 8px 0 var(--night-0); }
+    .row { gap: 10px; }
+    .g { font-size: 22px; min-height: 52px; padding: 10px 16px; border-left-width: 12px; }
+    .row .px-btn { font-size: 26px; min-height: 52px; padding: 12px 20px; }
+    .keys { display: block; }
+    .row > .px-label { position: static; width: auto; height: auto; overflow: visible; clip: auto; margin-right: 4px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stamp.hit, .card.thump { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="px-title">Myth or fact?</h1>
+  <p class="sub">The AI rumour mill.</p>
+  <p class="score" id="score" aria-live="polite"></p>
+</header>
+
+<article class="card px-frame" id="card" aria-labelledby="claim">
+  <div class="count" id="count" aria-hidden="true"></div>
+  <p class="claim" id="claim"></p>
+  <p class="hint" id="hint">Hands up: fact, myth, half true, rumour, or it depends?</p>
+  <div class="result" id="result">
+    <div class="stamp" id="stamp" hidden></div>
+    <div>
+      <p class="why" id="why" hidden></p>
+      <p class="verdict" id="verdict" hidden></p>
+    </div>
+  </div>
+</article>
+
+<div class="row" role="group" aria-label="Room says">
+  <span class="px-label">Room says</span>
+  <button class="g" type="button" data-v="fact" aria-pressed="false" aria-keyshortcuts="F"><u>F</u>act</button>
+  <button class="g" type="button" data-v="myth" aria-pressed="false" aria-keyshortcuts="M"><u>M</u>yth</button>
+  <button class="g" type="button" data-v="half" aria-pressed="false" aria-keyshortcuts="H"><u>H</u>alf true</button>
+  <button class="g" type="button" data-v="rumour" aria-pressed="false" aria-keyshortcuts="R"><u>R</u>umour</button>
+  <button class="g" type="button" data-v="depends" aria-pressed="false" aria-keyshortcuts="D">It <u>d</u>epends</button>
+  <button class="px-btn fire" type="button" id="reveal" aria-keyshortcuts="Space">Reveal</button>
+</div>
+<div class="row">
+  <button class="px-btn" type="button" id="prev" aria-keyshortcuts="ArrowLeft">Previous</button>
+  <button class="px-btn" type="button" id="next" aria-keyshortcuts="N">Next</button>
+  <button class="px-btn" type="button" id="shuffle" aria-keyshortcuts="S">Shuffle</button>
+  <span class="keys px-label">Keys: F M H R D · Space reveal · arrows · S shuffle</span>
+</div>
+<p class="sr" id="live" aria-live="assertive"></p>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const MYTHS = LORE.MYTHS;
+  const LABEL = { fact: 'FACT', myth: 'MYTH', half: 'HALF TRUE', rumour: 'RUMOUR', depends: 'IT DEPENDS' };
+  const SAY = { fact: 'Fact', myth: 'Myth', half: 'Half true', rumour: 'Rumour', depends: 'It depends' };
+  const KEYS = { f: 'fact', m: 'myth', h: 'half', r: 'rumour', d: 'depends' };
+
+  let order = MYTHS.map((_, i) => i);
+  let pos = 0;
+  let state = {};            // claim index → { guess, revealed }
+
+  const cur = () => order[pos];
+  const st = () => (state[cur()] = state[cur()] || { guess: null, revealed: false });
+
+  function score() {
+    let right = 0, total = 0;
+    Object.keys(state).forEach((k) => { const s = state[k]; if (s.revealed && s.guess) { total++; if (s.guess === MYTHS[k].verdict) right++; } });
+    $('score').innerHTML = total ? `Room: <b>${right} / ${total}</b> right` : 'Room score: <b>0 / 0</b>';
+  }
+
+  function render(animate) {
+    const m = MYTHS[cur()], s = st();
+    $('count').innerHTML = `<b>${pos + 1}</b> / ${order.length}`;
+    $('claim').textContent = m.claim;
+    $('hint').hidden = s.revealed;
+    document.querySelectorAll('.g').forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.v === s.guess)); b.disabled = s.revealed; });
+    $('reveal').disabled = s.revealed;
+    const stamp = $('stamp');
+    stamp.hidden = !s.revealed; $('why').hidden = !s.revealed;
+    stamp.className = 'stamp ' + m.verdict;
+    stamp.textContent = LABEL[m.verdict];
+    $('why').textContent = m.why;
+    const v = $('verdict');
+    v.hidden = !(s.revealed && s.guess);
+    if (s.revealed && s.guess) {
+      const ok = s.guess === m.verdict;
+      v.className = 'verdict ' + (ok ? 'right' : 'wrong');
+      v.innerHTML = `<span class="mark" aria-hidden="true">${ok ? '+1' : 'x'}</span>Room said ${SAY[s.guess]}. Room was ${ok ? 'right' : 'wrong'}.`;
+    }
+    if (animate) {
+      stamp.classList.remove('hit'); $('card').classList.remove('thump');
+      void stamp.offsetWidth;
+      stamp.classList.add('hit'); $('card').classList.add('thump');
+    }
+    score();
+  }
+
+  function guess(v) {
+    const s = st();
+    if (s.revealed) return;
+    s.guess = s.guess === v ? null : v;
+    $('live').textContent = s.guess ? `Room says ${SAY[v]}.` : 'Guess cleared.';
+    render(false);
+  }
+  function reveal() {
+    const s = st();
+    if (s.revealed) return;
+    s.revealed = true;
+    const m = MYTHS[cur()];
+    render(true);
+    $('live').textContent = `${LABEL[m.verdict]}. ${m.why}` + (s.guess ? ` Room was ${s.guess === m.verdict ? 'right' : 'wrong'}.` : '');
+  }
+  function go(d) {
+    const p = Math.max(0, Math.min(order.length - 1, pos + d));
+    if (p === pos) return;
+    pos = p; render(false);
+    $('live').textContent = `Claim ${pos + 1} of ${order.length}: ${MYTHS[cur()].claim}`;
+  }
+  function shuffle() {
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    pos = 0; state = {};
+    render(false);
+    $('live').textContent = `Shuffled, score reset. Claim 1: ${MYTHS[cur()].claim}`;
+  }
+
+  document.querySelectorAll('.g').forEach((b) => b.addEventListener('click', () => guess(b.dataset.v)));
+  $('reveal').addEventListener('click', reveal);
+  $('prev').addEventListener('click', () => go(-1));
+  $('next').addEventListener('click', () => go(1));
+  $('shuffle').addEventListener('click', shuffle);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+    const a = document.activeElement;
+    const kbFocusBtn = a && a.tagName === 'BUTTON' && a.matches(':focus-visible');
+    if (k in KEYS) { e.preventDefault(); guess(KEYS[k]); }
+    else if ((k === ' ' || k === 'enter') && !kbFocusBtn) { e.preventDefault(); reveal(); }
+    else if (k === 'arrowright' || k === 'pagedown') { e.preventDefault(); if (!st().revealed) reveal(); else go(1); }
+    else if (k === 'arrowleft' || k === 'pageup') { e.preventDefault(); go(-1); }
+    else if (k === 'n') { e.preventDefault(); go(1); }
+    else if (k === 'p') { e.preventDefault(); go(-1); }
+    else if (k === 's') { e.preventDefault(); shuffle(); }
+  });
+
+  render(false);
+})();
+</script>
+</body>
+</html>
