@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fireplace Check · Campfire</title>
+<style>/* shared/campfire.css */
+/* Campfire — shared look for every page, deck and module of the talk.
+   pix·el LCD night (greens) + one warm thing: the fire. Everything blocky moves in steps(); nothing eases smoothly.
+   Single source for colours and type: decks and modules link this file, tools/build.mjs inlines it. */
+
+@font-face {
+  font-family: "Jersey 10";
+  src: url("data:font/woff2;base64,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") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  /* Night: the LCD greens of pix·el, darkened for a campfire evening */
+  --night-0: #050a05;
+  --night-1: #0c170b;
+  --night-2: #12210f;
+  --night-3: #1b2d17;
+  --night-4: #2a4123;
+  --lcd-a: #306230;
+  --lcd-b: #4c7420;
+  --lcd-c: #7a9a1c;
+  --lcd-d: #a9c431;
+  --lcd-e: #d4ef78;
+  --lcd-f: #e3efa8;
+  /* Fire: the only warm colours (pixletics flame + pix·el LED) */
+  --fire-0: #e8483f;
+  --fire-1: #ff5a36;
+  --fire-2: #ffae00;
+  --fire-3: #ffe06a;
+  --fire-4: #fff6c8;
+  --wood-0: #3a2414;
+  --wood-1: #6b4226;
+  --wood-2: #9a6a3c;
+  /* Text and lines */
+  --ink: #e2f0c6;
+  --muted: #9fb48f;
+  --line: #2a4123;
+  --marker: #ffe45e;
+  --bg: var(--night-1);
+  --card: var(--night-2);
+
+  --pixel: "Jersey 10", "Courier New", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Courier New", monospace;
+
+  --px: 4px;            /* one art pixel on screen (scenes scale in whole multiples) */
+  --step: 125ms;        /* one animation frame = 8 fps */
+  --gutter: max(16px, 4vw);
+  --radius: 0;          /* pixel world: no rounded corners */
+}
+
+/* Light variant for projectors that wash out dark slides: add data-theme="light" on <html> */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f7ef;
+  --card: #ffffff;
+  --ink: #12280f;
+  --muted: #56654f;
+  --line: #d3dcc4;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 18px/1.55 var(--sans);
+}
+
+/* Headlines and labels in the pixel font — big, never for long sentences */
+.px-title { font-family: var(--pixel); font-weight: 400; letter-spacing: 0.02em; line-height: 0.95; }
+.px-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+/* Pixel art: crisp at every scale */
+.pixelart, .pixelart svg, svg.pixelart { image-rendering: pixelated; shape-rendering: crispEdges; }
+
+/* Pixel frame: a 1-art-pixel border with cut corners, like an old handheld UI */
+.px-frame {
+  background: var(--card);
+  border: var(--px) solid var(--night-4);
+  box-shadow: 0 0 0 var(--px) var(--night-0), var(--px) var(--px) 0 var(--px) var(--night-0);
+}
+
+/* Buttons that feel like hardware keys */
+.px-btn {
+  font: 20px/1 var(--pixel);
+  color: var(--night-0);
+  background: var(--lcd-d);
+  border: 0;
+  padding: 12px 18px;
+  min-height: 44px;
+  cursor: pointer;
+  box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--lcd-b), 0 var(--px) 0 var(--night-0);
+}
+.px-btn:hover { background: var(--lcd-e); }
+.px-btn:active { transform: translateY(var(--px)); box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--lcd-b); }
+.px-btn.fire { background: var(--fire-2); box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--fire-1), 0 var(--px) 0 var(--night-0); }
+.px-btn.fire:hover { background: var(--fire-3); }
+
+:focus-visible { outline: 3px solid var(--marker); outline-offset: 3px; }
+
+/* Flicker helpers for HTML (SVG scenes carry their own copy of these keyframes) */
+@keyframes px-flicker { 0% { opacity: 1; } 50% { opacity: 0.82; } 100% { opacity: 1; } }
+@keyframes px-frames-3 { from { transform: translateX(0); } to { transform: translateX(-300%); } }
+@keyframes px-blink { 0%, 92% { opacity: 1; } 93%, 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+<script>/* shared/pixel.js */
+/* Campfire pixel kit — sprites as text grids, rendered to crisp SVG paths.
+   Classic script (no modules): in the browser it sets window.PX, in Node tools/*.mjs load it with vm and read
+   globalThis.PX. Same idea as pix·el's iconPath(): every run of equal pixels in a row becomes one rect path.
+   One character = one colour from PAL; '.' is transparent. */
+(function (root) {
+  'use strict';
+
+  /* Palette: pix·el LCD night + fire. Same values as shared/campfire.css (standalone SVGs can't read CSS vars). */
+  const PAL = {
+    k: '#050a05', // night-0, outlines in the dark
+    g: '#0f380f', // LCD ink, Pix outline
+    a: '#306230', b: '#4c7420', c: '#7a9a1c', d: '#a9c431', e: '#d4ef78', f: '#e3efa8',
+    R: '#e8483f', r: '#ff5a36', o: '#ffae00', y: '#ffe06a', w: '#fff6c8',
+    W: '#3a2414', m: '#6b4226', n: '#9a6a3c',
+    M: '#ffe45e', // marker / spark yellow
+    i: '#e2f0c6', // text ink on night
+    s: '#56654f', t: '#9fb48f', // smoke / stone greys
+    N: '#0c170b', // night-1 background
+  };
+
+  /* ── Sprites ─────────────────────────────────────────────────────────────── */
+  const SPRITES = {
+    /* Pix, the pix·el mascot (hannespix/pix-el site/icons.js MASCOT), as colour rows. 16×16. */
+    pix: [
+      '.........M......',
+      '........g.......',
+      '...gggggggggg...',
+      '..gffffffffffg..',
+      '.gffffffffffffg.',
+      '.gffggffffggffg.',
+      '.gffggffffggffg.',
+      '.gffffffffffffg.',
+      '.gffffgffgffffg.',
+      '.gfccffggffccfg.',
+      '.gffffffffffffg.',
+      '..gffffffffffg..',
+      '...gggggggggg...',
+      '....gg....gg....',
+      '...ggg....ggg...',
+      '................',
+    ],
+    /* Pix with closed eyes (blink frame) */
+    pixBlink: [
+      '.........M......',
+      '........g.......',
+      '...gggggggggg...',
+      '..gffffffffffg..',
+      '.gffffffffffffg.',
+      '.gffffffffffffg.',
+      '.gffggffffggffg.',
+      '.gffffffffffffg.',
+      '.gffffgffgffffg.',
+      '.gfccffggffccfg.',
+      '.gffffffffffffg.',
+      '..gffffffffffg..',
+      '...gggggggggg...',
+      '....gg....gg....',
+      '...ggg....ggg...',
+      '................',
+    ],
+    /* Flame icon from pixletics (index.html, 12×14) */
+    flame: [
+      '.....rr.....',
+      '....rrrr....',
+      '....rror....',
+      '...rroorr...',
+      '...rooor....',
+      '..rrooorr...',
+      '..rooooor...',
+      '.rroooyoor..',
+      '.roooyyoor..',
+      '.roooyyyor..',
+      '.rroooyoor..',
+      '..rooooor...',
+      '..rrooorr...',
+      '...rrrrr....',
+    ],
+    /* Campfire flames, three frames (16×16) — cycle with steps() for a crackle */
+    fire1: [
+      '.......r........',
+      '.......r....r...',
+      '......rr....r...',
+      '..r...ror..rr...',
+      '..r..rroor.rr...',
+      '..rr.roooorror..',
+      '..rrrooyoooorr..',
+      '.rrooooyyoooorr.',
+      '.rroooyyyyoooor.',
+      '.rooooyywyyooor.',
+      '.roooyywwyyooor.',
+      '.rooyyywwwyyoor.',
+      '..rooyywwyyoor..',
+      '..rrooyyyyoorr..',
+      '...rrooooooor...',
+      '....rrrrrrrr....',
+    ],
+    fire2: [
+      '....r...........',
+      '....r......r....',
+      '...rr.....rr....',
+      '...ror...rror...',
+      '..rroor..roor...',
+      '..roooorrooor...',
+      '..rooyooooyor...',
+      '.rrooyyooyyorr..',
+      '.roooyyyyyyoor..',
+      '.rooyyywyyyoorr.',
+      '.rooyywwwyyooor.',
+      '.rooyywwwwyyoor.',
+      '..rooyywwyyoor..',
+      '..rrooyyyyoorr..',
+      '...rrooooooor...',
+      '....rrrrrrrr....',
+    ],
+    fire3: [
+      '..........r.....',
+      '...r......r.....',
+      '...r.....rr.....',
+      '..rr....ror..r..',
+      '..ror..rroor.r..',
+      '.rroor.roooorr..',
+      '.rooooroooyoor..',
+      '.roooyyooyyoorr.',
+      '.rooyyyyyyyooor.',
+      '.rooyywwyyyooor.',
+      '.roooyywwwyyoor.',
+      '.rooyyywwwyyoor.',
+      '..rooyywwyyoor..',
+      '..rrooyyyyoorr..',
+      '...rrooooooor...',
+      '....rrrrrrrr....',
+    ],
+    /* Crossed logs under the fire (20×6) */
+    logs: [
+      '..WW............WW..',
+      '.WmmWW........WWmmW.',
+      '.WnmmmWWW..WWWmmmnW.',
+      '..WWmmmmmWWmmmmmWW..',
+      '....WWWmmmmmmWWW....',
+      '.......WWWWWW.......',
+    ],
+    /* A single spark / ember (3×3) */
+    spark: [
+      '.y.',
+      'yMy',
+      '.y.',
+    ],
+  };
+
+  /* Single-colour 16×16 icons, '#' = pixel (pix·el icon format). One per station of the talk. */
+  const ICONS = {
+    tent: [
+      '................', '.......##.......', '......#..#......', '.....#....#.....',
+      '.....#.##.#.....', '....#..##..#....', '....#.#..#.#....', '...#..#..#..#...',
+      '...#.#....#.#...', '..#..#....#..#..', '..#.#......#.#..', '.#..#......#..#.',
+      '################', '................', '................', '................',
+    ],
+    spark: [ // pix·el icons.js "spark"
+      '......#.........', '......#.........', '.....###........', '.....###........',
+      '....#####.......', '..#########.....', '#############...', '..#########.....',
+      '....#####.......', '.....###........', '.....###....#...', '......#.....#...',
+      '......#...#####.', '............#...', '............#...', '................',
+    ],
+    kindling: [
+      '................', '.......#........', '......##........', '......#.#.......',
+      '.....#..#.......', '.....#.##.......', '......##........', '................',
+      '..#..........#..', '...##......##...', '.....##..##.....', '.......##.......',
+      '.....##..##.....', '...##......##...', '..#..........#..', '................',
+    ],
+    fire: [
+      '.......#........', '......##........', '......#.#....#..', '.....#...#..##..',
+      '....#....#.#.#..', '....#.##..#..#..', '...#.#..#....#..', '...#.#..#...#...',
+      '...#..##....#...', '....#......#....', '.....######.....', '................',
+      '.##############.', '#..#........#..#', '.##############.', '................',
+    ],
+    forge: [
+      '................', '..........#.....', '.........#.#....', '........#...#...',
+      '.........#.#.#..', '..........#...#.', '...........#.#..', '............#...',
+      '.##########.....', '#..........###..', '.#.............#', '..#########.###.',
+      '.....#....#.....', '....#......#....', '...##########...', '................',
+    ],
+    smoke: [
+      '................', '.........###....', '........#...#...', '.....###.....#..',
+      '....#.........#.', '...#..........#.', '....#........#..', '.....##....##...',
+      '.......####.....', '......#.........', '.....#..........', '.....#..........',
+      '......#.........', '.......#........', '......###.......', '.....#####......',
+    ],
+    ember: [
+      '....#.......#...', '................', '..#....#........', '..........#.....',
+      '.....#..........', '................', '....######......', '...#......#.....',
+      '..#..##....#....', '.#..#..#....#...', '.#...##.....#...', '.#..........#...',
+      '..#........#....', '...########.....', '................', '................',
+    ],
+    bubble: [
+      '................', '.############...', '#............#..', '#..##....##..#..',
+      '#..##....##..#..', '#............#..', '#...######...#..', '#............#..',
+      '.#####..######..', '.....#.#........', '.....##.........', '.....#..........',
+      '................', '................', '................', '................',
+    ],
+  };
+
+  /* ── Rendering ───────────────────────────────────────────────────────────── */
+
+  function check(name, rows) {
+    const w = rows[0].length;
+    rows.forEach((r, i) => { if (r.length !== w) throw new Error(`PX: sprite "${name}" row ${i} has ${r.length} px, expected ${w}`); });
+    return w;
+  }
+
+  /** Path data for every pixel equal to `ch` (runs merged), offset by ox/oy */
+  function runPath(rows, ch, ox, oy) {
+    let d = '';
+    rows.forEach((row, y) => {
+      for (let x = 0; x < row.length; x++) {
+        if (row[x] !== ch) continue;
+        let n = 1;
+        while (row[x + n] === ch) n++;
+        d += `M${ox + x} ${oy + y}h${n}v1h-${n}z`;
+        x += n - 1;
+      }
+    });
+    return d;
+  }
+
+  /** Sprite → '<path fill=… d=…/>' per colour. opts: { x, y, pal (overrides), cls } */
+  function sprite(nameOrRows, opts) {
+    const o = opts || {};
+    const rows = typeof nameOrRows === 'string' ? SPRITES[nameOrRows] : nameOrRows;
+    if (!rows) throw new Error(`PX: unknown sprite "${nameOrRows}"`);
+    check(String(nameOrRows), rows);
+    const pal = Object.assign({}, PAL, o.pal || {});
+    const chars = [...new Set(rows.join(''))].filter((c) => c !== '.');
+    const cls = o.cls ? ` class="${o.cls}"` : '';
+    return `<g${cls}>${chars.map((c) => `<path fill="${pal[c] || c}" d="${runPath(rows, c, o.x || 0, o.y || 0)}"/>`).join('')}</g>`;
+  }
+
+  /** Icon → one path (fill = currentColor unless given) */
+  function icon(name, opts) {
+    const o = opts || {};
+    const rows = ICONS[name];
+    if (!rows) throw new Error(`PX: unknown icon "${name}"`);
+    check(name, rows);
+    return `<path fill="${o.fill || 'currentColor'}" d="${runPath(rows, '#', o.x || 0, o.y || 0)}"/>`;
+  }
+
+  /** A complete, self-contained SVG document (for files and <img>) */
+  function svgDoc(o) {
+    const title = o.title ? `<title>${o.title}</title>` : '';
+    const desc = o.desc ? `<desc>${o.desc}</desc>` : '';
+    const style = o.css ? `<style>${o.css}</style>` : '';
+    const bg = o.bg ? `<rect width="${o.w}" height="${o.h}" fill="${o.bg}"/>` : '';
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${o.w} ${o.h}" width="${o.w * (o.scale || 1)}" height="${o.h * (o.scale || 1)}" shape-rendering="crispEdges" role="img">${title}${desc}${style}${bg}${o.body}</svg>`;
+  }
+
+  root.PX = { PAL, SPRITES, ICONS, sprite, icon, svgDoc, runPath };
+
+  /* ── Additions (art set): Pix as mono icon, 5×7 pixel font ───────────────── */
+
+  /* Pix as a single-colour icon (outline, eyes, mouth, antenna) — station 01 */
+  ICONS.pix = [
+    '.........#......', '........#.......', '...##########...', '..#..........#..',
+    '.#............#.', '.#..##....##..#.', '.#..##....##..#.', '.#............#.',
+    '.#....#..#....#.', '.#.##..##..##.#.', '.#............#.', '..#..........#..',
+    '...##########...', '....##....##....', '...###....###...', '................',
+  ];
+
+  /* 5×7 pixel font, caps only (lower case is upper-cased). '#' = pixel. Narrow glyphs keep their own width.
+     Advance = glyph width + 1. Unknown characters render as '?'. */
+  const FONT5x7 = {};
+  const F = (chars, rows) => { FONT5x7[chars] = rows; };
+  F('A', ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#']);
+  F('B', ['####.', '#...#', '#...#', '####.', '#...#', '#...#', '####.']);
+  F('C', ['.###.', '#...#', '#....', '#....', '#....', '#...#', '.###.']);
+  F('D', ['####.', '#...#', '#...#', '#...#', '#...#', '#...#', '####.']);
+  F('E', ['#####', '#....', '#....', '####.', '#....', '#....', '#####']);
+  F('F', ['#####', '#....', '#....', '####.', '#....', '#....', '#....']);
+  F('G', ['.###.', '#...#', '#....', '#.###', '#...#', '#...#', '.####']);
+  F('H', ['#...#', '#...#', '#...#', '#####', '#...#', '#...#', '#...#']);
+  F('I', ['###', '.#.', '.#.', '.#.', '.#.', '.#.', '###']);
+  F('J', ['..###', '...#.', '...#.', '...#.', '#..#.', '#..#.', '.##..']);
+  F('K', ['#...#', '#..#.', '#.#..', '##...', '#.#..', '#..#.', '#...#']);
+  F('L', ['#....', '#....', '#....', '#....', '#....', '#....', '#####']);
+  F('M', ['#...#', '##.##', '#.#.#', '#.#.#', '#...#', '#...#', '#...#']);
+  F('N', ['#...#', '#...#', '##..#', '#.#.#', '#..##', '#...#', '#...#']);
+  F('O', ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.']);
+  F('P', ['####.', '#...#', '#...#', '####.', '#....', '#....', '#....']);
+  F('Q', ['.###.', '#...#', '#...#', '#...#', '#.#.#', '#..#.', '.##.#']);
+  F('R', ['####.', '#...#', '#...#', '####.', '#.#..', '#..#.', '#...#']);
+  F('S', ['.####', '#....', '#....', '.###.', '....#', '....#', '####.']);
+  F('T', ['#####', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..']);
+  F('U', ['#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.']);
+  F('V', ['#...#', '#...#', '#...#', '#...#', '#...#', '.#.#.', '..#..']);
+  F('W', ['#...#', '#...#', '#...#', '#.#.#', '#.#.#', '#.#.#', '.#.#.']);
+  F('X', ['#...#', '#...#', '.#.#.', '..#..', '.#.#.', '#...#', '#...#']);
+  F('Y', ['#...#', '#...#', '.#.#.', '..#..', '..#..', '..#..', '..#..']);
+  F('Z', ['#####', '....#', '...#.', '..#..', '.#...', '#....', '#####']);
+  F('0', ['.###.', '#...#', '#..##', '#.#.#', '##..#', '#...#', '.###.']);
+  F('1', ['.#.', '##.', '.#.', '.#.', '.#.', '.#.', '###']);
+  F('2', ['.###.', '#...#', '....#', '...#.', '..#..', '.#...', '#####']);
+  F('3', ['#####', '...#.', '..#..', '...#.', '....#', '#...#', '.###.']);
+  F('4', ['...#.', '..##.', '.#.#.', '#..#.', '#####', '...#.', '...#.']);
+  F('5', ['#####', '#....', '####.', '....#', '....#', '#...#', '.###.']);
+  F('6', ['..##.', '.#...', '#....', '####.', '#...#', '#...#', '.###.']);
+  F('7', ['#####', '....#', '...#.', '..#..', '.#...', '.#...', '.#...']);
+  F('8', ['.###.', '#...#', '#...#', '.###.', '#...#', '#...#', '.###.']);
+  F('9', ['.###.', '#...#', '#...#', '.####', '....#', '...#.', '.##..']);
+  F(' ', ['...', '...', '...', '...', '...', '...', '...']);
+  F('.', ['.', '.', '.', '.', '.', '.', '#']);
+  F(',', ['..', '..', '..', '..', '.#', '.#', '#.']);
+  F(':', ['.', '.', '#', '.', '.', '#', '.']);
+  F('!', ['#', '#', '#', '#', '#', '.', '#']);
+  F('?', ['.###.', '#...#', '....#', '...#.', '..#..', '.....', '..#..']);
+  F('-', ['....', '....', '....', '####', '....', '....', '....']);
+  F('·', ['..', '..', '..', '##', '##', '..', '..']);
+  F('/', ['....#', '...#.', '...#.', '..#..', '.#...', '.#...', '#....']);
+  F('&', ['.##..', '#..#.', '#.#..', '.#...', '#.#.#', '#..#.', '.##.#']);
+  F("'", ['#', '#', '.', '.', '.', '.', '.']);
+
+  const glyph = (ch) => FONT5x7[ch] || FONT5x7[ch.toUpperCase()] || FONT5x7['?'];
+  const LINE_H = 9; // 7 px glyph + 2 px leading
+
+  /** Width of one line (or the widest line) in px at the given scale (default 1) */
+  function textWidth(str, scale) {
+    const s = scale || 1;
+    return Math.max(...String(str).split('\n').map((line) => {
+      const w = [...line].reduce((a, ch) => a + glyph(ch)[0].length + 1, 0);
+      return Math.max(0, w - 1) * s;
+    }));
+  }
+
+  /** Text → one '<path>' of merged pixel runs. opts: { x, y (top edge), fill, scale, align: 'left'|'center'|'right' }.
+      '\n' starts a new line (9 px line height × scale). Default fill = PAL.i (ink on night). */
+  function text(str, opts) {
+    const o = opts || {};
+    const s = o.scale || 1;
+    let d = '';
+    String(str).split('\n').forEach((line, li) => {
+      const lw = textWidth(line, s);
+      let cx = (o.x || 0) - (o.align === 'center' ? Math.floor(lw / 2) : o.align === 'right' ? lw : 0);
+      const cy = (o.y || 0) + li * LINE_H * s;
+      for (const ch of line) {
+        const rows = glyph(ch);
+        rows.forEach((row, ry) => {
+          for (let x = 0; x < row.length; x++) {
+            if (row[x] !== '#') continue;
+            let n = 1;
+            while (row[x + n] === '#') n++;
+            d += `M${cx + x * s} ${cy + ry * s}h${n * s}v${s}h-${n * s}z`;
+            x += n - 1;
+          }
+        });
+        cx += (rows[0].length + 1) * s;
+      }
+    });
+    return `<path fill="${o.fill || PAL.i}" d="${d}"/>`;
+  }
+
+  Object.assign(root.PX, { FONT5x7, text, textWidth });
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<style>
+  html, body { min-height: 100%; }
+  body {
+    font-size: clamp(15px, 0.5vw + 10px, 19px);
+    padding: clamp(10px, 1.6vw, 24px);
+    display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 14px);
+    min-height: 100vh;
+  }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; }
+  .top h1 { margin: 0; font-size: clamp(32px, 4.4vw, 64px); color: var(--fire-3); }
+  .top p { margin: 0; color: var(--muted); }
+  .top b { color: var(--ink); font-weight: 600; }
+
+  main { flex: 1; display: grid; gap: clamp(10px, 1.4vw, 18px); grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: start; }
+  .panel { padding: clamp(10px, 1.2vw, 16px); min-width: 0; }
+
+  .qs { display: flex; flex-direction: column; gap: 4px; }
+  .qs-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  fieldset.q { margin: 0; padding: 5px 0; border: 0; border-top: 2px solid var(--night-4); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; align-items: center; }
+  fieldset.q:first-of-type { border-top: 0; }
+  fieldset.q legend { float: left; padding: 0; font-weight: 600; line-height: 1.3; }
+  fieldset.q legend .hint { display: block; font-weight: 400; font-size: 0.82em; color: var(--muted); }
+  .opts { display: flex; gap: 6px; }
+  .opts input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+  .opts label {
+    min-height: 44px; min-width: 52px; padding: 0 10px; display: grid; place-items: center; cursor: pointer;
+    font: 1.15em/1 var(--pixel); color: var(--ink); background: var(--night-3); border: 2px solid var(--night-4); white-space: nowrap;
+  }
+  .opts label:hover { background: var(--night-4); }
+  .opts input:checked + label { color: var(--night-0); background: var(--lcd-d); border-color: var(--lcd-e); box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--lcd-b); }
+  .opts input:focus-visible + label { outline: 3px solid var(--marker); outline-offset: 2px; }
+
+  .result { display: flex; flex-direction: column; gap: 10px; }
+  .lamp { display: flex; gap: 14px; align-items: center; }
+  .lamp svg { flex: none; width: clamp(64px, 7vw, 104px); height: auto; }
+  .verdict { margin: 0; font: clamp(26px, 2.4vw, 38px)/1 var(--pixel); color: var(--ink); }
+  .sub { margin: 4px 0 0; color: var(--muted); }
+  .lv-0 .verdict { color: var(--lcd-e); }
+  .lv-1 .verdict { color: var(--fire-3); }
+  .lv-2 .verdict { color: #ff8a70; }
+
+  .advice { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .advice li { display: grid; grid-template-columns: 4.6em 1fr; gap: 8px; font-size: 0.9em; line-height: 1.35; }
+  .advice .lv { font: 1.1em/1.2 var(--pixel); text-align: center; color: var(--night-0); align-self: start; padding: 1px 0; }
+  .advice .lv.l0 { background: var(--lcd-d); }
+  .advice .lv.l1 { background: var(--fire-2); }
+  .advice .lv.l2 { background: #ff8a70; }
+  .disclaimer { margin: 0; font-size: 0.82em; color: var(--muted); border-top: 2px solid var(--night-4); padding-top: 8px; }
+
+  .rules { grid-column: 1 / -1; }
+  .rules ol { margin: 6px 0 0; padding: 0; list-style: none; counter-reset: r; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+  .rules li { counter-increment: r; background: var(--night-1); border: 2px solid var(--night-4); padding: 6px 8px; font-size: 0.85em; line-height: 1.3; }
+  .rules li::before { content: counter(r); font: 1.5em/1 var(--pixel); color: var(--fire-2); margin-right: 6px; }
+
+  .mini { display: none; }
+  .glow { animation: fc-flicker calc(var(--step) * 4) steps(1, end) infinite; }
+  @keyframes fc-flicker { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.7; } }
+
+  @media (max-width: 900px) { .rules ol { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; }
+    .top h1 { font-size: 34px; }
+    .top .more { display: none; }
+    fieldset.q { grid-template-columns: 1fr; }
+    .mini { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 6px 10px; margin: -4px 0 0; background: var(--night-0); border: 2px solid var(--night-4); font-size: 0.9em; }
+    .mini svg { width: 28px; height: auto; flex: none; }
+    .mini strong { font: 1.3em/1 var(--pixel); font-weight: 400; }
+  }
+  @media (prefers-reduced-motion: reduce) { .glow { animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="px-title">Fireplace Check</h1>
+  <p><b>Is it OK to use AI for this?</b> <span class="more">Think of one real task and answer six questions.</span></p>
+</header>
+
+<div class="mini" id="mini" aria-hidden="true"></div>
+
+<main>
+  <form class="panel px-frame qs" id="form" aria-label="Six questions">
+    <div class="qs-head"><span class="px-label" id="count">0 of 6 answered</span><button class="px-btn" type="reset" id="reset">Reset</button></div>
+  </form>
+
+  <section class="panel px-frame result" id="result" aria-labelledby="verdict">
+    <div class="lamp">
+      <svg id="lantern" viewBox="0 0 22 24" class="pixelart" shape-rendering="crispEdges" aria-hidden="true"></svg>
+      <div><p class="verdict" id="verdict" aria-live="polite"></p><p class="sub" id="sub"></p></div>
+    </div>
+    <ul class="advice" id="advice" aria-label="Advice"></ul>
+    <p class="disclaimer">A conversation starter, not legal advice. Client contracts and your data protection contact have the last word.</p>
+  </section>
+
+  <section class="panel px-frame rules" aria-labelledby="rules-h">
+    <h2 class="px-label" id="rules-h" style="margin:0">Fireplace rules for VAVE</h2>
+    <ol>
+      <li>No client secrets in consumer chats.</li>
+      <li>Keys never live in code.</li>
+      <li>Every tool has an owner.</li>
+      <li>Ship small, review always.</li>
+      <li>Test what matters.</li>
+      <li>Respect licences and people.</li>
+      <li>Humans decide.</li>
+    </ol>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const QUESTIONS = [
+    ['conf', 'Does it involve confidential client material?', 'Briefs, unreleased designs, figures, anything under NDA.'],
+    ['pers', 'Does it involve personal data?', 'Names, e-mail addresses, photos or voices of real people.'],
+    ['pub', 'Will the output be public or client-facing?', 'Exhibition texts, pitch decks, a tool the client uses.'],
+    ['plan', 'Are you on a business plan that doesn’t train on your data?', 'A team or enterprise account with a data agreement.'],
+    ['owner', 'Is it clear who maintains it afterwards?', 'A named person who can fix it in six months.'],
+    ['review', 'Will a human review it before it’s used?', 'Someone who checks facts, rights and tone.'],
+  ];
+  const OPTS = [['yes', 'Yes'], ['no', 'No'], ['unsure', 'Not sure']];
+
+  const form = $('form');
+  QUESTIONS.forEach(([id, q, hint]) => {
+    const fs = document.createElement('fieldset');
+    fs.className = 'q';
+    fs.innerHTML = `<legend>${q}<span class="hint">${hint}</span></legend><div class="opts">` +
+      OPTS.map(([v, l]) => `<input type="radio" name="${id}" id="${id}-${v}" value="${v}"><label for="${id}-${v}">${l}</label>`).join('') + '</div>';
+    form.appendChild(fs);
+  });
+
+  /** One piece of advice per answer: [level 0 green · 1 yellow · 2 red, text] */
+  function advise(a) {
+    const safe = a.plan === 'yes';
+    const out = [];
+    const add = (lv, t) => out.push([lv, t]);
+    if (a.conf === 'yes') add(safe ? 1 : 2, safe ? 'Confidential material: fine on your business plan. Share only what the task needs and follow the client’s rules.'
+      : 'Confidential material without a business plan: don’t paste it. Use a business plan, or strip names, figures and visuals first.');
+    if (a.conf === 'unsure') add(1, 'Not sure if it’s confidential? Treat it as confidential until the project lead says otherwise.');
+    if (a.conf === 'no') add(0, 'No confidential material. Still a good habit: keep client names out of prompts.');
+    if (a.pers === 'yes') add(safe ? 1 : 2, safe ? 'Personal data: use only what’s needed, anonymise where you can, and check your data agreement covers it.'
+      : 'Personal data on a personal or free plan: don’t. Replace names and faces with placeholders first.');
+    if (a.pers === 'unsure') add(1, 'If someone could be identified from it, it counts as personal data. Anonymise first.');
+    if (a.pers === 'no') add(0, 'No personal data. One less thing to worry about.');
+    if (a.pub === 'yes') add(1, 'Public or client-facing: check facts, rights (fonts, images, code licences) and the brand before it goes out.');
+    if (a.pub === 'unsure') add(1, 'Assume it might travel. Check facts and rights as if it were public.');
+    if (a.pub === 'no') add(0, 'Internal only: room to experiment.');
+    if (a.plan === 'yes') add(0, 'Business plan: your work stays out of training. Client rules still apply.');
+    if (a.plan === 'no') add(1, 'Personal or free plan: fine for public information and general questions. Keep client and personal data out.');
+    if (a.plan === 'unsure') add(1, 'Ask whoever manages your AI accounts which plan you’re on before using real work data.');
+    if (a.owner === 'yes') add(0, 'Owner named. Keep a short how-to next to the tool.');
+    if (a.owner === 'no') add(1, 'No owner yet: name one, or treat it as a throwaway nobody relies on.');
+    if (a.owner === 'unsure') add(1, 'Agree on an owner before others start relying on it.');
+    const outside = a.pub === 'yes' || a.pub === 'unsure';
+    if (a.review === 'yes') add(0, 'Human review planned. That’s what catches confident errors.');
+    if (a.review === 'no') add(outside ? 2 : 1, outside ? 'Nothing AI-made goes to a client unchecked. Plan a second pair of eyes.'
+      : 'Fine for a quick internal draft, but have someone check it before anyone relies on it.');
+    if (a.review === 'unsure') add(1, 'Decide who reviews it. It takes minutes and saves embarrassment.');
+    return out;
+  }
+
+  const VERDICT = [
+    ['Green: go ahead.', 'Use AI for this, with the usual care.'],
+    ['Yellow: go, with care.', 'Fine to use once you’ve handled the yellow points.'],
+    ['Red: not like this.', 'Change the setup first (see the red points). Then it can work.'],
+  ];
+  const LEVEL = ['Green', 'Yellow', 'Red'];
+
+  /* Lantern sprite: t metal, G glass, F flame, H flame core */
+  const LANTERN = [
+    '.....tttt.....', '....t....t....', '....t....t....', '...tttttttt...', '..tttttttttt..',
+    '..tGGGGGGGGt..', '..tGGGGGGGGt..', '..tGGGFFGGGt..', '..tGGFFFFGGt..', '..tGGFHHFGGt..',
+    '..tGFFHHFFGt..', '..tGFHHHHFGt..', '..tGFHHHHFGt..', '..tGGFFFFGGt..', '..tGGGGGGGGt..',
+    '..tttttttttt..', '...tttttttt...', '....tttttt....',
+  ];
+  const LAMP_PAL = [
+    { G: '#306230', F: '#a9c431', H: '#e3efa8', halo: '#1b2d17' },
+    { G: '#6b4226', F: '#ffae00', H: '#fff6c8', halo: '#3a2414' },
+    { G: '#3a2414', F: '#e8483f', H: '#ffae00', halo: '#2e1210' },
+  ];
+  const DARK = { G: '#12210f', F: '#2a4123', H: '#306230', halo: 'none' };
+
+  function lanternSvg(lv) {
+    const p = lv == null ? DARK : LAMP_PAL[lv];
+    const halo = p.halo === 'none' ? '' : `<g class="glow"><rect x="1" y="5" width="20" height="16" fill="${p.halo}"/><rect x="0" y="8" width="22" height="10" fill="${p.halo}"/></g>`;
+    return halo + PX.sprite(LANTERN, { x: 4, y: 3, pal: { t: '#9fb48f', G: p.G, F: p.F, H: p.H } });
+  }
+
+  function answers() {
+    const a = {};
+    QUESTIONS.forEach(([id]) => { const el = form.querySelector(`input[name="${id}"]:checked`); if (el) a[id] = el.value; });
+    return a;
+  }
+
+  function render() {
+    const a = answers();
+    const n = Object.keys(a).length;
+    const list = advise(a);
+    const lv = list.length ? Math.max(...list.map((x) => x[0])) : null;
+    $('count').textContent = `${n} of 6 answered`;
+    $('result').className = 'panel px-frame result' + (lv == null ? '' : ' lv-' + lv);
+    $('lantern').innerHTML = lanternSvg(lv);
+    $('verdict').textContent = lv == null ? 'The lantern is dark.' : VERDICT[lv][0];
+    $('sub').textContent = lv == null ? 'Answer the questions to light it.' : VERDICT[lv][1] + (n < 6 ? ` (${6 - n} still open.)` : '');
+    list.sort((x, y) => y[0] - x[0]);
+    $('advice').innerHTML = list.map(([l, t]) => `<li><span class="lv l${l}">${LEVEL[l]}</span><span>${t}</span></li>`).join('');
+    $('mini').innerHTML = `<svg viewBox="0 0 22 24" class="pixelart" shape-rendering="crispEdges">${lanternSvg(lv)}</svg><strong>${lv == null ? 'Lantern dark' : VERDICT[lv][0]}</strong><span>${n} of 6</span>`;
+  }
+
+  form.addEventListener('change', render);
+  form.addEventListener('reset', () => setTimeout(() => { render(); form.querySelector('input').focus(); }, 0));
+  render();
+})();
+</script>
+</body>
+</html>

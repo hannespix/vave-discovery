@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Oracle · Campfire</title>
+<style>/* shared/campfire.css */
+/* Campfire — shared look for every page, deck and module of the talk.
+   pix·el LCD night (greens) + one warm thing: the fire. Everything blocky moves in steps(); nothing eases smoothly.
+   Single source for colours and type: decks and modules link this file, tools/build.mjs inlines it. */
+
+@font-face {
+  font-family: "Jersey 10";
+  src: url("data:font/woff2;base64,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") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  /* Night: the LCD greens of pix·el, darkened for a campfire evening */
+  --night-0: #050a05;
+  --night-1: #0c170b;
+  --night-2: #12210f;
+  --night-3: #1b2d17;
+  --night-4: #2a4123;
+  --lcd-a: #306230;
+  --lcd-b: #4c7420;
+  --lcd-c: #7a9a1c;
+  --lcd-d: #a9c431;
+  --lcd-e: #d4ef78;
+  --lcd-f: #e3efa8;
+  /* Fire: the only warm colours (pixletics flame + pix·el LED) */
+  --fire-0: #e8483f;
+  --fire-1: #ff5a36;
+  --fire-2: #ffae00;
+  --fire-3: #ffe06a;
+  --fire-4: #fff6c8;
+  --wood-0: #3a2414;
+  --wood-1: #6b4226;
+  --wood-2: #9a6a3c;
+  /* Text and lines */
+  --ink: #e2f0c6;
+  --muted: #9fb48f;
+  --line: #2a4123;
+  --marker: #ffe45e;
+  --bg: var(--night-1);
+  --card: var(--night-2);
+
+  --pixel: "Jersey 10", "Courier New", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Courier New", monospace;
+
+  --px: 4px;            /* one art pixel on screen (scenes scale in whole multiples) */
+  --step: 125ms;        /* one animation frame = 8 fps */
+  --gutter: max(16px, 4vw);
+  --radius: 0;          /* pixel world: no rounded corners */
+}
+
+/* Light variant for projectors that wash out dark slides: add data-theme="light" on <html> */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f7ef;
+  --card: #ffffff;
+  --ink: #12280f;
+  --muted: #56654f;
+  --line: #d3dcc4;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 18px/1.55 var(--sans);
+}
+
+/* Headlines and labels in the pixel font — big, never for long sentences */
+.px-title { font-family: var(--pixel); font-weight: 400; letter-spacing: 0.02em; line-height: 0.95; }
+.px-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+/* Pixel art: crisp at every scale */
+.pixelart, .pixelart svg, svg.pixelart { image-rendering: pixelated; shape-rendering: crispEdges; }
+
+/* Pixel frame: a 1-art-pixel border with cut corners, like an old handheld UI */
+.px-frame {
+  background: var(--card);
+  border: var(--px) solid var(--night-4);
+  box-shadow: 0 0 0 var(--px) var(--night-0), var(--px) var(--px) 0 var(--px) var(--night-0);
+}
+
+/* Buttons that feel like hardware keys */
+.px-btn {
+  font: 20px/1 var(--pixel);
+  color: var(--night-0);
+  background: var(--lcd-d);
+  border: 0;
+  padding: 12px 18px;
+  min-height: 44px;
+  cursor: pointer;
+  box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--lcd-b), 0 var(--px) 0 var(--night-0);
+}
+.px-btn:hover { background: var(--lcd-e); }
+.px-btn:active { transform: translateY(var(--px)); box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--lcd-b); }
+.px-btn.fire { background: var(--fire-2); box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--fire-1), 0 var(--px) 0 var(--night-0); }
+.px-btn.fire:hover { background: var(--fire-3); }
+
+:focus-visible { outline: 3px solid var(--marker); outline-offset: 3px; }
+
+/* Flicker helpers for HTML (SVG scenes carry their own copy of these keyframes) */
+@keyframes px-flicker { 0% { opacity: 1; } 50% { opacity: 0.82; } 100% { opacity: 1; } }
+@keyframes px-frames-3 { from { transform: translateX(0); } to { transform: translateX(-300%); } }
+@keyframes px-blink { 0%, 92% { opacity: 1; } 93%, 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+<script>/* shared/pixel.js */
+/* Campfire pixel kit — sprites as text grids, rendered to crisp SVG paths.
+   Classic script (no modules): in the browser it sets window.PX, in Node tools/*.mjs load it with vm and read
+   globalThis.PX. Same idea as pix·el's iconPath(): every run of equal pixels in a row becomes one rect path.
+   One character = one colour from PAL; '.' is transparent. */
+(function (root) {
+  'use strict';
+
+  /* Palette: pix·el LCD night + fire. Same values as shared/campfire.css (standalone SVGs can't read CSS vars). */
+  const PAL = {
+    k: '#050a05', // night-0, outlines in the dark
+    g: '#0f380f', // LCD ink, Pix outline
+    a: '#306230', b: '#4c7420', c: '#7a9a1c', d: '#a9c431', e: '#d4ef78', f: '#e3efa8',
+    R: '#e8483f', r: '#ff5a36', o: '#ffae00', y: '#ffe06a', w: '#fff6c8',
+    W: '#3a2414', m: '#6b4226', n: '#9a6a3c',
+    M: '#ffe45e', // marker / spark yellow
+    i: '#e2f0c6', // text ink on night
+    s: '#56654f', t: '#9fb48f', // smoke / stone greys
+    N: '#0c170b', // night-1 background
+  };
+
+  /* ── Sprites ─────────────────────────────────────────────────────────────── */
+  const SPRITES = {
+    /* Pix, the pix·el mascot (hannespix/pix-el site/icons.js MASCOT), as colour rows. 16×16. */
+    pix: [
+      '.........M......',
+      '........g.......',
+      '...gggggggggg...',
+      '..gffffffffffg..',
+      '.gffffffffffffg.',
+      '.gffggffffggffg.',
+      '.gffggffffggffg.',
+      '.gffffffffffffg.',
+      '.gffffgffgffffg.',
+      '.gfccffggffccfg.',
+      '.gffffffffffffg.',
+      '..gffffffffffg..',
+      '...gggggggggg...',
+      '....gg....gg....',
+      '...ggg....ggg...',
+      '................',
+    ],
+    /* Pix with closed eyes (blink frame) */
+    pixBlink: [
+      '.........M......',
+      '........g.......',
+      '...gggggggggg...',
+      '..gffffffffffg..',
+      '.gffffffffffffg.',
+      '.gffffffffffffg.',
+      '.gffggffffggffg.',
+      '.gffffffffffffg.',
+      '.gffffgffgffffg.',
+      '.gfccffggffccfg.',
+      '.gffffffffffffg.',
+      '..gffffffffffg..',
+      '...gggggggggg...',
+      '....gg....gg....',
+      '...ggg....ggg...',
+      '................',
+    ],
+    /* Flame icon from pixletics (index.html, 12×14) */
+    flame: [
+      '.....rr.....',
+      '....rrrr....',
+      '....rror....',
+      '...rroorr...',
+      '...rooor....',
+      '..rrooorr...',
+      '..rooooor...',
+      '.rroooyoor..',
+      '.roooyyoor..',
+      '.roooyyyor..',
+      '.rroooyoor..',
+      '..rooooor...',
+      '..rrooorr...',
+      '...rrrrr....',
+    ],
+    /* Campfire flames, three frames (16×16) — cycle with steps() for a crackle */
+    fire1: [
+      '.......r........',
+      '.......r....r...',
+      '......rr....r...',
+      '..r...ror..rr...',
+      '..r..rroor.rr...',
+      '..rr.roooorror..',
+      '..rrrooyoooorr..',
+      '.rrooooyyoooorr.',
+      '.rroooyyyyoooor.',
+      '.rooooyywyyooor.',
+      '.roooyywwyyooor.',
+      '.rooyyywwwyyoor.',
+      '..rooyywwyyoor..',
+      '..rrooyyyyoorr..',
+      '...rrooooooor...',
+      '....rrrrrrrr....',
+    ],
+    fire2: [
+      '....r...........',
+      '....r......r....',
+      '...rr.....rr....',
+      '...ror...rror...',
+      '..rroor..roor...',
+      '..roooorrooor...',
+      '..rooyooooyor...',
+      '.rrooyyooyyorr..',
+      '.roooyyyyyyoor..',
+      '.rooyyywyyyoorr.',
+      '.rooyywwwyyooor.',
+      '.rooyywwwwyyoor.',
+      '..rooyywwyyoor..',
+      '..rrooyyyyoorr..',
+      '...rrooooooor...',
+      '....rrrrrrrr....',
+    ],
+    fire3: [
+      '..........r.....',
+      '...r......r.....',
+      '...r.....rr.....',
+      '..rr....ror..r..',
+      '..ror..rroor.r..',
+      '.rroor.roooorr..',
+      '.rooooroooyoor..',
+      '.roooyyooyyoorr.',
+      '.rooyyyyyyyooor.',
+      '.rooyywwyyyooor.',
+      '.roooyywwwyyoor.',
+      '.rooyyywwwyyoor.',
+      '..rooyywwyyoor..',
+      '..rrooyyyyoorr..',
+      '...rrooooooor...',
+      '....rrrrrrrr....',
+    ],
+    /* Crossed logs under the fire (20×6) */
+    logs: [
+      '..WW............WW..',
+      '.WmmWW........WWmmW.',
+      '.WnmmmWWW..WWWmmmnW.',
+      '..WWmmmmmWWmmmmmWW..',
+      '....WWWmmmmmmWWW....',
+      '.......WWWWWW.......',
+    ],
+    /* A single spark / ember (3×3) */
+    spark: [
+      '.y.',
+      'yMy',
+      '.y.',
+    ],
+  };
+
+  /* Single-colour 16×16 icons, '#' = pixel (pix·el icon format). One per station of the talk. */
+  const ICONS = {
+    tent: [
+      '................', '.......##.......', '......#..#......', '.....#....#.....',
+      '.....#.##.#.....', '....#..##..#....', '....#.#..#.#....', '...#..#..#..#...',
+      '...#.#....#.#...', '..#..#....#..#..', '..#.#......#.#..', '.#..#......#..#.',
+      '################', '................', '................', '................',
+    ],
+    spark: [ // pix·el icons.js "spark"
+      '......#.........', '......#.........', '.....###........', '.....###........',
+      '....#####.......', '..#########.....', '#############...', '..#########.....',
+      '....#####.......', '.....###........', '.....###....#...', '......#.....#...',
+      '......#...#####.', '............#...', '............#...', '................',
+    ],
+    kindling: [
+      '................', '.......#........', '......##........', '......#.#.......',
+      '.....#..#.......', '.....#.##.......', '......##........', '................',
+      '..#..........#..', '...##......##...', '.....##..##.....', '.......##.......',
+      '.....##..##.....', '...##......##...', '..#..........#..', '................',
+    ],
+    fire: [
+      '.......#........', '......##........', '......#.#....#..', '.....#...#..##..',
+      '....#....#.#.#..', '....#.##..#..#..', '...#.#..#....#..', '...#.#..#...#...',
+      '...#..##....#...', '....#......#....', '.....######.....', '................',
+      '.##############.', '#..#........#..#', '.##############.', '................',
+    ],
+    forge: [
+      '................', '..........#.....', '.........#.#....', '........#...#...',
+      '.........#.#.#..', '..........#...#.', '...........#.#..', '............#...',
+      '.##########.....', '#..........###..', '.#.............#', '..#########.###.',
+      '.....#....#.....', '....#......#....', '...##########...', '................',
+    ],
+    smoke: [
+      '................', '.........###....', '........#...#...', '.....###.....#..',
+      '....#.........#.', '...#..........#.', '....#........#..', '.....##....##...',
+      '.......####.....', '......#.........', '.....#..........', '.....#..........',
+      '......#.........', '.......#........', '......###.......', '.....#####......',
+    ],
+    ember: [
+      '....#.......#...', '................', '..#....#........', '..........#.....',
+      '.....#..........', '................', '....######......', '...#......#.....',
+      '..#..##....#....', '.#..#..#....#...', '.#...##.....#...', '.#..........#...',
+      '..#........#....', '...########.....', '................', '................',
+    ],
+    bubble: [
+      '................', '.############...', '#............#..', '#..##....##..#..',
+      '#..##....##..#..', '#............#..', '#...######...#..', '#............#..',
+      '.#####..######..', '.....#.#........', '.....##.........', '.....#..........',
+      '................', '................', '................', '................',
+    ],
+  };
+
+  /* ── Rendering ───────────────────────────────────────────────────────────── */
+
+  function check(name, rows) {
+    const w = rows[0].length;
+    rows.forEach((r, i) => { if (r.length !== w) throw new Error(`PX: sprite "${name}" row ${i} has ${r.length} px, expected ${w}`); });
+    return w;
+  }
+
+  /** Path data for every pixel equal to `ch` (runs merged), offset by ox/oy */
+  function runPath(rows, ch, ox, oy) {
+    let d = '';
+    rows.forEach((row, y) => {
+      for (let x = 0; x < row.length; x++) {
+        if (row[x] !== ch) continue;
+        let n = 1;
+        while (row[x + n] === ch) n++;
+        d += `M${ox + x} ${oy + y}h${n}v1h-${n}z`;
+        x += n - 1;
+      }
+    });
+    return d;
+  }
+
+  /** Sprite → '<path fill=… d=…/>' per colour. opts: { x, y, pal (overrides), cls } */
+  function sprite(nameOrRows, opts) {
+    const o = opts || {};
+    const rows = typeof nameOrRows === 'string' ? SPRITES[nameOrRows] : nameOrRows;
+    if (!rows) throw new Error(`PX: unknown sprite "${nameOrRows}"`);
+    check(String(nameOrRows), rows);
+    const pal = Object.assign({}, PAL, o.pal || {});
+    const chars = [...new Set(rows.join(''))].filter((c) => c !== '.');
+    const cls = o.cls ? ` class="${o.cls}"` : '';
+    return `<g${cls}>${chars.map((c) => `<path fill="${pal[c] || c}" d="${runPath(rows, c, o.x || 0, o.y || 0)}"/>`).join('')}</g>`;
+  }
+
+  /** Icon → one path (fill = currentColor unless given) */
+  function icon(name, opts) {
+    const o = opts || {};
+    const rows = ICONS[name];
+    if (!rows) throw new Error(`PX: unknown icon "${name}"`);
+    check(name, rows);
+    return `<path fill="${o.fill || 'currentColor'}" d="${runPath(rows, '#', o.x || 0, o.y || 0)}"/>`;
+  }
+
+  /** A complete, self-contained SVG document (for files and <img>) */
+  function svgDoc(o) {
+    const title = o.title ? `<title>${o.title}</title>` : '';
+    const desc = o.desc ? `<desc>${o.desc}</desc>` : '';
+    const style = o.css ? `<style>${o.css}</style>` : '';
+    const bg = o.bg ? `<rect width="${o.w}" height="${o.h}" fill="${o.bg}"/>` : '';
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${o.w} ${o.h}" width="${o.w * (o.scale || 1)}" height="${o.h * (o.scale || 1)}" shape-rendering="crispEdges" role="img">${title}${desc}${style}${bg}${o.body}</svg>`;
+  }
+
+  root.PX = { PAL, SPRITES, ICONS, sprite, icon, svgDoc, runPath };
+
+  /* ── Additions (art set): Pix as mono icon, 5×7 pixel font ───────────────── */
+
+  /* Pix as a single-colour icon (outline, eyes, mouth, antenna) — station 01 */
+  ICONS.pix = [
+    '.........#......', '........#.......', '...##########...', '..#..........#..',
+    '.#............#.', '.#..##....##..#.', '.#..##....##..#.', '.#............#.',
+    '.#....#..#....#.', '.#.##..##..##.#.', '.#............#.', '..#..........#..',
+    '...##########...', '....##....##....', '...###....###...', '................',
+  ];
+
+  /* 5×7 pixel font, caps only (lower case is upper-cased). '#' = pixel. Narrow glyphs keep their own width.
+     Advance = glyph width + 1. Unknown characters render as '?'. */
+  const FONT5x7 = {};
+  const F = (chars, rows) => { FONT5x7[chars] = rows; };
+  F('A', ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#']);
+  F('B', ['####.', '#...#', '#...#', '####.', '#...#', '#...#', '####.']);
+  F('C', ['.###.', '#...#', '#....', '#....', '#....', '#...#', '.###.']);
+  F('D', ['####.', '#...#', '#...#', '#...#', '#...#', '#...#', '####.']);
+  F('E', ['#####', '#....', '#....', '####.', '#....', '#....', '#####']);
+  F('F', ['#####', '#....', '#....', '####.', '#....', '#....', '#....']);
+  F('G', ['.###.', '#...#', '#....', '#.###', '#...#', '#...#', '.####']);
+  F('H', ['#...#', '#...#', '#...#', '#####', '#...#', '#...#', '#...#']);
+  F('I', ['###', '.#.', '.#.', '.#.', '.#.', '.#.', '###']);
+  F('J', ['..###', '...#.', '...#.', '...#.', '#..#.', '#..#.', '.##..']);
+  F('K', ['#...#', '#..#.', '#.#..', '##...', '#.#..', '#..#.', '#...#']);
+  F('L', ['#....', '#....', '#....', '#....', '#....', '#....', '#####']);
+  F('M', ['#...#', '##.##', '#.#.#', '#.#.#', '#...#', '#...#', '#...#']);
+  F('N', ['#...#', '#...#', '##..#', '#.#.#', '#..##', '#...#', '#...#']);
+  F('O', ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.']);
+  F('P', ['####.', '#...#', '#...#', '####.', '#....', '#....', '#....']);
+  F('Q', ['.###.', '#...#', '#...#', '#...#', '#.#.#', '#..#.', '.##.#']);
+  F('R', ['####.', '#...#', '#...#', '####.', '#.#..', '#..#.', '#...#']);
+  F('S', ['.####', '#....', '#....', '.###.', '....#', '....#', '####.']);
+  F('T', ['#####', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..']);
+  F('U', ['#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.']);
+  F('V', ['#...#', '#...#', '#...#', '#...#', '#...#', '.#.#.', '..#..']);
+  F('W', ['#...#', '#...#', '#...#', '#.#.#', '#.#.#', '#.#.#', '.#.#.']);
+  F('X', ['#...#', '#...#', '.#.#.', '..#..', '.#.#.', '#...#', '#...#']);
+  F('Y', ['#...#', '#...#', '.#.#.', '..#..', '..#..', '..#..', '..#..']);
+  F('Z', ['#####', '....#', '...#.', '..#..', '.#...', '#....', '#####']);
+  F('0', ['.###.', '#...#', '#..##', '#.#.#', '##..#', '#...#', '.###.']);
+  F('1', ['.#.', '##.', '.#.', '.#.', '.#.', '.#.', '###']);
+  F('2', ['.###.', '#...#', '....#', '...#.', '..#..', '.#...', '#####']);
+  F('3', ['#####', '...#.', '..#..', '...#.', '....#', '#...#', '.###.']);
+  F('4', ['...#.', '..##.', '.#.#.', '#..#.', '#####', '...#.', '...#.']);
+  F('5', ['#####', '#....', '####.', '....#', '....#', '#...#', '.###.']);
+  F('6', ['..##.', '.#...', '#....', '####.', '#...#', '#...#', '.###.']);
+  F('7', ['#####', '....#', '...#.', '..#..', '.#...', '.#...', '.#...']);
+  F('8', ['.###.', '#...#', '#...#', '.###.', '#...#', '#...#', '.###.']);
+  F('9', ['.###.', '#...#', '#...#', '.####', '....#', '...#.', '.##..']);
+  F(' ', ['...', '...', '...', '...', '...', '...', '...']);
+  F('.', ['.', '.', '.', '.', '.', '.', '#']);
+  F(',', ['..', '..', '..', '..', '.#', '.#', '#.']);
+  F(':', ['.', '.', '#', '.', '.', '#', '.']);
+  F('!', ['#', '#', '#', '#', '#', '.', '#']);
+  F('?', ['.###.', '#...#', '....#', '...#.', '..#..', '.....', '..#..']);
+  F('-', ['....', '....', '....', '####', '....', '....', '....']);
+  F('·', ['..', '..', '..', '##', '##', '..', '..']);
+  F('/', ['....#', '...#.', '...#.', '..#..', '.#...', '.#...', '#....']);
+  F('&', ['.##..', '#..#.', '#.#..', '.#...', '#.#.#', '#..#.', '.##.#']);
+  F("'", ['#', '#', '.', '.', '.', '.', '.']);
+
+  const glyph = (ch) => FONT5x7[ch] || FONT5x7[ch.toUpperCase()] || FONT5x7['?'];
+  const LINE_H = 9; // 7 px glyph + 2 px leading
+
+  /** Width of one line (or the widest line) in px at the given scale (default 1) */
+  function textWidth(str, scale) {
+    const s = scale || 1;
+    return Math.max(...String(str).split('\n').map((line) => {
+      const w = [...line].reduce((a, ch) => a + glyph(ch)[0].length + 1, 0);
+      return Math.max(0, w - 1) * s;
+    }));
+  }
+
+  /** Text → one '<path>' of merged pixel runs. opts: { x, y (top edge), fill, scale, align: 'left'|'center'|'right' }.
+      '\n' starts a new line (9 px line height × scale). Default fill = PAL.i (ink on night). */
+  function text(str, opts) {
+    const o = opts || {};
+    const s = o.scale || 1;
+    let d = '';
+    String(str).split('\n').forEach((line, li) => {
+      const lw = textWidth(line, s);
+      let cx = (o.x || 0) - (o.align === 'center' ? Math.floor(lw / 2) : o.align === 'right' ? lw : 0);
+      const cy = (o.y || 0) + li * LINE_H * s;
+      for (const ch of line) {
+        const rows = glyph(ch);
+        rows.forEach((row, ry) => {
+          for (let x = 0; x < row.length; x++) {
+            if (row[x] !== '#') continue;
+            let n = 1;
+            while (row[x + n] === '#') n++;
+            d += `M${cx + x * s} ${cy + ry * s}h${n * s}v${s}h-${n * s}z`;
+            x += n - 1;
+          }
+        });
+        cx += (rows[0].length + 1) * s;
+      }
+    });
+    return `<path fill="${o.fill || PAL.i}" d="${d}"/>`;
+  }
+
+  Object.assign(root.PX, { FONT5x7, text, textWidth });
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<style>
+  html, body { min-height: 100%; }
+  body {
+    font-size: clamp(15px, 0.6vw + 10px, 20px);
+    padding: clamp(10px, 1.6vw, 24px);
+    display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 16px);
+    min-height: 100vh;
+  }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; }
+  .top h1 { margin: 0; font-size: clamp(32px, 4.4vw, 64px); color: var(--fire-3); }
+  .top p { margin: 0; color: var(--muted); }
+  .top b { color: var(--ink); font-weight: 600; }
+
+  main { flex: 1; min-height: 0; display: grid; gap: clamp(10px, 1.6vw, 22px); grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); }
+  .col { display: flex; flex-direction: column; gap: clamp(10px, 1.6vw, 22px); min-height: 0; }
+  .col .stage { flex: 1; }
+  .panel { padding: clamp(10px, 1.4vw, 18px); display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .write { grid-area: write; }
+  .bars { grid-area: bars; }
+  .temp { grid-area: temp; gap: 4px; }
+  .stage { grid-area: stage; }
+
+  #sentence {
+    width: 100%; min-height: 52px; padding: 10px 12px;
+    font: 600 1.15em/1.3 var(--sans); color: var(--ink);
+    background: var(--night-0); border: var(--px) solid var(--night-4); border-radius: 0;
+  }
+  #sentence:focus-visible { outline: 3px solid var(--marker); outline-offset: 2px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chip {
+    font: 600 0.85em/1 var(--sans); color: var(--ink); background: var(--night-3);
+    border: 2px solid var(--night-4); min-height: 44px; padding: 8px 12px; cursor: pointer; border-radius: 0;
+  }
+  .chip:hover { background: var(--night-4); }
+  .chip.odd { border-style: dashed; border-color: var(--lcd-c); }
+  .px-btn[aria-pressed="true"] { background: var(--fire-1); color: var(--night-0); }
+
+  .ctx { margin: 0; color: var(--muted); font-size: 0.9em; }
+  .ctx q { color: var(--ink); font-weight: 600; quotes: "\201C" "\201D"; }
+  .note {
+    display: flex; gap: 10px; align-items: center; margin: 0; padding: 8px 10px;
+    background: var(--night-0); border: 2px dashed var(--marker); color: var(--marker); font-size: 0.9em;
+  }
+  .note svg { flex: none; width: 24px; height: 24px; }
+  .note[hidden] { display: none; }
+
+  ol.cands { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(4px, 0.7vw, 8px); }
+  .cand { display: grid; grid-template-columns: minmax(5.5em, 7.5em) 1fr 3.4em; align-items: center; gap: 10px; min-height: clamp(24px, 4vh, 44px); }
+  .cand .w { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cand .track { position: relative; height: 100%; min-height: 20px; background: var(--night-1); border: 2px solid var(--night-3); }
+  .cand .bar { position: absolute; inset: 0 auto 0 0; min-width: 4px; background: var(--fire-1); transition: width calc(var(--step) * 2) steps(4, end); }
+  .cand .bar::after { /* pixel flame tip */
+    content: ""; position: absolute; right: -8px; top: 25%; width: 8px; height: 50%; background: inherit;
+    box-shadow: 4px -4px 0 -0px var(--fire-3);
+  }
+  .cand:nth-child(1) .bar { background: var(--fire-3); }
+  .cand:nth-child(2) .bar, .cand:nth-child(3) .bar { background: var(--fire-2); }
+  .cand .pct { text-align: right; font-family: var(--mono); font-size: 0.9em; color: var(--ink); }
+
+  .temp-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .temp-head output { font-family: var(--pixel); font-size: 1.8em; line-height: 1; color: var(--fire-3); }
+  .mood { margin: 0; color: var(--muted); font-size: 0.9em; }
+  .stage { display: flex; align-items: flex-end; justify-content: center; min-height: 120px; padding-bottom: 8px; background: var(--night-0); border: var(--px) solid var(--night-3); overflow: hidden; }
+  .stage svg { display: block; width: calc(var(--fs, 4) * 24px); height: auto; }
+
+  /* range: square pixel thumb */
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 44px; background: transparent; cursor: pointer; margin: 0; }
+  input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--night-4); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 32px; margin-top: -12px; background: var(--fire-2); border: 0; box-shadow: inset 0 -4px 0 var(--fire-1); }
+  input[type=range]::-moz-range-track { height: 8px; background: var(--night-4); }
+  input[type=range]::-moz-range-thumb { width: 20px; height: 32px; background: var(--fire-2); border: 0; border-radius: 0; }
+  input[type=range]:focus-visible { outline: 3px solid var(--marker); outline-offset: 2px; }
+
+  /* fire frames: one visible at a time, steps of --step */
+  .fr { opacity: 0; animation: tf-frames calc(var(--step) * 3) steps(1, end) infinite; }
+  .fr.f1 { opacity: 1; }
+  .fr.f2 { animation-delay: calc(var(--step) * -2); }
+  .fr.f3 { animation-delay: calc(var(--step) * -1); }
+  @keyframes tf-frames { 0% { opacity: 1; } 33.333% { opacity: 0; } 100% { opacity: 0; } }
+  .spk { animation: tf-rise calc(var(--step) * 8) steps(8, end) infinite; }
+  .spk.s2 { animation-delay: calc(var(--step) * -3); }
+  .spk.s3 { animation-delay: calc(var(--step) * -5); }
+  @keyframes tf-rise { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-8px); opacity: 0; } }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (min-width: 761px) and (min-height: 560px) { body { height: 100vh; } }
+  @media (max-width: 760px) {
+    main { grid-template-columns: minmax(0, 1fr) 104px; grid-template-areas: "write write" "bars bars" "temp stage"; }
+    .col { display: contents; }
+    .top h1 { font-size: 34px; }
+    .top .more { display: none; }
+    #starters { flex-wrap: nowrap; overflow-x: auto; padding: 4px 4px 6px; margin: -4px -4px -6px; }
+    .chip { flex: none; }
+    .cand { min-height: 24px; grid-template-columns: 5.5em 1fr 3em; }
+    .stage { min-height: 0; }
+    .stage svg { width: calc((var(--fs, 4) + 1) * 12px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fr, .spk, .cand .bar { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="px-title">Token Oracle</h1>
+  <p><b>It predicts the next word.</b> <span class="more">It doesn't know things, it continues text it has read.</span></p>
+</header>
+
+<main>
+  <div class="col">
+  <section class="panel px-frame write" aria-label="Write">
+    <label class="px-label" for="sentence">Start of a sentence</label>
+    <input id="sentence" type="text" autocomplete="off" spellcheck="false" value="The client">
+    <div class="row">
+      <button class="px-btn fire" id="next" type="button">Continue</button>
+      <button class="px-btn" id="auto" type="button" aria-pressed="false">Auto · 12 words</button>
+      <button class="px-btn" id="clear" type="button">Clear</button>
+    </div>
+    <div class="row" id="starters" aria-label="Sentence starters"></div>
+  </section>
+  <div class="stage px-frame pixelart" aria-hidden="true"><svg id="fire" viewBox="0 0 24 26" shape-rendering="crispEdges"></svg></div>
+  </div>
+
+  <div class="col">
+  <section class="panel px-frame bars" aria-labelledby="bars-h">
+    <h2 class="px-label" id="bars-h" style="margin:0">Next word: top 8 candidates</h2>
+    <p class="ctx" id="ctx"></p>
+    <ol class="cands" id="cands"></ol>
+    <p class="note" id="note" hidden><svg viewBox="0 0 16 16" class="pixelart" aria-hidden="true"></svg><span>Never saw this, guessing from what's common.</span></p>
+  </section>
+
+  <section class="panel px-frame temp" aria-label="Temperature">
+    <div class="temp-head">
+      <label class="px-label" for="t">Temperature</label>
+      <output id="tout" for="t">0.7</output>
+    </div>
+    <input id="t" type="range" min="0.1" max="2" step="0.1" value="0.7">
+    <p class="mood" id="mood"></p>
+  </section>
+  </div>
+</main>
+<p class="sr" id="live" aria-live="polite"></p>
+
+<script>
+(function () {
+  'use strict';
+  /* ── Corpus: about 4 KB of short sentences the oracle has "read" ─────────── */
+  const CORPUS = `the client wants a bold idea for the new exhibition.
+the client loves the prototype and asks for one more version.
+the client wants the logo bigger and the budget smaller.
+the client asks for a quick sketch before friday.
+the client signs off the design after the second round.
+the client visits the studio to see the model.
+the studio builds a prototype in two days.
+the studio sketches the exhibition on a big wall.
+the studio team books the 3d printer for the model.
+the studio smells of coffee and fresh paint.
+the prototype is ugly but it works.
+the prototype shows the idea better than any slide.
+the prototype breaks when the client clicks too fast.
+the prototype gets better with every round of feedback.
+the exhibition opens in spring with a big light installation.
+the exhibition needs a clear story and a simple path.
+the exhibition tells the story of the brand in three rooms.
+visitors walk through the exhibition and touch everything.
+visitors love the interactive wall more than the text panels.
+around the campfire we tell stories about old projects.
+around the campfire the team shares ideas and marshmallows.
+the fire keeps us warm and gives us light.
+the fire needs wood and someone who watches it.
+the fire burns low when nobody feeds it.
+the fire grows when we add dry wood.
+a good fire needs air, wood and patience.
+a good prompt needs a goal, context and a clear finish line.
+a good design starts with a good question.
+a good prototype answers one question at a time.
+the ai predicts the next word from what it has read.
+the ai writes code when we describe the result.
+the ai sounds confident even when it is wrong.
+the ai only sees what is inside the context window.
+the ai forgets the chat but the files remember.
+the ai is a very well read autocomplete.
+we describe the result and the ai builds a first version.
+we look at the result and give feedback with screenshots.
+we test the tool before we send the link to the client.
+we keep the rules in a file so the ai remembers them.
+designers are good at feedback because they have taste.
+designers sketch, test and sketch again.
+the designer picks a colour and the ai follows the brand.
+the brand colour is violet and the accent is lime.
+the team votes on the best idea with three dots each.
+the team builds small tools for time, budgets and quotes.
+the team ships small and reviews always.
+every tool needs an owner and a short readme.
+every prototype starts as one html file.
+every exhibition starts with a story.
+one html file works offline on any laptop.
+one small step at a time keeps the fire burning.
+the model guesses the next word and then the next.
+the model has no idea what it does not see.
+the next word is a guess with a probability.
+a high temperature makes the fire wild and the words strange.
+a low temperature makes the answer safe and boring.
+the workshop starts at nine with coffee and a sketch.
+the deadline is close but the idea is good.
+the light installation glows in violet and green.
+the model of the stand comes out of the 3d printer.
+the 3d printer runs all night for the exhibition model.
+we build the stand in the hall two days before the opening.
+the opening night is loud, bright and full of people.
+the story is more important than the software.
+humans decide and the ai proposes.
+the smoke tells us when something burns.
+nobody wants a tool that nobody maintains.
+the sketch becomes a prototype and the prototype becomes a tool.`;
+
+  const S = '<s>', END = '.';
+  const DISPLAY = { ai: 'AI', '3d': '3D', html: 'HTML', i: 'I', '.': '. (end)' };
+  const tokenize = (text) => text.toLowerCase().replace(/[’]/g, "'").replace(/[^a-z0-9'.\s]/g, ' ')
+    .replace(/\./g, ' . ').split(/\s+/).filter(Boolean);
+
+  /* ── Model: unigram, bigram and trigram counts ───────────────────────────── */
+  const uni = new Map(), bi = new Map(), tri = new Map();
+  const inc = (m, k, w) => { let x = m.get(k); if (!x) { x = new Map(); m.set(k, x); } x.set(w, (x.get(w) || 0) + 1); };
+  CORPUS.split('\n').forEach((line) => {
+    const t = [S, S, ...tokenize(line)];
+    for (let i = 2; i < t.length; i++) {
+      if (t[i] !== END) uni.set(t[i], (uni.get(t[i]) || 0) + 1);
+      inc(bi, t[i - 1], t[i]);
+      inc(tri, t[i - 2] + ' ' + t[i - 1], t[i]);
+    }
+  });
+  const total = (m) => { let s = 0; for (const c of m.values()) s += c; return s; };
+
+  function context(text) {
+    const t = tokenize(text);
+    const lastDot = t.lastIndexOf(END);
+    const c = [S, S, ...t.slice(lastDot + 1)];
+    return [c[c.length - 2], c[c.length - 1]];
+  }
+
+  /** Interpolated scores, then softmax(log(score) / T) */
+  function predict(text, T) {
+    const [a, b] = context(text);
+    const t3 = tri.get(a + ' ' + b), t2 = bi.get(b);
+    const mode = t3 ? 'tri' : t2 ? 'bi' : 'uni';
+    const score = new Map();
+    const add = (m, wt) => { if (!m) return; const n = total(m); for (const [k, c] of m) score.set(k, (score.get(k) || 0) + wt * c / n); };
+    if (mode === 'tri') { add(t3, 0.72); add(t2, 0.23); add(uni, 0.05); }
+    else if (mode === 'bi') { add(t2, 0.85); add(uni, 0.15); }
+    else add(uni, 1);
+    const logits = [...score].map(([w, s]) => [w, Math.log(s) / T]);
+    const max = Math.max(...logits.map((x) => x[1]));
+    let z = 0; const probs = logits.map(([w, l]) => { const e = Math.exp(l - max); z += e; return [w, e]; });
+    probs.forEach((p) => { p[1] /= z; });
+    probs.sort((x, y) => y[1] - x[1]);
+    const seen = mode === 'tri' ? total(t3) : mode === 'bi' ? total(t2) : 0;
+    return { a, b, mode, seen, probs };
+  }
+
+  function sample(probs) {
+    let r = Math.random();
+    for (const [w, p] of probs) { r -= p; if (r <= 0) return w; }
+    return probs[0][0];
+  }
+
+  /* ── UI ──────────────────────────────────────────────────────────────────── */
+  const $ = (id) => document.getElementById(id);
+  const input = $('sentence'), slider = $('t'), cands = $('cands');
+  const show = (w) => DISPLAY[w] || w;
+  const shown = (w) => (w === S ? 'start of a sentence' : show(w));
+
+  const STARTERS = ['The client', 'The AI', 'Around the campfire', 'A good prompt', 'The prototype', 'The exhibition', 'My cat'];
+  STARTERS.forEach((s) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip' + (s === 'My cat' ? ' odd' : ''); b.textContent = s + ' …';
+    b.addEventListener('click', () => { stopAuto(); input.value = s; render(); });
+    $('starters').appendChild(b);
+  });
+  document.querySelector('#note svg').innerHTML = PX.icon('ember', { fill: 'var(--marker)' });
+
+  const T = () => Math.round(parseFloat(slider.value) * 10) / 10;
+
+  function render() {
+    const temp = T();
+    const res = predict(input.value, temp);
+    const top = res.probs.slice(0, 8);
+    cands.innerHTML = top.map(([w, p], i) => {
+      const pct = p * 100;
+      const label = pct < 1 ? '<1%' : Math.round(pct) + '%';
+      const width = Math.max(0, Math.round(pct / 2) * 2);
+      return `<li class="cand"><span class="w">${show(w)}</span><span class="track" aria-hidden="true"><span class="bar" style="width:${width}%"></span></span><span class="pct">${label}</span></li>`;
+    }).join('');
+    const ctx = res.a === S ? [res.b] : [res.a, res.b];
+    const ctxText = ctx.map(shown).join(' ');
+    let how;
+    if (res.mode === 'tri') how = `seen this pair ${res.seen}× in its reading`;
+    else if (res.mode === 'bi') how = `never saw the pair, but saw “${show(res.b)}” ${res.seen}×`;
+    else how = 'never saw this word';
+    $('ctx').innerHTML = `Looking at <q>${escapeHtml(ctxText)}</q>: ${how}.`;
+    $('note').hidden = res.mode !== 'uni';
+    $('live').textContent = 'Top guess: ' + show(top[0][0]) + ', ' + Math.round(top[0][1] * 100) + ' percent.';
+    return res;
+  }
+
+  function escapeHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+  function append(word) {
+    let v = input.value.replace(/\s+$/, '');
+    const atStart = !v || /\.$/.test(v);
+    if (word === END) { input.value = v + '.'; return; }
+    let w = show(word);
+    if (atStart) w = w.charAt(0).toUpperCase() + w.slice(1);
+    input.value = v + (v ? ' ' : '') + w;
+  }
+
+  function step() {
+    const res = predict(input.value, T());
+    append(sample(res.probs));
+    render();
+    input.scrollLeft = input.scrollWidth;
+  }
+
+  /* Auto: 12 words, one per beat */
+  let autoTimer = null, autoLeft = 0;
+  function stopAuto() {
+    clearTimeout(autoTimer); autoTimer = null;
+    $('auto').setAttribute('aria-pressed', 'false'); $('auto').textContent = 'Auto · 12 words';
+  }
+  function tick() {
+    if (autoLeft-- <= 0) { stopAuto(); return; }
+    step();
+    $('auto').textContent = 'Stop · ' + autoLeft + ' left';
+    autoTimer = setTimeout(tick, 420);
+  }
+  $('auto').addEventListener('click', () => {
+    if (autoTimer) { stopAuto(); return; }
+    autoLeft = 12; $('auto').setAttribute('aria-pressed', 'true'); tick();
+  });
+  $('next').addEventListener('click', () => { stopAuto(); step(); });
+  $('clear').addEventListener('click', () => { stopAuto(); input.value = ''; render(); input.focus(); });
+  input.addEventListener('input', () => { stopAuto(); render(); });
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); stopAuto(); step(); } });
+
+  /* ── Fire that follows the temperature ───────────────────────────────────── */
+  const fire = $('fire');
+  fire.innerHTML =
+    PX.sprite('spark', { x: 3, y: 6, cls: 'spk' }) + PX.sprite('spark', { x: 18, y: 3, cls: 'spk s2' }) + PX.sprite('spark', { x: 11, y: 0, cls: 'spk s3' }) +
+    PX.sprite('fire1', { x: 4, y: 4, cls: 'fr f1' }) + PX.sprite('fire2', { x: 4, y: 4, cls: 'fr f2' }) + PX.sprite('fire3', { x: 4, y: 4, cls: 'fr f3' }) +
+    PX.sprite('logs', { x: 2, y: 20 });
+  const sparks = fire.querySelectorAll('.spk');
+
+  function onTemp() {
+    const t = T();
+    $('tout').textContent = t.toFixed(1);
+    const stage = fire.parentNode;
+    stage.style.setProperty('--fs', String(Math.max(1, Math.round(1 + t * 2.5))));
+    stage.style.setProperty('--step', Math.round(190 - t * 60) + 'ms');
+    sparks.forEach((s, i) => { s.style.display = t >= 0.9 + i * 0.35 ? '' : 'none'; });
+    $('mood').textContent = t < 0.45 ? 'Careful: almost always picks the safest word.'
+      : t <= 1.1 ? 'Balanced: mostly sensible, sometimes surprising.'
+      : 'Wild: rare words get a real chance. Creative, often nonsense.';
+    render();
+  }
+  slider.addEventListener('input', onTemp);
+  onTemp();
+})();
+</script>
+</body>
+</html>

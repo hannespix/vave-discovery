@@ -229,8 +229,12 @@
   if (!window.Reveal) { console.warn('deck: reveal.js missing'); return; }
 
   // Some sandboxed iframes refuse history writes; then slides simply don't update the URL hash.
-  var hashOk = true;
-  try { window.history.replaceState(window.history.state, '', window.location.href); } catch (e) { hashOk = false; }
+  // As a PixiNotes card the deck runs in about:srcdoc: the test write below passes there, but reveal's own hash
+  // updates resolve against the host page's address and throw — so no hash at all in that case.
+  var hashOk = window.location.protocol !== 'about:';
+  if (hashOk) {
+    try { window.history.replaceState(window.history.state, '', window.location.href); } catch (e) { hashOk = false; }
+  }
 
   window.Reveal.initialize({
     width: 1280,
