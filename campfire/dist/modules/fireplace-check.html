@@ -311,11 +311,11 @@ body {
       '..#..##....#....', '.#..#..#....#...', '.#...##.....#...', '.#..........#...',
       '..#........#....', '...########.....', '................', '................',
     ],
-    bubble: [
-      '................', '.############...', '#............#..', '#..##....##..#..',
-      '#..##....##..#..', '#............#..', '#...######...#..', '#............#..',
-      '.#####..######..', '.....#.#........', '.....##.........', '.....#..........',
-      '................', '................', '................', '................',
+    bubble: [ // speech bubble with a question mark — no eyes, so it never reads as an emoji face
+      '................', '..############..', '.#............#.', '.#....####....#.',
+      '.#...##..##...#.', '.#.......##...#.', '.#......##....#.', '.#.....##.....#.',
+      '.#............#.', '.#.....##.....#.', '.#............#.', '..####.#######..',
+      '.....#.#........', '.....##.........', '.....#..........', '................',
     ],
   };
 
@@ -483,12 +483,13 @@ body {
   html, body { min-height: 100%; }
   body {
     font-size: clamp(15px, 0.5vw + 10px, 19px);
-    padding: clamp(10px, 1.6vw, 24px);
-    display: flex; flex-direction: column; gap: clamp(8px, 1.2vw, 14px);
+    padding: clamp(8px, 1.6vw, 24px);
+    display: flex; flex-direction: column; gap: clamp(6px, 1.2vw, 14px);
     min-height: 100vh;
   }
+  .px-label { font-size: 13px; }
   .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; }
-  .top h1 { margin: 0; font-size: clamp(32px, 4.4vw, 64px); color: var(--fire-3); }
+  .top h1 { margin: 0; font-size: clamp(30px, 4.4vw, 64px); color: var(--fire-3); }
   .top p { margin: 0; color: var(--muted); }
   .top b { color: var(--ink); font-weight: 600; }
 
@@ -500,7 +501,7 @@ body {
   fieldset.q { margin: 0; padding: 5px 0; border: 0; border-top: 2px solid var(--night-4); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; align-items: center; }
   fieldset.q:first-of-type { border-top: 0; }
   fieldset.q legend { float: left; padding: 0; font-weight: 600; line-height: 1.3; }
-  fieldset.q legend .hint { display: block; font-weight: 400; font-size: 0.82em; color: var(--muted); }
+  fieldset.q legend .hint { display: block; font-weight: 400; font-size: max(13px, 0.82em); color: var(--muted); }
   .opts { display: flex; gap: 6px; }
   .opts input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
   .opts label {
@@ -526,26 +527,66 @@ body {
   .advice .lv.l0 { background: var(--lcd-d); }
   .advice .lv.l1 { background: var(--fire-2); }
   .advice .lv.l2 { background: #ff8a70; }
-  .disclaimer { margin: 0; font-size: 0.82em; color: var(--muted); border-top: 2px solid var(--night-4); padding-top: 8px; }
+  .disclaimer { margin: 0; font-size: max(13px, 0.82em); color: var(--muted); border-top: 2px solid var(--night-4); padding-top: 8px; }
 
   .rules { grid-column: 1 / -1; }
   .rules ol { margin: 6px 0 0; padding: 0; list-style: none; counter-reset: r; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
-  .rules li { counter-increment: r; background: var(--night-1); border: 2px solid var(--night-4); padding: 6px 8px; font-size: 0.85em; line-height: 1.3; }
+  .rules li { counter-increment: r; background: var(--night-1); border: 2px solid var(--night-4); padding: 6px 8px; font-size: max(13px, 0.85em); line-height: 1.3; }
   .rules li::before { content: counter(r); font: 1.5em/1 var(--pixel); color: var(--fire-2); margin-right: 6px; }
 
   .mini { display: none; }
   .glow { animation: fc-flicker calc(var(--step) * 4) steps(1, end) infinite; }
   @keyframes fc-flicker { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.7; } }
 
+  .mini.lv-0 strong { color: var(--lcd-e); }
+  .mini.lv-1 strong { color: var(--fire-3); }
+  .mini.lv-2 strong { color: #ff8a70; }
+
   @media (max-width: 900px) { .rules ol { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  /* Projector: questions left at 24px, lantern, verdict and advice right; together they fill the first screen.
+     The rules strip follows below the fold (it is a takeaway, not part of the check). */
+  @media (min-width: 1024px) and (min-height: 600px) {
+    body { font-size: 24px; }
+    .px-label { font-size: 16px; }
+    .top p { font-size: 22px; }
+    main { grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr); grid-template-rows: calc(100vh - 120px) auto; grid-template-areas: "qs result" "rules rules"; align-items: stretch; }
+    .qs { grid-area: qs; gap: 2px; }
+    .result { grid-area: result; overflow: auto; min-height: 0; }
+    .rules { grid-area: rules; }
+    fieldset.q { padding: 6px 0; gap: 4px 16px; }
+    fieldset.q legend { line-height: 1.25; }
+    fieldset.q legend .hint { font-size: 18px; line-height: 1.3; }
+    .opts label { font-size: 24px; min-width: 60px; }
+    .qs-head .px-btn { font-size: 22px; }
+    .lamp svg { width: 96px; }
+    .verdict { font-size: 40px; }
+    .sub { font-size: 22px; line-height: 1.35; }
+    .advice li { font-size: 20px; grid-template-columns: 4.2em 1fr; }
+    .disclaimer { font-size: 16px; }
+    .rules li { font-size: 18px; }
+  }
   @media (max-width: 760px) {
     main { grid-template-columns: 1fr; }
-    .top h1 { font-size: 34px; }
+    .top h1 { font-size: 30px; }
     .top .more { display: none; }
     fieldset.q { grid-template-columns: 1fr; }
-    .mini { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 6px 10px; margin: -4px 0 0; background: var(--night-0); border: 2px solid var(--night-4); font-size: 0.9em; }
-    .mini svg { width: 28px; height: auto; flex: none; }
-    .mini strong { font: 1.3em/1 var(--pixel); font-weight: 400; }
+    .mini { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 4px 10px; margin: -2px 0 0; background: var(--night-0); border: 2px solid var(--night-4); font-size: 14px; }
+    .mini svg { width: 26px; height: auto; flex: none; }
+    .mini strong { font: 22px/1 var(--pixel); font-weight: 400; flex: 1; }
+  }
+  /* Card: a compact question list (question left, answers right, hints hidden) under the pinned verdict */
+  @media (max-width: 760px) and (min-width: 481px) {
+    fieldset.q { grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 2px 0; }
+    fieldset.q legend { font-size: 14px; line-height: 1.25; }
+    .opts { gap: 4px; }
+    .opts label { min-height: 36px; min-width: 44px; padding: 0 8px; font-size: 17px; }
+    .panel { padding: 6px 10px 8px; }
+    .qs { gap: 2px; }
+    .qs-head { margin-bottom: 0; }
+    .qs-head .px-btn { font-size: 16px; min-height: 36px; padding: 6px 12px; }
+  }
+  @media (max-height: 520px) {
+    fieldset.q legend .hint { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { .glow { animation: none !important; } }
 </style>
@@ -612,20 +653,23 @@ body {
   /** One piece of advice per answer: [level 0 green · 1 yellow · 2 red, text] */
   function advise(a) {
     const safe = a.plan === 'yes';
+    const planOffen = a.plan === undefined || a.plan === 'unsure';   // unanswered ≠ "no business plan"
     const out = [];
     const add = (lv, t) => out.push([lv, t]);
-    if (a.conf === 'yes') add(safe ? 1 : 2, safe ? 'Confidential material: fine on your business plan. Share only what the task needs and follow the client’s rules.'
-      : 'Confidential material without a business plan: don’t paste it. Use a business plan, or strip names, figures and visuals first.');
+    if (a.conf === 'yes') add(safe || planOffen ? 1 : 2, safe ? 'Confidential material: business plan first, then check the client contract or NDA. If unsure, ask the project lead. Share only what the task needs.'
+      : planOffen ? 'Confidential material: first find out which plan you’re on, then check the client contract or NDA before anything goes in.'
+      : 'Confidential material without a business plan: don’t paste it. Use a business plan and check the client contract, or strip names, figures and visuals first.');
     if (a.conf === 'unsure') add(1, 'Not sure if it’s confidential? Treat it as confidential until the project lead says otherwise.');
     if (a.conf === 'no') add(0, 'No confidential material. Still a good habit: keep client names out of prompts.');
-    if (a.pers === 'yes') add(safe ? 1 : 2, safe ? 'Personal data: use only what’s needed, anonymise where you can, and check your data agreement covers it.'
+    if (a.pers === 'yes') add(safe || planOffen ? 1 : 2, safe ? 'Personal data: use only what’s needed, anonymise where you can, and check a signed data processing agreement (DPA) covers it.'
+      : planOffen ? 'Personal data: find out which plan you’re on and whether a data processing agreement (DPA) is signed before using it.'
       : 'Personal data on a personal or free plan: don’t. Replace names and faces with placeholders first.');
     if (a.pers === 'unsure') add(1, 'If someone could be identified from it, it counts as personal data. Anonymise first.');
     if (a.pers === 'no') add(0, 'No personal data. One less thing to worry about.');
-    if (a.pub === 'yes') add(1, 'Public or client-facing: check facts, rights (fonts, images, code licences) and the brand before it goes out.');
+    if (a.pub === 'yes') add(1, 'Public or client-facing: check facts, rights (fonts, images, code licences, who owns the AI output under the tool’s terms and the client contract), labelling rules for AI-generated content, and the brand before it goes out.');
     if (a.pub === 'unsure') add(1, 'Assume it might travel. Check facts and rights as if it were public.');
     if (a.pub === 'no') add(0, 'Internal only: room to experiment.');
-    if (a.plan === 'yes') add(0, 'Business plan: your work stays out of training. Client rules still apply.');
+    if (a.plan === 'yes') add(0, 'Business plan: check the terms once — no training, retention period, where data is processed, a signed DPA. Client rules still apply.');
     if (a.plan === 'no') add(1, 'Personal or free plan: fine for public information and general questions. Keep client and personal data out.');
     if (a.plan === 'unsure') add(1, 'Ask whoever manages your AI accounts which plan you’re on before using real work data.');
     if (a.owner === 'yes') add(0, 'Owner named. Keep a short how-to next to the tool.');
@@ -684,6 +728,7 @@ body {
     $('sub').textContent = lv == null ? 'Answer the questions to light it.' : VERDICT[lv][1] + (n < 6 ? ` (${6 - n} still open.)` : '');
     list.sort((x, y) => y[0] - x[0]);
     $('advice').innerHTML = list.map(([l, t]) => `<li><span class="lv l${l}">${LEVEL[l]}</span><span>${t}</span></li>`).join('');
+    $('mini').className = 'mini' + (lv == null ? '' : ' lv-' + lv);
     $('mini').innerHTML = `<svg viewBox="0 0 22 24" class="pixelart" shape-rendering="crispEdges">${lanternSvg(lv)}</svg><strong>${lv == null ? 'Lantern dark' : VERDICT[lv][0]}</strong><span>${n} of 6</span>`;
   }
 

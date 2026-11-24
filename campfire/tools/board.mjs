@@ -121,7 +121,7 @@ const STATIONS = [
     cards: [
       note('The loop', 'The real skill is not prompting, it\'s **iterating with taste** — design work.\n\n- Describe → Build → **Look** → Feedback (screenshots beat words) → Repeat\n- **AI forgets, files remember:** CLAUDE.md, design principles, STATE.md\n- Give it your CD and it follows it\n\nDeck: *Kindling*, second half.'),
       { mcp: { op: 'mermaid', code: 'flowchart LR\n  A[Describe] --> B[Build]\n  B --> C[Look]\n  C --> D[Feedback]\n  D --> A\n  M[(Memory files)] -.-> A' }, slot: 'main', size: { w: 1100, h: 520 } },
-      note('Show', '- [VAVE prototype](https://hannespix.github.io/vave-discovery/prototyp/) — ⌘K palette, `t` starts the timer\n- [Liquid type](https://hannespix.github.io/liquidtype/) — type "VAVE", pull, hold to burst (not /MS/)\n- From phone to production: **19 PRs merged and live in one day** (29 Sep 2026)', 'mint', 'side', 560),
+      note('Show', '- [VAVE prototype](https://hannespix.github.io/vave-discovery/prototyp/) — ⌘K palette, `t` starts the timer\n- [Liquid type](https://hannespix.github.io/liquidtype/) — type "VAVE", pull, hold to burst\n- From phone to production: **19 PRs merged and live in one day** (29 Sep 2026)', 'mint', 'side', 560),
       note('Memory files', '- `CLAUDE.md` — how we work here\n- `design-principles.md` — the CD as rules\n- `STATE.md` — where we are, what\'s next', 'yellow', 'low1', 560),
       note('Bridge', '"How does a hobby fire become a forge that ships real software?"', 'white', 'low4', 520),
     ],

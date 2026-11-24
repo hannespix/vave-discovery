@@ -281,7 +281,7 @@ body { overflow: hidden; }
 .reveal .center .kicker { text-align: center; }
 .reveal .narrow { max-width: 920px; }
 .reveal .center.narrow, .reveal .center .narrow { margin-left: auto; margin-right: auto; }
-.reveal .mt { margin-top: 32px; }
+.reveal .mt { margin-top: 32px; }       /* final say: see the end of the file */
 .reveal .mt-lg { margin-top: 48px; }
 
 /* ── Pixel art ─────────────────────────────────────────────────────────── */
@@ -425,6 +425,7 @@ body { overflow: hidden; }
 .reveal .steps .hot-step { border-color: var(--deck-hot); }
 .reveal .steps.s5 > li { padding: 18px 14px; }   /* five steps in a row: smaller titles, no broken words */
 .reveal .steps.s5 strong { font-size: 38px; }
+.reveal .steps.s6 > li { font-size: 24px; overflow-wrap: normal; hyphens: none; }   /* six in a row: whole words only */
 
 /* Compact numbered rules (smoke deck) */
 .reveal ol.rules > li { padding-left: 52px; margin-bottom: 10px; font-size: 28px; line-height: 1.3; }
@@ -490,6 +491,11 @@ body { overflow: hidden; }
 @media print {
   .reveal-viewport::before { display: none; }
 }
+
+/* Spacing utilities win over the component resets above (.cards, .steps, .chips … set margin: 0 with the same
+   specificity and came later, so mt/mt-lg rendered as 0). Higher specificity, last in the file. */
+.reveal .slides .mt { margin-top: 32px; }
+.reveal .slides .mt-lg { margin-top: 48px; }
 </style>
 </head>
 <body>
@@ -518,13 +524,13 @@ body { overflow: hidden; }
     <li><h3>Repository</h3><p>A project folder with a perfect memory.</p></li>
     <li><h3>Commit</h3><p>A save point with a note.</p></li>
     <li><h3>Branch</h3><p>A parallel sketch. The main version stays safe.</p></li>
-    <li class="hot-card"><h3>Pull request</h3><p>A critique round before anything goes live.</p></li>
+    <li class="hot-card"><h3>Pull request</h3><p>A review round before it goes live: robots, a critic agent, or you.</p></li>
     <li><h3>Actions</h3><p>Robots that test and publish on every change.</p></li>
-    <li><h3>Pages</h3><p>Free hosting: the link you send to the client.</p></li>
+    <li><h3>Pages</h3><p>Free hosting. Public links for public things.</p></li>
   </ul>
   <aside class="notes">
     GitHub in six words. A repository is a project folder with a perfect memory; a commit is a save point with a note.
-    A branch is a parallel sketch, a pull request is a critique round, Actions are robots, and Pages is the link you send
+    A branch is a parallel sketch, a pull request is a review round, Actions are robots, and Pages is free public hosting — public links for public things, never a client secret,
     to the client. The Git Time Machine module lets you play with it.
   </aside>
 </section>
@@ -549,7 +555,7 @@ body { overflow: hidden; }
   <p class="big xl mt">Agents propose,<br><span class="hot">humans decide.</span></p>
   <aside class="notes">
     And the rule above all of them: agents propose, humans decide.
-    No milestone counts as passed until a person has written the decision down.
+    The big decisions, like what we build and what we leave out, are written down by a person, not by an agent.
   </aside>
 </section>
 
@@ -557,14 +563,14 @@ body { overflow: hidden; }
   <p class="kicker">05 · Trust</p>
   <h2 class="sm">Trust comes from checks, not from vibes</h2>
   <ul class="cards mt">
-    <li><h3>Browser tests</h3><p>Robots click through the app on every change.</p></li>
-    <li class="hot-card"><h3>Accessibility audits</h3><p><strong>13</strong> screens, <strong>0</strong> findings.</p></li>
-    <li><h3>Test suite</h3><p>Runs before every release.</p></li>
+    <li><h3>Quick robots</h3><p>Every pull request: build and checks in about a minute.</p></li>
+    <li class="hot-card"><h3>Big suites</h3><p>Browser tests and accessibility checks, at night or before a release.</p></li>
+    <li><h3>A human</h3><p>Looks at the live result. Taste is not automated.</p></li>
   </ul>
   <aside class="notes">
     How do I trust code I didn't type? Not from vibes, from checks.
-    Automated browser tests, accessibility audits with thirteen screens and zero findings,
-    and a test suite that runs before every release.
+    Quick robots on every pull request, about a minute. The big browser and accessibility suites run at night or before
+    a release. And a human looks at the live result. Honest version: the robots catch breakage, not bad taste.
   </aside>
 </section>
 
@@ -584,7 +590,6 @@ body { overflow: hidden; }
   <aside class="notes">
     Two scale stories. PixiNotes: more than 440 milestones in four months.
     And vave.log: projects, time and budgets for VAVE in three languages, with its own MCP server.
-    Before the talk: clear the demo people with Tobias, test the login the day before, keep a screen recording as backup.
   </aside>
 </section>
 
@@ -607,7 +612,7 @@ body { overflow: hidden; }
     <li><h3>Cursor / VS Code</h3><p>An editor with AI inside.</p></li>
     <li><h3>GitHub</h3><p>Memory, review, robots.</p></li>
     <li><h3>A database</h3><p>Supabase or Firebase, when needed.</p></li>
-    <li><h3>Pages</h3><p>Hosting, the link you send.</p></li>
+    <li><h3>Pages</h3><p>Public hosting for public things.</p></li>
   </ul>
   <aside class="notes">
     Where to work: Claude Code in the terminal, on the web or on the phone; Cursor or VS Code as editors.
@@ -835,11 +840,11 @@ body { overflow: hidden; }
       '..#..##....#....', '.#..#..#....#...', '.#...##.....#...', '.#..........#...',
       '..#........#....', '...########.....', '................', '................',
     ],
-    bubble: [
-      '................', '.############...', '#............#..', '#..##....##..#..',
-      '#..##....##..#..', '#............#..', '#...######...#..', '#............#..',
-      '.#####..######..', '.....#.#........', '.....##.........', '.....#..........',
-      '................', '................', '................', '................',
+    bubble: [ // speech bubble with a question mark — no eyes, so it never reads as an emoji face
+      '................', '..############..', '.#............#.', '.#....####....#.',
+      '.#...##..##...#.', '.#.......##...#.', '.#......##....#.', '.#.....##.....#.',
+      '.#............#.', '.#.....##.....#.', '.#............#.', '..####.#######..',
+      '.....#.#........', '.....##.........', '.....#..........', '................',
     ],
   };
 
