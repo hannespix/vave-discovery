@@ -1,0 +1,331 @@
+/* Campfire deck theme for reveal.js 5 — night greens, one warm thing: the fire.
+   Needs shared/campfire.css first (tokens, Jersey 10). Slides are 1280×720 at scale 1 (margin 0, own padding).
+   No rounded corners, no gradients, nothing eases: transitions are off, sprites move in steps (deck.js).
+   Light variant for washed-out projectors: data-theme="light" on <html> (key T, or ?theme=light). */
+
+:root {
+  --deck-accent: var(--lcd-d);   /* kickers, arrows, controls */
+  --deck-hot: var(--fire-2);     /* emphasis only */
+  --deck-hot-2: var(--fire-3);
+  --deck-frame: var(--night-4);  /* pixel-frame border */
+  --deck-shadow: var(--night-0); /* hard drop shadow */
+  --deck-star: var(--night-4);
+  --deck-link: var(--lcd-e);
+  --deck-pad-x: 88px;
+  --deck-pad-y: 56px;
+}
+:root[data-theme="light"] {
+  --deck-accent: #306230;
+  --deck-hot: #b2391c;
+  --deck-hot-2: #8f4a00;
+  --deck-frame: #b9c6a5;
+  --deck-shadow: #8a9a78;
+  --deck-star: transparent;
+  --deck-link: #24521f;
+}
+
+/* ── Stage ─────────────────────────────────────────────────────────────── */
+html, body { height: 100%; }
+body { overflow: hidden; }
+.reveal-viewport { background: var(--bg); }
+
+/* A few pixel stars, fixed behind the slides (decoration, flat colour) */
+.reveal-viewport::before {
+  content: "";
+  position: fixed;
+  left: 0; top: 0;
+  width: 4px; height: 4px;
+  background: var(--deck-star);
+  box-shadow:
+    9vw 7vh var(--deck-star), 23vw 14vh var(--deck-star), 41vw 5vh var(--deck-star), 58vw 11vh var(--deck-star),
+    74vw 6vh var(--deck-star), 88vw 15vh var(--deck-star), 95vw 4vh var(--deck-star), 4vw 22vh var(--deck-star),
+    33vw 24vh var(--deck-star), 67vw 21vh var(--deck-star), 81vw 27vh var(--deck-star), 16vw 31vh var(--deck-star);
+  pointer-events: none;
+}
+
+.reveal {
+  font-family: var(--sans);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.reveal ::selection { background: var(--deck-hot); color: var(--night-0); }
+
+.reveal .slides { text-align: left; }
+.reveal .slides > section,
+.reveal .slides > section > section {
+  box-sizing: border-box;
+  padding: var(--deck-pad-y) var(--deck-pad-x);
+  transition: none;
+}
+
+/* ── Type ──────────────────────────────────────────────────────────────── */
+.reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+  font-family: var(--pixel);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin: 0 0 24px;
+  text-wrap: balance;
+}
+.reveal h1 { font-size: 176px; line-height: 0.86; }
+.reveal h2 { font-size: 100px; line-height: 0.9; }
+.reveal h3 { font-size: 52px; line-height: 0.95; margin-bottom: 10px; }
+.reveal h4 { font-size: 40px; line-height: 1; margin-bottom: 8px; }
+.reveal h2.sm { font-size: 76px; }
+
+.reveal p, .reveal li { margin: 0 0 16px; text-wrap: pretty; }
+.reveal p:last-child, .reveal li:last-child { margin-bottom: 0; }
+.reveal ul, .reveal ol { margin: 0; padding-left: 1.2em; }
+.reveal ul { list-style: none; padding-left: 0; }
+.reveal ul > li { position: relative; padding-left: 40px; }
+.reveal ul > li::before {           /* square pixel bullet */
+  content: "";
+  position: absolute;
+  left: 4px; top: 0.5em;
+  width: 16px; height: 16px;
+  background: var(--deck-accent);
+}
+.reveal ol { padding-left: 0; list-style: none; counter-reset: n; }
+.reveal ol > li { counter-increment: n; position: relative; padding-left: 64px; }
+.reveal ol > li::before {
+  content: counter(n);
+  position: absolute;
+  left: 0; top: -0.12em;
+  font: 52px/1 var(--pixel);
+  color: var(--deck-hot);
+}
+
+.reveal strong { font-weight: 700; color: var(--deck-hot); }
+.reveal em { font-style: italic; }
+.reveal code, .reveal .mono { font-family: var(--mono); font-size: 0.86em; color: var(--deck-accent); }
+.reveal a { color: var(--deck-link); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px; }
+.reveal a:hover { color: var(--deck-hot-2); }
+
+/* Kicker: station label above a title, mono caps */
+.reveal .kicker {
+  font-family: var(--mono);
+  font-size: 24px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--deck-accent);
+  margin: 0 0 18px;
+}
+.reveal .lead { font-size: 38px; line-height: 1.3; }
+.reveal .small { font-size: 24px; color: var(--muted); }
+.reveal .muted { color: var(--muted); }
+.reveal .hot { color: var(--deck-hot); }
+.reveal .center { text-align: center; }
+.reveal .center .kicker { text-align: center; }
+.reveal .narrow { max-width: 920px; }
+.reveal .center.narrow, .reveal .center .narrow { margin-left: auto; margin-right: auto; }
+.reveal .mt { margin-top: 32px; }
+.reveal .mt-lg { margin-top: 48px; }
+
+/* ── Pixel art ─────────────────────────────────────────────────────────── */
+.reveal svg[data-px], .reveal svg[data-px-icon], .reveal .art {
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+.reveal svg[data-px], .reveal svg[data-px-icon] { display: inline-block; vertical-align: middle; max-width: 100%; height: auto; }
+.reveal svg[data-px-icon] { color: var(--deck-accent); }
+.reveal svg[data-px-icon].hot { color: var(--deck-hot); }
+.reveal svg[data-px-icon].dim { color: var(--muted); }
+.reveal svg[data-px-icon].ink { color: var(--ink); }
+.reveal .art { display: block; width: 100%; object-fit: contain; margin: 0 auto; }
+.reveal .art-hero { height: 440px; }
+.reveal .art-full { height: 540px; }
+.reveal .art-wide { height: 300px; }
+.reveal .art-tall { height: 560px; }
+.reveal .art-square { height: 420px; }
+.reveal .art-sm { height: 300px; }
+
+/* ── Pixel-frame box ───────────────────────────────────────────────────── */
+.reveal .box {
+  background: var(--card);
+  border: var(--px) solid var(--deck-frame);
+  box-shadow: var(--px) var(--px) 0 var(--px) var(--deck-shadow);
+  padding: 24px 28px;
+}
+.reveal .box.hot { border-color: var(--deck-hot); color: var(--ink); }
+.reveal .box > :last-child { margin-bottom: 0; }
+.reveal .box .label {
+  font-family: var(--mono);
+  font-size: 24px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+/* ── Layout helpers ────────────────────────────────────────────────────── */
+
+/* Two columns. .wl = wide left, .wr = wide right, .top = align to top */
+.reveal .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+.reveal .cols.wl { grid-template-columns: 3fr 2fr; }
+.reveal .cols.wr { grid-template-columns: 2fr 3fr; }
+.reveal .cols.top { align-items: start; }
+.reveal .cols > * { min-width: 0; }
+.reveal .cols .pic { text-align: center; }
+
+/* Big statement: one sentence, pixel type, centred */
+.reveal section.statement { text-align: center; }
+.reveal .statement .big {
+  font-family: var(--pixel);
+  font-size: 128px;
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  margin: 0 auto 32px;
+  max-width: 1080px;
+  text-wrap: balance;
+}
+.reveal .statement .big.xl { font-size: 156px; }
+.reveal .statement p, .reveal .statement .narrow { margin-left: auto; margin-right: auto; max-width: 900px; }
+
+/* Quote: hard fire bar on the left, mono source */
+.reveal blockquote.quote, .reveal .quote blockquote {
+  margin: 0;
+  padding: 8px 0 8px 44px;
+  border-left: 12px solid var(--deck-hot);
+  font-size: 44px;
+  line-height: 1.3;
+  max-width: 1020px;
+  text-wrap: pretty;
+}
+.reveal .quote cite, .reveal cite {
+  display: block;
+  margin-top: 24px;
+  font-family: var(--mono);
+  font-size: 24px;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* Card grid: 3–6 pixel-frame boxes. Default 3 per row; .c2 / .c4 change the count. */
+.reveal .cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 28px; margin: 0; padding: 0; list-style: none; }
+.reveal .cards > * {
+  flex: 0 1 calc((100% - 2 * 28px) / 3);
+  margin: 0;
+  padding: 22px 26px;
+  background: var(--card);
+  border: var(--px) solid var(--deck-frame);
+  box-shadow: var(--px) var(--px) 0 var(--px) var(--deck-shadow);
+}
+.reveal .cards.c2 > * { flex-basis: calc((100% - 28px) / 2); }
+.reveal .cards.c4 > * { flex-basis: calc((100% - 3 * 28px) / 4); }
+.reveal .cards > *::before { content: none; }
+.reveal .cards > *, .reveal .steps > li { min-width: 0; overflow-wrap: break-word; }
+.reveal .cards.c4 > * { padding: 20px 20px; }
+.reveal .cards.c4 h3 { font-size: 40px; }
+.reveal .cards p { font-size: 26px; line-height: 1.35; }
+.reveal .cards h3 { font-size: 46px; }
+.reveal .cards svg[data-px-icon] { display: block; margin-bottom: 12px; }
+.reveal .cards .hot-card { border-color: var(--deck-hot); }
+.reveal .cards.big p { font-size: 32px; line-height: 1.3; }
+
+/* Steps / timeline row: numbered pixel boxes, joined by stepped arrows */
+.reveal .steps { display: flex; gap: 44px; margin: 0; padding: 0; list-style: none; counter-reset: step; align-items: stretch; }
+.reveal .steps > li {
+  counter-increment: step;
+  flex: 1 1 0;
+  position: relative;
+  margin: 0;
+  padding: 20px 18px;
+  background: var(--card);
+  border: var(--px) solid var(--deck-frame);
+  box-shadow: var(--px) var(--px) 0 var(--px) var(--deck-shadow);
+  font-size: 26px;
+  line-height: 1.3;
+}
+.reveal .steps > li::before {
+  content: counter(step, decimal-leading-zero);
+  position: static;
+  display: block;
+  width: auto; height: auto;
+  background: none;
+  font: 44px/1 var(--pixel);
+  color: var(--deck-hot);
+  margin-bottom: 8px;
+}
+.reveal .steps.plain > li::before { content: none; }
+.reveal .steps > li + li::after {   /* pixel arrow in the gap to the left */
+  content: "";
+  position: absolute;
+  left: -40px; top: 50%;
+  width: 32px; height: 24px;
+  margin-top: -12px;
+  background: var(--deck-accent);
+  clip-path: polygon(0 37.5%, 50% 37.5%, 50% 0, 62.5% 0, 62.5% 12.5%, 75% 12.5%, 75% 25%, 87.5% 25%, 87.5% 37.5%, 100% 37.5%,
+    100% 62.5%, 87.5% 62.5%, 87.5% 75%, 75% 75%, 75% 87.5%, 62.5% 87.5%, 62.5% 100%, 50% 100%, 50% 62.5%, 0 62.5%);
+}
+.reveal .steps strong { display: block; font: 400 48px/0.95 var(--pixel); color: var(--ink); margin-bottom: 6px; }
+.reveal .steps .hot-step { border-color: var(--deck-hot); }
+.reveal .steps.s5 > li { padding: 18px 14px; }   /* five steps in a row: smaller titles, no broken words */
+.reveal .steps.s5 strong { font-size: 38px; }
+
+/* Compact numbered rules (smoke deck) */
+.reveal ol.rules > li { padding-left: 52px; margin-bottom: 10px; font-size: 28px; line-height: 1.3; }
+.reveal ol.rules > li::before { font-size: 40px; top: -0.08em; }
+
+/* Big numbers */
+.reveal .stats { display: grid; gap: 22px; }
+.reveal .stat { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+.reveal .stats .stat { grid-template-columns: 220px 1fr; }
+.reveal .stat .n { font: 112px/0.85 var(--pixel); color: var(--deck-hot); text-align: right; }
+.reveal .stat .t { font-size: 28px; line-height: 1.3; }
+
+/* Station title slide: kicker number, title, pixel art on the right */
+.reveal .num {
+  font: 64px/1 var(--pixel);
+  color: var(--deck-hot);
+  margin-bottom: 8px;
+}
+.reveal .station h1 { font-size: 150px; }
+
+/* Next-word bars (spark deck) */
+.reveal .bars { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.reveal .bars > li { display: grid; grid-template-columns: 170px 1fr; gap: 20px; align-items: center; padding: 0; margin: 0; font-size: 30px; }
+.reveal .bars > li::before { content: none; }
+.reveal .bars .bar { height: 32px; background: var(--fire-1); box-shadow: inset calc(-2 * var(--px)) 0 0 var(--fire-3); }
+.reveal .bars > li:first-child .bar { background: var(--fire-2); }
+.reveal .bars .w9 { width: 90%; } .reveal .bars .w6 { width: 60%; } .reveal .bars .w4 { width: 40%; }
+.reveal .bars .w2 { width: 20%; } .reveal .bars .w1 { width: 10%; }
+
+/* Prompt boxes (kindling deck) */
+.reveal .prompt { font-family: var(--mono); font-size: 25px; line-height: 1.45; }
+.reveal .prompt b { color: var(--deck-accent); font-weight: 400; }
+
+/* Chips: short tags inside or outside the circle of light */
+.reveal .chips { display: flex; flex-wrap: wrap; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.reveal .chips > li {
+  margin: 0; padding: 6px 16px;
+  font-size: 26px;
+  border: var(--px) solid var(--deck-frame);
+  background: var(--card);
+}
+.reveal .chips > li::before { content: none; }
+.reveal .chips.dark > li { color: var(--muted); background: transparent; border-style: dashed; }
+
+/* ── Reveal chrome ─────────────────────────────────────────────────────── */
+.reveal .controls { color: var(--deck-accent); }
+.reveal .progress { color: var(--deck-hot); height: 6px; background: transparent; }
+.reveal .progress span { transition: none; }
+.reveal .slide-number {                 /* bottom-left, so the arrows keep the right corner */
+  font-family: var(--mono);
+  font-size: 22px;
+  color: var(--muted);
+  background: transparent;
+  left: 20px; right: auto; bottom: 16px;
+}
+.reveal .slide-number a { text-decoration: none; }
+.reveal .controls { font-size: 7px; bottom: 14px; right: 14px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal .slides > section { transition: none !important; }
+}
+
+@media print {
+  .reveal-viewport::before { display: none; }
+}
