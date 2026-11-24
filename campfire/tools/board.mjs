@@ -62,7 +62,7 @@ const UEB = { w: PER_ROW * FW + (PER_ROW - 1) * GAP, h: 1150 };   // overview fr
 const TOP = UEB.h + GAP;
 const ROWS = [TOP, TOP + FH + GAP];
 const SLOT = {                                         // positions inside a frame
-  head: [60, 90], goal: [60, 300],
+  goal: [60, 90],
   main: [640, 90], side: [1800, 90],
   low1: [640, 860], low2: [1240, 860], low3: [1800, 860], save: [60, 1300],
 };
@@ -77,6 +77,8 @@ const app = (file, slot, size, titel) => ({ app: file, slot, size, titel });
 const bild = (file, slot, w, titel) => ({ bild: file, slot, w, titel });
 const pdf = (file) => ({ pdf: file });
 const bullets = (xs) => xs.map((x) => `- ${x}`).join('\n');
+// PixiNotes reads "1950" as the number 1.950; a zero-width space in front keeps a year as text
+const txt = (s) => `\u200B${s}`;
 
 const LEVELS = [
   {
@@ -107,21 +109,8 @@ const LEVELS = [
       note('AI history and rumours', 'Hype is old, mistakes are funny, and some myths are true.\n\n- 1956: they planned to crack AI in one summer\n- Two AI winters after big promises\n- 2017: the Transformer, the T in GPT\n- 2024: glue on pizza\n\n**Lesson:** every hype had a winter. Treat "AGI next year" as a rumour until you see it work.'),
       app('decks/lore.html', 'main', MAIN, 'Deck · The lore'),
       app('modules/myth-or-fact.html', 'side', SIDE, 'Myth or Fact?'),
-      op({ op: 'gantt', title: 'AI history, 1950–2026', rows: [
-        { name: 'Imitation game (Turing)', start: '1950-10-01', end: '1950-10-01' },
-        { name: 'Dartmouth: "one summer"', start: '1956-06-18', end: '1956-08-17' },
-        { name: 'ELIZA', start: '1966-01-01', end: '1966-01-01' },
-        { name: 'First AI winter', start: '1974-01-01', end: '1980-12-31' },
-        { name: 'Second AI winter', start: '1987-01-01', end: '1993-12-31' },
-        { name: 'Deep Blue beats Kasparov', start: '1997-05-11', end: '1997-05-11' },
-        { name: 'Watson wins Jeopardy!', start: '2011-02-16', end: '2011-02-16' },
-        { name: 'Move 37 (AlphaGo)', start: '2016-03-10', end: '2016-03-10' },
-        { name: 'Transformer paper', start: '2017-06-12', end: '2017-06-12' },
-        { name: 'ChatGPT', start: '2022-11-30', end: '2022-11-30' },
-        { name: 'DeepSeek shock', start: '2025-01-27', end: '2025-01-27' },
-        { name: 'Vibe coding named', start: '2025-02-02', end: '2025-02-02' },
-        { name: 'You are here', start: '2026-11-24', end: '2026-11-24' },
-      ] }, 'low1', { w: 1100, h: 380 }),
+      // 76 years do not fit a day-based timeline; a table reads well on the board and on the slide
+      op({ op: 'sheet', title: 'AI history, 1950–2026', rows: [['Year', 'What happened'], ...LORE.HISTORY.map((h) => [txt(h.year), h.title])] }, 'low1', { w: 1100, h: 600 }),
       op({ op: 'bubbles', title: 'Rumour mill', question: 'Which AI rumour have you heard lately?', ideas: [] }, 'low3', LOW),
       save('Hype is old. Glue on pizza is new.'),
       pdf('pdf/lore.pdf'),
@@ -150,6 +139,7 @@ const LEVELS = [
       note('Live mini-build (5 min)', 'Prompt: *"A single HTML file: a top view of a 6 × 4 m booth where I can drag a counter, a lounge and an LED wall, and it shows the walking paths."*\n\nFallback: the Booth Builder in level 9.', 'pink', 'low1', 560),
       note('Tiny to real', '- [email-checker](https://hannespix.github.io/email-checker/): tiny\n- The VAVE survey: one file, made for a CEO\'s phone\n- [pixoodle.de](https://pixoodle.de): real users, own domain', 'mint', 'low2', 520),
       save('A small fire is still a fire.'),
+      pdf('pdf/kindling.pdf'),
     ],
   },
   {
@@ -180,19 +170,25 @@ const LEVELS = [
     cards: [
       note('VAVE\'s own tool', 'Survey and prototype went out on 29 September. No answers came back yet, so vave.log was built on assumptions and research: a **phase-one draft to test with real people**.\n\n**105 commits · PRs up to #91 · 68 MCP tools · ~70 test files · EN / DE / ZH**\n\n> "The best feature came from watching one real user for an hour."'),
       app('decks/questlog.html', 'main', MAIN, 'Deck · Quest log'),
-      op({ op: 'gantt', title: 'Making of vave.log', rows: [
-        { name: 'Survey + prototype (discovery)', start: '2026-09-28', end: '2026-09-29' },
-        { name: 'Day 1: app, login, database, MCP', start: '2026-10-13', end: '2026-10-13' },
-        { name: '~40 pull requests in one day', start: '2026-10-14', end: '2026-10-14' },
-        { name: 'Quotes → projects, help, WCAG', start: '2026-10-15', end: '2026-10-15' },
-        { name: '8 milestones in one day', start: '2026-10-21', end: '2026-10-21' },
-        { name: 'Rights per account', start: '2026-10-22', end: '2026-10-22' },
-        { name: 'Deck + audit (~60 findings)', start: '2026-11-16', end: '2026-11-16' },
-        { name: 'Capacity plan after watching a real user', start: '2026-11-17', end: '2026-11-17' },
-        { name: 'Group of companies, CN/AE/SG holidays', start: '2026-11-19', end: '2026-11-20' },
-        { name: 'Polish rounds #87–#91', start: '2026-11-20', end: '2026-11-20' },
-      ] }, 'side', SIDE),
-      op({ op: 'kanban', title: 'vave.log: proposals, not decisions', columns: ['Now', 'Next', 'Later'], items: [
+      // a timeline card always scrolls to today and would hide October, so the making-of is a table
+      op({ op: 'sheet', title: 'Making of vave.log', rows: [['When', 'What happened'],
+        ['29 Sep', 'Survey + prototype sent (discovery)'],
+        ['13 Oct', 'Day 1: app, login, database, MCP'],
+        ['14 Oct', 'About 40 pull requests in one day'],
+        ['15 Oct', 'Quotes → projects, help, accessibility'],
+        ['21 Oct', '8 milestones in one day'],
+        ['22 Oct', 'Rights per account'],
+        ['16 Nov', 'Deck + audit (about 60 findings)'],
+        ['17 Nov', 'Capacity plan after watching a real user'],
+        ['19–20 Nov', 'Group of companies, CN / AE / SG holidays'],
+        ['20 Nov', 'Polish rounds #87–#91'],
+      ] }, 'side', { w: 560, h: 560 }),
+      op({ op: 'mermaid', code: 'flowchart LR\n  U[People in the studio] --> A[vave.log app]\n  A <--> D[(Database + login<br/>row-level security)]\n  AI[AI assistant] -- MCP · 68 tools --> S[MCP server]\n  S <--> D\n  G[GitHub: checks · tests · deploy] --> A' }, 'low3', LOW),
+      op({ op: 'kanban', title: 'vave.log: proposals, not decisions', columns: ['Now', 'Next', 'Later', 'Shipped'], items: [
+        { text: 'Time tracking, timer, holidays and absences', column: 'Shipped' },
+        { text: 'Capacity plan v1', column: 'Shipped' },
+        { text: 'MCP server: 68 tools for AI assistants', column: 'Shipped' },
+        { text: 'English · Deutsch · 中文', column: 'Shipped' },
         { text: 'AI time entry live (MCP + consent screen)', column: 'Now' },
         { text: 'Capacity plan v2: rates per service, € per phase', column: 'Now' },
         { text: 'Build-up radar: crews, trucks, hall slots', column: 'Next' },
@@ -203,7 +199,6 @@ const LEVELS = [
         { text: 'Group: cross-company staffing', column: 'Later' },
         { text: 'Multi-currency invoices (with tax advice)', column: 'Later' },
       ] }, 'low1', { w: 1100, h: 400 }),
-      op({ op: 'mermaid', code: 'flowchart LR\n  U[People in the studio] --> A[vave.log app]\n  A <--> D[(Database + login<br/>row-level security)]\n  AI[AI assistant] -- MCP · 68 tools --> S[MCP server]\n  S <--> D\n  G[GitHub: checks · tests · deploy] --> A' }, 'low3', LOW),
       save('Quest log updated. Next quest: your feedback.'),
       pdf('pdf/questlog.pdf'),
     ],
@@ -293,20 +288,29 @@ function andereKarten(karten, ort) {
   }
 }
 
+// In PixiNotes an arrow is also a data subscription (lib/moduleFeeds, lib/links): a note next to an app shows the
+// app's save state, a timeline next to a kanban turns rows into tickets. The presentation path must avoid those pairs.
+const typ = (k) => (k.app ? 'htmlapp' : k.bild ? 'image' : k.pdf ? 'file' : k.raw ? k.raw.type : k.mcp?.op);
+const KOPPELT = [['note', 'htmlapp'], ['gantt', 'kanban'], ['kanban', 'kanban']];
+const koppelt = (a, b) => KOPPELT.some(([x, y]) => (a === x && b === y) || (a === y && b === x));
+
 const frames = [];
 for (const [i, lv] of LEVELS.entries()) {
   const fx = COLS[i % PER_ROW], fy = ROWS[Math.floor(i / PER_ROW)];
-  const kopf = { mcp: { op: 'shape', shape: 'terminator', text: `LEVEL ${lv.nr} · ${lv.name} · ${lv.zeit.split(' ')[0]}` }, slot: 'head', size: { w: 520, h: 130 }, stil: { fontSize: 'xl', font: 'mono' } };
-  const karten = [kopf, ...lv.cards];
+  // no extra title card: the frame itself becomes the level's title slide in presentation mode
+  const karten = [...lv.cards];
   const ort = (k) => ({ x: fx + SLOT[k.slot][0], y: fy + SLOT[k.slot][1] });
   await mcpKarten(karten, ort);
   andereKarten(karten, ort);
   frames.push({ id: uid(), type: 'frame', position: { x: fx, y: fy }, width: FW, height: FH, dragHandle: '.frame-head', data: { name: `LEVEL ${lv.nr} · ${lv.name} · ${lv.zeit}` } });
-  ketten.push(karten.filter((k) => !k.pdf).map((k) => k.id));   // presentation path = order of the cards above
+  ketten.push(karten.filter((k) => !k.pdf).map((k) => ({ id: k.id, typ: typ(k) })));   // presentation path = order of the cards above
 }
 
 // Overview on top: liquid title, world map, agenda, how to play, the booth world, a contact card
-const agenda = { mcp: { op: 'mermaid', code: `flowchart LR\n${LEVELS.map((l, i) => `  L${i}["${l.nr} ${l.name.replace(/'/g, '’').replace(/:/g, '')}<br/>${l.zeit.split(' ')[0]}"]`).join('\n')}\n  ${LEVELS.map((_, i) => `L${i}`).join(' --> ')}` }, size: { w: 2300, h: 420 } };
+// Agenda in two rows of five (subgraph → subgraph link, so each row keeps its left-to-right direction)
+const agendaKnoten = (i) => `L${i}["${LEVELS[i].nr} ${LEVELS[i].name.replace(/'/g, '’').replace(/:/g, '')}<br/>${LEVELS[i].zeit.split(' ')[0]}"]`;
+const agendaReihe = (name, von) => `  subgraph ${name}[" "]\n    direction LR\n    ${[0, 1, 2, 3, 4].map((j) => agendaKnoten(von + j)).join(' --> ')}\n  end`;
+const agenda = { mcp: { op: 'mermaid', code: `flowchart TB\n${agendaReihe('R1', 0)}\n${agendaReihe('R2', 5)}\n  R1 --> R2` }, size: { w: 1500, h: 560 } };
 const howto = { mcp: { op: 'note', title: 'How to use this board', text: `- **Present:** presentation mode walks the levels row by row, inside a level the arrows\n- **Everything runs offline** inside the cards: decks, modules and PDFs travel in the board file\n- **Join:** Live → invite link (without account) → QR. Side quests go into the bubbles\n- All files: [talk hub](${HUB})`, color: 'yellow' }, w: 640 };
 const kontakt = { mcp: { op: 'kontakt', name: 'Hannes', funktion: 'Translator between problems and machines', firma: 'pix·el', web: 'https://pix-el.de', notiz: 'Campfire talk for VAVE · Playing with Fire' } };
 {
@@ -315,7 +319,7 @@ const kontakt = { mcp: { op: 'kontakt', name: 'Hannes', funktion: 'Translator be
   const neu = [...(text.match(/Neu: (.*)/)?.[1] ?? '').matchAll(/\[([^\]]+)\]/g)].map((m) => m[1]);
   if (neu.length !== ops.length) throw new Error(`board: Übersicht – ${ops.length} Operationen, aber ${neu.length} neue Karten:\n${text}`);
   [agenda.id, howto.id, kontakt.id] = neu;
-  lage.set(agenda.id, { x: 4000, y: 90, w: 2300, h: 420 });
+  lage.set(agenda.id, { x: 4000, y: 90, w: 2300, h: 560 });
   lage.set(howto.id, { x: 60, y: 560, w: 640 });
   lage.set(kontakt.id, { x: 760, y: 560, w: 420 });
 }
@@ -348,7 +352,13 @@ for (const n of board.nodes) {
 }
 const kante = (source, target, kind = 'arrow') => ({ id: `e-${uid()}`, source, target, type: 'labeled', data: { label: '', kind } });
 const edges = [];
-for (const reihe of ketten) for (let i = 1; i < reihe.length; i++) edges.push(kante(reihe[i - 1], reihe[i]));
+// An arrow that would couple data is left out; the cards then follow the reading order of the frame (goal note top left,
+// save point bottom left), which the presentation check confirms
+let ausgelassen = 0;
+for (const reihe of ketten) for (let i = 1; i < reihe.length; i++) {
+  if (koppelt(reihe[i - 1].typ, reihe[i].typ)) { ausgelassen++; continue; }
+  edges.push(kante(reihe[i - 1].id, reihe[i].id));
+}
 edges.push(kante(titel.id, weltkarte.id), kante(weltkarte.id, agenda.id), kante(agenda.id, messe.id), kante(messe.id, items.id), kante(items.id, howto.id), kante(howto.id, kontakt.id));
 const ueberFrame = { id: uid(), type: 'frame', position: { x: 0, y: 0 }, width: UEB.w, height: UEB.h, dragHandle: '.frame-head', data: { name: 'PLAYING WITH FIRE · A CAMPFIRE QUEST THROUGH AI · VAVE · 90 MIN' } };
 const handoutFrame = { id: uid(), type: 'frame', position: { x: HANDOUTS.x, y: HANDOUTS.y }, width: HANDOUTS.w, height: HANDOUTS.h, dragHandle: '.frame-head', data: { name: 'HANDOUTS · PDF of every deck' } };
@@ -371,6 +381,11 @@ for (let i = 0; i < LEVELS.length - 1; i++) {
 }
 gestrichelt([[UEB.w / 2, UEB.h + 10], [UEB.w / 2, UEB.h + GAP / 2], [COLS[0] + FW / 2, UEB.h + GAP / 2], [COLS[0] + FW / 2, ROWS[0] - 10]]);
 
+// Timelines show history, not work: every row is done, so nothing lands in the task list as overdue
+for (const n of board.nodes) if (n.type === 'gantt') n.data.rows = n.data.rows.map((r) => ({ ...r, progress: 100 }));
+// Narrow first column (year, date, boss name); the second column takes the rest of the card
+const SPALTE_A = { 'AI history, 1950–2026': 110, 'Making of vave.log': 110, 'Bosses and their weaknesses': 190 };
+for (const n of board.nodes) if (n.type === 'sheet' && SPALTE_A[n.data.title]) n.data.colW = { ...(n.data.colW ?? {}), A: SPALTE_A[n.data.title] };
 board.nodes = [ueberFrame, ...frames, handoutFrame, titel, ...uebersicht, pix, pix0, ...board.nodes, ...extra];
 board.edges = [...board.edges, ...edges];
 board.drawings = striche;
@@ -380,5 +395,5 @@ const ziel = join(dist, 'campfire.pixiboard.json');
 writeFileSync(ziel, JSON.stringify(paket));
 rmSync(work, { recursive: true, force: true });
 const mb = (Buffer.byteLength(JSON.stringify(paket)) / 1048576).toFixed(1);
-console.log(`✔ ${ziel.replace(root + '/', 'campfire/')} · ${board.nodes.length} Karten · ${board.edges.length} Pfeile · ${striche.length} Striche · ${Object.keys(dateien).length} Dateien · ${mb} MB`);
+console.log(`✔ ${ziel.replace(root + '/', 'campfire/')} · ${board.nodes.length} Karten · ${board.edges.length} Pfeile (${ausgelassen} ausgelassen, sie würden Daten koppeln) · ${striche.length} Striche · ${Object.keys(dateien).length} Dateien · ${mb} MB`);
 if (fehlt.length) { console.error(`✘ fehlt in dist/: ${[...new Set(fehlt)].join(', ')}`); process.exit(2); }

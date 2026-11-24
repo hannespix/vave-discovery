@@ -1,0 +1,1294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventory · Campfire</title>
+<style>/* shared/campfire.css */
+/* Campfire — shared look for every page, deck and module of the talk.
+   pix·el LCD night (greens) + one warm thing: the fire. Everything blocky moves in steps(); nothing eases smoothly.
+   Single source for colours and type: decks and modules link this file, tools/build.mjs inlines it. */
+
+@font-face {
+  font-family: "Jersey 10";
+  src: url("data:font/woff2;base64,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") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  /* Night: the LCD greens of pix·el, darkened for a campfire evening */
+  --night-0: #050a05;
+  --night-1: #0c170b;
+  --night-2: #12210f;
+  --night-3: #1b2d17;
+  --night-4: #2a4123;
+  --lcd-a: #306230;
+  --lcd-b: #4c7420;
+  --lcd-c: #7a9a1c;
+  --lcd-d: #a9c431;
+  --lcd-e: #d4ef78;
+  --lcd-f: #e3efa8;
+  /* Fire: the only warm colours (pixletics flame + pix·el LED) */
+  --fire-0: #e8483f;
+  --fire-1: #ff5a36;
+  --fire-2: #ffae00;
+  --fire-3: #ffe06a;
+  --fire-4: #fff6c8;
+  --wood-0: #3a2414;
+  --wood-1: #6b4226;
+  --wood-2: #9a6a3c;
+  /* Text and lines */
+  --ink: #e2f0c6;
+  --muted: #9fb48f;
+  --line: #2a4123;
+  --marker: #ffe45e;
+  --bg: var(--night-1);
+  --card: var(--night-2);
+
+  --pixel: "Jersey 10", "Courier New", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Courier New", monospace;
+
+  --px: 4px;            /* one art pixel on screen (scenes scale in whole multiples) */
+  --step: 125ms;        /* one animation frame = 8 fps */
+  --gutter: max(16px, 4vw);
+  --radius: 0;          /* pixel world: no rounded corners */
+}
+
+/* Light variant for projectors that wash out dark slides: add data-theme="light" on <html> */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f7ef;
+  --card: #ffffff;
+  --ink: #12280f;
+  --muted: #56654f;
+  --line: #d3dcc4;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 18px/1.55 var(--sans);
+}
+
+/* Headlines and labels in the pixel font — big, never for long sentences */
+.px-title { font-family: var(--pixel); font-weight: 400; letter-spacing: 0.02em; line-height: 0.95; }
+.px-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+/* Pixel art: crisp at every scale */
+.pixelart, .pixelart svg, svg.pixelart { image-rendering: pixelated; shape-rendering: crispEdges; }
+
+/* Pixel frame: a 1-art-pixel border with cut corners, like an old handheld UI */
+.px-frame {
+  background: var(--card);
+  border: var(--px) solid var(--night-4);
+  box-shadow: 0 0 0 var(--px) var(--night-0), var(--px) var(--px) 0 var(--px) var(--night-0);
+}
+
+/* Buttons that feel like hardware keys */
+.px-btn {
+  font: 20px/1 var(--pixel);
+  color: var(--night-0);
+  background: var(--lcd-d);
+  border: 0;
+  padding: 12px 18px;
+  min-height: 44px;
+  cursor: pointer;
+  box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--lcd-b), 0 var(--px) 0 var(--night-0);
+}
+.px-btn:hover { background: var(--lcd-e); }
+.px-btn:active { transform: translateY(var(--px)); box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--lcd-b); }
+.px-btn.fire { background: var(--fire-2); box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--fire-1), 0 var(--px) 0 var(--night-0); }
+.px-btn.fire:hover { background: var(--fire-3); }
+
+:focus-visible { outline: 3px solid var(--marker); outline-offset: 3px; }
+
+/* Flicker helpers for HTML (SVG scenes carry their own copy of these keyframes) */
+@keyframes px-flicker { 0% { opacity: 1; } 50% { opacity: 0.82; } 100% { opacity: 1; } }
+@keyframes px-frames-3 { from { transform: translateX(0); } to { transform: translateX(-300%); } }
+@keyframes px-blink { 0%, 92% { opacity: 1; } 93%, 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+<script>/* shared/pixel.js */
+/* Campfire pixel kit — sprites as text grids, rendered to crisp SVG paths.
+   Classic script (no modules): in the browser it sets window.PX, in Node tools/*.mjs load it with vm and read
+   globalThis.PX. Same idea as pix·el's iconPath(): every run of equal pixels in a row becomes one rect path.
+   One character = one colour from PAL; '.' is transparent. */
+(function (root) {
+  'use strict';
+
+  /* Palette: pix·el LCD night + fire. Same values as shared/campfire.css (standalone SVGs can't read CSS vars). */
+  const PAL = {
+    k: '#050a05', // night-0, outlines in the dark
+    g: '#0f380f', // LCD ink, Pix outline
+    a: '#306230', b: '#4c7420', c: '#7a9a1c', d: '#a9c431', e: '#d4ef78', f: '#e3efa8',
+    R: '#e8483f', r: '#ff5a36', o: '#ffae00', y: '#ffe06a', w: '#fff6c8',
+    W: '#3a2414', m: '#6b4226', n: '#9a6a3c',
+    M: '#ffe45e', // marker / spark yellow
+    i: '#e2f0c6', // text ink on night
+    s: '#56654f', t: '#9fb48f', // smoke / stone greys
+    N: '#0c170b', // night-1 background
+  };
+
+  /* ── Sprites ─────────────────────────────────────────────────────────────── */
+  const SPRITES = {
+    /* Pix, the pix·el mascot (hannespix/pix-el site/icons.js MASCOT), as colour rows. 16×16. */
+    pix: [
+      '.........M......',
+      '........g.......',
+      '...gggggggggg...',
+      '..gffffffffffg..',
+      '.gffffffffffffg.',
+      '.gffggffffggffg.',
+      '.gffggffffggffg.',
+      '.gffffffffffffg.',
+      '.gffffgffgffffg.',
+      '.gfccffggffccfg.',
+      '.gffffffffffffg.',
+      '..gffffffffffg..',
+      '...gggggggggg...',
+      '....gg....gg....',
+      '...ggg....ggg...',
+      '................',
+    ],
+    /* Pix with closed eyes (blink frame) */
+    pixBlink: [
+      '.........M......',
+      '........g.......',
+      '...gggggggggg...',
+      '..gffffffffffg..',
+      '.gffffffffffffg.',
+      '.gffffffffffffg.',
+      '.gffggffffggffg.',
+      '.gffffffffffffg.',
+      '.gffffgffgffffg.',
+      '.gfccffggffccfg.',
+      '.gffffffffffffg.',
+      '..gffffffffffg..',
+      '...gggggggggg...',
+      '....gg....gg....',
+      '...ggg....ggg...',
+      '................',
+    ],
+    /* Flame icon from pixletics (index.html, 12×14) */
+    flame: [
+      '.....rr.....',
+      '....rrrr....',
+      '....rror....',
+      '...rroorr...',
+      '...rooor....',
+      '..rrooorr...',
+      '..rooooor...',
+      '.rroooyoor..',
+      '.roooyyoor..',
+      '.roooyyyor..',
+      '.rroooyoor..',
+      '..rooooor...',
+      '..rrooorr...',
+      '...rrrrr....',
+    ],
+    /* Campfire flames, three frames (16×16) — cycle with steps() for a crackle */
+    fire1: [
+      '.......r........',
+      '.......r....r...',
+      '......rr....r...',
+      '..r...ror..rr...',
+      '..r..rroor.rr...',
+      '..rr.roooorror..',
+      '..rrrooyoooorr..',
+      '.rrooooyyoooorr.',
+      '.rroooyyyyoooor.',
+      '.rooooyywyyooor.',
+      '.roooyywwyyooor.',
+      '.rooyyywwwyyoor.',
+      '..rooyywwyyoor..',
+      '..rrooyyyyoorr..',
+      '...rrooooooor...',
+      '....rrrrrrrr....',
+    ],
+    fire2: [
+      '....r...........',
+      '....r......r....',
+      '...rr.....rr....',
+      '...ror...rror...',
+      '..rroor..roor...',
+      '..roooorrooor...',
+      '..rooyooooyor...',
+      '.rrooyyooyyorr..',
+      '.roooyyyyyyoor..',
+      '.rooyyywyyyoorr.',
+      '.rooyywwwyyooor.',
+      '.rooyywwwwyyoor.',
+      '..rooyywwyyoor..',
+      '..rrooyyyyoorr..',
+      '...rrooooooor...',
+      '....rrrrrrrr....',
+    ],
+    fire3: [
+      '..........r.....',
+      '...r......r.....',
+      '...r.....rr.....',
+      '..rr....ror..r..',
+      '..ror..rroor.r..',
+      '.rroor.roooorr..',
+      '.rooooroooyoor..',
+      '.roooyyooyyoorr.',
+      '.rooyyyyyyyooor.',
+      '.rooyywwyyyooor.',
+      '.roooyywwwyyoor.',
+      '.rooyyywwwyyoor.',
+      '..rooyywwyyoor..',
+      '..rrooyyyyoorr..',
+      '...rrooooooor...',
+      '....rrrrrrrr....',
+    ],
+    /* Crossed logs under the fire (20×6) */
+    logs: [
+      '..WW............WW..',
+      '.WmmWW........WWmmW.',
+      '.WnmmmWWW..WWWmmmnW.',
+      '..WWmmmmmWWmmmmmWW..',
+      '....WWWmmmmmmWWW....',
+      '.......WWWWWW.......',
+    ],
+    /* A single spark / ember (3×3) */
+    spark: [
+      '.y.',
+      'yMy',
+      '.y.',
+    ],
+  };
+
+  /* Single-colour 16×16 icons, '#' = pixel (pix·el icon format). One per station of the talk. */
+  const ICONS = {
+    tent: [
+      '................', '.......##.......', '......#..#......', '.....#....#.....',
+      '.....#.##.#.....', '....#..##..#....', '....#.#..#.#....', '...#..#..#..#...',
+      '...#.#....#.#...', '..#..#....#..#..', '..#.#......#.#..', '.#..#......#..#.',
+      '################', '................', '................', '................',
+    ],
+    spark: [ // pix·el icons.js "spark"
+      '......#.........', '......#.........', '.....###........', '.....###........',
+      '....#####.......', '..#########.....', '#############...', '..#########.....',
+      '....#####.......', '.....###........', '.....###....#...', '......#.....#...',
+      '......#...#####.', '............#...', '............#...', '................',
+    ],
+    kindling: [
+      '................', '.......#........', '......##........', '......#.#.......',
+      '.....#..#.......', '.....#.##.......', '......##........', '................',
+      '..#..........#..', '...##......##...', '.....##..##.....', '.......##.......',
+      '.....##..##.....', '...##......##...', '..#..........#..', '................',
+    ],
+    fire: [
+      '.......#........', '......##........', '......#.#....#..', '.....#...#..##..',
+      '....#....#.#.#..', '....#.##..#..#..', '...#.#..#....#..', '...#.#..#...#...',
+      '...#..##....#...', '....#......#....', '.....######.....', '................',
+      '.##############.', '#..#........#..#', '.##############.', '................',
+    ],
+    forge: [
+      '................', '..........#.....', '.........#.#....', '........#...#...',
+      '.........#.#.#..', '..........#...#.', '...........#.#..', '............#...',
+      '.##########.....', '#..........###..', '.#.............#', '..#########.###.',
+      '.....#....#.....', '....#......#....', '...##########...', '................',
+    ],
+    smoke: [
+      '................', '.........###....', '........#...#...', '.....###.....#..',
+      '....#.........#.', '...#..........#.', '....#........#..', '.....##....##...',
+      '.......####.....', '......#.........', '.....#..........', '.....#..........',
+      '......#.........', '.......#........', '......###.......', '.....#####......',
+    ],
+    ember: [
+      '....#.......#...', '................', '..#....#........', '..........#.....',
+      '.....#..........', '................', '....######......', '...#......#.....',
+      '..#..##....#....', '.#..#..#....#...', '.#...##.....#...', '.#..........#...',
+      '..#........#....', '...########.....', '................', '................',
+    ],
+    bubble: [ // speech bubble with a question mark — no eyes, so it never reads as an emoji face
+      '................', '..############..', '.#............#.', '.#....####....#.',
+      '.#...##..##...#.', '.#.......##...#.', '.#......##....#.', '.#.....##.....#.',
+      '.#............#.', '.#.....##.....#.', '.#............#.', '..####.#######..',
+      '.....#.#........', '.....##.........', '.....#..........', '................',
+    ],
+  };
+
+  /* ── Rendering ───────────────────────────────────────────────────────────── */
+
+  function check(name, rows) {
+    const w = rows[0].length;
+    rows.forEach((r, i) => { if (r.length !== w) throw new Error(`PX: sprite "${name}" row ${i} has ${r.length} px, expected ${w}`); });
+    return w;
+  }
+
+  /** Path data for every pixel equal to `ch` (runs merged), offset by ox/oy */
+  function runPath(rows, ch, ox, oy) {
+    let d = '';
+    rows.forEach((row, y) => {
+      for (let x = 0; x < row.length; x++) {
+        if (row[x] !== ch) continue;
+        let n = 1;
+        while (row[x + n] === ch) n++;
+        d += `M${ox + x} ${oy + y}h${n}v1h-${n}z`;
+        x += n - 1;
+      }
+    });
+    return d;
+  }
+
+  /** Sprite → '<path fill=… d=…/>' per colour. opts: { x, y, pal (overrides), cls } */
+  function sprite(nameOrRows, opts) {
+    const o = opts || {};
+    const rows = typeof nameOrRows === 'string' ? SPRITES[nameOrRows] : nameOrRows;
+    if (!rows) throw new Error(`PX: unknown sprite "${nameOrRows}"`);
+    check(String(nameOrRows), rows);
+    const pal = Object.assign({}, PAL, o.pal || {});
+    const chars = [...new Set(rows.join(''))].filter((c) => c !== '.');
+    const cls = o.cls ? ` class="${o.cls}"` : '';
+    return `<g${cls}>${chars.map((c) => `<path fill="${pal[c] || c}" d="${runPath(rows, c, o.x || 0, o.y || 0)}"/>`).join('')}</g>`;
+  }
+
+  /** Icon → one path (fill = currentColor unless given) */
+  function icon(name, opts) {
+    const o = opts || {};
+    const rows = ICONS[name];
+    if (!rows) throw new Error(`PX: unknown icon "${name}"`);
+    check(name, rows);
+    return `<path fill="${o.fill || 'currentColor'}" d="${runPath(rows, '#', o.x || 0, o.y || 0)}"/>`;
+  }
+
+  /** A complete, self-contained SVG document (for files and <img>) */
+  function svgDoc(o) {
+    const title = o.title ? `<title>${o.title}</title>` : '';
+    const desc = o.desc ? `<desc>${o.desc}</desc>` : '';
+    const style = o.css ? `<style>${o.css}</style>` : '';
+    const bg = o.bg ? `<rect width="${o.w}" height="${o.h}" fill="${o.bg}"/>` : '';
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${o.w} ${o.h}" width="${o.w * (o.scale || 1)}" height="${o.h * (o.scale || 1)}" shape-rendering="crispEdges" role="img">${title}${desc}${style}${bg}${o.body}</svg>`;
+  }
+
+  root.PX = { PAL, SPRITES, ICONS, sprite, icon, svgDoc, runPath };
+
+  /* ── Additions (art set): Pix as mono icon, 5×7 pixel font ───────────────── */
+
+  /* Pix as a single-colour icon (outline, eyes, mouth, antenna) — station 01 */
+  ICONS.pix = [
+    '.........#......', '........#.......', '...##########...', '..#..........#..',
+    '.#............#.', '.#..##....##..#.', '.#..##....##..#.', '.#............#.',
+    '.#....#..#....#.', '.#.##..##..##.#.', '.#............#.', '..#..........#..',
+    '...##########...', '....##....##....', '...###....###...', '................',
+  ];
+
+  /* 5×7 pixel font, caps only (lower case is upper-cased). '#' = pixel. Narrow glyphs keep their own width.
+     Advance = glyph width + 1. Unknown characters render as '?'. */
+  const FONT5x7 = {};
+  const F = (chars, rows) => { FONT5x7[chars] = rows; };
+  F('A', ['.###.', '#...#', '#...#', '#####', '#...#', '#...#', '#...#']);
+  F('B', ['####.', '#...#', '#...#', '####.', '#...#', '#...#', '####.']);
+  F('C', ['.###.', '#...#', '#....', '#....', '#....', '#...#', '.###.']);
+  F('D', ['####.', '#...#', '#...#', '#...#', '#...#', '#...#', '####.']);
+  F('E', ['#####', '#....', '#....', '####.', '#....', '#....', '#####']);
+  F('F', ['#####', '#....', '#....', '####.', '#....', '#....', '#....']);
+  F('G', ['.###.', '#...#', '#....', '#.###', '#...#', '#...#', '.####']);
+  F('H', ['#...#', '#...#', '#...#', '#####', '#...#', '#...#', '#...#']);
+  F('I', ['###', '.#.', '.#.', '.#.', '.#.', '.#.', '###']);
+  F('J', ['..###', '...#.', '...#.', '...#.', '#..#.', '#..#.', '.##..']);
+  F('K', ['#...#', '#..#.', '#.#..', '##...', '#.#..', '#..#.', '#...#']);
+  F('L', ['#....', '#....', '#....', '#....', '#....', '#....', '#####']);
+  F('M', ['#...#', '##.##', '#.#.#', '#.#.#', '#...#', '#...#', '#...#']);
+  F('N', ['#...#', '#...#', '##..#', '#.#.#', '#..##', '#...#', '#...#']);
+  F('O', ['.###.', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.']);
+  F('P', ['####.', '#...#', '#...#', '####.', '#....', '#....', '#....']);
+  F('Q', ['.###.', '#...#', '#...#', '#...#', '#.#.#', '#..#.', '.##.#']);
+  F('R', ['####.', '#...#', '#...#', '####.', '#.#..', '#..#.', '#...#']);
+  F('S', ['.####', '#....', '#....', '.###.', '....#', '....#', '####.']);
+  F('T', ['#####', '..#..', '..#..', '..#..', '..#..', '..#..', '..#..']);
+  F('U', ['#...#', '#...#', '#...#', '#...#', '#...#', '#...#', '.###.']);
+  F('V', ['#...#', '#...#', '#...#', '#...#', '#...#', '.#.#.', '..#..']);
+  F('W', ['#...#', '#...#', '#...#', '#.#.#', '#.#.#', '#.#.#', '.#.#.']);
+  F('X', ['#...#', '#...#', '.#.#.', '..#..', '.#.#.', '#...#', '#...#']);
+  F('Y', ['#...#', '#...#', '.#.#.', '..#..', '..#..', '..#..', '..#..']);
+  F('Z', ['#####', '....#', '...#.', '..#..', '.#...', '#....', '#####']);
+  F('0', ['.###.', '#...#', '#..##', '#.#.#', '##..#', '#...#', '.###.']);
+  F('1', ['.#.', '##.', '.#.', '.#.', '.#.', '.#.', '###']);
+  F('2', ['.###.', '#...#', '....#', '...#.', '..#..', '.#...', '#####']);
+  F('3', ['#####', '...#.', '..#..', '...#.', '....#', '#...#', '.###.']);
+  F('4', ['...#.', '..##.', '.#.#.', '#..#.', '#####', '...#.', '...#.']);
+  F('5', ['#####', '#....', '####.', '....#', '....#', '#...#', '.###.']);
+  F('6', ['..##.', '.#...', '#....', '####.', '#...#', '#...#', '.###.']);
+  F('7', ['#####', '....#', '...#.', '..#..', '.#...', '.#...', '.#...']);
+  F('8', ['.###.', '#...#', '#...#', '.###.', '#...#', '#...#', '.###.']);
+  F('9', ['.###.', '#...#', '#...#', '.####', '....#', '...#.', '.##..']);
+  F(' ', ['...', '...', '...', '...', '...', '...', '...']);
+  F('.', ['.', '.', '.', '.', '.', '.', '#']);
+  F(',', ['..', '..', '..', '..', '.#', '.#', '#.']);
+  F(':', ['.', '.', '#', '.', '.', '#', '.']);
+  F('!', ['#', '#', '#', '#', '#', '.', '#']);
+  F('?', ['.###.', '#...#', '....#', '...#.', '..#..', '.....', '..#..']);
+  F('-', ['....', '....', '....', '####', '....', '....', '....']);
+  F('·', ['..', '..', '..', '##', '##', '..', '..']);
+  F('/', ['....#', '...#.', '...#.', '..#..', '.#...', '.#...', '#....']);
+  F('&', ['.##..', '#..#.', '#.#..', '.#...', '#.#.#', '#..#.', '.##.#']);
+  F("'", ['#', '#', '.', '.', '.', '.', '.']);
+
+  const glyph = (ch) => FONT5x7[ch] || FONT5x7[ch.toUpperCase()] || FONT5x7['?'];
+  const LINE_H = 9; // 7 px glyph + 2 px leading
+
+  /** Width of one line (or the widest line) in px at the given scale (default 1) */
+  function textWidth(str, scale) {
+    const s = scale || 1;
+    return Math.max(...String(str).split('\n').map((line) => {
+      const w = [...line].reduce((a, ch) => a + glyph(ch)[0].length + 1, 0);
+      return Math.max(0, w - 1) * s;
+    }));
+  }
+
+  /** Text → one '<path>' of merged pixel runs. opts: { x, y (top edge), fill, scale, align: 'left'|'center'|'right' }.
+      '\n' starts a new line (9 px line height × scale). Default fill = PAL.i (ink on night). */
+  function text(str, opts) {
+    const o = opts || {};
+    const s = o.scale || 1;
+    let d = '';
+    String(str).split('\n').forEach((line, li) => {
+      const lw = textWidth(line, s);
+      let cx = (o.x || 0) - (o.align === 'center' ? Math.floor(lw / 2) : o.align === 'right' ? lw : 0);
+      const cy = (o.y || 0) + li * LINE_H * s;
+      for (const ch of line) {
+        const rows = glyph(ch);
+        rows.forEach((row, ry) => {
+          for (let x = 0; x < row.length; x++) {
+            if (row[x] !== '#') continue;
+            let n = 1;
+            while (row[x + n] === '#') n++;
+            d += `M${cx + x * s} ${cy + ry * s}h${n * s}v${s}h-${n * s}z`;
+            x += n - 1;
+          }
+        });
+        cx += (rows[0].length + 1) * s;
+      }
+    });
+    return `<path fill="${o.fill || PAL.i}" d="${d}"/>`;
+  }
+
+  Object.assign(root.PX, { FONT5x7, text, textWidth });
+
+  /* ── Additions (version 2): people tones, glyphs for game screens, inventory item icons ── */
+
+  /* Muted skin and cloth tones for tiny people (visitors, guild members). New keys only. */
+  Object.assign(PAL, {
+    p: '#c4a284', q: '#7e5f49', // skin light / dark
+    u: '#4a5a6e', v: '#6e5a72', x: '#8c907c', z: '#2c3440', // slate, plum, khaki, navy
+  });
+
+  F('+', ['.....', '..#..', '..#..', '#####', '..#..', '..#..', '.....']);
+  F('#', ['.#.#.', '.#.#.', '#####', '.#.#.', '#####', '.#.#.', '.#.#.']);
+  F('~', ['.....', '.....', '.#..#', '#.##.', '.....', '.....', '.....']);
+  F('©', ['.###.', '#...#', '#.#.#', '##..#', '#.#.#', '#...#', '.###.']);
+  F('(', ['..#', '.#.', '#..', '#..', '#..', '.#.', '..#']);
+  F(')', ['#..', '.#.', '..#', '..#', '..#', '.#.', '#..']);
+  F('>', ['#...', '.#..', '..#.', '...#', '..#.', '.#..', '#...']);
+  F('<', ['...#', '..#.', '.#..', '#...', '.#..', '..#.', '...#']);
+  F('_', ['....', '....', '....', '....', '....', '....', '####']);
+  F('=', ['....', '....', '####', '....', '####', '....', '....']);
+
+  /* Inventory items: one single-colour 16×16 icon per LORE.ITEMS id ('#' = pixel, same format as ICONS).
+     Metaphors from the trade-fair world where possible; render with PX.item(id, opts). */
+  const ITEMS = {
+    llm: [ // open book: has read everything
+      '................', '.####......####.', '#....##..##....#', '#.###..##..###.#',
+      '#......##......#', '#.####.##.####.#', '#......##......#', '#.###..##..###.#',
+      '#......##......#', '#.####.##.####.#', '#......##......#', '#.###..##..###.#',
+      '#......##......#', '.####..##..####.', '.....######.....', '................',
+    ],
+    token: [ // language lego brick
+      '................', '................', '................', '..####....####..',
+      '..#..#....#..#..', '################', '#..............#', '#.##...........#',
+      '#.#............#', '#..............#', '#..............#', '#..............#',
+      '################', '................', '................', '................',
+    ],
+    context: [ // booth footprint: floor plan with back wall, counter, open front, dimension line
+      '................', '################', '################', '##..............',
+      '##.........##..#', '##..#####..##...', '##..#...#......#', '##..#####.......',
+      '##.........##..#', '##.........##...', '##.............#', '##.#.#.#.#.#.#.#',
+      '................', '.#............#.', '################', '.#............#.',
+    ],
+    prompt: [ // command window with a caret and cursor
+      '................', '................', '################', '#.#.#..........#',
+      '################', '#..............#', '#.#............#', '#..#...........#',
+      '#...#..........#', '#..#...........#', '#.#...######...#', '#..............#',
+      '################', '................', '................', '................',
+    ],
+    system: [ // the manual pinned to the workshop wall
+      '.......##.......', '......####......', '.......##.......', '..#####..#####..',
+      '..#..........#..', '..#.########.#..', '..#..........#..', '..#.######...#..',
+      '..#..........#..', '..#.#######..#..', '..#..........#..', '..#.#####....#..',
+      '..#..........#..', '..############..', '................', '................',
+    ],
+    temperature: [ // lighting dimmer knob with ticks, low and high
+      '................', '.......##.......', '..#..........#..', '.....######.....',
+      '....#......#....', '...#.....##.#...', '#..#....##..#..#', '...#...##...#...',
+      '...#........#...', '...#........#...', '....#......#....', '.....######.....',
+      '..#..........#..', '.............#..', '.###........###.', '.............#..',
+    ],
+    hallucination: [ // the floating cube that ignores gravity
+      '.#.....##.......', '###..######.....', '.#.##########...', '..############..',
+      '..#.########.#..', '..#...####...#..', '..#....##.#.##..', '..#....##..#.#..',
+      '..#....##.#.##..', '..#....##..#.#..', '...##..##..##...', '.....######.....',
+      '................', '................', '....#.#.#.#.....', '................',
+    ],
+    training: [ // design school: mortarboard with tassel
+      '................', '................', '.......##.......', '.....##..##.....',
+      '...##......##...', '.##....##....##.', '...##......##.#.', '.....##..##...#.',
+      '...#...##...#.#.', '...#........#.#.', '...#........#.#.', '...##......##.#.',
+      '.....######..###', '.............###', '................', '................',
+    ],
+    finetune: [ // tuning fork, ringing
+      '................', '.....#....#.....', '.....#....#.....', '..#..#....#..#..',
+      '.#...#....#...#.', '.#...#....#...#.', '..#..#....#..#..', '.....#....#.....',
+      '.....##..##.....', '......####......', '.......##.......', '.......##.......',
+      '.......##.......', '.......##.......', '......####......', '................',
+    ],
+    rag: [ // the sample shelf
+      '................', '################', '#..............#', '#.#..##.....#..#',
+      '#.#..##.#..#.##.', '#.##.##.#..#.#.#', '#.##.##.#..#.#.#', '################',
+      '#..............#', '#.##.#..##.#...#', '#.##.#..##.#.#.#', '#.##.#.###.#.#.#',
+      '#.##.#.###.#.#.#', '################', '#..............#', '#..............#',
+    ],
+    embedding: [ // meaning as coordinates: clusters on axes, one circled
+      '#...............', '#..........##...', '#..........##...', '#............##.',
+      '#.........##.##.', '#.........##....', '#..##...........', '#..##.##........',
+      '#.....##........', '#...##..........', '#...##....##....', '#.........####..',
+      '#...........##..', '#...............', '################', '................',
+    ],
+    agent: [ // helmeted bot with a clipboard
+      '.....####.......', '...##....##.....', '..#........#....', '.############...',
+      '..#........#....', '..#.##..##.#....', '..#........#....', '..##########....',
+      '.....#..#..####.', '...######.#....#', '..#......##.##.#', '..#......##....#',
+      '..#......##.##.#', '..#......##....#', '...######.######', '...##..##.......',
+    ],
+    tools: [ // wrench and screwdriver
+      '...........###..', '##.........#..#.', '###..........###', '.###.......#.#..',
+      '..###.....#.#...', '...###...#.#....', '....#.#.#.#.....', '.....#.#.#......',
+      '......#.#.......', '.....#.#.#......', '....#.#..###....', '...#.#....#.#...',
+      '..#.#......#.#..', '.#.#........###.', '#.#..........###', '.#............##',
+    ],
+    mcp: [ // the standard power plug
+      '................', '.....#....#.....', '.....#....#.....', '.....#....#.....',
+      '...##########...', '...#........#...', '...#.######.#...', '...#........#...',
+      '....#......#....', '.....##..##.....', '.......##.......', '.......#........',
+      '.......#........', '........#.......', '.........####...', '.............###',
+    ],
+    api: [ // two machines passing things back and forth at the delivery ramp
+      '................', '................', '................', '................',
+      '####........####', '#..#.....#..#..#', '#..#.######.#..#', '#..#.....#..#..#',
+      '#..#..#.....#..#', '#..#.######.#..#', '#..#..#.....#..#', '####........####',
+      '.##..........##.', '................', '................', '................',
+    ],
+    openweight: [ // a kettlebell you take home (download arrow)
+      '................', '.....######.....', '....#......#....', '...#..####..#...',
+      '...#.#....#.#...', '....##....##....', '...##########...', '..#....##....#..',
+      '.#.....##.....#.', '.#.....##.....#.', '.#...######...#.', '.#....####....#.',
+      '.#.....##.....#.', '..#..........#..', '...##########...', '................',
+    ],
+    local: [ // the workshop at home: a screen inside a house
+      '.......##.......', '......#..#......', '.....#....#.....', '....#......#....',
+      '...#........#...', '..#..........#..', '.#............#.', '################',
+      '.#............#.', '.#..########..#.', '.#..#......#..#.', '.#..#......#..#.',
+      '.#..########..#.', '.#.....##.....#.', '.#...######...#.', '.##############.',
+    ],
+    gpu: [ // the engine room: a chip with pins
+      '................', '....#.#..#.#....', '....#.#..#.#....', '..############..',
+      '###..........###', '..#.########.#..', '###.#......#.###', '..#.#.####.#.#..',
+      '..#.#.####.#.#..', '###.#......#.###', '..#.########.#..', '###..........###',
+      '..############..', '....#.#..#.#....', '....#.#..#.#....', '................',
+    ],
+    multimodal: [ // picture, sound and text in one
+      '................', '###########.....', '#.........#..##.', '#.##......#..#.#',
+      '#.##...#..#..#..', '#.....###.#..#..', '#..#.######..#..', '#.#########..#..',
+      '###########..#..', '...........###..', '##.#####..####..', '...........##...',
+      '####.###........', '................', '#####.####......', '................',
+    ],
+    agi: [ // the rumoured all-rounder: a unicorn
+      '..#.............', '...#............', '....#..#........', '....#.##........',
+      '...#######......', '..##.######.....', '.###########....', '########.####...',
+      '######....####..', '.###.......####.', '...........#####', '...........#####',
+      '..........######', '..........######', '.........#######', '................',
+    ],
+    repo: [ // the chest that remembers everything
+      '................', '................', '...##########...', '..#..#....#..#..',
+      '.#...#....#...#.', '.##############.', '.#...#.##.#...#.', '.#...##..##...#.',
+      '.#...#.##.#...#.', '.#...#....#...#.', '.#...#....#...#.', '.#...#....#...#.',
+      '.##############.', '................', '................', '................',
+    ],
+    commit: [ // save point: a floppy disk
+      '................', '.############...', '.#..#...##.#.#..', '.#..#...##.#..#.',
+      '.#..#...##.#..#.', '.#..########..#.', '.#............#.', '.#............#.',
+      '.#.##########.#.', '.#.#........#.#.', '.#.#.######.#.#.', '.#.#........#.#.',
+      '.#.#.####...#.#.', '.#.#........#.#.', '.##############.', '................',
+    ],
+    branch: [ // a fork in the path
+      '.##..........##.', '#..#........#..#', '#..#........#..#', '.##..........##.',
+      '..#..........#..', '...#........#...', '....#......#....', '.....#....#.....',
+      '......#..#......', '.......##.......', '.......##.......', '.......##.......',
+      '......####......', '.....#....#.....', '.....#....#.....', '......####......',
+    ],
+    pr: [ // a proposal in an envelope, already checked
+      '................', '................', '#############...', '##.........##...',
+      '#.#.......#.#...', '#..#.....#..#...', '#...#...#...#...', '#....###....#..#',
+      '#...........#.##', '#..........#.##.', '#.......##..##..', '#########.####..',
+      '..........###...', '...........#....', '................', '................',
+    ],
+    merge: [ // two ways become one
+      '.#............#.', '.#............#.', '..#..........#..', '...#........#...',
+      '....#......#....', '.....#....#.....', '......#..#......', '.......##.......',
+      '.......##.......', '.......##.......', '.......##.......', '....########....',
+      '.....######.....', '......####......', '.......##.......', '................',
+    ],
+    actions: [ // the robot inspector: a gear that runs by itself
+      '......####......', '..##..#..#..##..', '..#.###..###.#..', '..##........##..',
+      '...#..#.....#...', '.###..##....###.', '#.....###......#', '#.....####.....#',
+      '#.....####.....#', '#.....###......#', '.###..##....###.', '...#..#.....#...',
+      '..##........##..', '..#.###..###.#..', '..##..#..#..##..', '......####......',
+    ],
+    deploy: [ // opening day: the door swings open, light falls out
+      '................', '....##########..', '..##.#.......#..', '.#...#.#.#.#.#..',
+      '.#...#..#.#..#..', '.#...#.#.#.#.#..', '.#...#..#.#..#..', '.#...#.#.#.#.#..',
+      '.#.#.#..#.#..#..', '.#...#.#.#.#.#..', '.#...#..#.#..#..', '.#...#.#.#.#.#..',
+      '.#...#..#.#..#..', '..##.#.......#..', '################', '................',
+    ],
+    fork: [ // your own copy to remix: a fork
+      '...#..#..#..#...', '...#..#..#..#...', '...#..#..#..#...', '...#..#..#..#...',
+      '...##########...', '....########....', '.....######.....', '......####......',
+      '.......##.......', '.......##.......', '.......##.......', '.......##.......',
+      '.......##.......', '......####......', '......####......', '.......##.......',
+    ],
+    issue: [ // sticky note for the quest board
+      '................', '.##############.', '.#............#.', '.#.....##.....#.',
+      '.#.....##.....#.', '.#.....##.....#.', '.#.....##.....#.', '.#.....##.....#.',
+      '.#............#.', '.#.....##.....#.', '.#.....##.....#.', '.#.........####.',
+      '.#.........#.#..', '.#.........##...', '.###########....', '................',
+    ],
+    org: [ // the guild hall
+      '.......#####....', '.......####.....', '.......#........', '.......##.......',
+      '.....##..##.....', '...##......##...', '.##..........##.', '################',
+      '..##.##..##.##..', '..##.##..##.##..', '..##.##..##.##..', '..##.##..##.##..',
+      '..##.##..##.##..', '.##############.', '################', '................',
+    ],
+  };
+
+  /** Item icon → one path (fill = currentColor unless given). opts: { x, y, fill } */
+  function item(id, opts) {
+    const o = opts || {};
+    const rows = ITEMS[id];
+    if (!rows) throw new Error(`PX: unknown item "${id}"`);
+    check(id, rows);
+    return `<path fill="${o.fill || 'currentColor'}" d="${runPath(rows, '#', o.x || 0, o.y || 0)}"/>`;
+  }
+
+  Object.assign(root.PX, { ITEMS, item });
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>/* shared/lore.js */
+/* Campfire lore — the ONE source for the talk's content: inventory items (terms), AI history, myth-or-fact,
+   bosses (risks) and side quests (VAVE use cases in space). Classic script: window.LORE in the browser,
+   globalThis.LORE in Node (tools/*.mjs load it with vm). Decks, modules and the PixiNotes board read from here,
+   so a fact is changed in one place. Facts are phrased carefully; rumours are marked as rumours. */
+(function (root) {
+  'use strict';
+
+  /* ── Inventory: every term as an RPG item. icon = id in PX.ITEMS (pixel.js); fallback is a generic item. ──
+     kind: ai | code | github. rarity: common | rare | epic | legendary (just for fun). */
+  const ITEMS = [
+    { id: 'llm', name: 'LLM', full: 'Large Language Model', kind: 'ai', rarity: 'legendary',
+      fun: 'The know-it-all intern. Has read every brochure ever printed, remembers none of them exactly, writes beautifully anyway.',
+      space: 'Like an intern who has seen every booth on Pinterest: great ideas, no idea about your client.',
+      watch: 'It continues text. It does not look things up unless you give it a tool.' },
+    { id: 'token', name: 'Token', full: 'a piece of a word', kind: 'ai', rarity: 'common',
+      fun: 'Language Lego. Text is chopped into bricks; "strawberry" might be "straw" + "berry". You pay per brick.',
+      space: 'Booth panels: the model never sees the wall, only the panels it was built from.',
+      watch: 'That is why models famously miscounted the r\'s in "strawberry": they see bricks, not letters.' },
+    { id: 'context', name: 'Context window', full: 'what the model can see right now', kind: 'ai', rarity: 'rare',
+      fun: 'The booth footprint. Only what fits on the stand gets seen.',
+      space: 'Stuff the booth with old chat and the hero product ends up in the storage room behind the wall.',
+      watch: 'Long chats push early facts out. Put what matters in a file and pin it.' },
+    { id: 'prompt', name: 'Prompt', full: 'what you ask', kind: 'ai', rarity: 'common',
+      fun: 'The briefing. Bad briefing, bad booth.',
+      space: 'Who is it for, goal, context, constraints, done-when, look & feel. Same as a good client brief.',
+      watch: 'The model can\'t ask the client. You are the client.' },
+    { id: 'system', name: 'System prompt', full: 'standing instructions', kind: 'ai', rarity: 'rare',
+      fun: 'The brand guidelines nobody reads. Except the AI, which reads them before every single answer.',
+      space: 'The CD manual taped to the workshop wall.',
+      watch: 'Keep it short and true; it is applied to everything.' },
+    { id: 'temperature', name: 'Temperature', full: 'how adventurous the next word is', kind: 'ai', rarity: 'common',
+      fun: 'The lighting dimmer. Low: museum showcase, always the same. High: club night, surprises guaranteed.',
+      space: 'Low for checklists and offers, higher for brainstorming booth names.',
+      watch: 'High temperature is creative and also more wrong.' },
+    { id: 'hallucination', name: 'Hallucination', full: 'confident nonsense', kind: 'ai', rarity: 'epic',
+      fun: 'The render that ignores gravity. Looks perfect. Statics say no. Delivered with total confidence.',
+      space: 'A fair regulation that sounds right and does not exist.',
+      watch: 'Verify facts, ask for sources, test what it built.' },
+    { id: 'training', name: 'Training', full: 'how a model learns', kind: 'ai', rarity: 'legendary',
+      fun: 'Design school, but it reads the whole internet and takes months on warehouses full of chips.',
+      space: 'Everything it ever saw, before it saw your project.',
+      watch: 'Knowledge stops at a cut-off date.' },
+    { id: 'finetune', name: 'Fine-tuning', full: 'extra training on your examples', kind: 'ai', rarity: 'epic',
+      fun: 'The apprenticeship. Same designer, now fluent in your house style.',
+      space: 'Teach it your tone of voice for exhibition texts.',
+      watch: 'Expensive and rarely needed. Good examples in the prompt often do the job.' },
+    { id: 'rag', name: 'RAG', full: 'Retrieval-Augmented Generation', kind: 'ai', rarity: 'epic',
+      fun: 'The material library. Before answering, it walks to the sample shelf and checks.',
+      space: 'Ask about the fair\'s 80-page technical guidelines; it quotes the page instead of guessing.',
+      watch: 'Only as good as the shelf. Old PDFs, old answers.' },
+    { id: 'embedding', name: 'Embedding', full: 'meaning as coordinates', kind: 'ai', rarity: 'rare',
+      fun: 'A giant invisible moodboard where similar vibes stick close together.',
+      space: '"Warm oak lounge" lands next to "cosy timber corner", far from "chrome laser show".',
+      watch: 'Great for search and grouping, not for exact facts.' },
+    { id: 'agent', name: 'Agent', full: 'a model that plans and uses tools', kind: 'ai', rarity: 'epic',
+      fun: 'The project manager who can actually call the carpenter. Plans, does, checks, reports back.',
+      space: 'Reads the brief, drafts the checklist, books the slot, opens a pull request.',
+      watch: 'Give it a clear goal, limited keys, and a human who signs off.' },
+    { id: 'tools', name: 'Tool use', full: 'function calling', kind: 'ai', rarity: 'rare',
+      fun: 'Handing the intern a phone, a laser measure and the shared calendar.',
+      space: 'Search, calculator, file access, your whiteboard: suddenly it can do, not just say.',
+      watch: 'Every tool is a door. Only hand out the keys it needs.' },
+    { id: 'mcp', name: 'MCP', full: 'Model Context Protocol', kind: 'ai', rarity: 'legendary',
+      fun: 'The standard power socket on the fair floor. Any tool plugs in, any AI can use it. (The official docs call it a USB-C port for AI.)',
+      space: 'This board was built by an AI through PixiNotes\' MCP plug. vave.log has one too.',
+      watch: 'A plug is power: connect only what you trust.' },
+    { id: 'api', name: 'API', full: 'Application Programming Interface', kind: 'code', rarity: 'common',
+      fun: 'The delivery ramp at the back of the hall. Machines talk to machines there; no visitors.',
+      space: 'How the time tracker talks to the database, or the LED wall to the content server.',
+      watch: 'Ramps need gates: keys, limits, logs.' },
+    { id: 'openweight', name: 'Open weights', full: 'models you can run yourself', kind: 'ai', rarity: 'rare',
+      fun: 'Buy the booth system instead of renting it. Llama, Mistral, DeepSeek, Qwen: download and run.',
+      space: 'Rented: big cloud models. Owned: smaller models in your own building.',
+      watch: 'Owning means maintaining.' },
+    { id: 'local', name: 'Local model', full: 'AI on your own machine', kind: 'ai', rarity: 'rare',
+      fun: 'The workshop at home. Slower, but nothing leaves the building.',
+      space: 'For confidential client material: Ollama on a laptop.',
+      watch: 'Smaller brain, smaller power bill.' },
+    { id: 'gpu', name: 'GPU', full: 'graphics chip, AI engine', kind: 'ai', rarity: 'epic',
+      fun: 'The forklift of AI. Does the heavy lifting, costs a fortune, and everybody wants one at build-up time.',
+      space: 'Same chips that render your 3D booth walkthroughs.',
+      watch: 'Why AI prices are what they are.' },
+    { id: 'multimodal', name: 'Multimodal', full: 'text, image, sound, video', kind: 'ai', rarity: 'rare',
+      fun: 'It sees, hears and reads. Show it the napkin sketch instead of describing it.',
+      space: 'Photo of the hall corner in, floor-plan sketch and questions out.',
+      watch: 'It still guesses dimensions. Measure twice.' },
+    { id: 'agi', name: 'AGI', full: 'Artificial General Intelligence', kind: 'ai', rarity: 'legendary',
+      fun: 'The rumoured all-rounder who can do every job. Has been "a few years away" since 1956.',
+      space: 'Would do concept, render, statics and invoicing in one go. Has not shown up for the interview yet.',
+      watch: 'Treat every AGI headline as a rumour until shown.' },
+    { id: 'repo', name: 'Repository', full: 'project folder with memory', kind: 'github', rarity: 'common',
+      fun: 'The project folder with a perfect memory: every version, every note, every who-did-what.',
+      space: 'One repo per tool, per booth configurator, per microsite.',
+      watch: 'Private by default for client work.' },
+    { id: 'commit', name: 'Commit', full: 'a save point', kind: 'github', rarity: 'common',
+      fun: 'A save point with a note: "moved counter 50 cm left".',
+      space: 'Like saving floor-plan versions, except you never lose v7_final_FINAL2.',
+      watch: 'Small commits, clear notes.' },
+    { id: 'branch', name: 'Branch', full: 'a parallel version', kind: 'github', rarity: 'common',
+      fun: 'Variant B of the booth. Sketch freely; the approved design stays safe.',
+      space: 'Try the lounge on the left without touching what the client signed.',
+      watch: 'Branches are cheap. Make many.' },
+    { id: 'pr', name: 'Pull request', full: 'a proposed change', kind: 'github', rarity: 'rare',
+      fun: 'The client approval round. Here is the change, here are the screenshots, robots already checked it.',
+      space: 'Every AI and every human proposes changes the same way.',
+      watch: 'Read it before you merge it.' },
+    { id: 'merge', name: 'Merge', full: 'accept a change', kind: 'github', rarity: 'common',
+      fun: 'Variant chosen, variant built.',
+      space: 'The moment B becomes the main design.',
+      watch: 'Main should always be showable.' },
+    { id: 'actions', name: 'Actions', full: 'GitHub\'s robots', kind: 'github', rarity: 'rare',
+      fun: 'The safety inspectors who walk the booth before every opening, automatically.',
+      space: 'Build, test, check links, publish: on every change.',
+      watch: 'Green robots catch breakage, not bad taste.' },
+    { id: 'deploy', name: 'Deploy', full: 'put it live', kind: 'code', rarity: 'common',
+      fun: 'Opening day. Doors open, visitors in.',
+      space: 'Pages for public things; private hosting for client things.',
+      watch: 'Public links are public.' },
+    { id: 'fork', name: 'Fork', full: 'your own copy of a repo', kind: 'github', rarity: 'rare',
+      fun: 'Copy someone\'s modular booth system and remix it.',
+      space: 'Start the next client configurator from the last one.',
+      watch: 'Check the licence before you remix.' },
+    { id: 'issue', name: 'Issue', full: 'a task or bug note', kind: 'github', rarity: 'common',
+      fun: 'A sticky note on the quest board: "wobbly wall at the entrance".',
+      space: 'Clients, colleagues and AIs all file to the same board.',
+      watch: 'One issue, one problem.' },
+    { id: 'org', name: 'Organization', full: 'a GitHub account for a team', kind: 'github', rarity: 'epic',
+      fun: 'The guild hall: one place for the agency, with teams, roles and a key for every door.',
+      space: 'VAVE owns the repos; people come and go, the work stays.',
+      watch: 'Give each role only the keys it needs.' },
+  ];
+
+  /* ── AI history: the lore. Phrased carefully; numbers are approximate where marked. ── */
+  const HISTORY = [
+    { year: '1950', title: 'The imitation game', text: 'Alan Turing asks whether machines can think, and proposes a test: can it pass as human in a text chat?' },
+    { year: '1956', title: 'The summer that took 70 years', text: 'A workshop at Dartmouth coins "artificial intelligence". The proposal hoped a group of ten could make real progress over one summer.' },
+    { year: '1966', title: 'ELIZA', text: 'A tiny script plays therapist by turning your sentences into questions. Its inventor was shocked how much people confided in it.' },
+    { year: '1970s–90s', title: 'AI winters', text: 'Big promises, small results, frozen budgets. Twice. A good reminder for every hype cycle.' },
+    { year: '1997', title: 'Deep Blue', text: 'IBM\'s chess computer beats world champion Garry Kasparov.' },
+    { year: '2011', title: 'Watson', text: 'IBM\'s Watson wins the quiz show Jeopardy! against two champions.' },
+    { year: '2012', title: 'The cat paper', text: 'Deep learning takes off. A Google network, shown millions of video stills, learns to recognise cats on its own.' },
+    { year: '2016', title: 'Move 37', text: 'AlphaGo beats Lee Sedol at Go. One move looked like a mistake to experts. It was genius.' },
+    { year: '2017', title: 'Attention is all you need', text: 'Google researchers publish the Transformer. It is the T in GPT and the engine of every chat AI since.' },
+    { year: '2020', title: 'GPT-3', text: 'A language model big enough to write convincing text from a few examples.' },
+    { year: '2022', title: 'ChatGPT', text: 'Launched 30 November. Estimates say about 100 million users in two months, the fastest-growing app at the time.' },
+    { year: '2023', title: 'Agents and drama', text: 'Chatbots fall in love with journalists, lawyers cite invented cases, and OpenAI fires and re-hires its CEO within days.' },
+    { year: '2024', title: 'Glue on pizza', text: 'A search AI recommends glue for pizza sauce, from an old joke post. Models also struggle to count the r\'s in "strawberry".' },
+    { year: '2025', title: 'Vibe coding', text: 'Andrej Karpathy names it in February; Collins Dictionary makes it Word of the Year. A Chinese model, DeepSeek R1, shakes the chip market.' },
+    { year: '2026', title: 'You are here', text: 'Agents open pull requests, whiteboards have plugs for AI, and a winemaker in public administration ships software at night.' },
+  ];
+
+  /* ── Myth or fact? verdict: fact | myth | half | rumour | depends ── */
+  const MYTHS = [
+    { claim: 'AI researchers once planned to crack it in a single summer.', verdict: 'fact',
+      why: 'The 1955 proposal for the Dartmouth workshop hoped ten people over two months could make a significant advance.' },
+    { claim: 'The first computer bug was a real moth.', verdict: 'half',
+      why: 'In 1947 a moth was taped into the Harvard Mark II logbook as the "first actual case of bug being found". The word "bug" was already older.' },
+    { claim: 'A car dealer\'s chatbot sold a new SUV for one dollar.', verdict: 'half',
+      why: 'In 2023 users got a dealer chatbot to "agree" to a $1 deal and call it legally binding. Nobody drove home with the car.' },
+    { claim: 'Google\'s AI told people to put glue on pizza.', verdict: 'fact',
+      why: 'In 2024 an AI search summary suggested glue to make cheese stick, taken from an old joke post.' },
+    { claim: 'ChatGPT reached about 100 million users in two months.', verdict: 'fact',
+      why: 'That was the widely reported estimate in early 2023. Nothing had grown that fast before.' },
+    { claim: 'An AI became conscious in 2022.', verdict: 'myth',
+      why: 'An engineer claimed his company\'s chatbot was sentient. The company and most experts disagreed; he lost his job.' },
+    { claim: 'AI can\'t count the r\'s in "strawberry".', verdict: 'half',
+      why: 'It was a famous 2024 meme. Models see tokens, not letters. Newer reasoning models mostly get it right.' },
+    { claim: 'Lawyers were fined for citing court cases ChatGPT made up.', verdict: 'fact',
+      why: 'In 2023 a US court sanctioned two lawyers for filing invented cases. Hallucinations have consequences.' },
+    { claim: 'An airline had to honour a refund policy its chatbot invented.', verdict: 'fact',
+      why: 'In 2024 a Canadian tribunal held Air Canada responsible for what its chatbot promised.' },
+    { claim: 'One AI release wiped hundreds of billions off a chip maker in a day.', verdict: 'fact',
+      why: 'In January 2025, after DeepSeek R1, Nvidia lost roughly 590 billion dollars of market value in one day.' },
+    { claim: 'A secret project called Q* reached superintelligence in 2023.', verdict: 'rumour',
+      why: 'Reports about "Q*" swirled during OpenAI\'s boardroom drama. Nothing like that was ever shown.' },
+    { claim: 'Everything you type into an AI is used to train it.', verdict: 'depends',
+      why: 'It depends on the plan and settings. Business plans usually exclude training; free plans may not. Check before pasting client work.' },
+    { claim: '"Vibe coding" was a Word of the Year.', verdict: 'fact',
+      why: 'Collins Dictionary chose it for 2025, less than a year after Karpathy coined it.' },
+    { claim: 'AI will replace designers by 2025.', verdict: 'myth',
+      why: 'It is 2026. You are still here, and the tools need your taste more than ever.' },
+  ];
+
+  /* ── Bosses: the risks, as a boss fight. weakness = what beats it. ── */
+  const BOSSES = [
+    { id: 'hallucinator', name: 'The Hallucinator', hp: 'confident errors', weakness: 'Verify facts, ask for sources, test what it built.' },
+    { id: 'leaker', name: 'The Leaker', hp: 'confidential data in the wrong chat', weakness: 'Business plan, client NDA first, anonymise, ask before pasting.' },
+    { id: 'goblin', name: 'The Key Goblin', hp: 'passwords and keys in code', weakness: 'Secrets in a vault, never in files; let an AI audit your repos and rotate what it finds.' },
+    { id: 'lich', name: 'The Licence Lich', hp: 'fonts, images, code, AI output', weakness: 'Use what you own or license; check tool terms and the client contract; label AI content where required.' },
+    { id: 'golem', name: 'The Orphan Golem', hp: 'tools nobody maintains', weakness: 'Every tool has an owner; docs live in the repo.' },
+    { id: 'dragon', name: 'The Lock-in Dragon', hp: 'one vendor for everything', weakness: 'Work through GitHub pull requests and open formats; then any AI can take the next shift.' },
+    { id: 'drain', name: 'The Brain Drain', hp: 'people stop thinking', weakness: 'AI amplifies taste. Keep the taste human.' },
+  ];
+
+  /* ── Side quests: where AI helps communication in space (VAVE's world) ── */
+  const QUESTS = [
+    { title: 'Concept sprint', text: 'Moodboards, AI renders and a clickable walk-through of the booth in a day, before the first CAD line.' },
+    { title: 'Fair rules decoder', text: 'Turn an 80-page technical guideline into a checklist: heights, fire safety, rigging, deadlines. Human checks the result.' },
+    { title: 'Booth flow test', text: 'Simulate where visitors walk and stop. Move the counter, watch the hot spots move.' },
+    { title: 'Living LED walls', text: 'Generative typography and motion that reacts to people, prototyped in the browser.' },
+    { title: 'Showroom stories', text: 'QR micro-sites per product, in EN / DE / ZH / AR, drafted by AI and reviewed by native speakers.' },
+    { title: 'Modular reuse', text: 'A configurator and inventory for reusable booth frames: what we own, where it is, what it can become.' },
+    { title: 'Build-up radar', text: 'Crews, trucks and hours for build-up and dismantling, across parallel fairs.' },
+    { title: 'Pitch prototypes', text: 'Clients click through the idea instead of reading about it.' },
+  ];
+
+  /* ── The fireplace rules (unchanged) ── */
+  const RULES = [
+    'No client secrets in consumer chats.',
+    'Keys never live in code.',
+    'Every tool has an owner.',
+    'Ship small, review always.',
+    'Test what matters.',
+    'Respect licences and people.',
+    'Humans decide.',
+  ];
+
+  root.LORE = { ITEMS, HISTORY, MYTHS, BOSSES, QUESTS, RULES };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<style>
+  html, body { height: 100%; }
+  body {
+    --r-common: var(--muted); --r-rare: var(--lcd-d); --r-epic: var(--fire-2); --r-legendary: var(--fire-3);
+    --cols: 6; --rows: 5; --icon: 26px;
+    height: 100vh; padding: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 15px;
+  }
+  .px-label { font-size: 13px; }
+
+  /* Header: title, filter tabs, loot drop in one row */
+  .top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  .top h1 { margin: 0; font-size: 26px; color: var(--fire-3); }
+  .top .sub { margin: 0; color: var(--muted); display: none; }
+  .tabs { display: flex; gap: 4px; margin-left: auto; }
+  .tab {
+    font: 600 14px/1 var(--sans); color: var(--ink); background: var(--night-3); border: 2px solid var(--night-4);
+    min-height: 36px; min-width: 36px; padding: 6px 9px; cursor: pointer; border-radius: 0;
+  }
+  .tab:hover { background: var(--night-4); }
+  .tab[aria-selected="true"] { background: var(--lcd-d); border-color: var(--lcd-d); color: var(--night-0); }
+  .tab .n { font-weight: 400; opacity: 0.85; }
+  #loot { font-size: 17px; min-height: 36px; padding: 8px 12px; }
+
+  /* The bag: fixed rows so slot size stays put when a filter shows fewer items */
+  .bag { position: relative; flex: 1; min-height: 0; }
+  .grid {
+    list-style: none; margin: 0; padding: 0; height: 100%; display: grid; gap: 4px;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+  }
+  .grid li { min-width: 0; min-height: 0; display: flex; }
+  .slot {
+    --rc: var(--r-common);
+    position: relative; flex: 1; min-width: 0; min-height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; padding: 3px 2px; cursor: pointer; border-radius: 0; text-align: center;
+    background: var(--night-0); color: var(--ink); border: 3px solid var(--rc);
+    font: 600 13px/1.1 var(--sans);
+  }
+  .slot.rare { --rc: var(--r-rare); }
+  .slot.epic { --rc: var(--r-epic); }
+  .slot.legendary { --rc: var(--r-legendary); animation: inv-glow calc(var(--step) * 12) steps(1, end) infinite; }
+  @keyframes inv-glow {
+    0% { box-shadow: 0 0 0 0 transparent; }
+    50% { box-shadow: 0 0 0 2px var(--fire-2); }
+    75% { box-shadow: 0 0 0 4px rgba(255, 224, 106, 0.4); }
+  }
+  .slot:hover { background: var(--night-3); }
+  .slot:focus-visible { outline: 3px solid var(--ink); outline-offset: 1px; z-index: 2; background: var(--night-3); }
+  .slot[aria-current="true"] { background: var(--night-4); }
+  .slot .ico { display: block; width: var(--icon); height: var(--icon); color: var(--rc); flex: none; }
+  .slot .ico svg { display: block; width: 100%; height: 100%; }
+  .slot .nm { max-width: 100%; overflow-wrap: anywhere; hyphens: manual; }
+  .slot .pips { position: absolute; top: 2px; right: 2px; display: flex; gap: 1px; }
+  .slot .pips i { display: block; width: 4px; height: 4px; background: var(--rc); }
+
+  /* Dialog: dark box, pixel border; on cards it overlays the bag */
+  .dlg {
+    position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 5; max-height: calc(100vh - 16px); overflow: auto;
+    background: var(--night-0); border: 4px solid var(--ink);
+    box-shadow: 0 0 0 4px var(--night-0), inset 0 0 0 4px var(--night-2);
+    padding: 10px 12px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px;
+  }
+  .dlg.dock-top { bottom: auto; top: 8px; }
+  .dlg[hidden], .dlg [hidden] { display: none !important; }
+  .portrait { grid-row: span 2; width: 48px; height: 48px; padding: 4px; background: var(--night-2); border: 2px solid var(--night-4); }
+  .portrait svg { display: block; width: 100%; height: 100%; }
+  .dlg h2 { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; font-weight: 400; padding-right: 64px; min-height: 34px; }
+  .dlg h2 .nm { font: 26px/1 var(--pixel); color: var(--fire-3); }
+  .dlg h2 .full { font-size: 14px; color: var(--ink); font-weight: 600; }
+  .dlg h2 .rar { font: 13px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+  .dlg .body { grid-column: 2; display: grid; gap: 4px; }
+  .dlg p { margin: 0; font-size: 14px; line-height: 1.35; }
+  .dlg .fun { color: var(--ink); font-weight: 600; }
+  .dlg .px-label { color: var(--lcd-d); letter-spacing: 0.1em; margin-right: 4px; }
+  .tw-off { color: transparent; }
+  .dlg .close { position: absolute; top: 6px; right: 6px; font-size: 16px; min-height: 36px; padding: 6px 10px; }
+  .dlg .more { position: absolute; right: 12px; bottom: 8px; width: 12px; height: 8px; background: var(--fire-3);
+    clip-path: polygon(0 0, 100% 0, 50% 100%); animation: px-blink calc(var(--step) * 8) steps(1, end) infinite; }
+  .dlg .more[hidden] { display: none; }
+
+  /* Loot drop: a chest over the bag */
+  .chest { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; background: rgba(5, 10, 5, 0.78); }
+  .chest[hidden] { display: none; }
+  .chest svg { width: 150px; height: auto; }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (min-width: 761px) { body { --cols: 8; --rows: 4; --icon: 36px; } .slot { font-size: 14px; } }
+
+  /* Projector: 10 × 3 bag, the dialog gets its own band at the bottom */
+  @media (min-width: 1024px) and (min-height: 600px) {
+    body { --cols: 10; --rows: 3; --icon: 48px; padding: 16px 20px; gap: 12px; font-size: 22px; }
+    .px-label { font-size: 16px; }
+    .top h1 { font-size: 52px; }
+    .top .sub { display: block; font-size: 24px; }
+    .tab { font-size: 20px; min-height: 48px; padding: 8px 16px; }
+    #loot { font-size: 26px; min-height: 48px; padding: 10px 18px; }
+    .grid { gap: 8px; }
+    .slot { font-size: 17px; gap: 6px; border-width: 4px; padding: 6px 4px; }
+    .slot .pips { top: 4px; right: 4px; gap: 2px; }
+    .slot .pips i { width: 6px; height: 6px; }
+    .dlg { position: relative; left: auto; right: auto; bottom: auto; top: auto; flex: none; min-height: 252px; max-height: none; overflow: visible;
+      padding: 16px 20px; gap: 6px 20px; }
+    .dlg.dock-top { top: auto; }
+    .portrait { width: 104px; height: 104px; padding: 8px; }
+    .dlg h2 { padding-right: 120px; }
+    .dlg h2 .nm { font-size: 44px; }
+    .dlg h2 .full { font-size: 22px; }
+    .dlg h2 .rar { font-size: 16px; }
+    .dlg p { font-size: 22px; line-height: 1.3; }
+    .dlg .fun { font-size: 24px; }
+    .dlg .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .dlg .px-label { display: block; margin: 0 0 2px; }
+    .dlg .close { top: 12px; right: 12px; font-size: 22px; min-height: 44px; }
+    .idle { grid-column: 1 / -1; align-self: center; font-size: 24px; color: var(--muted); margin: 0; }
+    .idle b { color: var(--ink); }
+    .chest svg { width: 260px; }
+  }
+  @media not all and (min-width: 1024px) and (min-height: 600px) { .idle { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .slot.legendary { animation: none !important; box-shadow: 0 0 0 2px var(--fire-2); }
+    .dlg .more { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="px-title">Your inventory</h1>
+  <p class="sub"><span id="count">30</span> items for the quest.</p>
+  <div class="tabs" role="tablist" aria-label="Filter items" id="tabs"></div>
+  <button class="px-btn fire" id="loot" type="button">Loot drop</button>
+</header>
+
+<div class="bag">
+  <ul class="grid" id="grid" role="list" aria-label="Items"></ul>
+  <div class="chest pixelart" id="chest" hidden aria-hidden="true"><svg id="chest-svg" viewBox="0 0 24 32" shape-rendering="crispEdges"></svg></div>
+</div>
+
+<section class="dlg" id="dlg" aria-labelledby="d-name">
+  <p class="idle" id="idle"><b>Pick an item.</b> Click it, or use the arrow keys and Enter. Feeling lucky? Loot drop.</p>
+  <div class="portrait pixelart" aria-hidden="true" id="d-ico" hidden></div>
+  <h2 id="d-name" hidden><span class="nm"></span><span class="full"></span><span class="rar"></span></h2>
+  <div class="body" id="d-body" hidden>
+    <p class="fun" id="d-fun"></p>
+    <div class="cols">
+      <p><span class="px-label">In the booth world:</span> <span id="d-space"></span></p>
+      <p><span class="px-label">Watch out:</span> <span id="d-watch"></span></p>
+    </div>
+  </div>
+  <button class="px-btn close" id="d-close" type="button" hidden>Close</button>
+  <span class="more" id="d-more" hidden></span>
+</section>
+<p class="sr" id="live" aria-live="polite"></p>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const ITEMS = LORE.ITEMS;
+  const RC = { common: PX.PAL.t, rare: PX.PAL.d, epic: PX.PAL.o, legendary: PX.PAL.y };
+  const PIPS = { common: 1, rare: 2, epic: 3, legendary: 4 };
+  const KIND = { ai: 'AI', code: 'Code', github: 'GitHub' };
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Icons: PX.ITEMS[id] when the art set has it, else a generic icon per kind ── */
+  function grid16(fn) { const r = []; for (let y = 0; y < 16; y++) { let s = ''; for (let x = 0; x < 16; x++) s += fn(x, y) ? '#' : '.'; r.push(s); } return r; }
+  const FALLBACK = {
+    ai: ['................', '................', '................', '....########....', '...#..#..#..#...', '..#..#....#..#..', '.##############.', '..#...#..#...#..',
+      '...#...##...#...', '....#..##..#....', '.....#.##.#.....', '......####......', '.......##.......', '................', '................', '................'],
+    code: grid16((x, y) => {
+      if (y < 4 || y > 11) return (y >= 3 && y <= 12) && (x === Math.round(10 - (y - 3) * 0.45) || x === Math.round(10 - (y - 3) * 0.45) + 1);
+      const l = Math.round(1 + Math.abs(y - 7.5)), r = 14 - l;
+      const s = Math.round(10 - (y - 3) * 0.45);
+      return x === l || x === l + 1 || x === r || x === r + 1 || x === s || x === s + 1;
+    }),
+    github: grid16((x, y) => (x >= 3 && x <= 6 && ((y >= 1 && y <= 4) || (y >= 11 && y <= 14)))
+      || (x >= 4 && x <= 5 && y >= 4 && y <= 11) || (x >= 10 && x <= 13 && y >= 2 && y <= 5)
+      || (x >= 11 && x <= 12 && y >= 5 && y <= 7) || (y >= 7 && y <= 10 && (x === 12 - (y - 6) || x === 13 - (y - 6)))),
+  };
+
+  /** Inner SVG markup (16×16 space) for an item; mono icons use currentColor */
+  function art(it) {
+    const src = PX.ITEMS ? PX.ITEMS[it.id] : null;
+    try {
+      if (typeof src === 'string' && src.trim().charAt(0) === '<') return src.replace(/<svg\b/, '<svg width="16" height="16"');
+      const rows = Array.isArray(src) ? src : src && Array.isArray(src.rows) ? src.rows : null;
+      if (rows && typeof rows[0] === 'string') {
+        return /^[.#]+$/.test(rows.join('')) ? `<path fill="currentColor" d="${PX.runPath(rows, '#', 0, 0)}"/>` : PX.sprite(rows, { pal: src.pal });
+      }
+    } catch (e) { /* malformed art: fall back */ }
+    return `<path fill="currentColor" d="${PX.runPath(FALLBACK[it.kind] || FALLBACK.ai, '#', 0, 0)}"/>`;
+  }
+  /* Long names get soft hyphens between syllables (vowel | consonant vowel), display only */
+  const soft = (name) => name.replace(/[A-Za-z]{10,}/g, (w) => w.replace(/(?<=[aeiouy])(?=[^aeiouy][aeiouy])/g, (m, off) => (off >= 3 && w.length - off >= 3 ? '\u00ad' : '')));
+  const svg = (it) => `<svg viewBox="0 0 16 16" class="pixelart" shape-rendering="crispEdges" aria-hidden="true" style="color:${RC[it.rarity]}">${art(it)}</svg>`;
+
+  /* ── Tabs ── */
+  const FILTERS = [['all', 'All'], ['ai', 'AI'], ['code', 'Code'], ['github', 'GitHub']];
+  let filter = 'all';
+  FILTERS.forEach(([k, label], i) => {
+    const n = k === 'all' ? ITEMS.length : ITEMS.filter((it) => it.kind === k).length;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'tab'; b.setAttribute('role', 'tab'); b.dataset.k = k;
+    b.setAttribute('aria-selected', String(i === 0)); b.tabIndex = i === 0 ? 0 : -1; b.setAttribute('aria-controls', 'grid');
+    b.innerHTML = `${label} <span class="n">${n}</span>`;
+    b.addEventListener('click', () => setFilter(k));
+    b.addEventListener('keydown', (e) => {
+      const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      const tabs = [...document.querySelectorAll('.tab')];
+      const next = tabs[(tabs.indexOf(b) + d + tabs.length) % tabs.length];
+      setFilter(next.dataset.k); next.focus();
+    });
+    $('tabs').appendChild(b);
+  });
+  $('count').textContent = ITEMS.length;
+
+  function setFilter(k) {
+    filter = k;
+    document.querySelectorAll('.tab').forEach((t) => { const on = t.dataset.k === k; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+    render();
+  }
+
+  /* ── Bag ── */
+  let cursor = 0;            // index in the visible list
+  let openId = null;         // item shown in the dialog
+  const visible = () => ITEMS.filter((it) => filter === 'all' || it.kind === filter);
+
+  function render() {
+    const list = visible();
+    cursor = Math.min(cursor, list.length - 1);
+    const keep = list.findIndex((it) => it.id === openId);
+    if (keep >= 0) cursor = keep;
+    $('grid').innerHTML = list.map((it, i) => `<li><button type="button" class="slot ${it.rarity}" data-id="${it.id}" tabindex="${i === cursor ? 0 : -1}"
+      aria-label="${it.name}, ${it.rarity}"${it.id === openId ? ' aria-current="true"' : ''}><span class="pips" aria-hidden="true">${'<i></i>'.repeat(PIPS[it.rarity])}</span>
+      <span class="ico">${svg(it)}</span><span class="nm">${soft(it.name)}</span></button></li>`).join('');
+    $('live').textContent = `${list.length} items.`;
+  }
+  const slots = () => [...document.querySelectorAll('.slot')];
+  const cols = () => getComputedStyle($('grid')).gridTemplateColumns.split(' ').length;
+
+  function moveTo(i) {
+    const s = slots();
+    if (!s.length) return;
+    cursor = Math.max(0, Math.min(s.length - 1, i));
+    s.forEach((el, j) => { el.tabIndex = j === cursor ? 0 : -1; });
+    s[cursor].focus();
+  }
+
+  $('grid').addEventListener('click', (e) => {
+    const b = e.target.closest('.slot');
+    if (!b) return;
+    cursor = slots().indexOf(b);
+    if (b.dataset.id === openId && typing) { finishTyping(); return; }
+    open(b.dataset.id, b);
+  });
+  $('grid').addEventListener('keydown', (e) => {
+    const c = cols();
+    const map = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: c, ArrowUp: -c };
+    if (e.key in map) { e.preventDefault(); moveTo(cursor + map[e.key]); }
+    else if (e.key === 'Home') { e.preventDefault(); moveTo(0); }
+    else if (e.key === 'End') { e.preventDefault(); moveTo(slots().length - 1); }
+  });
+
+  /* ── Dialog with typewriter text ── */
+  let typing = null;
+  const TW = ['d-fun', 'd-space', 'd-watch'];
+
+  function open(id, fromSlot) {
+    const it = ITEMS.find((x) => x.id === id);
+    if (!it) return;
+    openId = id;
+    slots().forEach((s) => { if (s.dataset.id === id) s.setAttribute('aria-current', 'true'); else s.removeAttribute('aria-current'); });
+    const d = $('dlg');
+    $('idle').hidden = true;
+    ['d-ico', 'd-name', 'd-body', 'd-close'].forEach((k) => { $(k).hidden = false; });
+    $('d-ico').innerHTML = svg(it);
+    const h = $('d-name');
+    h.querySelector('.nm').textContent = it.name;
+    h.querySelector('.full').textContent = it.full;
+    h.querySelector('.rar').textContent = `${it.rarity} · ${KIND[it.kind]}`;
+    h.querySelector('.rar').style.color = RC[it.rarity];
+    $('d-fun').textContent = it.fun; $('d-space').textContent = it.space; $('d-watch').textContent = it.watch;
+    $('live').textContent = `Opened ${it.name}, ${it.full}.`;
+    // On cards the dialog overlays the bag: dock it away from the chosen slot
+    const small = !matchMedia('(min-width: 1024px) and (min-height: 600px)').matches;
+    const r = fromSlot && fromSlot.getBoundingClientRect();
+    d.classList.toggle('dock-top', !!(small && r && r.top + r.height / 2 > innerHeight / 2));
+    d.hidden = false;
+    startTyping();
+  }
+
+  function startTyping() {
+    stopTyping();
+    const parts = TW.map((k) => { const el = $(k); const t = el.textContent; el.innerHTML = '<span class="tw-on"></span><span class="tw-off"></span>'; el.lastChild.textContent = t; return { el, t }; });
+    if (reduced()) { finishTyping(parts); return; }
+    let p = 0, n = 0;
+    $('d-more').hidden = true;
+    typing = { parts, timer: setInterval(() => {
+      n += 3;
+      while (p < parts.length && n >= parts[p].t.length) { show(parts[p], parts[p].t.length); p++; n = 0; }
+      if (p >= parts.length) { finishTyping(parts); return; }
+      show(parts[p], n);
+    }, 33) };
+  }
+  function show(part, k) { part.el.firstChild.textContent = part.t.slice(0, k); part.el.lastChild.textContent = part.t.slice(k); }
+  function stopTyping() { if (typing) clearInterval(typing.timer); typing = null; }
+  function finishTyping(parts) {
+    const ps = parts || (typing && typing.parts) || [];
+    stopTyping();
+    ps.forEach((x) => show(x, x.t.length));
+    $('d-more').hidden = false;
+  }
+
+  function close() {
+    stopTyping();
+    openId = null;
+    const big = matchMedia('(min-width: 1024px) and (min-height: 600px)').matches;
+    ['d-ico', 'd-name', 'd-body', 'd-close', 'd-more'].forEach((k) => { $(k).hidden = true; });
+    $('idle').hidden = false;
+    if (!big) $('dlg').hidden = true;
+    slots().forEach((s) => s.removeAttribute('aria-current'));
+    moveTo(cursor);
+  }
+  $('d-close').addEventListener('click', close);
+  $('dlg').addEventListener('click', (e) => { if (typing && e.target.id !== 'd-close') finishTyping(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && openId) { e.preventDefault(); close(); }
+    else if ((e.key === 'Enter' || e.key === ' ') && typing && document.activeElement && document.activeElement.dataset.id === openId) { e.preventDefault(); finishTyping(); }
+  });
+  function syncDialog() { // on the projector the band is always there (idle text), on cards only when open
+    const big = matchMedia('(min-width: 1024px) and (min-height: 600px)').matches;
+    $('dlg').hidden = !big && !openId;
+  }
+  addEventListener('resize', syncDialog);
+
+  /* ── Loot drop: stepped chest, then a random item from the current filter ── */
+  const CHEST_LID_SHUT = ['................', '................', '..WWWWWWWWWWWW..', '.WnnnnnnnnnnnnW.', '.WmmmmmmmmmmmmW.', '.WmmmmmmmmmmmmW.'];
+  const CHEST_LID_OPEN = ['................', '..WWWWWWWWWWWW..', '.WnnnnnnnnnnnnW.', '.WWWWWWWWWWWWWW.', '.WywwwwwwwwwwyW.', '.WooyyyyyyyyooW.'];
+  const CHEST_BODY = ['.WWWWWWMMWWWWWW.', '.WnnnnnMyMnnnnW.', '.WmmmmmMMMmmmmW.', '.WmmmmmmmmmmmmW.', '.WmmmmmmmmmmmmW.', '.WWWWWWWWWWWWWW.'];
+  let looting = false;
+  function chestFrame(openLid, dx, it, rise) {
+    const item = it ? `<svg x="4" y="${18 - rise}" width="16" height="16" viewBox="0 0 16 16" style="color:${RC[it.rarity]}">${art(it)}</svg>` : '';
+    const sparks = it && rise >= 12 ? PX.sprite('spark', { x: 1, y: 6 }) + PX.sprite('spark', { x: 20, y: 3 }) + PX.sprite('spark', { x: 18, y: 14 }) : '';
+    return item + PX.sprite((openLid ? CHEST_LID_OPEN : CHEST_LID_SHUT).concat(CHEST_BODY), { x: 4 + dx, y: 16 }) + sparks;
+  }
+  $('loot').addEventListener('click', () => {
+    if (looting) return;
+    const list = visible().filter((it) => it.id !== openId);
+    const it = list[Math.floor(Math.random() * list.length)];
+    if (!it) return;
+    const reveal = () => {
+      $('chest').hidden = true; looting = false; $('loot').disabled = false;
+      cursor = visible().findIndex((x) => x.id === it.id);
+      moveTo(cursor);
+      open(it.id, slots()[cursor]);
+    };
+    if (reduced()) { reveal(); return; }
+    looting = true; $('loot').disabled = true;
+    const frames = [[0, 0, 0], [0, -1, 0], [0, 1, 0], [0, -1, 0], [0, 1, 0], [0, 0, 0], [1, 0, 0], [1, 0, 4], [1, 0, 8], [1, 0, 12], [1, 0, 14], [1, 0, 14], [1, 0, 14], [1, 0, 14]];
+    $('chest').hidden = false;
+    let f = 0;
+    (function step() {
+      if (f >= frames.length) { reveal(); return; }
+      const [o, dx, rise] = frames[f++];
+      $('chest-svg').innerHTML = chestFrame(o, dx, o ? it : null, rise);
+      setTimeout(step, 110);
+    })();
+  });
+
+  render();
+  syncDialog();
+})();
+</script>
+</body>
+</html>
