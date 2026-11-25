@@ -182,7 +182,7 @@ use. [⇢ deck *A fire for VAVE*, `art/vavelog-quest.svg`]
   can move:
   - **Now:** AI time entry with a proper consent screen · capacity plan v2 (rates per service, € per phase)
   - **Next:** build-up radar (crews, trucks, hall slots) · fair deadline radar from the technical guidelines ·
-    modular inventory (frames, LED tiles, furniture) · site reports from the phone · client approvals for render
+    modular stock (frames, LED tiles, furniture) · site reports from the phone · client approvals for render
     variants
   - **Later:** cross-company staffing · multi-currency invoices, only with tax advice
 - **Ember:** "The best ideas come from watching, not prompting."

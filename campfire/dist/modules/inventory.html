@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Inventory · Campfire</title>
+<title>Words by the fire · Campfire</title>
 <style>/* shared/campfire.css */
 /* Campfire — shared look for every page, deck and module of the talk.
    pix·el LCD night (greens) + one warm thing: the fire. Everything blocky moves in steps(); nothing eases smoothly.
@@ -817,8 +817,8 @@ body {
       fun: 'The project folder with a perfect memory: every version, every note, every who-did-what.',
       space: 'One repo per tool, per booth configurator, per microsite.',
       watch: 'Private by default for client work.' },
-    { id: 'commit', name: 'Commit', full: 'a save point', kind: 'github', rarity: 'common',
-      fun: 'A save point with a note: "moved counter 50 cm left".',
+    { id: 'commit', name: 'Commit', full: 'a saved version', kind: 'github', rarity: 'common',
+      fun: 'A saved version with a note: "moved counter 50 cm left".',
       space: 'Like saving floor-plan versions, except you never lose v7_final_FINAL2.',
       watch: 'Small commits, clear notes.' },
     { id: 'branch', name: 'Branch', full: 'a parallel version', kind: 'github', rarity: 'common',
@@ -846,7 +846,7 @@ body {
       space: 'Start the next client configurator from the last one.',
       watch: 'Check the licence before you remix.' },
     { id: 'issue', name: 'Issue', full: 'a task or bug note', kind: 'github', rarity: 'common',
-      fun: 'A sticky note on the quest board: "wobbly wall at the entrance".',
+      fun: 'A sticky note on the team board: "wobbly wall at the entrance".',
       space: 'Clients, colleagues and AIs all file to the same board.',
       watch: 'One issue, one problem.' },
     { id: 'org', name: 'Organization', full: 'a GitHub account for a team', kind: 'github', rarity: 'epic',
@@ -924,7 +924,7 @@ body {
     { title: 'Booth flow test', text: 'Simulate where visitors walk and stop. Move the counter, watch the hot spots move.' },
     { title: 'Living LED walls', text: 'Generative typography and motion that reacts to people, prototyped in the browser.' },
     { title: 'Showroom stories', text: 'QR micro-sites per product, in EN / DE / ZH / AR, drafted by AI and reviewed by native speakers.' },
-    { title: 'Modular reuse', text: 'A configurator and inventory for reusable booth frames: what we own, where it is, what it can become.' },
+    { title: 'Modular reuse', text: 'A configurator and a stock list for reusable booth frames: what we own, where it is, what it can become.' },
     { title: 'Build-up radar', text: 'Crews, trucks and hours for build-up and dismantling, across parallel fairs.' },
     { title: 'Pitch prototypes', text: 'Clients click through the idea instead of reading about it.' },
   ];
@@ -953,10 +953,10 @@ body {
   }
   .px-label { font-size: 13px; }
 
-  /* Header: title, filter tabs, loot drop in one row */
+  /* Header: title, filter tabs, surprise button in one row */
   .top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
   .top h1 { margin: 0; font-size: 26px; color: var(--fire-3); }
-  .top .sub { margin: 0; color: var(--muted); display: none; }
+  .top .sub { margin: 0; color: var(--muted); display: none; flex: 1 1 0; min-width: 0; } /* the subline wraps, the row stays one row */
   .tabs { display: flex; gap: 4px; margin-left: auto; }
   .tab {
     font: 600 14px/1 var(--sans); color: var(--ink); background: var(--night-3); border: 2px solid var(--night-4);
@@ -965,9 +965,9 @@ body {
   .tab:hover { background: var(--night-4); }
   .tab[aria-selected="true"] { background: var(--lcd-d); border-color: var(--lcd-d); color: var(--night-0); }
   .tab .n { font-weight: 400; opacity: 0.85; }
-  #loot { font-size: 17px; min-height: 40px; padding: 8px 12px; }
+  #surprise { font-size: 17px; min-height: 40px; padding: 8px 12px; }
 
-  /* The bag: fixed rows so slot size stays put when a filter shows fewer items */
+  /* The bag: fixed rows so slot size stays put when a filter shows fewer words */
   .bag { position: relative; flex: 1; min-height: 0; }
   .grid {
     list-style: none; margin: 0; padding: 0; height: 100%; display: grid; gap: 4px;
@@ -1027,7 +1027,7 @@ body {
     clip-path: polygon(0 0, 100% 0, 50% 100%); animation: px-blink calc(var(--step) * 8) steps(1, end) infinite; }
   .dlg .more[hidden] { display: none; }
 
-  /* Loot drop: a chest over the bag */
+  /* Surprise me: a chest over the bag */
   .chest { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; background: rgba(5, 10, 5, 0.78); }
   .chest[hidden] { display: none; }
   .chest svg { width: 150px; height: auto; }
@@ -1044,7 +1044,7 @@ body {
     .top h1 { font-size: 52px; }
     .top .sub { display: block; font-size: 24px; }
     .tab { font-size: 20px; min-height: 48px; padding: 8px 16px; }
-    #loot { font-size: 26px; min-height: 48px; padding: 10px 18px; }
+    #surprise { font-size: 26px; min-height: 48px; padding: 10px 18px; }
     .grid { gap: 8px; }
     .slot { gap: 6px; border-width: 4px; padding: 6px 4px; }
     .slot .pips { top: 4px; right: 4px; gap: 2px; }
@@ -1090,19 +1090,19 @@ body {
 </head>
 <body>
 <header class="top">
-  <h1 class="px-title">Your inventory</h1>
-  <p class="sub"><span id="count">30</span> items for the quest.</p>
-  <div class="tabs" role="tablist" aria-label="Filter items" id="tabs"></div>
-  <button class="px-btn fire" id="loot" type="button">Loot drop</button>
+  <h1 class="px-title">Words by the fire</h1>
+  <p class="sub"><span id="count">30</span> words, explained with booths and showrooms.</p>
+  <div class="tabs" role="tablist" aria-label="Filter words" id="tabs"></div>
+  <button class="px-btn fire" id="surprise" type="button">Surprise me</button>
 </header>
 
 <div class="bag">
-  <ul class="grid" id="grid" role="list" aria-label="Items"></ul>
+  <ul class="grid" id="grid" role="list" aria-label="Words"></ul>
   <div class="chest pixelart" id="chest" hidden aria-hidden="true"><svg id="chest-svg" viewBox="0 0 24 32" shape-rendering="crispEdges"></svg></div>
 </div>
 
 <section class="dlg" id="dlg" aria-labelledby="d-name">
-  <p class="idle" id="idle"><b>Pick an item.</b> Click it, or use the arrow keys and Enter. Feeling lucky? Loot drop.</p>
+  <p class="idle" id="idle"><b>Pick a word.</b> Click it, or use the arrow keys and Enter. Feeling lucky? Surprise me.</p>
   <div class="portrait pixelart" aria-hidden="true" id="d-ico" hidden></div>
   <h2 id="d-name" hidden><span class="nm"></span><span class="full"></span><span class="rar"></span></h2>
   <div class="body" id="d-body" hidden>
@@ -1189,7 +1189,7 @@ body {
 
   /* ── Bag ── */
   let cursor = 0;            // index in the visible list
-  let openId = null;         // item shown in the dialog
+  let openId = null;         // word shown in the dialog
   const visible = () => ITEMS.filter((it) => filter === 'all' || it.kind === filter);
 
   function render() {
@@ -1198,9 +1198,9 @@ body {
     const keep = list.findIndex((it) => it.id === openId);
     if (keep >= 0) cursor = keep;
     $('grid').innerHTML = list.map((it, i) => `<li><button type="button" class="slot ${it.rarity}" data-id="${it.id}" tabindex="${i === cursor ? 0 : -1}"
-      aria-label="${it.name}, ${it.rarity}"${it.id === openId ? ' aria-current="true"' : ''}><span class="pips" aria-hidden="true">${'<i></i>'.repeat(PIPS[it.rarity])}</span>
+      aria-label="${it.name}, ${KIND[it.kind]}"${it.id === openId ? ' aria-current="true"' : ''}><span class="pips" aria-hidden="true">${'<i></i>'.repeat(PIPS[it.rarity])}</span>
       <span class="ico">${svg(it)}</span><span class="nm">${soft(it.name)}</span></button></li>`).join('');
-    $('live').textContent = `${list.length} items.`;
+    $('live').textContent = `${list.length} words.`;
   }
   const slots = () => [...document.querySelectorAll('.slot')];
   const cols = () => getComputedStyle($('grid')).gridTemplateColumns.split(' ').length;
@@ -1244,7 +1244,7 @@ body {
     const h = $('d-name');
     h.querySelector('.nm').textContent = it.name;
     h.querySelector('.full').textContent = it.full;
-    h.querySelector('.rar').textContent = `${it.rarity} · ${KIND[it.kind]}`;
+    h.querySelector('.rar').textContent = KIND[it.kind]; // the rarity stays a frame colour, never a word
     h.querySelector('.rar').style.color = RC[it.rarity];
     $('d-fun').textContent = it.fun; $('d-space').textContent = it.space; $('d-watch').textContent = it.watch;
     $('live').textContent = `Opened ${it.name}, ${it.full}.`;
@@ -1300,29 +1300,29 @@ body {
   }
   addEventListener('resize', syncDialog);
 
-  /* ── Loot drop: stepped chest, then a random item from the current filter ── */
+  /* ── Surprise me: stepped chest, then a random word from the current filter ── */
   const CHEST_LID_SHUT = ['................', '................', '..WWWWWWWWWWWW..', '.WnnnnnnnnnnnnW.', '.WmmmmmmmmmmmmW.', '.WmmmmmmmmmmmmW.'];
   const CHEST_LID_OPEN = ['................', '..WWWWWWWWWWWW..', '.WnnnnnnnnnnnnW.', '.WWWWWWWWWWWWWW.', '.WywwwwwwwwwwyW.', '.WooyyyyyyyyooW.'];
   const CHEST_BODY = ['.WWWWWWMMWWWWWW.', '.WnnnnnMyMnnnnW.', '.WmmmmmMMMmmmmW.', '.WmmmmmmmmmmmmW.', '.WmmmmmmmmmmmmW.', '.WWWWWWWWWWWWWW.'];
-  let looting = false;
+  let opening = false;
   function chestFrame(openLid, dx, it, rise) {
     const item = it ? `<svg x="4" y="${18 - rise}" width="16" height="16" viewBox="0 0 16 16" style="color:${RC[it.rarity]}">${art(it)}</svg>` : '';
     const sparks = it && it.rarity === 'legendary' && rise >= 12 ? PX.sprite('spark', { x: 1, y: 6 }) + PX.sprite('spark', { x: 20, y: 3 }) + PX.sprite('spark', { x: 18, y: 14 }) : '';
     return item + PX.sprite((openLid ? CHEST_LID_OPEN : CHEST_LID_SHUT).concat(CHEST_BODY), { x: 4 + dx, y: 16 }) + sparks;
   }
-  $('loot').addEventListener('click', () => {
-    if (looting) return;
+  $('surprise').addEventListener('click', () => {
+    if (opening) return;
     const list = visible().filter((it) => it.id !== openId);
     const it = list[Math.floor(Math.random() * list.length)];
     if (!it) return;
     const reveal = () => {
-      $('chest').hidden = true; looting = false; $('loot').disabled = false;
+      $('chest').hidden = true; opening = false; $('surprise').disabled = false;
       cursor = visible().findIndex((x) => x.id === it.id);
       moveTo(cursor);
       open(it.id, slots()[cursor]);
     };
     if (reduced()) { reveal(); return; }
-    looting = true; $('loot').disabled = true;
+    opening = true; $('surprise').disabled = true;
     const frames = [[0, 0, 0], [0, -1, 0], [0, 1, 0], [0, -1, 0], [0, 1, 0], [0, 0, 0], [1, 0, 0], [1, 0, 4], [1, 0, 8], [1, 0, 12], [1, 0, 14], [1, 0, 14], [1, 0, 14], [1, 0, 14]];
     $('chest').hidden = false;
     let f = 0;

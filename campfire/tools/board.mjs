@@ -117,7 +117,7 @@ const CAMPS = [
       { text: 'Capacity plan v2: rates per service, € per phase', column: 'Now' },
       { text: 'Build-up radar: crews, trucks, hall slots', column: 'Next' },
       { text: 'Fair deadline radar from technical guidelines', column: 'Next' },
-      { text: 'Modular inventory: frames, LED tiles, furniture', column: 'Next' },
+      { text: 'Modular stock: frames, LED tiles, furniture', column: 'Next' },
       { text: 'Site reports from the phone', column: 'Next' },
       { text: 'Client approvals for render variants', column: 'Next' },
       { text: 'Group: cross-company staffing', column: 'Later' },
