@@ -292,17 +292,16 @@ body { overflow: hidden; }
 .reveal a { color: var(--deck-link); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px; }
 .reveal a:hover { color: var(--deck-hot-2); }
 
-/* Kicker: station label above a title, mono caps */
+/* Kicker: short line above a title, mono, normal case (caps only for labels of up to three words, see .label) */
 .reveal .kicker {
   font-family: var(--mono);
-  font-size: 24px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 28px;
+  letter-spacing: 0.02em;
   color: var(--deck-accent);
   margin: 0 0 18px;
 }
 .reveal .lead { font-size: 38px; line-height: 1.3; }
-.reveal .small { font-size: 24px; color: var(--muted); }
+.reveal .small { font-size: 28px; color: var(--muted); }
 .reveal .muted { color: var(--muted); }
 .reveal .hot { color: var(--deck-hot); }
 .reveal .center { text-align: center; }
@@ -341,7 +340,7 @@ body { overflow: hidden; }
 .reveal .box > :last-child { margin-bottom: 0; }
 .reveal .box .label {
   font-family: var(--mono);
-  font-size: 24px;
+  font-size: 28px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
@@ -386,9 +385,9 @@ body { overflow: hidden; }
   display: block;
   margin-top: 24px;
   font-family: var(--mono);
-  font-size: 24px;
+  font-size: 28px;
   font-style: normal;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   color: var(--muted);
 }
 
@@ -408,7 +407,7 @@ body { overflow: hidden; }
 .reveal .cards > *, .reveal .steps > li { min-width: 0; overflow-wrap: break-word; }
 .reveal .cards.c4 > * { padding: 20px 20px; }
 .reveal .cards.c4 h3 { font-size: 40px; }
-.reveal .cards p { font-size: 26px; line-height: 1.35; }
+.reveal .cards p { font-size: 28px; line-height: 1.3; }
 .reveal .cards h3 { font-size: 46px; }
 .reveal .cards svg[data-px-icon] { display: block; margin-bottom: 12px; }
 .reveal .cards .hot-card { border-color: var(--deck-hot); }
@@ -425,7 +424,7 @@ body { overflow: hidden; }
   background: var(--card);
   border: var(--px) solid var(--deck-frame);
   box-shadow: var(--px) var(--px) 0 var(--px) var(--deck-shadow);
-  font-size: 26px;
+  font-size: 28px;
   line-height: 1.3;
 }
 .reveal .steps > li::before {
@@ -453,7 +452,7 @@ body { overflow: hidden; }
 .reveal .steps .hot-step { border-color: var(--deck-hot); }
 .reveal .steps.s5 > li { padding: 18px 14px; }   /* five steps in a row: smaller titles, no broken words */
 .reveal .steps.s5 strong { font-size: 38px; }
-.reveal .steps.s6 > li { font-size: 24px; overflow-wrap: normal; hyphens: none; }   /* six in a row: whole words only */
+.reveal .steps.s6 > li { font-size: 28px; overflow-wrap: normal; hyphens: none; }   /* six in a row: whole words only */
 
 /* Compact numbered rules (smoke deck) */
 .reveal ol.rules > li { padding-left: 52px; margin-bottom: 10px; font-size: 28px; line-height: 1.3; }
@@ -484,14 +483,14 @@ body { overflow: hidden; }
 .reveal .bars .w2 { width: 20%; } .reveal .bars .w1 { width: 10%; }
 
 /* Prompt boxes (kindling deck) */
-.reveal .prompt { font-family: var(--mono); font-size: 25px; line-height: 1.45; }
+.reveal .prompt { font-family: var(--mono); font-size: 28px; line-height: 1.4; }
 .reveal .prompt b { color: var(--deck-accent); font-weight: 400; }
 
 /* Chips: short tags inside or outside the circle of light */
 .reveal .chips { display: flex; flex-wrap: wrap; gap: 14px; margin: 0; padding: 0; list-style: none; }
 .reveal .chips > li {
   margin: 0; padding: 6px 16px;
-  font-size: 26px;
+  font-size: 28px;
   border: var(--px) solid var(--deck-frame);
   background: var(--card);
 }
@@ -525,16 +524,9 @@ body { overflow: hidden; }
    No game mechanics: no levels, no save points, no rarity. Verdict (--v-*) colours come from shared/campfire.css,
    one mapping for both themes. Motion only in steps, only without reduced motion. */
 
-/* Chapter opening: small chapter label, a big pixel scene, the first sentence that pulls you in */
+/* Chapter opening: a big pixel scene and the first sentence that pulls you in. No chapter label: on the board the
+   pixel chapter card right before the deck is the title. */
 .reveal section.opening { text-align: center; }
-.reveal .ch {
-  font-family: var(--mono);
-  font-size: 24px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--deck-accent);
-  margin: 0 0 18px;
-}
 .reveal .opening .scene { display: block; margin: 0 auto; }
 .reveal .opening .art.scene { height: 380px; }
 .reveal .opening .first {
@@ -550,7 +542,7 @@ body { overflow: hidden; }
 
 /* Plain definition list: a label column and a text column */
 .reveal .sheet { display: grid; grid-template-columns: 190px 1fr; gap: 14px 28px; margin: 0; align-items: baseline; }
-.reveal .sheet dt { font-family: var(--mono); font-size: 24px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--deck-accent); }
+.reveal .sheet dt { font-family: var(--mono); font-size: 28px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--deck-accent); }
 .reveal .sheet dd { margin: 0; font-size: 28px; line-height: 1.25; }
 
 /* Word card (data-lore-word): one word, said plainly */
@@ -559,17 +551,17 @@ body { overflow: hidden; }
   border: var(--px) solid var(--deck-frame);
   box-shadow: var(--px) var(--px) 0 var(--px) var(--deck-shadow);
   padding: 20px 26px 22px;
-  font-size: 24px;
-  line-height: 1.35;
+  font-size: 28px;
+  line-height: 1.3;
 }
 .reveal .word-head { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center; margin-bottom: 14px; }
 .reveal .word-ico, .reveal .lore-ico, .reveal .tl-ico { image-rendering: pixelated; shape-rendering: crispEdges; display: block; }
 .reveal .word-ico { color: var(--deck-hot); }
 .reveal .word-card p { margin: 0 0 10px; }
 .reveal .word-card p:last-child { margin-bottom: 0; }
-.reveal .word-card .word-kind { font-family: var(--mono); font-size: 22px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--deck-accent); margin: 0 0 2px; }
+.reveal .word-card .word-kind { font-family: var(--mono); font-size: 28px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--deck-accent); margin: 0 0 2px; }
 .reveal .word-card .word-name { font-size: 60px; line-height: 0.9; margin: 0 0 2px; color: var(--ink); }
-.reveal .word-card .word-full { font-family: var(--mono); font-size: 22px; color: var(--muted); margin: 0; }
+.reveal .word-card .word-full { font-family: var(--mono); font-size: 28px; color: var(--muted); margin: 0; }
 .reveal .word-card .word-fun { font-size: 28px; }
 .reveal .word-card .k { font-weight: 700; color: var(--deck-accent); }
 .reveal .lore-ico { display: inline-block; vertical-align: middle; color: var(--deck-accent); }
@@ -590,7 +582,7 @@ body { overflow: hidden; }
 .reveal .tl-year { font: 56px/0.9 var(--pixel); color: var(--deck-hot); text-align: right; white-space: nowrap; }
 .reveal .tl-ico { color: var(--deck-accent); margin-top: 2px; }
 .reveal .lore-timeline .tl-title { font: 44px/0.95 var(--pixel); color: var(--ink); margin: 0 0 4px; }
-.reveal .lore-timeline .tl-text { font-size: 24px; line-height: 1.35; color: var(--muted); margin: 0; }
+.reveal .lore-timeline .tl-text { font-size: 30px; line-height: 1.3; color: var(--ink); margin: 0; }
 
 /* Myth or fact (data-lore-myth): the stamp and the why are one fragment */
 .reveal .myth-claim { font-size: 52px; line-height: 1.2; margin: 0 0 40px; max-width: 1060px; text-wrap: balance; }
@@ -622,9 +614,9 @@ body { overflow: hidden; }
   display: block; width: 100%; height: auto; aspect-ratio: 120 / 72;
   object-fit: cover; object-position: 50% 0; image-rendering: pixelated;
 }
-.reveal .boss-card .boss-tag { font-family: var(--mono); font-size: 24px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--deck-accent); margin: 0 0 6px; }
+.reveal .boss-card .boss-tag { font-family: var(--mono); font-size: 28px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--deck-accent); margin: 0 0 6px; }
 .reveal .boss-card .boss-name { font-size: 92px; line-height: 0.9; margin: 0 0 24px; }
-.reveal .boss-card .boss-k { font-family: var(--mono); font-size: 24px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--deck-accent); margin: 0 0 4px; }
+.reveal .boss-card .boss-k { font-family: var(--mono); font-size: 28px; letter-spacing: 0.02em; color: var(--deck-accent); margin: 0 0 4px; }
 .reveal .boss-card .boss-v { font-size: 32px; line-height: 1.3; margin: 0 0 20px; }
 .reveal .boss-card .boss-v:last-child { margin-bottom: 0; }
 .reveal .boss-card .boss-weak { color: var(--ink); font-weight: 700; }
@@ -637,9 +629,9 @@ body { overflow: hidden; }
 .reveal .boss-pair .boss-art { width: 220px; }
 .reveal .boss-pair .boss-tag { display: none; }
 .reveal .boss-pair .boss-name { font-size: 56px; margin-bottom: 14px; }
-.reveal .boss-pair .boss-v { font-size: 26px; margin-bottom: 12px; }
+.reveal .boss-pair .boss-v { font-size: 28px; line-height: 1.25; margin-bottom: 12px; }
 
-/* Side quests (data-lore-quests): numbered cards, two per row */
+/* Numbered idea cards (data-lore-quests): two per row */
 .reveal ul.lore-quests { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin: 0; padding: 0; }
 .reveal ul.lore-quests > li {
   display: grid; grid-template-columns: auto 1fr; gap: 0 20px; align-items: start;
@@ -649,11 +641,12 @@ body { overflow: hidden; }
 .reveal ul.lore-quests > li::before { content: none; }
 .reveal .lore-quests .q-n { font: 56px/0.9 var(--pixel); color: var(--deck-hot); margin: 0; }
 .reveal .lore-quests h3 { font-size: 42px; margin: 0 0 6px; }
-.reveal .lore-quests p { font-size: 24px; line-height: 1.35; margin: 0; }
+.reveal .lore-quests p { font-size: 28px; line-height: 1.3; margin: 0; }
 .reveal .cards.words h3 { font-size: 42px; display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
-.reveal .cards.words p { font-size: 26px; }
+.reveal .cards.words p { font-size: 28px; }
 
-/* Ember (section[data-ember]): a small glowing ember, the sentence to take home, a quiet line to the next chapter.
+/* Ember (section[data-ember]): a small glowing ember, the sentence to take home, one quiet sentence that hands over
+   to what comes next on the board (normal case, it is a sentence).
    The ember glows in steps (deck.js frames); with reduced motion it is a still. No bar, no counter. */
 .reveal section.ember-slide { text-align: center; }
 .reveal .ember .kicker { text-align: center; margin: 18px 0 22px; }
@@ -661,12 +654,12 @@ body { overflow: hidden; }
 .reveal .ember-line { font: 104px/0.92 var(--pixel); max-width: 1100px; margin: 0 auto; text-wrap: balance; }
 .reveal .ember-slide.long .ember-line { font-size: 68px; line-height: 1; max-width: 1060px; }
 .reveal .ember-next {
-  font-family: var(--mono);
-  font-size: 24px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 32px;
+  line-height: 1.3;
   color: var(--muted);
+  max-width: 1000px;
   margin: 40px auto 0;
+  text-wrap: balance;
 }
 @media (prefers-reduced-motion: no-preference) {
   .reveal .present .ember-line { animation: cf-ember 1ms both 700ms; }
@@ -701,7 +694,7 @@ body { overflow: hidden; }
 .reveal .kanban ul { display: grid; gap: 12px; }
 .reveal .kanban ul > li {
   margin: 0; padding: 12px 16px;
-  font-size: 23px; line-height: 1.28;
+  font-size: 28px; line-height: 1.25;
   background: var(--card); border: var(--px) solid var(--deck-frame);
 }
 .reveal .kanban ul > li::before { content: none; }
@@ -709,6 +702,13 @@ body { overflow: hidden; }
 
 /* The path of vave.log without its title plate (top 46 of 180 rows cut away) */
 .reveal .art.crop-path { height: auto; width: 100%; max-width: 900px; aspect-ratio: 320 / 134; object-fit: cover; object-position: 50% 100%; }
+
+/* Take-home list (embers deck): icon, then the phrase in pixel type over one plain line */
+.reveal ul.takeaways { display: grid; gap: 34px; margin: 0; padding: 0; }
+.reveal ul.takeaways > li { display: grid; grid-template-columns: 64px 1fr; gap: 0 28px; align-items: start; padding: 0; margin: 0; }
+.reveal ul.takeaways > li::before { content: none; }
+.reveal .takeaways .w { display: block; font: 60px/0.95 var(--pixel); color: var(--ink); margin-bottom: 6px; }
+.reveal .takeaways .s { display: block; font-size: 32px; line-height: 1.3; }
 
 /* Spacing utilities win over the component resets above (.cards, .steps, .chips … set margin: 0 with the same
    specificity and came later, so mt/mt-lg rendered as 0). Higher specificity, last in the file. */
@@ -724,7 +724,6 @@ body { overflow: hidden; }
      Ten words, one sentence each, as in ROTER-FADEN.md. All 30 live in the module "Words". -->
 
 <section class="opening">
-  <p class="ch">Chapter III · Words by the fire</p>
   <svg data-px="circle" data-scale="10" class="scene" aria-label="A campfire in a circle of light, some notes lit, some lost in the dark"></svg>
   <p class="first">Around a fire, new things get names. Here are the ones people throw around.</p>
   <aside class="notes">
@@ -735,35 +734,35 @@ body { overflow: hidden; }
 </section>
 
 <section>
-  <p class="kicker">Ten words, one sentence each · 1 to 5</p>
+  <p class="kicker">Ten words · 1 to 5</p>
   <ul class="wordlist">
-    <li><svg data-word-icon="llm" data-scale="3"></svg><span class="w">LLM</span><span class="s">The know-it-all intern who has seen every booth on Pinterest.</span></li>
+    <li><svg data-word-icon="llm" data-scale="3"></svg><span class="w">LLM</span><span class="s">An intern who has seen every booth on Pinterest.</span></li>
     <li><svg data-word-icon="token" data-scale="3"></svg><span class="w">Token</span><span class="s">Language Lego. That's why "strawberry" was hard.</span></li>
-    <li><svg data-word-icon="context" data-scale="3"></svg><span class="w">Context window</span><span class="s">The booth footprint. Old chat pushes the hero product into storage.</span></li>
-    <li><svg data-word-icon="temperature" data-scale="3"></svg><span class="w">Temperature</span><span class="s">The lighting dimmer, from museum showcase to club night.</span></li>
+    <li><svg data-word-icon="context" data-scale="3"></svg><span class="w">Context window</span><span class="s">The booth footprint. Old chat goes to storage.</span></li>
+    <li><svg data-word-icon="temperature" data-scale="3"></svg><span class="w">Temperature</span><span class="s">The dimmer, from museum showcase to club night.</span></li>
     <li><svg data-word-icon="hallucination" data-scale="3"></svg><span class="w">Hallucination</span><span class="s">The render that ignores gravity.</span></li>
   </ul>
   <aside class="notes">
-    LLM · intern, Pinterest.
+    LLM · the know-it-all intern, every booth on Pinterest.
     Token · Lego bricks, strawberry.
-    Context · booth footprint, storage room.
+    Context · booth footprint; old chat pushes the hero product into storage.
     Temperature · dimmer.
     Hallucination · render without gravity.
   </aside>
 </section>
 
 <section>
-  <p class="kicker">Ten words, one sentence each · 6 to 10</p>
+  <p class="kicker">Ten words · 6 to 10</p>
   <ul class="wordlist">
     <li><svg data-word-icon="rag" data-scale="3"></svg><span class="w">RAG</span><span class="s">The material library it checks before answering.</span></li>
-    <li><svg data-word-icon="embedding" data-scale="3"></svg><span class="w">Embedding</span><span class="s">The invisible moodboard where similar vibes stick together.</span></li>
-    <li><svg data-word-icon="agent" data-scale="3"></svg><span class="w">Agent</span><span class="s">The project manager who can actually call the carpenter.</span></li>
+    <li><svg data-word-icon="embedding" data-scale="3"></svg><span class="w">Embedding</span><span class="s">A moodboard where similar vibes stick together.</span></li>
+    <li><svg data-word-icon="agent" data-scale="3"></svg><span class="w">Agent</span><span class="s">The project manager who calls the carpenter.</span></li>
     <li class="hot"><svg data-word-icon="mcp" data-scale="3"></svg><span class="w">MCP</span><span class="s">The standard power socket on the fair floor.</span></li>
     <li><svg data-word-icon="openweight" data-scale="3"></svg><span class="w">Open weights</span><span class="s">Local: buying the booth system instead of renting it.</span></li>
   </ul>
   <aside class="notes">
     RAG · material library.
-    Embedding · moodboard.
+    Embedding · the invisible moodboard.
     Agent · PM who calls the carpenter.
     MCP · power socket. Remember it for later.
     Open weights / local · buy, don't rent.
@@ -792,12 +791,12 @@ body { overflow: hidden; }
 </section>
 
 <section>
-  <div class="cols wl">
+  <div class="cols">
     <div class="pic"><svg data-px="circle" data-scale="9" aria-label="A campfire in a circle of light"></svg></div>
     <div>
       <p class="kicker">Picture two</p>
       <h2 class="sm">It only sees what's inside the circle of light</h2>
-      <p class="lead">The fact walks into the dark. The answer comes anyway: "coffee brown", with total confidence.</p>
+      <p class="lead">The fact walks into the dark. It still answers: "coffee brown".</p>
     </div>
   </div>
   <aside class="notes">
@@ -855,7 +854,7 @@ body { overflow: hidden; }
   </aside>
 </section>
 
-<section data-ember="You now speak AI. Not fluently, but enough to order dinner." data-next="Next: Token Oracle and Context Circle on the board, then Chapter IV · Kindling">
+<section data-ember="You now speak AI. Not fluently, but enough to order dinner." data-next="On the board now: Token Oracle and Context Circle.">
   <aside class="notes">
     Ember: enough to order dinner.
     Board: Token Oracle, Context Circle, then Words (all 30, for Q&amp;A).
@@ -1594,7 +1593,7 @@ body { overflow: hidden; }
   /* ── AI history: the lore. Phrased carefully; numbers are approximate where marked. ── */
   const HISTORY = [
     { year: '1950', title: 'The imitation game', text: 'Alan Turing asks whether machines can think, and proposes a test: can it pass as human in a text chat?' },
-    { year: '1956', title: 'The summer that took 70 years', text: 'A proposal for a summer workshop at Dartmouth coins "artificial intelligence". It hoped a group of ten could make real progress over one summer.' },
+    { year: '1956', title: 'The summer that is still going', text: 'The 1955 proposal for a 1956 summer workshop at Dartmouth coins "artificial intelligence". It hoped a group of ten could make real progress over one summer.' },
     { year: '1966', title: 'ELIZA', text: 'A tiny script plays therapist by turning your sentences into questions. Its inventor was shocked how much people confided in it.' },
     { year: '1970s–90s', title: 'AI winters', text: 'Big promises, small results, frozen budgets. Twice. A good reminder for every hype cycle.' },
     { year: '1997', title: 'Deep Blue', text: 'IBM\'s chess computer beats world champion Garry Kasparov.' },
@@ -1612,8 +1611,8 @@ body { overflow: hidden; }
 
   /* ── Myth or fact? verdict: fact | myth | half | rumour | depends ── */
   const MYTHS = [
-    { claim: 'AI researchers once planned to crack it in a single summer.', verdict: 'fact',
-      why: 'The 1955 proposal for the Dartmouth workshop hoped ten people over two months could make a significant advance.' },
+    { claim: 'AI researchers once planned to crack it in a single summer.', verdict: 'half',
+      why: 'The 1955 proposal for the Dartmouth workshop hoped ten people over two months could make a significant advance. Not to crack it, but close enough to be a famous overestimate.' },
     { claim: 'The first computer bug was a real moth.', verdict: 'half',
       why: 'In 1947 a moth was taped into the Harvard Mark II logbook as the "first actual case of bug being found". The word "bug" was already older.' },
     { claim: 'A car dealer\'s chatbot sold a new SUV for one dollar.', verdict: 'half',
@@ -1639,21 +1638,21 @@ body { overflow: hidden; }
     { claim: '"Vibe coding" was a Word of the Year.', verdict: 'fact',
       why: 'Collins Dictionary chose it for 2025, less than a year after Karpathy coined it.' },
     { claim: 'AI will replace designers by 2025.', verdict: 'myth',
-      why: 'It is 2026. You are still here, and the tools need your taste more than ever.' },
+      why: 'Nobody here was replaced by 2025. How roles change is for VAVE to shape.' },
   ];
 
-  /* ── Bosses: the risks, as a boss fight. weakness = what beats it. ── */
+  /* ── Ghost stories in the smoke: the risks. hp = what it does, weakness = how to keep it away. ── */
   const BOSSES = [
     { id: 'hallucinator', name: 'The Hallucinator', hp: 'confident errors', weakness: 'Verify facts, ask for sources, test what it built.' },
-    { id: 'leaker', name: 'The Leaker', hp: 'confidential data in the wrong chat', weakness: 'Business plan, client NDA first, anonymise, ask before pasting.' },
-    { id: 'goblin', name: 'The Key Goblin', hp: 'passwords and keys in code', weakness: 'Secrets in a vault, never in files; let an AI audit your repos and rotate what it finds.' },
+    { id: 'leaker', name: 'The Leaker', hp: 'client or personal data in the wrong chat', weakness: 'Business plan, client NDA first, anonymise, ask before pasting.' },
+    { id: 'goblin', name: 'The Key Goblin', hp: 'passwords and keys in code', weakness: 'Turn on secret scanning and push protection. A key that was ever pushed is burnt: rotate it.' },
     { id: 'lich', name: 'The Licence Lich', hp: 'fonts, images, code, AI output', weakness: 'Use what you own or license; check tool terms and the client contract; label AI content where required.' },
     { id: 'golem', name: 'The Orphan Golem', hp: 'tools nobody maintains', weakness: 'Every tool has an owner; docs live in the repo.' },
     { id: 'dragon', name: 'The Lock-in Dragon', hp: 'one vendor for everything', weakness: 'Work through GitHub pull requests and open formats; then any AI can take the next shift.' },
     { id: 'drain', name: 'The Brain Drain', hp: 'people stop thinking', weakness: 'AI amplifies taste. Keep the taste human.' },
   ];
 
-  /* ── Side quests: where AI helps communication in space (VAVE's world) ── */
+  /* ── Ideas for spaces: where AI could help communication in space (VAVE's world) ── */
   const QUESTS = [
     { title: 'Concept sprint', text: 'Moodboards, AI renders and a clickable walk-through of the booth in a day, before the first CAD line.' },
     { title: 'Fair rules decoder', text: 'Turn an 80-page technical guideline into a checklist: heights, fire safety, rigging, deadlines. Human checks the result.' },
@@ -1665,9 +1664,9 @@ body { overflow: hidden; }
     { title: 'Pitch prototypes', text: 'Clients click through the idea instead of reading about it.' },
   ];
 
-  /* ── The fireplace rules (unchanged) ── */
+  /* ── The fireplace rules ── */
   const RULES = [
-    'No client secrets in consumer chats.',
+    'No client secrets or personal data in consumer chats.',
     'Keys never live in code.',
     'Every tool has an owner.',
     'Ship small, review always.',
