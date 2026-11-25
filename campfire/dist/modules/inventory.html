@@ -946,9 +946,9 @@ body {
 </script>
 <style>
   html, body { height: 100%; }
+  /* Rarity colours come from shared/campfire.css (--rar-common … --rar-legendary). Only legendary glows. */
   body {
-    --r-common: var(--muted); --r-rare: var(--lcd-d); --r-epic: var(--fire-2); --r-legendary: var(--fire-3);
-    --cols: 6; --rows: 5; --icon: 26px;
+    --cols: 6; --rows: 5; --icon: 26px; --nm-max: 13px;
     height: 100vh; padding: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 15px;
   }
   .px-label { font-size: 13px; }
@@ -960,12 +960,12 @@ body {
   .tabs { display: flex; gap: 4px; margin-left: auto; }
   .tab {
     font: 600 14px/1 var(--sans); color: var(--ink); background: var(--night-3); border: 2px solid var(--night-4);
-    min-height: 36px; min-width: 36px; padding: 6px 9px; cursor: pointer; border-radius: 0;
+    min-height: 40px; min-width: 40px; padding: 6px 9px; cursor: pointer; border-radius: 0;
   }
   .tab:hover { background: var(--night-4); }
   .tab[aria-selected="true"] { background: var(--lcd-d); border-color: var(--lcd-d); color: var(--night-0); }
   .tab .n { font-weight: 400; opacity: 0.85; }
-  #loot { font-size: 17px; min-height: 36px; padding: 8px 12px; }
+  #loot { font-size: 17px; min-height: 40px; padding: 8px 12px; }
 
   /* The bag: fixed rows so slot size stays put when a filter shows fewer items */
   .bag { position: relative; flex: 1; min-height: 0; }
@@ -973,28 +973,32 @@ body {
     list-style: none; margin: 0; padding: 0; height: 100%; display: grid; gap: 4px;
     grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
   }
-  .grid li { min-width: 0; min-height: 0; display: flex; }
+  /* Each cell is a size container: icon and name scale with the slot, so they stay inside the frame at any height */
+  .grid li { min-width: 0; min-height: 0; display: flex; container-type: size; }
   .slot {
-    --rc: var(--r-common);
-    position: relative; flex: 1; min-width: 0; min-height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    --rc: var(--rar-common);
+    position: relative; flex: 1; min-width: 0; min-height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: safe center;
     gap: 2px; padding: 3px 2px; cursor: pointer; border-radius: 0; text-align: center;
     background: var(--night-0); color: var(--ink); border: 3px solid var(--rc);
     font: 600 13px/1.1 var(--sans);
   }
-  .slot.rare { --rc: var(--r-rare); }
-  .slot.epic { --rc: var(--r-epic); }
-  .slot.legendary { --rc: var(--r-legendary); animation: inv-glow calc(var(--step) * 12) steps(1, end) infinite; }
+  .slot.rare { --rc: var(--rar-rare); }
+  .slot.epic { --rc: var(--rar-epic); }
+  .slot.legendary { --rc: var(--rar-legendary); animation: inv-glow calc(var(--step) * 12) steps(1, end) infinite; }
   @keyframes inv-glow {
     0% { box-shadow: 0 0 0 0 transparent; }
-    50% { box-shadow: 0 0 0 2px var(--fire-2); }
-    75% { box-shadow: 0 0 0 4px rgba(255, 224, 106, 0.4); }
+    50% { box-shadow: 0 0 0 2px var(--rar-legendary); }
+    75% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--rar-legendary) 40%, transparent); }
   }
   .slot:hover { background: var(--night-3); }
   .slot:focus-visible { outline: 3px solid var(--ink); outline-offset: 1px; z-index: 2; background: var(--night-3); }
   .slot[aria-current="true"] { background: var(--night-4); }
-  .slot .ico { display: block; width: var(--icon); height: var(--icon); color: var(--rc); flex: none; }
+  /* The icon gives way first when the slot is short; the name never shrinks below its lines */
+  .slot .ico { display: block; flex: 0 1 var(--icon); width: var(--icon); max-width: 100%; min-height: 12px; color: var(--rc); }
   .slot .ico svg { display: block; width: 100%; height: 100%; }
-  .slot .nm { max-width: 100%; overflow-wrap: anywhere; hyphens: manual; }
+  /* Names break at spaces or soft hyphens (visible dash) only. The widest unbreakable part is about 5.6 em,
+     so the size follows the slot width instead of splitting a word. */
+  .slot .nm { flex: none; max-width: 100%; overflow-wrap: normal; hyphens: manual; font-size: clamp(9px, (100cqw - 14px) / 5.9, var(--nm-max)); }
   .slot .pips { position: absolute; top: 2px; right: 2px; display: flex; gap: 1px; }
   .slot .pips i { display: block; width: 4px; height: 4px; background: var(--rc); }
 
@@ -1018,7 +1022,7 @@ body {
   .dlg .fun { color: var(--ink); font-weight: 600; }
   .dlg .px-label { color: var(--lcd-d); letter-spacing: 0.1em; margin-right: 4px; }
   .tw-off { color: transparent; }
-  .dlg .close { position: absolute; top: 6px; right: 6px; font-size: 16px; min-height: 36px; padding: 6px 10px; }
+  .dlg .close { position: absolute; top: 6px; right: 6px; font-size: 16px; min-height: 40px; padding: 6px 10px; }
   .dlg .more { position: absolute; right: 12px; bottom: 8px; width: 12px; height: 8px; background: var(--fire-3);
     clip-path: polygon(0 0, 100% 0, 50% 100%); animation: px-blink calc(var(--step) * 8) steps(1, end) infinite; }
   .dlg .more[hidden] { display: none; }
@@ -1030,18 +1034,19 @@ body {
 
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  @media (min-width: 761px) { body { --cols: 8; --rows: 4; --icon: 36px; } .slot { font-size: 14px; } }
+  @media (max-width: 480px) { body { --cols: 4; --rows: 8; } } /* phone: wider slots, so names fit at 13 px without splitting words */
+  @media (min-width: 761px) { body { --cols: 8; --rows: 4; --icon: 36px; --nm-max: 14px; } }
 
   /* Projector: 10 × 3 bag, the dialog gets its own band at the bottom */
   @media (min-width: 1024px) and (min-height: 600px) {
-    body { --cols: 10; --rows: 3; --icon: 48px; padding: 16px 20px; gap: 12px; font-size: 22px; }
+    body { --cols: 10; --rows: 3; --icon: 48px; --nm-max: 17px; padding: 16px 20px; gap: 12px; font-size: 22px; }
     .px-label { font-size: 16px; }
     .top h1 { font-size: 52px; }
     .top .sub { display: block; font-size: 24px; }
     .tab { font-size: 20px; min-height: 48px; padding: 8px 16px; }
     #loot { font-size: 26px; min-height: 48px; padding: 10px 18px; }
     .grid { gap: 8px; }
-    .slot { font-size: 17px; gap: 6px; border-width: 4px; padding: 6px 4px; }
+    .slot { gap: 6px; border-width: 4px; padding: 6px 4px; }
     .slot .pips { top: 4px; right: 4px; gap: 2px; }
     .slot .pips i { width: 6px; height: 6px; }
     .dlg { position: relative; left: auto; right: auto; bottom: auto; top: auto; flex: none; min-height: 252px; max-height: none; overflow: visible;
@@ -1061,9 +1066,24 @@ body {
     .idle b { color: var(--ink); }
     .chest svg { width: 260px; }
   }
+  /* Presentation slide (1280 × 657) and other short projectors: a flatter dialog band leaves the bag room */
+  @media (min-width: 1024px) and (min-height: 600px) and (max-height: 700px) {
+    body { padding: 10px 20px; gap: 8px; }
+    .grid { gap: 6px; }
+    .slot { gap: 4px; padding: 4px; }
+    .dlg { min-height: 200px; padding: 10px 18px; gap: 4px 18px; } /* fits the longest item at 1280 wide: no jump on open */
+    .portrait { width: 84px; height: 84px; padding: 6px; }
+    .dlg h2 { min-height: 0; padding-right: 110px; }
+    .dlg h2 .nm { font-size: 38px; }
+    .dlg h2 .full { font-size: 20px; }
+    .dlg p { font-size: 20px; line-height: 1.25; }
+    .dlg .fun { font-size: 22px; }
+    .dlg .cols { gap: 18px; }
+    .dlg .close { top: 8px; right: 8px; }
+  }
   @media not all and (min-width: 1024px) and (min-height: 600px) { .idle { display: none; } }
   @media (prefers-reduced-motion: reduce) {
-    .slot.legendary { animation: none !important; box-shadow: 0 0 0 2px var(--fire-2); }
+    .slot.legendary { animation: none !important; box-shadow: 0 0 0 2px var(--rar-legendary); }
     .dlg .more { animation: none !important; }
   }
 </style>
@@ -1102,7 +1122,7 @@ body {
   'use strict';
   const $ = (id) => document.getElementById(id);
   const ITEMS = LORE.ITEMS;
-  const RC = { common: PX.PAL.t, rare: PX.PAL.d, epic: PX.PAL.o, legendary: PX.PAL.y };
+  const RC = { common: 'var(--rar-common)', rare: 'var(--rar-rare)', epic: 'var(--rar-epic)', legendary: 'var(--rar-legendary)' }; // shared/campfire.css
   const PIPS = { common: 1, rare: 2, epic: 3, legendary: 4 };
   const KIND = { ai: 'AI', code: 'Code', github: 'GitHub' };
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1287,7 +1307,7 @@ body {
   let looting = false;
   function chestFrame(openLid, dx, it, rise) {
     const item = it ? `<svg x="4" y="${18 - rise}" width="16" height="16" viewBox="0 0 16 16" style="color:${RC[it.rarity]}">${art(it)}</svg>` : '';
-    const sparks = it && rise >= 12 ? PX.sprite('spark', { x: 1, y: 6 }) + PX.sprite('spark', { x: 20, y: 3 }) + PX.sprite('spark', { x: 18, y: 14 }) : '';
+    const sparks = it && it.rarity === 'legendary' && rise >= 12 ? PX.sprite('spark', { x: 1, y: 6 }) + PX.sprite('spark', { x: 20, y: 3 }) + PX.sprite('spark', { x: 18, y: 14 }) : '';
     return item + PX.sprite((openLid ? CHEST_LID_OPEN : CHEST_LID_SHUT).concat(CHEST_BODY), { x: 4 + dx, y: 16 }) + sparks;
   }
   $('loot').addEventListener('click', () => {

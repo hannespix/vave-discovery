@@ -522,30 +522,14 @@ body { overflow: hidden; }
 
 /* ══ Version 2: the quest ═══════════════════════════════════════════════════
    Level titles, lore components (filled by deck.js from shared/lore.js), save points, quest-log tables, credits.
-   Rarity colours keep ≥ 4.5:1 on --card in both themes. Motion only in steps, only without reduced motion. */
-:root {
-  --rar-common: var(--muted);
-  --rar-rare: var(--lcd-d);
-  --rar-epic: var(--fire-3);
-  --rar-legendary: var(--fire-1);
-}
-:root[data-theme="light"] {
-  --rar-common: #56654f;
-  --rar-rare: #306230;
-  --rar-epic: #8f4a00;
-  --rar-legendary: #b2391c;
-}
+   Rarity (--rar-*) and verdict (--v-*) colours come from shared/campfire.css, one mapping for both themes.
+   Motion only in steps, only without reduced motion. */
 
 /* Level title: LEVEL N, the name, the clock */
 .reveal .lvl { font: 64px/1 var(--pixel); color: var(--deck-hot); letter-spacing: 0.04em; margin: 0 0 6px; }
 .reveal section.level h1 { font-size: 136px; }
 .reveal .clock { font-family: var(--mono); font-size: 24px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 20px; }
 .reveal .art-strip { height: 220px; }
-.reveal .press { font: 56px/1 var(--pixel); color: var(--deck-hot); letter-spacing: 0.08em; text-align: center; margin: 18px 0 0; }
-@media (prefers-reduced-motion: no-preference) {
-  .reveal .present .press { animation: cf-blink 1.2s steps(1) infinite; }
-}
-@keyframes cf-blink { 50% { visibility: hidden; } }
 .reveal .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* Character sheet: RPG stat block */
@@ -594,7 +578,7 @@ body { overflow: hidden; }
 .reveal .myth-reveal { display: grid; grid-template-columns: auto 1fr; gap: 40px; align-items: center; }
 .reveal .slides .myth-reveal.fragment { transition: none; }
 .reveal .stamp {
-  --v: var(--deck-accent);
+  --v: var(--v-fact);
   font: 72px/1 var(--pixel);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -605,12 +589,10 @@ body { overflow: hidden; }
   margin: 0;
   transform: rotate(-4deg);
 }
-.reveal .stamp.v-myth { --v: var(--fire-1); }
-.reveal .stamp.v-half, .reveal .stamp.v-depends { --v: var(--fire-2); }
-.reveal .stamp.v-rumour { --v: var(--fire-3); }
-:root[data-theme="light"] .reveal .stamp.v-myth { --v: #b2391c; }
-:root[data-theme="light"] .reveal .stamp.v-half, :root[data-theme="light"] .reveal .stamp.v-depends,
-:root[data-theme="light"] .reveal .stamp.v-rumour { --v: #8f4a00; }
+.reveal .stamp.v-myth { --v: var(--v-myth); }
+.reveal .stamp.v-half { --v: var(--v-half); }
+.reveal .stamp.v-depends { --v: var(--v-depends); }
+.reveal .stamp.v-rumour { --v: var(--v-rumour); border-style: dashed; }
 .reveal .myth-why { font-size: 30px; line-height: 1.35; margin: 0; }
 
 /* Boss card (data-lore-boss). Alone: art left, big name. In .boss-pair: two compact cards side by side. */

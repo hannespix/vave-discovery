@@ -946,9 +946,9 @@ body {
 </script>
 <style>
   html, body { height: 100%; }
+  /* Verdict colours come from shared/campfire.css (--v-fact, --v-myth, --v-half, --v-depends, --v-rumour).
+     A rumour is smoke: always a dashed frame, on the stamp and on the button. */
   body {
-    /* Verdict colours, all from the campfire palette. There is no violet in it: rumours are smoke (pale, dashed). */
-    --v-fact: var(--lcd-d); --v-myth: var(--fire-0); --v-half: var(--fire-3); --v-rumour: var(--fire-4); --v-depends: var(--muted);
     height: 100vh; padding: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 15px;
   }
   .px-label { font-size: 13px; }
@@ -970,7 +970,7 @@ body {
   .why { margin: 0; font-size: 14px; line-height: 1.35; color: var(--ink); }
   .verdict { margin: 4px 0 0; font: 600 14px/1.3 var(--sans); }
   .verdict.right { color: var(--lcd-d); }
-  .verdict.wrong { color: var(--fire-2); }
+  .verdict.wrong { color: var(--muted); }   /* not fire-2: that is "half true" */
   .verdict .mark { font: 20px/1 var(--pixel); margin-right: 6px; }
 
   .stamp {
@@ -1000,17 +1000,19 @@ body {
   .g {
     --c: var(--v-fact);
     font: 600 14px/1 var(--sans); color: var(--ink); background: var(--night-3); border: 2px solid var(--night-4); border-left: 8px solid var(--c);
-    min-height: 36px; padding: 6px 9px; cursor: pointer; border-radius: 0;
+    min-height: 40px; padding: 6px 9px; cursor: pointer; border-radius: 0;
   }
   .g:hover { background: var(--night-4); }
   .g u { text-decoration-thickness: 2px; text-underline-offset: 2px; }
   .g[data-v="myth"] { --c: var(--v-myth); }
   .g[data-v="half"] { --c: var(--v-half); }
-  .g[data-v="rumour"] { --c: var(--v-rumour); border-left-style: dashed; }
+  .g[data-v="rumour"] { --c: var(--v-rumour); border-style: dashed; border-color: var(--muted) var(--muted) var(--muted) var(--c); }
   .g[data-v="depends"] { --c: var(--v-depends); }
   .g[aria-pressed="true"] { background: var(--c); border-color: var(--c); color: var(--night-0); }
+  /* pressed rumour stays smoke: dark fill, pale dashed frame (a filled frame would hide the dashes) */
+  .g[data-v="rumour"][aria-pressed="true"] { background: var(--night-0); color: var(--c); border-color: var(--c); }
   .g[disabled] { cursor: default; opacity: 0.55; }
-  .row .px-btn { font-size: 17px; min-height: 36px; padding: 8px 12px; }
+  .row .px-btn { font-size: 17px; min-height: 40px; padding: 8px 12px; }
   .px-btn[disabled] { opacity: 0.5; cursor: default; }
   #reveal { margin-left: auto; }
   .keys { margin-left: auto; display: none; }
