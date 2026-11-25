@@ -1,7 +1,7 @@
 # STATE — lebender Zustand (max. 150 Zeilen, wird jede Runde fortgeschrieben)
 
 Stand: Ende r08 → **r09** (Prototyp in kleinen Deploys) · 2026-09-29 · **M1** · **verschickt, Antwort ausstehend**
-Nebenstrang 2026-11-24: Campfire-Vortrag in `campfire/` (Roter Faden, Decks, Module, PixiNotes-Board), live unter /campfire/; kein Teil der Discovery.
+Nebenstrang 2026-11-25: Campfire-Vortrag v2 in `campfire/` (Quest in zehn Leveln, 8 Decks, 8 Module, PixiNotes-Board mit 55 Folien), live unter /campfire/; kein Teil der Discovery. Offen für Hannes: Prototyp im Vortrag nur nach Absprache mit Tobias (E11/D-006).
 
 ## Aktueller Meilenstein
 M1 — Umfrage, **live und eingefroren**. Hannes (Chat, 2026-09-29): „Jetzt mach mal fertig! Ich will es abschicken!“
