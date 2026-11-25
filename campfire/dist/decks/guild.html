@@ -108,6 +108,34 @@ footer, header, hgroup, main, menu, nav, section {
   --line: #d3dcc4;
 }
 
+/* Meaning colours, ONE mapping for decks, modules and art (tools/art.mjs uses the same palette names).
+   Rarity of an item: common muted · rare lime · epic orange · legendary gold (only legendary may glow).
+   Verdict of a myth: fact lime · myth red · half true orange · it depends muted · rumour pale smoke,
+   always drawn with a DASHED border (there is no violet in the palette; the dash is what marks a rumour).
+   All keep ≥ 4.5:1 on --card in their theme. */
+:root {
+  --rar-common: var(--muted);
+  --rar-rare: var(--lcd-d);
+  --rar-epic: var(--fire-2);
+  --rar-legendary: var(--fire-3);
+  --v-fact: var(--lcd-d);
+  --v-myth: var(--fire-0);
+  --v-half: var(--fire-2);
+  --v-depends: var(--muted);
+  --v-rumour: var(--fire-4);
+}
+:root[data-theme="light"] {
+  --rar-common: #56654f;
+  --rar-rare: #306230;
+  --rar-epic: #9a3f00;
+  --rar-legendary: #6f5600;
+  --v-fact: #306230;
+  --v-myth: #b2391c;
+  --v-half: #9a3f00;
+  --v-depends: #56654f;
+  --v-rumour: #56654f;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
@@ -494,30 +522,14 @@ body { overflow: hidden; }
 
 /* ══ Version 2: the quest ═══════════════════════════════════════════════════
    Level titles, lore components (filled by deck.js from shared/lore.js), save points, quest-log tables, credits.
-   Rarity colours keep ≥ 4.5:1 on --card in both themes. Motion only in steps, only without reduced motion. */
-:root {
-  --rar-common: var(--muted);
-  --rar-rare: var(--lcd-d);
-  --rar-epic: var(--fire-3);
-  --rar-legendary: var(--fire-1);
-}
-:root[data-theme="light"] {
-  --rar-common: #56654f;
-  --rar-rare: #306230;
-  --rar-epic: #8f4a00;
-  --rar-legendary: #b2391c;
-}
+   Rarity (--rar-*) and verdict (--v-*) colours come from shared/campfire.css, one mapping for both themes.
+   Motion only in steps, only without reduced motion. */
 
 /* Level title: LEVEL N, the name, the clock */
 .reveal .lvl { font: 64px/1 var(--pixel); color: var(--deck-hot); letter-spacing: 0.04em; margin: 0 0 6px; }
 .reveal section.level h1 { font-size: 136px; }
 .reveal .clock { font-family: var(--mono); font-size: 24px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 20px; }
 .reveal .art-strip { height: 220px; }
-.reveal .press { font: 56px/1 var(--pixel); color: var(--deck-hot); letter-spacing: 0.08em; text-align: center; margin: 18px 0 0; }
-@media (prefers-reduced-motion: no-preference) {
-  .reveal .present .press { animation: cf-blink 1.2s steps(1) infinite; }
-}
-@keyframes cf-blink { 50% { visibility: hidden; } }
 .reveal .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* Character sheet: RPG stat block */
@@ -566,7 +578,7 @@ body { overflow: hidden; }
 .reveal .myth-reveal { display: grid; grid-template-columns: auto 1fr; gap: 40px; align-items: center; }
 .reveal .slides .myth-reveal.fragment { transition: none; }
 .reveal .stamp {
-  --v: var(--deck-accent);
+  --v: var(--v-fact);
   font: 72px/1 var(--pixel);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -577,12 +589,10 @@ body { overflow: hidden; }
   margin: 0;
   transform: rotate(-4deg);
 }
-.reveal .stamp.v-myth { --v: var(--fire-1); }
-.reveal .stamp.v-half, .reveal .stamp.v-depends { --v: var(--fire-2); }
-.reveal .stamp.v-rumour { --v: var(--fire-3); }
-:root[data-theme="light"] .reveal .stamp.v-myth { --v: #b2391c; }
-:root[data-theme="light"] .reveal .stamp.v-half, :root[data-theme="light"] .reveal .stamp.v-depends,
-:root[data-theme="light"] .reveal .stamp.v-rumour { --v: #8f4a00; }
+.reveal .stamp.v-myth { --v: var(--v-myth); }
+.reveal .stamp.v-half { --v: var(--v-half); }
+.reveal .stamp.v-depends { --v: var(--v-depends); }
+.reveal .stamp.v-rumour { --v: var(--v-rumour); border-style: dashed; }
 .reveal .myth-why { font-size: 30px; line-height: 1.35; margin: 0; }
 
 /* Boss card (data-lore-boss). Alone: art left, big name. In .boss-pair: two compact cards side by side. */
@@ -865,12 +875,12 @@ body { overflow: hidden; }
 
 <section class="statement">
   <p class="kicker center">The reveal</p>
-  <p class="big">An AI built this board</p>
-  <p class="lead">Through PixiNotes' own MCP server. I described the quest; it wrote the cards and laid them out.</p>
+  <p class="big">An AI wrote the board builder</p>
+  <p class="lead">A script, written by an AI: the text cards go in through PixiNotes' own MCP server, layout and embedded files straight into the file.</p>
   <p class="mt"><code>campfire/tools/board.mjs</code></p>
   <aside class="notes">
-    By the way: the board you've been looking at was built by an AI, through PixiNotes' own MCP server.
-    I described the quest; it wrote the cards and laid them out.
+    By the way: the board you've been looking at is built by a script that an AI wrote.
+    I described the quest. The text cards go in through PixiNotes' own MCP server; layout and embedded files are written straight into the board file.
     Show campfire/tools/board.mjs for ten seconds.
   </aside>
 </section>
@@ -1542,7 +1552,7 @@ body { overflow: hidden; }
       watch: 'Every tool is a door. Only hand out the keys it needs.' },
     { id: 'mcp', name: 'MCP', full: 'Model Context Protocol', kind: 'ai', rarity: 'legendary',
       fun: 'The standard power socket on the fair floor. Any tool plugs in, any AI can use it. (The official docs call it a USB-C port for AI.)',
-      space: 'This board was built by an AI through PixiNotes\' MCP plug. vave.log has one too.',
+      space: 'The text cards of this board went in through PixiNotes\' MCP plug. vave.log has one too.',
       watch: 'A plug is power: connect only what you trust.' },
     { id: 'api', name: 'API', full: 'Application Programming Interface', kind: 'code', rarity: 'common',
       fun: 'The delivery ramp at the back of the hall. Machines talk to machines there; no visitors.',
@@ -1613,7 +1623,7 @@ body { overflow: hidden; }
   /* ── AI history: the lore. Phrased carefully; numbers are approximate where marked. ── */
   const HISTORY = [
     { year: '1950', title: 'The imitation game', text: 'Alan Turing asks whether machines can think, and proposes a test: can it pass as human in a text chat?' },
-    { year: '1956', title: 'The summer that took 70 years', text: 'A workshop at Dartmouth coins "artificial intelligence". The proposal hoped a group of ten could make real progress over one summer.' },
+    { year: '1956', title: 'The summer that took 70 years', text: 'A proposal for a summer workshop at Dartmouth coins "artificial intelligence". It hoped a group of ten could make real progress over one summer.' },
     { year: '1966', title: 'ELIZA', text: 'A tiny script plays therapist by turning your sentences into questions. Its inventor was shocked how much people confided in it.' },
     { year: '1970s–90s', title: 'AI winters', text: 'Big promises, small results, frozen budgets. Twice. A good reminder for every hype cycle.' },
     { year: '1997', title: 'Deep Blue', text: 'IBM\'s chess computer beats world champion Garry Kasparov.' },
@@ -1626,7 +1636,7 @@ body { overflow: hidden; }
     { year: '2023', title: 'Agents and drama', text: 'Chatbots fall in love with journalists, lawyers cite invented cases, and OpenAI fires and re-hires its CEO within days.' },
     { year: '2024', title: 'Glue on pizza', text: 'A search AI recommends glue for pizza sauce, from an old joke post. Models also struggle to count the r\'s in "strawberry".' },
     { year: '2025', title: 'Vibe coding', text: 'Andrej Karpathy names it in February; Collins Dictionary makes it Word of the Year. A Chinese model, DeepSeek R1, shakes the chip market.' },
-    { year: '2026', title: 'You are here', text: 'Agents open pull requests, whiteboards have plugs for AI, and a winemaker in public administration ships software at night.' },
+    { year: '2026', title: 'You are here', text: 'Agents open pull requests, whiteboards have plugs for AI, and a winemaker who never studied computer science ships software.' },
   ];
 
   /* ── Myth or fact? verdict: fact | myth | half | rumour | depends ── */

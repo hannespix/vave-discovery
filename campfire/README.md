@@ -31,12 +31,13 @@ vave.log als eigenes Quest-Level samt Vorschlägen zur Weiterentwicklung und mod
 ## Bauen
 
 ```bash
-node campfire/tools/art.mjs [name …]            # Pixel-Art neu erzeugen (SVG + PNG), optional nur einzelne Bilder
+node campfire/tools/art.mjs [jobName …]         # Pixel-Art neu erzeugen (SVG), optional nur einzelne Jobs, z. B. vavelogQuest
 node campfire/tools/build.mjs                   # Decks, Module, Hub → dist/ (alles eingebettet, offline)
 PLAYWRIGHT_CORE=… CHROMIUM=… node campfire/tools/pdf.mjs     # Decks → dist/pdf/*.pdf
 node campfire/tools/board.mjs --mcp pixinotes-mcp.mjs         # PixiNotes-Board → dist/campfire.pixiboard.json
 ```
 
+- **PNG-Vorschauen** in `art/` sind die SVGs, in Chromium mit 4× gerendert (1280×720); `art.mjs` schreibt nur SVG.
 - **Reihenfolge:** art → build → pdf → board. Das Board bettet die gebauten Decks, Module und PDFs ein.
 - **Inhalte ändern:** Begriffe, Geschichte, Mythen, Bosse und Quests nur in `shared/lore.js` pflegen. Module, Art und
   Board lesen von dort.
@@ -51,10 +52,16 @@ node campfire/tools/board.mjs --mcp pixinotes-mcp.mjs         # PixiNotes-Board 
 `dist/campfire.pixiboard.json` auf ein beliebiges Board ziehen. Es kommt als **neues** Board dazu, vorhandene Boards
 bleiben unberührt.
 
-- **Aufbau:** Oben liegt die Übersicht (Titel, Weltkarte, Agenda, Messestand, Item-Bogen). Darunter folgen zehn
-  Level-Rahmen, fünf pro Reihe, verbunden durch einen gestrichelten Pfad. Ganz unten liegt ein Rahmen mit den PDFs.
-- **Präsentation:** Der Präsentationsmodus geht die Rahmen zeilenweise durch und folgt in jedem Rahmen den Pfeilen.
-  Die PDFs sind nicht verbunden und erscheinen daher nicht als eigene Folien.
+- **Aufbau:** Oben liegt die Übersicht (Titel, Weltkarte, Agenda, Messestand, Item-Bogen), gold getönt. Darunter
+  folgen acht Rahmen für die zehn Level, vier pro Reihe, LCD-grün getönt und durch einen gestrichelten Pfad verbunden.
+  Die Decks *Press start* und *Kindling* decken je zwei Level ab (0–1 und 4–5). Ganz unten liegt ein Rahmen mit den PDFs.
+- **Ein Ort pro Inhalt:** In jedem Rahmen kommt zuerst das Deck, dann die Live-Karten (Module, Bubbles, Kanban) und
+  höchstens eine Übersicht (Tabelle oder Diagramm). Zusammenfassungen und Save Points stehen nur in den Decks.
+- **Präsentation:** Der Präsentationsmodus geht die Rahmen zeilenweise durch und folgt in jedem Rahmen den Pfeilen,
+  55 Folien. Die PDFs folgen ganz am Ende als Handouts.
+- **Pfeile sind in PixiNotes Daten-Abos:** Ein Pfeil zwischen App und Notiz oder zwischen Zeitleiste und Kanban würde
+  Daten koppeln. Das Board-Skript lässt solche Pfeile weg, die Lage der Karten trägt dann die Reihenfolge.
+- **Theme:** Das Board ist für das helle PixiNotes-Theme gebaut. Vor dem Vortrag in PixiNotes hell einstellen.
 - **Mitmachen:** Warm-up, Gerüchteküche, Raum-Quests und Fragen sind Ideen-Bubbles. Über Live → Einladungslink
   (ohne Konto) → QR-Code kann das Publikum mitschreiben.
 - **Offline:** Decks, Module und PDFs reisen in der Datei mit und laufen in den Karten ohne Netz.

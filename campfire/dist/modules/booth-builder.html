@@ -67,6 +67,34 @@
   --line: #d3dcc4;
 }
 
+/* Meaning colours, ONE mapping for decks, modules and art (tools/art.mjs uses the same palette names).
+   Rarity of an item: common muted · rare lime · epic orange · legendary gold (only legendary may glow).
+   Verdict of a myth: fact lime · myth red · half true orange · it depends muted · rumour pale smoke,
+   always drawn with a DASHED border (there is no violet in the palette; the dash is what marks a rumour).
+   All keep ≥ 4.5:1 on --card in their theme. */
+:root {
+  --rar-common: var(--muted);
+  --rar-rare: var(--lcd-d);
+  --rar-epic: var(--fire-2);
+  --rar-legendary: var(--fire-3);
+  --v-fact: var(--lcd-d);
+  --v-myth: var(--fire-0);
+  --v-half: var(--fire-2);
+  --v-depends: var(--muted);
+  --v-rumour: var(--fire-4);
+}
+:root[data-theme="light"] {
+  --rar-common: #56654f;
+  --rar-rare: #306230;
+  --rar-epic: #9a3f00;
+  --rar-legendary: #6f5600;
+  --v-fact: #306230;
+  --v-myth: #b2391c;
+  --v-half: #9a3f00;
+  --v-depends: #56654f;
+  --v-rumour: #56654f;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
@@ -759,7 +787,7 @@ body {
       watch: 'Every tool is a door. Only hand out the keys it needs.' },
     { id: 'mcp', name: 'MCP', full: 'Model Context Protocol', kind: 'ai', rarity: 'legendary',
       fun: 'The standard power socket on the fair floor. Any tool plugs in, any AI can use it. (The official docs call it a USB-C port for AI.)',
-      space: 'This board was built by an AI through PixiNotes\' MCP plug. vave.log has one too.',
+      space: 'The text cards of this board went in through PixiNotes\' MCP plug. vave.log has one too.',
       watch: 'A plug is power: connect only what you trust.' },
     { id: 'api', name: 'API', full: 'Application Programming Interface', kind: 'code', rarity: 'common',
       fun: 'The delivery ramp at the back of the hall. Machines talk to machines there; no visitors.',
@@ -830,7 +858,7 @@ body {
   /* ── AI history: the lore. Phrased carefully; numbers are approximate where marked. ── */
   const HISTORY = [
     { year: '1950', title: 'The imitation game', text: 'Alan Turing asks whether machines can think, and proposes a test: can it pass as human in a text chat?' },
-    { year: '1956', title: 'The summer that took 70 years', text: 'A workshop at Dartmouth coins "artificial intelligence". The proposal hoped a group of ten could make real progress over one summer.' },
+    { year: '1956', title: 'The summer that took 70 years', text: 'A proposal for a summer workshop at Dartmouth coins "artificial intelligence". It hoped a group of ten could make real progress over one summer.' },
     { year: '1966', title: 'ELIZA', text: 'A tiny script plays therapist by turning your sentences into questions. Its inventor was shocked how much people confided in it.' },
     { year: '1970s–90s', title: 'AI winters', text: 'Big promises, small results, frozen budgets. Twice. A good reminder for every hype cycle.' },
     { year: '1997', title: 'Deep Blue', text: 'IBM\'s chess computer beats world champion Garry Kasparov.' },
@@ -843,7 +871,7 @@ body {
     { year: '2023', title: 'Agents and drama', text: 'Chatbots fall in love with journalists, lawyers cite invented cases, and OpenAI fires and re-hires its CEO within days.' },
     { year: '2024', title: 'Glue on pizza', text: 'A search AI recommends glue for pizza sauce, from an old joke post. Models also struggle to count the r\'s in "strawberry".' },
     { year: '2025', title: 'Vibe coding', text: 'Andrej Karpathy names it in February; Collins Dictionary makes it Word of the Year. A Chinese model, DeepSeek R1, shakes the chip market.' },
-    { year: '2026', title: 'You are here', text: 'Agents open pull requests, whiteboards have plugs for AI, and a winemaker in public administration ships software at night.' },
+    { year: '2026', title: 'You are here', text: 'Agents open pull requests, whiteboards have plugs for AI, and a winemaker who never studied computer science ships software.' },
   ];
 
   /* ── Myth or fact? verdict: fact | myth | half | rumour | depends ── */
@@ -930,12 +958,12 @@ body {
   .top h1 { margin: 0; font-size: 24px; color: var(--fire-3); }
   .top .sub { margin: 0; color: var(--muted); display: none; }
   .acts { display: flex; gap: 4px; margin-left: auto; }
-  .acts .px-btn { font-size: 16px; min-height: 36px; padding: 6px 10px; }
+  .acts .px-btn { font-size: 16px; min-height: 40px; padding: 6px 10px; }
   .px-btn[aria-pressed="true"] { background: var(--lcd-e); box-shadow: inset 0 0 0 3px var(--night-0); }
 
   .tools { grid-area: tools; display: flex; flex-direction: column; gap: 2px; }
   .tool {
-    display: flex; align-items: center; gap: 8px; min-width: 36px; min-height: 36px; padding: 2px; cursor: pointer; border-radius: 0;
+    display: flex; align-items: center; gap: 8px; min-width: 40px; min-height: 40px; padding: 2px; cursor: pointer; border-radius: 0;
     font: 600 14px/1.1 var(--sans); color: var(--ink); background: var(--night-3); border: 2px solid var(--night-4);
   }
   .tool:hover { background: var(--night-4); }
@@ -965,9 +993,10 @@ body {
   .c.or::before { border-right: 2px dashed var(--lcd-c); }
   .c svg { position: absolute; inset: 8%; width: 84%; height: 84%; pointer-events: none; }
   .c:focus-visible { outline: 3px solid var(--marker); outline-offset: -3px; box-shadow: inset 0 0 0 6px var(--night-0); z-index: 2; }
-  /* Heat map: five stepped fire levels */
-  .c.h1 { background: var(--wood-1); } .c.h2 { background: var(--fire-0); } .c.h3 { background: var(--fire-1); }
-  .c.h4 { background: var(--fire-2); } .c.h5 { background: var(--fire-3); }
+  /* Heat map: five stepped levels, ember to white-hot. Each step is at least 1.5:1 brighter than the one below
+     (floor → h1 1.70, h1 → h2 1.85, h2 → h3 1.50 plus brown → red, h3 → h4 1.67, h4 → h5 1.70). */
+  .c.h1 { background: var(--wood-1); } .c.h2 { background: var(--wood-2); } .c.h3 { background: var(--fire-1); }
+  .c.h4 { background: var(--fire-2); } .c.h5 { background: var(--fire-4); }
   .people { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
   .status { grid-area: status; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -981,8 +1010,9 @@ body {
   .panel p { margin: 0; }
   .howto { display: none; }
   .howto ol { margin: 0; padding-left: 1.3em; }
-  .headline { font-size: 15px; }
-  .headline b { font: 22px/1 var(--pixel); color: var(--fire-3); font-weight: 400; }
+  /* Result headline: never below 24 px, its own line height so the big numbers cannot push into the scores */
+  .headline { font-size: 24px; line-height: 1.2; }
+  .headline b { font: 30px/1 var(--pixel); color: var(--fire-3); font-weight: 400; }
   .scores { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 10px; }
   .scores li { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0 6px; }
   .scores .k { font: 13px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
@@ -998,7 +1028,7 @@ body {
   .lines li::before { content: ""; position: absolute; left: 0; top: 0.45em; width: 6px; height: 6px; background: var(--fire-2); }
   .legend { display: none; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
   .legend i { display: inline-block; width: 16px; height: 12px; }
-  #close { position: absolute; top: 6px; right: 6px; font-size: 16px; min-height: 36px; padding: 6px 12px; }
+  #close { position: absolute; top: 6px; right: 6px; font-size: 16px; min-height: 40px; padding: 6px 12px; }
   .headline { padding-right: 76px; min-height: 40px; }
   .panel .row { display: flex; align-items: center; gap: 8px; }
   .panel .row .lines { flex: 1; }
@@ -1020,12 +1050,13 @@ body {
     .tool { flex: 1; min-height: 48px; padding: 4px 8px; font-size: 17px; gap: 6px; }
     .tool svg { width: 32px; height: 32px; }
     .tool .t { display: block; }
-    .panel { position: static; display: flex; max-height: none; overflow: hidden; padding: 14px 16px; gap: 10px; background: var(--card); border-color: var(--night-4); }
+    /* Panel scrolls as a last resort; its parts never shrink into each other */
+    .panel { position: static; display: flex; max-height: none; min-height: 0; overflow: hidden auto; padding: 14px 16px; gap: 10px; background: var(--card); border-color: var(--night-4); }
     .panel:not(.show) .res, .panel.show .howto { display: none; }
     .howto { display: block; }
     .howto p, .howto li { font-size: 22px; line-height: 1.3; }
     .howto li { margin-bottom: 8px; }
-    .headline { font-size: 22px; padding-right: 0; min-height: 0; }
+    .headline { font-size: 24px; padding-right: 0; min-height: 0; }
     .headline b { font-size: 40px; }
     .scores { grid-template-columns: minmax(0, 1fr); gap: 6px; }
     .scores li { grid-template-columns: 5.2em 1fr 2.4em; gap: 10px; }
@@ -1039,7 +1070,23 @@ body {
     .legend i { width: 28px; height: 18px; }
     #close { display: none; }
     .status { font-size: 18px; white-space: normal; }
-    .res { display: flex; flex-direction: column; gap: 10px; min-height: 0; flex: 1; }
+    .res { display: flex; flex-direction: column; gap: 10px; flex: 1 0 auto; }
+    .res > * { flex: none; }
+  }
+  /* Presentation slide (1280 × 657) and other short projectors: the result moves closer together */
+  @media (min-width: 1024px) and (min-height: 600px) and (max-height: 700px) {
+    body { padding: 10px 18px; gap: 8px 18px; }
+    .panel { padding: 10px 14px; gap: 6px; }
+    .res { gap: 6px; }
+    .headline b { font-size: 34px; }
+    .scores { gap: 2px; }
+    .scores b { font-size: 28px; }
+    .scores .bar { height: 16px; }
+    .note { font-size: 15px; line-height: 1.3; }
+    .lines li { font-size: 20px; line-height: 1.25; }
+    .legend { font-size: 15px; }
+    .legend i { width: 24px; height: 14px; }
+    .status { font-size: 16px; line-height: 1.25; }
   }
   @media not all and (min-width: 1024px) and (min-height: 600px) { .res { display: contents; } }
   @media (prefers-reduced-motion: reduce) { .c, .people { transition: none !important; animation: none !important; } }
@@ -1079,7 +1126,7 @@ body {
     <ul class="scores" id="scores"></ul>
     <div class="crit"><h2 class="px-label">Critic</h2><p class="note">Rule-based critic — not a real AI, about 40 lines of if/else.</p></div>
     <div class="row"><ul class="lines" id="lines"></ul></div>
-    <div class="legend" aria-hidden="true">Heat: cold <i style="background:var(--wood-1)"></i><i style="background:var(--fire-0)"></i><i style="background:var(--fire-1)"></i><i style="background:var(--fire-2)"></i><i style="background:var(--fire-3)"></i> hot</div>
+    <div class="legend" aria-hidden="true">Heat: cold <i style="background:var(--wood-1)"></i><i style="background:var(--wood-2)"></i><i style="background:var(--fire-1)"></i><i style="background:var(--fire-2)"></i><i style="background:var(--fire-4)"></i> hot</div>
     <button class="px-btn" type="button" id="close">Close</button>
   </div>
 </section>
