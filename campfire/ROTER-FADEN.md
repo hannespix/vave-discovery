@@ -4,9 +4,11 @@
 > - **Format:** Campfire-Talk bei VAVE, 90 Minuten, auf Englisch. Version 3 liegt zwischen den ersten beiden: der
 >   Lagerfeuer-Abend aus Version 1 mit den reicheren Inhalten aus Version 2, aber ohne Spielmechanik (keine Level,
 >   keine Save Points, keine Seltenheit). Acht Kapitel, erzählt wie am Feuer.
-> - **Board = Bühne:** Alle sehen das Whiteboard. Im Präsentationsmodus kommen nur Karten für das Publikum: die acht
->   Decks, die Live-Tools und die Mitmach-Bubbles. Keine Notizen, keine Anleitungen, keine Zeitangaben, keine
->   Rahmen-Titelfolien. Kapitelüberschriften und Lagerfeuer sind aufs Board gezeichnet und erzeugen keine Folie.
+> - **Board = Bühne:** Alle sehen das Whiteboard. Im Präsentationsmodus kommen nur Karten für das Publikum: je Kapitel
+>   die Pixel-Kapitelkarte, das Deck, die Live-Tools und die Mitmach-Bubbles. Keine Notizen, keine Anleitungen, keine
+>   Zeitangaben, keine Rahmen-Titelfolien. Nur der Pfad zwischen den Lagerplätzen ist gezeichnet.
+> - **PixiNotes dunkel stellen:** Im dunklen Theme liegen Kapitelkarten, Bubbles und Kanban auf Nachtgrund statt in
+>   einem weißen Rahmen. Das trägt die Lagerfeuer-Stimmung durch den ganzen Abend.
 > - **Du redest frei.** Die Decks tragen die Geschichte; die Sprechernotizen (Taste S) sind Stichworte, kein Skript.
 > - **Inhalte:** Begriffe, Jahreszahlen, Gerüchte und Risiken stehen in `shared/lore.js`.
 > - **Öffentlich:** Diese Datei liegt in einem öffentlichen Repo und enthält nur, was auch im Vortrag zu hören ist.
@@ -47,9 +49,9 @@ Motifs that carry the evening (light touch, never a game):
 | 0:19 | **III · Words by the fire** | Beginner | deck *Words by the fire*, *Token Oracle*, *Context Circle*, *Words* (30 terms) |
 | 0:33 | **IV · Kindling** | Beginner → Casual | deck *Kindling*, *Prompt Forge* |
 | 0:50 | **V · Many fires** | Advanced | deck *Many fires*, *Git Time Machine* |
-| 1:03 | **VI · A fire for VAVE** | Advanced | deck *A fire for VAVE*, kanban *vave.log: proposals* |
+| 1:03 | **VI · A fire for VAVE** | Advanced | deck *A fire for VAVE*, kanban *vave.log: proposals* (the room can move cards; the last column, *Decided by VAVE*, stays empty) |
 | 1:15 | **VII · Smoke** | all | deck *Smoke*, *Fireplace Check* |
-| 1:23 | **VIII · Embers** | all | deck *Embers*, bubbles *Side quests*, *Booth Builder*, kanban *Try on Monday*, bubbles *Your questions* |
+| 1:23 | **VIII · Embers** | all | bubbles *Side quests*, *Booth Builder*, kanban *Try on Monday*, bubbles *Your questions*, then the deck *Embers* closes the evening |
 
 ---
 

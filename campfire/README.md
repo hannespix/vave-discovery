@@ -55,6 +55,7 @@ bleiben unberührt.
 - **Das Board ist die Bühne.** Alle sehen es, und der Präsentationsmodus zeigt nur Karten für das Publikum: 31 Folien.
 - **Aufbau:** Oben der flüssige Titel. Darunter acht Lagerplätze an einem gezeichneten Feuerpfad, vier pro Reihe. Jeder
   Lagerplatz hat seine quadratische Pixel-Kapitelkarte, sein Deck und danach die Live-Karten (Tools, Bubbles, Kanban).
+  Im letzten Lagerplatz kommt das Deck *Embers* zuletzt: Es schließt den Abend nach den Fragen.
 - **Ohne Zwischenkarten:** keine Notizen, keine Anleitungen, keine Zeiten, keine Rahmen (ein Rahmen würde in PixiNotes
   eine eigene Titelfolie erzeugen), keine PDFs (die liegen auf dem Hub). Der Pfad ist gezeichnet, Zeichnungen werden
   keine Folien.
@@ -62,5 +63,6 @@ bleiben unberührt.
 - **Pfeile sind in PixiNotes Daten-Abos:** Ein Pfeil zwischen App und Notiz oder zwischen Zeitleiste und Kanban würde
   Daten koppeln. Das Board-Skript lässt solche Pfeile weg.
 - **Mitmachen:** Über Live → Einladungslink (ohne Konto) → QR-Code schreibt das Publikum in die Bubbles.
-- **Theme:** Das Board ist für das helle PixiNotes-Theme gebaut, Board-Hintergrund warm gelb.
+- **Theme:** Im Vortrag PixiNotes **dunkel** stellen: Kapitelkarten, Bubbles und Kanban liegen dann auf Nachtgrund statt
+  in einem weißen Rahmen. Auf dem Board selbst ist der Hintergrund warm gelb.
 - **Offline:** Decks und Tools reisen in der Datei mit und laufen in den Karten ohne Netz.
