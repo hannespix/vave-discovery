@@ -3,8 +3,8 @@
 # gebündelte Einzeldatei dist/vave-discovery-umfrage.html als index.html veröffentlichen.
 # Online liegt damit genau die Datei, die auch verschickt wird (D-003).
 # Solange survey/index.html fehlt, wird nichts deployt und der Lauf bleibt grün.
-# Seit r06 zusätzlich der UI-Entwurf aus prototype/ unter /prototyp/ (Vite-Build). Seit dem Campfire-Vortrag
-# außerdem campfire/dist/ unter /campfire/ (eingecheckte Einzeldateien, gebaut mit campfire/tools/*.mjs).
+# Seit r06 zusätzlich der UI-Entwurf aus prototype/ unter /prototyp/ (Vite-Build). Der Campfire-Vortrag liegt nicht
+# mehr hier (eigene Seite, getrennt von Umfrage und Prototyp).
 # Ein kaputter Prototyp hält den Deploy der Umfrage nicht auf: Dann bleibt /prototyp/ weg, die Umfrage geht trotzdem
 # raus (check.yml prüft den Build im PR).
 # Schutz der Umfrage: Prüfsumme von _site/index.html vor dem Prototyp-Build, Vergleich vor dem Upload; Build mit Zeitlimit,
@@ -76,11 +76,6 @@ jobs:
         run: |
           mkdir -p _site/prototyp
           cp -r prototype/dist/. _site/prototyp/
-      - name: Campfire-Vortrag einhängen (/campfire/)
-        if: steps.survey.outputs.present == 'true' && hashFiles('campfire/dist/index.html') != ''
-        run: |
-          mkdir -p _site/campfire
-          cp -r campfire/dist/. _site/campfire/
       - name: Umfrage unverändert?
         if: steps.survey.outputs.present == 'true'
         run: sha256sum -c "$RUNNER_TEMP/umfrage.sha256"

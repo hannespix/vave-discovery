@@ -4,7 +4,8 @@
 FIRE – stories around the fire**. Die acht Kapitel, Kernsätze und Stichworte enthält [`ROTER-FADEN.md`](ROTER-FADEN.md).
 Dieser Ordner hängt nicht an der Discovery-Schleife (STATE/ROADMAP) und ändert nichts an Umfrage oder Prototyp.
 
-**Online:** <https://hannespix.github.io/vave-discovery/campfire/>. Das ist die Hub-Seite mit allen Decks, Modulen,
+**Online:** <https://hannespix.github.io/campfire/> (eigenes Repo `hannespix/campfire`, getrennt von Umfrage und
+Prototyp). Das ist die Hub-Seite mit allen Decks, Modulen,
 PDFs, Grafiken und der Board-Datei.
 
 ## Version 3 in einem Satz
@@ -45,7 +46,8 @@ node campfire/tools/board.mjs --mcp pixinotes-mcp.mjs         # PixiNotes-Board 
   Über ihn legt das Board-Skript die nativen Karten an (Ideen-Bubbles, Kanban). Danach ergänzt dasselbe Skript in der
   Datei, was die MCP-Sprache nicht kennt: Decks und Tools als App-Karten, Kapitelkarten, flüssige Schrift, Layout,
   Pfeile und den gezeichneten Pfad.
-- **Deploy:** `dist/` wird mit eingecheckt. `.github/workflows/pages.yml` kopiert es nach `/campfire/`.
+- **Deploy:** `dist/` wird mit eingecheckt und als Inhalt ins Repo `hannespix/campfire` kopiert (nur die gebauten
+  Dateien, eigene Pages-Seite). Die Pages-Seite von vave-discovery enthält den Vortrag nicht mehr.
 
 ## Das Board in PixiNotes
 
