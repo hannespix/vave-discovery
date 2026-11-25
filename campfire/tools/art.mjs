@@ -759,20 +759,13 @@ function itemsSheet() {
     ink += `<g transform="translate(${tx + 3} ${y + 3}) scale(2)">${PX.item(it.id, { fill: C.o })}</g>`;
     ink += PX.text(it.name, { x: cx, y: y + 43, fill: C.i, align: 'center' });
   });
-  ink += PX.text('INVENTORY', { x: M + 4, y: 8, scale: 2, fill: C.i });
-  ink += PX.text(`${ids.length} ITEMS`, { x: W - M - 4, y: 12, fill: C.t, align: 'right' });
-  // rarity legend
-  let lx = M + 4;
-  const ly = H - 13;
-  for (const [k, c] of Object.entries(RAR)) {
-    cv.rect(lx, ly, 7, 7, c).rect(lx + 1, ly + 1, 5, 5, 'k');
-    ink += PX.text(k.toUpperCase(), { x: lx + 10, y: ly, fill: C.t });
-    lx += 10 + PX.textWidth(k) + 12;
-  }
+  ink += PX.text('WORDS BY THE FIRE', { x: M + 4, y: 8, scale: 2, fill: C.i });
+  // neutral legend: what the words are about (the frame colours are decoration only)
+  ink += PX.text(`${ids.length} WORDS · AI · CODE · GITHUB`, { x: M + 4, y: H - 13, fill: C.t });
   write('items-sheet.svg', {
     w: W, h: H, body: cv.svg() + ink,
-    title: 'The inventory: AI and GitHub terms as items',
-    desc: `A grid of ${ids.length} single-colour pixel item icons in fire orange on night green, each in a frame coloured by rarity and labelled with its name: ${LORE.ITEMS.map((it) => it.name).join(', ')}.`,
+    title: 'Words by the fire: AI, code and GitHub terms as pixel icons',
+    desc: `A grid of ${ids.length} single-colour pixel icons in fire orange on night green, each in a coloured frame and labelled with its word: ${LORE.ITEMS.map((it) => it.name).join(', ')}.`,
   });
 }
 
@@ -1273,13 +1266,17 @@ const BOSS_DRAW = {
   },
 };
 const BCW = 120, BCH = 98;
+/* The cure in a few words, under each name (the full sentence lives in LORE.BOSSES[].weakness) */
+const CURE = {
+  hallucinator: 'VERIFY IT', leaker: 'NDA FIRST', goblin: 'USE A VAULT', lich: 'CHECK LICENCES',
+  golem: 'GIVE IT AN OWNER', dragon: 'OPEN FORMATS', drain: 'KEEP TASTE HUMAN',
+};
 function bossCard(b, x, y, cls) {
   const cv = new Cv(BCW, BCH);
   cv.rect(0, 0, BCW, BCH, 'a').rect(1, 1, BCW - 2, BCH - 2, 'k').px(0, 0, '.').px(BCW - 1, 0, '.').px(0, BCH - 1, '.').px(BCW - 1, BCH - 1, '.');
-  cv.rect(20, BCH - 9, 94, 4, '2').rect(20, BCH - 9, 62, 4, 'r').rect(20, BCH - 9, 62, 1, 'o');
   const name = b.name.toUpperCase();
   const fr = frames2(cls, BOSS_DRAW[b.id], 36, 36, x + 24, y + 2, 2, 0.9);
-  return { svg: `<g transform="translate(${x} ${y})">${cv.svg()}${PX.text(name, { x: BCW / 2, y: BCH - 21, fill: C.i, align: 'center' })}${PX.text('HP', { x: 6, y: BCH - 11, fill: C.t })}</g>` + fr.svg, css: fr.css };
+  return { svg: `<g transform="translate(${x} ${y})">${cv.svg()}${PX.text(name, { x: BCW / 2, y: BCH - 21, fill: C.i, align: 'center' })}${PX.text(CURE[b.id], { x: BCW / 2, y: BCH - 11, fill: C.d, align: 'center' })}</g>` + fr.svg, css: fr.css };
 }
 function bosses() {
   const all = LORE.BOSSES;
@@ -1299,8 +1296,8 @@ function bosses() {
     const one = bossCard(b, 0, 0, 'bo');
     write(`boss-${b.id}.svg`, {
       w: BCW, h: BCH, css: one.css, body: one.svg,
-      title: `Boss: ${b.name}`,
-      desc: `A friendly pixel monster on a name plate with a red HP bar: ${descs[b.id]}. The risk: ${b.hp}. Beat it: ${b.weakness}`,
+      title: `In the smoke: ${b.name}`,
+      desc: `A friendly pixel monster from a true ghost story, on a name plate with its cure in short (${CURE[b.id].toLowerCase()}): ${descs[b.id]}. The risk: ${b.hp}. How to keep it away: ${b.weakness}`,
     });
     const col = i % 4, row = Math.floor(i / 4);
     const x = 8 + col * (BCW + 8) + (row ? (BCW + 8) / 2 : 0), y = 26 + row * (BCH + 8);
@@ -1310,9 +1307,9 @@ function bosses() {
   const W = 8 + 4 * (BCW + 8), H = 26 + 2 * (BCH + 8) + 2;
   const bg = new Cv(W, H, 'N');
   write('bosses.svg', {
-    w: W, h: H, css: gcss, body: bg.svg() + PX.text('BOSS FIGHT', { x: 10, y: 7, scale: 2, fill: C.i }) + PX.text(`${all.length} RISKS · ALL BEATABLE`, { x: W - 10, y: 11, fill: C.t, align: 'right' }) + gbody,
-    title: 'Boss fight: the risks as friendly monsters',
-    desc: `Seven pixel monsters on name plates with HP bars: ${all.map((b) => `${b.name}, ${descs[b.id]}`).join('; ')}.`,
+    w: W, h: H, css: gcss, body: bg.svg() + PX.text('IN THE SMOKE', { x: 10, y: 7, scale: 2, fill: C.i }) + PX.text('SEVEN GHOST STORIES · EACH WITH A CURE', { x: W - 10, y: 11, fill: C.t, align: 'right' }) + gbody,
+    title: 'In the smoke: seven ghost stories, each with a cure',
+    desc: `Seven friendly pixel monsters on name plates, each with its cure in short: ${all.map((b) => `${b.name}, ${descs[b.id]} (${CURE[b.id].toLowerCase()})`).join('; ')}.`,
   });
 }
 
@@ -1523,13 +1520,458 @@ function vavelogQuest() {
   const pixA = PX.SPRITES.pix, pixB = [...pixA.slice(0, 13), '...ggg....gg....', '....gg....ggg...', '................'];
   const pw = walker('qw', pixA, pixB, XS[0] + 4, ROAD - 15, 1, 0, XS[5] - 24, 16, 0);
   body += pw.svg; css += pw.css;
-  body += PX.text('QUEST LOG', { x: 10, y: 8, scale: 2, fill: C.i });
-  body += PX.text('VAVE.LOG · THE MAKING OF', { x: W - 10, y: 12, fill: C.t, align: 'right' });
+  body += PX.text('THE MAKING OF', { x: 10, y: 8, scale: 2, fill: C.i });
+  body += PX.text('VAVE.LOG', { x: W - 10, y: 12, fill: C.t, align: 'right' });
   body += frame2(W, H);
   write('vavelog-quest.svg', {
     w: W, h: H, bg: C.k, css, body,
-    title: 'Quest log: the making of vave.log',
-    desc: 'A pixel quest road at night with milestone flags: start, survey and prototype; day 1, an empty repository; day 2, about 30 pull requests; week 2, 8 milestones; week 6, pull request number 91; next: a treasure chest with a question mark that sparkles. Pix walks along the road.',
+    title: 'The making of vave.log',
+    desc: 'A pixel road at night with milestone flags: start, survey and prototype; day 1, an empty repository; day 2, about 30 pull requests; week 2, 8 milestones; week 6, pull request number 91; next: a treasure chest with a question mark that sparkles. Pix walks along the road.',
+  });
+}
+
+/* ══ Version 3: stories around the fire ══════════════════════════════════════ */
+/* Eight chapter cards (160×160) as one series: same frame, same horizon, same ring of stumps, same 2× title in the
+   night sky. Only the fire in the middle changes through the evening: spark → big → many → smoke → embers.
+   One animation per card: the fire (frames cycled with steps(1)); frame 0 is the still for reduced motion. */
+const V3 = { W: 160, H: 160, HZ: 106, FX: 80, FY: 132 }; // HZ: horizon, FX/FY: fire centre / top of the logs
+const BAY = [[0, 2], [3, 1]];
+const dband = (x, y, y0, a, b) => ((BAY[y % 2][x % 2] + 1) / 4 <= (y - y0 + 1) / 4 ? b : a);
+
+/** N stacked frames, cycled by opacity with steps(1); frame 0 is the still */
+function frameSet(cls, n, render, seq, slot) {
+  let svg = '', css = '';
+  for (let f = 0; f < n; f++) {
+    svg += `<g class="${cls}${f}">${render(f)}</g>`;
+    css += seqKF(`${cls}${f}`, seq.map((s) => `opacity:${s === f ? 1 : 0}`)) + `.${cls}${f}{${f ? 'opacity:0;' : ''}${anim(cls + f, seq.length * slot)}}`;
+  }
+  return { svg, css };
+}
+
+/** Procedural pixel flame: teardrop layers r → o → y → w, side tongues for bigger fires. f = frame 0..2 */
+function flameV3(cv, cx, by, h, hw, f) {
+  const ph = [0, 2.1, 4.2][f % 3];
+  const tg = h >= 10 ? [[-0.62, 0.5 + 0.1 * ((f + 1) % 3)], [0.62, 0.46 + 0.1 * ((f + 2) % 3)]] : [];
+  const inside = (x, y, H, Wd, ox) => {
+    const v = (by - y) / H;
+    if (v < 0 || v > 1) return false;
+    const prof = v < 0.3 ? Math.sqrt(Math.max(0, 1 - ((0.3 - v) / 0.3) ** 2)) : ((1 - v) / 0.7) ** 1.2;
+    const sway = Math.sin(v * 3.4 + ph) * v * Math.max(1, Wd * 0.5);
+    return Math.abs(x + 0.5 - (ox + sway)) <= prof * Wd + 0.3;
+  };
+  [['r', 1, 1], ['o', 0.78, 0.7], ['y', 0.52, 0.44], ['w', 0.26, 0.22]].forEach(([c, sh, sw]) => {
+    for (let y = by - h - 1; y <= by; y++) for (let x = cx - hw - 4; x <= cx + hw + 4; x++) {
+      let hit = inside(x, y, h * sh, hw * sw, cx);
+      if (!hit && sh > 0.6) hit = tg.some(([dx, th]) => inside(x, y, h * th * sh, hw * 0.45 * sw, cx + dx * hw));
+      if (hit) cv.px(x, y, c);
+    }
+  });
+  if (h >= 8) cv.px(cx + [0, 1, -1][f % 3], by - h - 2 - (f % 2), 'r');
+}
+/** Warm light on the ground (clipped to minY) and a faint haze around the flame */
+function glowV3(cx, cy, k, minY, haze = 0) {
+  let s = [[4.2, 1.1], [2.9, 0.8], [1.8, 0.55]].map(([a, b]) => `<path fill="${C.o}" fill-opacity=".09" d="${ellD(cx, cy, Math.round(k * a), Math.max(1, Math.round(k * b)), minY)}"/>`).join('');
+  if (haze) s += `<path fill="${C.o}" fill-opacity=".05" d="${ellD(cx, cy - Math.round(haze * 0.6), Math.round(haze), Math.round(haze))}"/>`;
+  return s;
+}
+/** A whole campfire as three frames: ground glow, haze, flame */
+function fireV3(cls, cx, by, h, hw, minY = V3.HZ) {
+  return frameSet(cls, 3, (f) => {
+    const c = new Cv(V3.W, V3.H);
+    flameV3(c, cx, by, h, hw, f);
+    return glowV3(cx, by + 3, hw + 3 + (f === 1 ? 1 : f === 2 ? -1 : 0), minY, h * 0.9) + c.svg();
+  }, [0, 1, 2, 0, 2, 1], 0.125);
+}
+
+const STUMP = ['.nnnnnn.', 'nnmmmmnn', 'nmnmmnmn', 'nnmmmmnn', 'WnnnnnnW', 'WmWmWWmW', 'WmWmWWmW', 'WWmWWmWW'];
+/* Ring of stumps around the fire (top-left of the 8×8 sprite); the same seats in every chapter */
+const SEATS = [[42, 122], [110, 122], [26, 135], [126, 135], [44, 146], [108, 146]];
+const STONE3 = ['.ttt.', 'tssss', '.s33.'];
+function stonesV3(back, front, cx = V3.FX, cy = V3.FY + 7, rx = 13, ry = 3.4, n = 9) {
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + 0.3, x = Math.round(cx + rx * Math.cos(a)) - 2, y = Math.round(cy + ry * Math.sin(a)) - 1;
+    if (Math.sin(a) > 0) front.spr(STONE3, x, y, { t: 'n' }); else back.spr(STONE3, x, y, { s: 'n', t: 't' });
+  }
+}
+/** Pix with a warm rim on the side that faces the fire ('l' = fire on the left) */
+function pixLit(cv, x, y, side = 'l') {
+  const rows = PX.SPRITES.pix.map((row, j) => {
+    const a = [...row];
+    const L = a.indexOf('g'), R = a.lastIndexOf('g');
+    if (L < 0 || R <= L + 2 || j < 3 || j > 11) return row;
+    const [hot, cool] = side === 'l' ? [L, R] : [R, L];
+    const inH = side === 'l' ? hot + 1 : hot - 1, inC = side === 'l' ? cool - 1 : cool + 1;
+    a[hot] = 'o'; if (a[inH] === 'f') a[inH] = 'e'; if (a[inC] === 'f') a[inC] = 'd';
+    return a.join('');
+  });
+  cv.spr(rows, x, y);
+}
+/** Crescent moon */
+function moonV3(cv, mx, my, r = 5) {
+  for (let y = my - r - 1; y <= my + r + 1; y++) for (let x = mx - r - 1; x <= mx + r + 1; x++) {
+    const d1 = Math.hypot(x - mx, y - my), d2 = Math.hypot(x - mx - 3, y - my + 2);
+    if (d1 <= r + 0.4 && d2 > r - 0.4) cv.px(x, y, d2 < r + 0.6 ? 'e' : 'f');
+  }
+}
+/** Chapter title: numeral in spark yellow, name in ink, 2× font, wrapped to fit; returns { svg, boxes } */
+function titleV3(num, name, W = V3.W, top = 8, maxW = W - 14) {
+  const S = 2, words = [num, '·', ...name.split(' ')], lines = [[]];
+  for (const w of words) {
+    const cur = lines[lines.length - 1];
+    if (cur.length && PX.textWidth([...cur, w].join(' '), S) > maxW) lines.push([w]); else cur.push(w);
+  }
+  const LH = 18, y0 = top + (lines.length === 1 ? Math.round(LH / 2) : 0);
+  let svg = ''; const boxes = [];
+  lines.forEach((ln, li) => {
+    const lw = PX.textWidth(ln.join(' '), S), y = y0 + li * LH;
+    let x = Math.floor((W - lw) / 2);
+    boxes.push([x, y, lw, 14]);
+    ln.forEach((w, wi) => {
+      const fill = li === 0 && wi < 2 && (w === num || w === '·') ? C.M : C.i;
+      svg += PX.text(w, { x, y, scale: S, fill });
+      x += PX.textWidth(w, S) + PX.textWidth(' ', S) + 2 * S;
+    });
+  });
+  return { svg, boxes };
+}
+/** Sky, stars, moon, the shared horizon and the ground → canvas */
+function landV3({ dawn = false, moon = null, boxes = [], skipStars = () => false } = {}) {
+  const { W, H, HZ, FX } = V3;
+  const cv = new Cv(W, H, 'k');
+  const night = (x, y) => (y < 44 ? 'k' : y < 47 ? dband(x, y, 44, 'k', 'N') : y < 76 ? 'N' : y < 79 ? dband(x, y, 76, 'N', '3') : '3');
+  const morn = (x, y) => (y < 26 ? 'N' : y < 29 ? dband(x, y, 26, 'N', '3') : y < 46 ? '3' : y < 49 ? dband(x, y, 46, '3', '4') : y < 62 ? '4' : y < 65 ? dband(x, y, 62, '4', 'a') : y < 74 ? 'a' : y < 77 ? dband(x, y, 74, 'a', 'b') : 'b');
+  for (let y = 0; y < HZ; y++) for (let x = 0; x < W; x++) cv.px(x, y, (dawn ? morn : night)(x, y));
+  // stars: none behind the title, fading out at dawn
+  const rs = rng(311);
+  const inBox = (x, y) => boxes.some(([bx, by, bw, bh]) => x >= bx - 3 && x < bx + bw + 3 && y >= by - 3 && y < by + bh + 3);
+  for (let i = 0; i < 46; i++) {
+    const x = Math.floor(rs() * W), y = Math.floor(rs() * 84), big = rs() < 0.12, dim = rs() < 0.5;
+    if (inBox(x, y) || skipStars(x, y) || (moon && Math.hypot(x - moon[0], y - moon[1]) < 9) || (dawn && y > 44)) continue;
+    cv.px(x, y, dawn ? (y < 26 ? 't' : 'a') : big ? 'i' : dim ? '4' : 'a');
+  }
+  if (moon) moonV3(cv, moon[0], moon[1]);
+  // far mountains with moonlit edges, mid hills, treeline (taller at the edges to frame the clearing)
+  const peaks = [[-2, 86], [14, 78], [30, 84], [48, 74], [64, 82], [80, 79], [96, 86], [112, 76], [128, 72], [144, 80], [162, 76]];
+  const mt = [];
+  for (let x = 0; x < W; x++) {
+    const k = peaks.findIndex((p) => p[0] > x), [x0, y0] = peaks[k - 1], [x1, y1] = peaks[k];
+    mt[x] = Math.round(y0 + ((y1 - y0) * (x - x0)) / (x1 - x0));
+  }
+  for (let x = 0; x < W; x++) {
+    cv.rect(x, mt[x], 1, HZ - mt[x], 'g');
+    const lit = mt[x + 1] !== undefined && mt[x + 1] > mt[x];
+    cv.px(x, mt[x], lit ? (dawn ? 'c' : 'a') : '4');
+  }
+  for (let x = 0; x < W; x++) { const y = 96 + Math.round(2 * Math.sin(x / 13) + 1.5 * Math.sin(x / 7 + 2)); cv.rect(x, y, 1, HZ - y, '2'); }
+  const rt = rng(312);
+  for (let x = -3; x < W + 4; x += 3 + Math.floor(rt() * 4)) {
+    const edge = x < 22 ? (22 - x) / 22 : x > 138 ? (x - 138) / 22 : 0;
+    pine(cv, x, HZ + 1, 5 + Math.floor(rt() * 6) + Math.round(edge * 14), 'k');
+  }
+  // ground: bumpy edge, grass tufts lit near the fire, pebbles
+  for (let y = HZ; y < H; y++) for (let x = 0; x < W; x++) cv.px(x, y, y < 148 ? '3' : y < 151 ? dband(x, y, 148, '3', '2') : '2');
+  const rg = rng(313);
+  for (let x = 0; x < W; x += 5 + Math.floor(rg() * 6)) cv.ell(x, HZ, 2 + Math.floor(rg() * 3), 1, 'k');
+  const tuft = ['..a..', 'a.a.a', '.aaa.'];
+  for (let i = 0; i < 22; i++) {
+    const x = Math.floor(rg() * (W - 5)), y = HZ + 4 + Math.floor(rg() * 44), d = Math.hypot((x + 2 - FX) / 3, y - 139);
+    if (d < 9) continue;
+    cv.spr(tuft, x, y, { a: d < 14 ? 'c' : d < 20 ? 'b' : 'a' });
+  }
+  for (let i = 0; i < 9; i++) cv.rect(Math.floor(rg() * W), HZ + 6 + Math.floor(rg() * 40), 2, 1, 's');
+  return cv;
+}
+/** One chapter card: land → back props → stumps/stones → fire → logs, front props → title → frame */
+function chapterCard(n, ch) {
+  const { W, H, FX, FY } = V3;
+  const t = titleV3(ch.num, ch.name);
+  const cv = landV3({ dawn: ch.dawn, moon: ch.moon, boxes: t.boxes, skipStars: ch.skipStars });
+  const seats = ch.seats || SEATS.map((_, i) => i);
+  if (ch.back) ch.back(cv);
+  seats.filter((i) => SEATS[i][1] < FY).forEach((i) => cv.spr(STUMP, SEATS[i][0], SEATS[i][1]));
+  const back = new Cv(W, H), front = new Cv(W, H);
+  stonesV3(back, front);
+  let body = cv.svg() + back.svg() + (ch.backSvg ? ch.backSvg() : '');
+  const fire = ch.fire ? ch.fire(`c${n}f`) : fireV3(`c${n}f`, FX, FY + 4, ch.h, ch.hw);
+  if (!ch.dawn) body += fire.svg;
+  front.spr(PX.SPRITES.logs, FX - 10, FY, ch.dawn ? { m: 'W', n: 'R' } : undefined);
+  if (!ch.dawn) [[FX - 3, FY + 4, 'r'], [FX + 2, FY + 4, 'R'], [FX, FY + 5, 'o'], [FX - 1, FY + 4, 'y']].forEach(([x, y, c]) => front.px(x, y, c));
+  seats.filter((i) => SEATS[i][1] >= FY).forEach((i) => front.spr(STUMP, SEATS[i][0], SEATS[i][1]));
+  if (ch.front) ch.front(front);
+  body += front.svg() + (ch.dawn ? fire.svg : '') + (ch.frontSvg ? ch.frontSvg() : '') + t.svg + frame2(W, H);
+  write(`chapter-${n}.svg`, {
+    w: W, h: H, bg: C.k, css: fire.css, body,
+    title: `Chapter ${ch.num} · ${ch.title}`,
+    desc: `Square pixel-art chapter card ${ch.num} of VIII, titled ${ch.num} · ${ch.title} in pixel letters in the night sky. ${ch.desc}`,
+  });
+}
+
+/* Small props for the cards */
+const GHOST = ['...ffff...', '..ffffff..', '.ffffffff.', '.ffgffgff.', '.ffgffgff.', 'ffffffffff', 'ffffggffff', 'ffffffffff', 'ffffffffff', 'fff.ff.fff', '.f...f..f.'];
+/** A-frame tent 15×9 with a lit door */
+function tent(cv, x, y, c = 'u', d = 'z') {
+  for (let r = 0; r < 9; r++) { cv.rect(x + 7 - r, y + r, r + 1, 1, c); cv.rect(x + 8, y + r, r, 1, d); }
+  for (let r = 0; r < 9; r++) cv.px(x + 7 - r, y + r, 'k').px(x + 7 + r, y + r, 'k');
+  cv.rect(x + 6, y + 4, 3, 5, 'o').rect(x + 7, y + 5, 1, 4, 'y').px(x + 7, y - 1, 'k');
+}
+/** Little house 7×7 with a lit window */
+function house(cv, x, y, c = 'k', win = 'y') {
+  cv.rect(x, y + 3, 7, 4, c).rect(x + 1, y + 2, 5, 1, c).rect(x + 2, y + 1, 3, 1, c).px(x + 3, y, c).rect(x + 2, y + 4, 2, 2, win);
+}
+/** Dashed polyline on a canvas */
+function dashLine(cv, pts, c = 'd', on = 2, gap = 2) {
+  let acc = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], len = Math.hypot(x1 - x0, y1 - y0);
+    for (let s = 0; s < len; s++, acc++) if (acc % (on + gap) < on) cv.px(Math.round(x0 + ((x1 - x0) * s) / len), Math.round(y0 + ((y1 - y0) * s) / len), c);
+  }
+}
+
+const CHAPTERS = [
+  { num: 'I', name: 'THE GATHERING', title: 'The gathering', h: 7, hw: 3, moon: [22, 60],
+    desc: 'A ring of six empty tree stumps around a small, freshly lit campfire under the stars. Pix, the little pixel mascot, walks in from the left to join.',
+    front: (c) => {
+      pixLit(c, 6, 124, 'r');
+      [[2, 139], [0, 138]].forEach(([x, y]) => c.px(x, y, 's'));
+      [[79, 117, 'y'], [83, 113, 'o'], [77, 109, 'r']].forEach(([x, y, k]) => c.px(x, y, k));
+    } },
+  { num: 'II', name: 'OLD FIRES', title: 'Old fires', h: 12, hw: 5, moon: [40, 54], seats: [1, 2, 4, 5],
+    desc: 'A big rock on the left carries cave paintings: a deer, a hand print, a sun and a little fire. On the right an old computer terminal with a blinking prompt stands by the campfire, the ELIZA era. Pix sits on a stump and listens.',
+    back: (c) => {
+      for (let y = 84; y < 132; y++) { const t = (y - 84) / 48, hw = Math.round(22 * Math.sqrt(Math.min(1, t * 1.6)) * (1 - 0.15 * t)); c.rect(26 - hw, y, hw * 2 + 1, 1, 's'); c.rect(26 + hw - 3, y, 4, 1, y > 90 ? 't' : 's'); }
+      for (let y = 88; y < 128; y += 5) c.rect(10 + ((y * 7) % 20), y, 3, 1, '4');
+      c.spr(['.n.n......', '..nn......', '..nnnnnnn.', '...nnnnnn.', '...n.n.n.n', '...n.n.n.n'], 12, 98);
+      c.spr(['.R.R.R.', '.R.R.R.', 'RR.R.R.', 'RRRRRR.', '.RRRRR.', '..RRR..'], 30, 104);
+      c.spr(['.m.m.', 'm.m.m', '.mmm.', 'mm.mm', '.mmm.', 'm.m.m'], 18, 112);
+      c.spr(['..R..', '.RoR.', 'RooR.', '.RR..'], 34, 116);
+    },
+    front: (c) => {
+      const t = new Cv(16, 16); LORE_ICONS.eliza(t, 0); c.spr(t.rows(), 100, 120);
+      pixLit(c, 120, 131, 'l');
+    } },
+  { num: 'III', name: 'WORDS BY THE FIRE', title: 'Words by the fire', h: 17, hw: 6, moon: [130, 54],
+    skipStars: (x, y) => x > 50 && x < 112 && y > 48 && y < 104,
+    desc: 'The campfire burns brighter. Words rise from it like sparks and cool as they climb: RAG just above the flames, MCP higher, TOKEN highest. Pix sits on a stump and looks up.',
+    front: (c) => {
+      pixLit(c, 38, 108, 'r');
+      [[82, 108, 'y'], [78, 103, 'o'], [86, 99, 'y'], [73, 94, 'o'], [90, 86, 'r'], [69, 82, 'r'], [76, 66, 'r'], [94, 70, 'o']].forEach(([x, y, k]) => c.px(x, y, k));
+    },
+    frontSvg: () => PX.text('RAG', { x: 92, y: 90, fill: C.w, align: 'center' }) + PX.text('MCP', { x: 66, y: 72, fill: C.y, align: 'center' }) + PX.text('TOKEN', { x: 88, y: 54, fill: C.o, align: 'center' }) },
+  { num: 'IV', name: 'KINDLING', title: 'Kindling', h: 20, hw: 7, moon: [58, 52], seats: [3, 4, 5],
+    desc: 'Hands-on: next to the campfire lies a bundle of kindling, and a lit match leans against it. On the right a phone stands upright and shows one single HTML file. Pix sits close by.',
+    back: (c) => {
+      const x = 116, y = 98;
+      c.rect(x, y, 22, 36, 'k').rect(x + 1, y + 1, 20, 34, 'z').rect(x + 2, y + 4, 18, 26, 'N').rect(x + 9, y + 2, 4, 1, 's').rect(x + 8, y + 31, 6, 2, 's');
+      c.rect(x + 4, y + 7, 14, 18, 'f').rect(x + 14, y + 7, 4, 4, 'e').px(x + 14, y + 7, 'N').rect(x + 15, y + 7, 3, 1, 'N').rect(x + 17, y + 8, 1, 2, 'N');
+      c.rect(x + 6, y + 21, 10, 1, 'c').rect(x + 6, y + 23, 7, 1, 'c').rect(x + 2, y + 28, 18, 1, 'a');
+    },
+    frontSvg: () => PX.text('</>', { x: 116 + 11, y: 98 + 12, fill: C.R, align: 'center' }),
+    front: (c) => {
+      // a teepee of kindling with tinder inside, a lit match leaning on it
+      [[29, 142], [33, 143], [37, 143], [41, 143], [45, 143], [49, 142]].forEach(([x, y], k) => c.line(39, 123, x, y, k % 2 ? 'm' : 'n'));
+      c.px(39, 122, 'n').px(38, 121, 'n').px(40, 121, 'm');
+      c.rect(35, 140, 9, 2, 'W').rect(36, 139, 7, 1, 'y').px(38, 138, 'w').px(40, 138, 'o').px(42, 139, 'o');
+      c.line(60, 148, 52, 134, 'f'); c.line(61, 148, 53, 134, 'n');
+      c.rect(51, 131, 3, 3, 'R').px(52, 130, 'o').px(52, 129, 'y').px(51, 128, 'y').px(52, 127, 'w').px(53, 129, 'o');
+      pixLit(c, 96, 132, 'l');
+    } },
+  { num: 'V', name: 'MANY FIRES', title: 'Many fires', moon: [96, 52], seats: [2, 3],
+    desc: 'A camp of many fires: the big campfire in the middle and four smaller fires around it, linked by dashed paths across the ground. Tents stand by the fires, and far away more fires glow on the mountains. Pix stands by a tent.',
+    back: (c) => {
+      [[22, 118], [138, 118], [52, 110], [108, 110]].forEach(([x, y]) => dashLine(c, [[80, 138], [x, y + 3]], 'd'));
+      tent(c, 2, 108, 'u', 'z'); tent(c, 142, 108, 'v', 'q'); tent(c, 60, 98, 'x', 's'); tent(c, 90, 98, 'u', 'z');
+      [[18, 84], [56, 76], [120, 80], [134, 74]].forEach(([x, y]) => c.px(x, y, 'o'));
+    },
+    backSvg: () => [[22, 118], [138, 118], [52, 110], [108, 110]].map(([x, y]) => `<path fill="${C.o}" fill-opacity=".12" d="${ellD(x, y + 3, 7, 2)}"/>`).join('')
+      + [[18, 84], [56, 76], [120, 80], [134, 74]].map(([x, y]) => `<path fill="${C.o}" fill-opacity=".14" d="${ellD(x, y, 2, 1)}"/>`).join(''),
+    fire: (cls) => frameSet(cls, 3, (f) => {
+      const c = new Cv(V3.W, V3.H);
+      flameV3(c, V3.FX, V3.FY + 4, 22, 8, f);
+      [[22, 118, 6, 3], [138, 118, 6, 3], [52, 110, 4, 2], [108, 110, 4, 2]].forEach(([x, y, h, hw], k) => {
+        flameV3(c, x, y + 1, h, hw, (f + k) % 3);
+        c.rect(x - 3, y + 1, 6, 1, 'W').rect(x - 2, y + 2, 4, 1, 'm');
+      });
+      return glowV3(V3.FX, V3.FY + 7, 11 + (f === 1 ? 1 : f === 2 ? -1 : 0), V3.HZ, 20) + c.svg();
+    }, [0, 1, 2, 0, 2, 1], 0.125),
+    front: (c) => { pixLit(c, 140, 120, 'l'); } },
+  { num: 'VI', name: 'A FIRE FOR VAVE', title: 'A fire for VAVE', h: 27, hw: 10, moon: [134, 54], seats: [2, 3, 4, 5],
+    skipStars: (x, y) => x > 34 && x < 126 && y > 50,
+    desc: 'A big campfire burns in front of a lit trade-fair booth at night. The booth has a truss with spotlights, a header that reads VAVE.LOG, a calendar screen and a clock screen on the wall, and a counter. Pix stands next to the fire.',
+    back: (c) => {
+      const x0 = 38, x1 = 122, top = 60;
+      c.rect(x0, top, x1 - x0, 1, 't').rect(x0, top + 3, x1 - x0, 1, 't');
+      for (let x = x0; x < x1; x += 3) c.px(x, top + 1, 's').px(x + 1, top + 2, 's');
+      c.rect(x0, top, 1, 50, 't').rect(x1 - 1, top, 1, 50, 't');
+      [50, 80, 110].forEach((x) => c.rect(x - 1, top + 4, 3, 2, 's').px(x, top + 6, 'y'));
+      c.rect(x0 + 4, top + 7, x1 - x0 - 8, 11, 'k').rect(x0 + 4, top + 17, x1 - x0 - 8, 1, 'M');
+      c.rect(x0 + 4, top + 18, x1 - x0 - 8, 30, '4');
+      for (let y = top + 19; y < top + 48; y += 6) c.rect(x0 + 4, y, x1 - x0 - 8, 1, 'a');
+      const cx = 46, cy = top + 21;
+      c.rect(cx, cy, 22, 20, 'k').rect(cx + 1, cy + 1, 20, 18, 'f').rect(cx + 1, cy + 1, 20, 4, 'R').px(cx + 5, cy, 'i').px(cx + 16, cy, 'i');
+      for (let r = 0; r < 3; r++) for (let k = 0; k < 5; k++) c.rect(cx + 2 + k * 4, cy + 7 + r * 4, 2, 2, r === 1 && k === 2 ? 'o' : 'a');
+      const kx = 103, ky = top + 31;
+      c.ell(kx, ky, 9, 9, 'k'); c.ell(kx, ky, 8, 8, 'f'); c.ell(kx, ky, 6, 6, 'i');
+      [[0, -7], [7, 0], [0, 7], [-7, 0]].forEach(([dx, dy]) => c.px(kx + dx, ky + dy, 'g'));
+      c.line(kx, ky, kx, ky - 5, 'g'); c.line(kx, ky, kx + 4, ky + 2, 'R'); c.px(kx, ky, 'k');
+      c.rect(x0 + 2, top + 48, x1 - x0 - 4, 2, 'n').rect(x0 + 2, top + 50, x1 - x0 - 4, 1, 'W');
+    },
+    backSvg: () => PX.text('VAVE.LOG', { x: 80, y: 69, fill: C.M, align: 'center' })
+      + [50, 80, 110].map((x) => `<path fill="${C.y}" fill-opacity=".07" d="${dotD([[x - 2, 67, 5, 4], [x - 4, 71, 9, 6], [x - 6, 77, 13, 8], [x - 8, 85, 17, 22]])}"/>`).join(''),
+    front: (c) => { pixLit(c, 98, 126, 'l'); } },
+  { num: 'VII', name: 'SMOKE', title: 'Smoke', h: 14, hw: 6, moon: [118, 50], seats: [0, 1, 3, 4, 5],
+    skipStars: (x, y) => x > 48 && x < 120 && y > 40,
+    desc: 'The fire burns low and a column of smoke curls up into the night. Three friendly ghosts float in the smoke: one holds a key, one wears a padlock, one carries a question mark. Pix peeks out from behind a stump.',
+    backSvg: () => {
+      let s = '';
+      for (let k = 0; k < 13; k++) {
+        const y = Math.round(118 - k * 5.4), x = 80 + Math.round(9 * Math.sin(k / 2.2)) + Math.round(k * 0.6), r = 3 + Math.round(k * 0.65);
+        s += `<path fill="${C.s}" fill-opacity=".42" d="${ellD(x, y, r + 2, r)}"/><path fill="${C.t}" fill-opacity=".16" d="${ellD(x - 1, y - 1, r, Math.max(1, r - 2))}"/>`;
+      }
+      return s;
+    },
+    frontSvg: () => {
+      const g = (x, y, extra) => `<g fill-opacity=".92">${PX.sprite(GHOST, { x, y, pal: { f: C.i } })}</g>` + extra;
+      return g(60, 88, PX.sprite(['.yy.', 'y..y', '.yy.', '..y.', '..yy', '..y.', '..yy'], { x: 71, y: 93 }))
+        + g(96, 70, PX.sprite(['.tt.', 't..t', 'tttt', 'tkkt', 'tttt'], { x: 99, y: 77 }))
+        + g(68, 50, PX.text('?', { x: 81, y: 52, fill: C.y }));
+    },
+    front: (c) => { pixLit(c, 30, 136, 'r'); c.spr(STUMP, 26, 146); } },
+  { num: 'VIII', name: 'EMBERS', title: 'Embers', dawn: true,
+    desc: 'Dawn: the sky turns pale green over the hills. The fire has burnt down to glowing embers, a thin wisp of smoke rises, and a few sparks fly home along dotted trails to the small lit houses on the hills. Pix sits on a stump and watches them go.',
+    back: (c) => {
+      [[18, 94], [56, 92], [124, 92]].forEach(([x, y]) => house(c, x, y, 'k', 'y'));
+      [[[80, 128], [64, 110], [46, 102], [26, 100]], [[80, 128], [74, 108], [66, 98], [60, 96]], [[82, 128], [98, 110], [114, 100], [126, 98]]].forEach((p) => dashLine(c, p, 'o', 1, 3));
+      [[80, 124], [81, 120], [80, 116], [79, 112], [80, 108]].forEach(([x, y]) => c.px(x, y, 's'));
+    },
+    frontSvg: () => [[30, 98], [62, 95], [121, 96]].map(([x, y]) => PX.sprite('spark', { x: x - 1, y: y - 1 })).join(''),
+    fire: (cls) => frameSet(cls, 2, (f) => {
+      const c = new Cv(V3.W, V3.H);
+      const hot = f ? ['o', 'r', 'R', 'y'] : ['r', 'R', 'o', 'r'];
+      c.rect(73, 136, 15, 2, 'R').rect(75, 135, 11, 1, 'r');
+      [[74, 134], [77, 133], [80, 134], [83, 133], [86, 134], [76, 136], [79, 135], [82, 136], [85, 135], [78, 137], [81, 137], [72, 137], [88, 137], [80, 132]].forEach(([x, y], k) => c.px(x, y, hot[k % 4]));
+      if (f) c.px(80, 130, 'o').px(80, 129, 'y').px(79, 131, 'o').px(81, 131, 'r'); else c.px(79, 131, 'r').px(80, 131, 'o');
+      return glowV3(V3.FX, V3.FY + 5, f ? 6 : 5, V3.HZ, 8) + c.svg();
+    }, [0, 0, 1, 1, 1, 0, 1, 0], 0.3),
+    front: (c) => { pixLit(c, 110, 108, 'l'); } },
+];
+function chapters() { CHAPTERS.forEach((ch, i) => chapterCard(i + 1, ch)); }
+
+/* ── v3 · Story map: the trail of the evening, eight camps (200×200) ──────── */
+function storyMap() {
+  const W = 200, H = 200, rnd = rng(321);
+  const CAMPS = [
+    ['I', 'GATHERING', 44, 46], ['II', 'OLD FIRES', 128, 46], ['III', 'WORDS', 158, 86], ['IV', 'KINDLING', 78, 86],
+    ['V', 'MANY FIRES', 42, 126], ['VI', 'VAVE', 120, 126], ['VII', 'SMOKE', 158, 166], ['VIII', 'EMBERS', 82, 166],
+  ];
+  const cv = new Cv(W, H, 'N');
+  for (let y = 0; y < 22; y++) cv.rect(0, y, W, 1, 'k');
+  for (let x = 0; x < W; x++) for (let y = 22; y < 25; y++) cv.px(x, y, dband(x, y, 22, 'k', 'N'));
+  for (let i = 0; i < 30; i++) { const x = Math.floor(rnd() * W), y = 3 + Math.floor(rnd() * 18); if ((x < 22 || x > 176) && Math.hypot(x - 184, y - 12) > 7) cv.px(x, y, rnd() < 0.3 ? 'i' : rnd() < 0.5 ? '4' : 'a'); }
+  moonV3(cv, 184, 12, 4);
+  for (let i = 0; i < 260; i++) cv.rect(Math.floor(rnd() * W), 26 + Math.floor(rnd() * (H - 26)), 2 + Math.floor(rnd() * 2), 1, rnd() < 0.5 ? '2' : '3');
+  // the trail: a smooth curve through the camps with wide turns at the row ends
+  const turn = { 1: [[176, 50], [182, 70]], 3: [[24, 92], [18, 112]], 5: [[176, 132], [182, 152]] };
+  const pts = [[14, 40]];
+  CAMPS.forEach(([, , x, y], i) => { pts.push([x, y + 2]); if (turn[i]) pts.push(...turn[i]); });
+  const smooth = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+    for (let t = 0; t < 1; t += 0.05) {
+      const t2 = t * t, t3 = t2 * t;
+      smooth.push([0, 1].map((k) => 0.5 * (2 * p1[k] + (-p0[k] + p2[k]) * t + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t2 + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * t3)));
+    }
+  }
+  smooth.push(pts[pts.length - 1]);
+  const near = (x, y, r) => smooth.some(([a, b]) => Math.hypot(a - x, b - y) < r) || CAMPS.some(([, nm, a, b]) => Math.abs(a - x) < PX.textWidth(nm) / 2 + 8 && y > b - 16 && y < b + 28);
+  for (let i = 0; i < 70; i++) {
+    const x = 6 + Math.floor(rnd() * (W - 12)), y = 36 + Math.floor(rnd() * (H - 44));
+    if (near(x, y, 9)) continue;
+    pine(cv, x, y, 5 + Math.floor(rnd() * 5), rnd() < 0.5 ? '4' : 'g', 'k');
+  }
+  dashLine(cv, smooth.map(([x, y]) => [Math.round(x), Math.round(y)]), 'c', 2, 2);
+  const front = new Cv(W, H);
+  let ink = '', glow = '';
+  CAMPS.forEach(([num, nm, x, y]) => {
+    for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2 + 0.4; front.px(Math.round(x + 6 * Math.cos(a)), Math.round(y + 2 + 1.6 * Math.sin(a)), Math.sin(a) > 0 ? 't' : 's'); }
+    front.rect(x - 3, y + 1, 7, 1, 'W').rect(x - 2, y + 2, 5, 1, 'm');
+    glow += `<path fill="${C.o}" fill-opacity=".12" d="${ellD(x, y + 2, 10, 3)}"/>`;
+    ink += PX.text(num, { x: x + 1, y: y + 7, fill: C.M, align: 'center' });
+    ink += PX.text(nm, { x: x + 1, y: y + 16, fill: C.i, align: 'center' });
+  });
+  // the fire grows along the trail, smokes at VII, is embers at VIII
+  const SIZE = [[3, 1], [5, 2], [6, 2], [7, 3], [7, 3], [9, 3], [5, 2], [0, 0]];
+  const fires = frameSet('mf', 3, (f) => {
+    const c = new Cv(W, H);
+    CAMPS.forEach(([, , x, y], i) => {
+      const [h, hw] = SIZE[i];
+      if (h) flameV3(c, x + 1, y + 1, h, hw, (f + i) % 3);
+      if (i === 4) { flameV3(c, x - 7, y + 2, 3, 1, (f + 1) % 3); flameV3(c, x + 9, y + 2, 3, 1, (f + 2) % 3); }
+      if (i === 7) { c.rect(x - 2, y + 1, 7, 1, 'R'); [[x - 1, y], [x + 1, y], [x + 3, y], [x, y - 1], [x + 2, y - 1]].forEach(([a, b], k) => c.px(a, b, (k + f) % 2 ? 'r' : f ? 'y' : 'o')); }
+    });
+    return c.svg();
+  }, [0, 1, 2, 0, 2, 1], 0.125);
+  const smoke = [[159, 157, 2, 1, 0.4], [161, 152, 3, 2, 0.3], [164, 146, 3, 2, 0.22], [166, 141, 2, 1, 0.15]].map(([x, y, rx, ry, o]) => `<path fill="${C.t}" fill-opacity="${o}" d="${ellD(x, y, rx, ry)}"/>`).join('');
+  const title = PX.text('THE TRAIL OF THE EVENING', { x: W / 2, y: 8, fill: C.i, align: 'center' });
+  write('story-map.svg', {
+    w: W, h: H, bg: C.k, css: fires.css,
+    body: cv.svg() + glow + front.svg() + fires.svg + smoke + ink + title + frame2(W, H),
+    title: 'The trail of the evening: eight camps',
+    desc: `A pixel-art night map. A dotted trail winds through a dark pine forest past eight small campfires, each labelled: ${CAMPS.map(([n, nm]) => `${n} ${nm.toLowerCase()}`).join(', ')}. The fires grow along the way, smoke rises at VII and only embers glow at VIII. Stars and a crescent moon at the top.`,
+  });
+}
+
+/* ── v3 · Title: Playing with Fire, stories around the fire (320×180) ──────── */
+function titleFire() {
+  const W = 320, H = 180, HZ = 136, FX = 160, rnd = rng(331);
+  const cv = new Cv(W, H, 'k');
+  for (let y = 0; y < HZ; y++) for (let x = 0; x < W; x++) cv.px(x, y, y < 104 ? 'k' : y < 107 ? dband(x, y, 104, 'k', 'N') : y < 118 ? 'N' : y < 121 ? dband(x, y, 118, 'N', '3') : '3');
+  // logo first, so the stars keep clear of it
+  const S = 4, logo = new Cv(W, H);
+  const green = (r) => (r < 8 ? 'f' : r < 16 ? 'e' : r < 24 ? 'd' : 'c');
+  const flameCol = (r) => (r < 6 ? 'w' : r < 12 ? 'y' : r < 20 ? 'o' : 'r');
+  const w1 = PX.textWidth('PLAYING', S), w2 = PX.textWidth('WITH FIRE', S), wWith = PX.textWidth('WITH ', S);
+  textCv(logo, 'PLAYING', Math.floor((W - w1) / 2), 12, S, green);
+  textCv(logo, 'WITH', Math.floor((W - w2) / 2), 46, S, green);
+  textCv(logo, 'FIRE', Math.floor((W - w2) / 2) + wWith, 46, S, flameCol);
+  const shadow = new Cv(W, H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (logo.get(x, y) !== '.') shadow.px(x + 2, y + 2, 'g');
+  const lg = new Cv(W, H);
+  outlined(shadow, lg, 'k');
+  outlined(logo, lg, 'k');
+  const sub1 = 'STORIES AROUND THE FIRE', sub2 = 'AN EVENING WITH VAVE', subW = PX.textWidth(sub1, 2);
+  const clear = (x, y) => [[0, 0], [2, 0], [-2, 0], [0, 2], [0, -2]].every(([dx, dy]) => lg.get(x + dx, y + dy) === '.') && !(y > 76 && y < 110 && Math.abs(x - W / 2) < subW / 2 + 6);
+  for (let i = 0; i < 90; i++) { const x = Math.floor(rnd() * W), y = Math.floor(rnd() * 112); if (clear(x, y) && Math.hypot(x - 286, y - 22) > 10) cv.px(x, y, rnd() < 0.12 ? 'i' : rnd() < 0.5 ? '4' : 'a'); }
+  moonV3(cv, 286, 22, 6);
+  // horizon: mountains, hills, treeline, ground
+  const mt = (x) => 115 + Math.round(4 * Math.sin(x / 29) + 3 * Math.sin(x / 11 + 1) + 1.5 * Math.sin(x / 5.3));
+  for (let x = 0; x < W; x++) { cv.rect(x, mt(x), 1, HZ - mt(x), 'g'); if (mt(x + 1) > mt(x)) cv.px(x, mt(x), 'a'); }
+  for (let x = 0; x < W; x++) { const y = 124 + Math.round(3 * Math.sin(x / 17) + 2 * Math.sin(x / 7 + 1)); cv.rect(x, y, 1, HZ - y, '2'); }
+  for (let x = -2; x < W + 3; x += 3 + Math.floor(rnd() * 5)) { const e = x < 70 ? (70 - x) / 70 : x > 250 ? (x - 250) / 70 : 0; pine(cv, x, HZ + 1, 5 + Math.floor(rnd() * 6) + Math.round(e * 16), 'k'); }
+  for (let y = HZ; y < H; y++) for (let x = 0; x < W; x++) cv.px(x, y, y < 170 ? '3' : y < 173 ? dband(x, y, 170, '3', '2') : '2');
+  // stumps, stones, logs, Pix
+  const back = new Cv(W, H), front = new Cv(W, H);
+  [[FX - 52, 140], [FX + 44, 140], [FX - 76, 154], [FX + 68, 154]].forEach(([x, y]) => back.spr(STUMP, x, y));
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2 + 0.3, x = Math.round(FX + 16 * Math.cos(a)) - 2, y = Math.round(161 + 3.6 * Math.sin(a)) - 1;
+    if (Math.sin(a) > 0) front.spr(STONE3, x, y, { t: 'n' }); else back.spr(STONE3, x, y, { s: 'n', t: 't' });
+  }
+  front.spr(PX.SPRITES.logs, FX - 10, 154);
+  [[FX - 3, 158, 'r'], [FX + 2, 158, 'R'], [FX, 159, 'o'], [FX - 1, 158, 'y']].forEach(([x, y, c]) => front.px(x, y, c));
+  pixLit(front, FX + 22, 145, 'l');
+  const fire = frameSet('tf', 3, (f) => {
+    const c = new Cv(W, H);
+    flameV3(c, FX, 158, 24, 9, f);
+    return [[52, 12], [36, 9], [22, 6]].map(([rx, ry]) => `<path fill="${C.o}" fill-opacity=".09" d="${ellD(FX, 162, rx + (f === 1 ? 2 : 0), ry, HZ)}"/>`).join('')
+      + `<path fill="${C.o}" fill-opacity=".05" d="${ellD(FX, 146, 22 + f, 22 + f)}"/>` + c.svg();
+  }, [0, 1, 2, 0, 2, 1], 0.125);
+  let body = cv.svg() + lg.svg() + back.svg() + fire.svg + front.svg();
+  body += PX.text(sub1, { x: W / 2, y: 80, scale: 2, fill: C.y, align: 'center' });
+  body += PX.text(sub2, { x: W / 2, y: 99, fill: C.t, align: 'center' });
+  body += frame2(W, H);
+  write('title-fire.svg', {
+    w: W, h: H, bg: C.k, css: fire.css, body,
+    title: 'Playing with Fire: stories around the fire',
+    desc: 'Pixel-art title picture at night. Big pixel letters read Playing with fire, the word fire in flame colours. Below: stories around the fire, and an evening with VAVE. A starry sky with a crescent moon over dark mountains and pines; in front a campfire crackles inside a ring of stones and stumps, and Pix, the little pixel mascot, sits beside it in the warm light.',
   });
 }
 
@@ -1538,5 +1980,6 @@ const ONLY = process.argv.slice(2);
 const JOBS = {
   scene, fireplaceRules, repoWall, trailMap, lifeStrip, pixWave, icons,
   itemsSheet, worldMap, titleScreen, boothScene, loreStrip, bosses, guildHall, remixMap, vavelogQuest,
+  chapters, storyMap, titleFire,
 };
 for (const [name, fn] of Object.entries(JOBS)) if (!ONLY.length || ONLY.includes(name)) fn();
