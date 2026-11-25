@@ -67,6 +67,34 @@
   --line: #d3dcc4;
 }
 
+/* Meaning colours, ONE mapping for decks, modules and art (tools/art.mjs uses the same palette names).
+   Rarity of an item: common muted · rare lime · epic orange · legendary gold (only legendary may glow).
+   Verdict of a myth: fact lime · myth red · half true orange · it depends muted · rumour pale smoke,
+   always drawn with a DASHED border (there is no violet in the palette; the dash is what marks a rumour).
+   All keep ≥ 4.5:1 on --card in their theme. */
+:root {
+  --rar-common: var(--muted);
+  --rar-rare: var(--lcd-d);
+  --rar-epic: var(--fire-2);
+  --rar-legendary: var(--fire-3);
+  --v-fact: var(--lcd-d);
+  --v-myth: var(--fire-0);
+  --v-half: var(--fire-2);
+  --v-depends: var(--muted);
+  --v-rumour: var(--fire-4);
+}
+:root[data-theme="light"] {
+  --rar-common: #56654f;
+  --rar-rare: #306230;
+  --rar-epic: #9a3f00;
+  --rar-legendary: #6f5600;
+  --v-fact: #306230;
+  --v-myth: #b2391c;
+  --v-half: #9a3f00;
+  --v-depends: #56654f;
+  --v-rumour: #56654f;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
