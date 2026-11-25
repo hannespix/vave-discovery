@@ -331,49 +331,68 @@ body { overflow: hidden; }
   .reveal-viewport::before { display: none; }
 }
 
-/* ══ Version 2: the quest ═══════════════════════════════════════════════════
-   Level titles, lore components (filled by deck.js from shared/lore.js), save points, quest-log tables, credits.
-   Rarity (--rar-*) and verdict (--v-*) colours come from shared/campfire.css, one mapping for both themes.
-   Motion only in steps, only without reduced motion. */
+/* ══ Version 3: stories around the fire ═══════════════════════════════════════
+   Chapter openings, lore components (filled by deck.js from shared/lore.js), ember slides, log tables, kanban.
+   No game mechanics: no levels, no save points, no rarity. Verdict (--v-*) colours come from shared/campfire.css,
+   one mapping for both themes. Motion only in steps, only without reduced motion. */
 
-/* Level title: LEVEL N, the name, the clock */
-.reveal .lvl { font: 64px/1 var(--pixel); color: var(--deck-hot); letter-spacing: 0.04em; margin: 0 0 6px; }
-.reveal section.level h1 { font-size: 136px; }
-.reveal .clock { font-family: var(--mono); font-size: 24px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 20px; }
+/* Chapter opening: small chapter label, a big pixel scene, the first sentence that pulls you in */
+.reveal section.opening { text-align: center; }
+.reveal .ch {
+  font-family: var(--mono);
+  font-size: 24px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--deck-accent);
+  margin: 0 0 18px;
+}
+.reveal .opening .scene { display: block; margin: 0 auto; }
+.reveal .opening .art.scene { height: 380px; }
+.reveal .opening .first {
+  font-size: 44px;
+  line-height: 1.22;
+  max-width: 1040px;
+  margin: 28px auto 0;
+  text-wrap: balance;
+}
+.reveal .opening .first + .small { margin-top: 14px; }
 .reveal .art-strip { height: 220px; }
 .reveal .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* Character sheet: RPG stat block */
-.reveal .sheet { display: grid; grid-template-columns: 170px 1fr; gap: 14px 28px; margin: 0; align-items: baseline; }
+/* Plain definition list: a label column and a text column */
+.reveal .sheet { display: grid; grid-template-columns: 190px 1fr; gap: 14px 28px; margin: 0; align-items: baseline; }
 .reveal .sheet dt { font-family: var(--mono); font-size: 24px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--deck-accent); }
 .reveal .sheet dd { margin: 0; font-size: 28px; line-height: 1.25; }
 
-/* Item card (data-lore-item) */
-.reveal .item-card {
-  --rar: var(--rar-common);
+/* Word card (data-lore-word): one word, said plainly */
+.reveal .word-card {
   background: var(--card);
-  border: var(--px) solid var(--rar);
+  border: var(--px) solid var(--deck-frame);
   box-shadow: var(--px) var(--px) 0 var(--px) var(--deck-shadow);
   padding: 20px 26px 22px;
   font-size: 24px;
   line-height: 1.35;
 }
-.reveal .item-card.rar-rare { --rar: var(--rar-rare); }
-.reveal .item-card.rar-epic { --rar: var(--rar-epic); }
-.reveal .item-card.rar-legendary { --rar: var(--rar-legendary); }
-.reveal .item-head { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center; margin-bottom: 14px; }
-.reveal .item-ico, .reveal .lore-ico, .reveal .tl-ico { image-rendering: pixelated; shape-rendering: crispEdges; display: block; }
-.reveal .item-ico { color: var(--rar); }
-.reveal .item-card p { margin: 0 0 10px; }
-.reveal .item-card p:last-child { margin-bottom: 0; }
-.reveal .item-card .item-rar { font-family: var(--mono); font-size: 22px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rar); margin: 0 0 2px; }
-.reveal .item-card .item-name { font-size: 60px; line-height: 0.9; margin: 0 0 2px; color: var(--ink); }
-.reveal .item-card .item-full { font-family: var(--mono); font-size: 22px; color: var(--muted); margin: 0; }
-.reveal .item-card .item-fun { font-size: 26px; }
-.reveal .item-card .k { font-weight: 700; color: var(--deck-accent); }
-.reveal .item-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: stretch; }
+.reveal .word-head { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center; margin-bottom: 14px; }
+.reveal .word-ico, .reveal .lore-ico, .reveal .tl-ico { image-rendering: pixelated; shape-rendering: crispEdges; display: block; }
+.reveal .word-ico { color: var(--deck-hot); }
+.reveal .word-card p { margin: 0 0 10px; }
+.reveal .word-card p:last-child { margin-bottom: 0; }
+.reveal .word-card .word-kind { font-family: var(--mono); font-size: 22px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--deck-accent); margin: 0 0 2px; }
+.reveal .word-card .word-name { font-size: 60px; line-height: 0.9; margin: 0 0 2px; color: var(--ink); }
+.reveal .word-card .word-full { font-family: var(--mono); font-size: 22px; color: var(--muted); margin: 0; }
+.reveal .word-card .word-fun { font-size: 28px; }
+.reveal .word-card .k { font-weight: 700; color: var(--deck-accent); }
 .reveal .lore-ico { display: inline-block; vertical-align: middle; color: var(--deck-accent); }
 .reveal .lore-ico.hot { color: var(--deck-hot); }
+
+/* Word list: icon, word, one sentence per row */
+.reveal ul.wordlist { display: grid; gap: 18px; margin: 0; padding: 0; }
+.reveal ul.wordlist > li { display: grid; grid-template-columns: 56px 300px 1fr; gap: 0 24px; align-items: center; padding: 0; margin: 0; }
+.reveal ul.wordlist > li::before { content: none; }
+.reveal .wordlist .w { font: 48px/0.95 var(--pixel); color: var(--ink); }
+.reveal .wordlist .s { font-size: 28px; line-height: 1.3; }
+.reveal .wordlist .lore-ico { color: var(--deck-hot); }
 
 /* Timeline (data-lore-history) */
 .reveal ol.lore-timeline { display: grid; gap: 22px; margin: 0; padding: 0; }
@@ -406,11 +425,15 @@ body { overflow: hidden; }
 .reveal .stamp.v-rumour { --v: var(--v-rumour); border-style: dashed; }
 .reveal .myth-why { font-size: 30px; line-height: 1.35; margin: 0; }
 
-/* Boss card (data-lore-boss). Alone: art left, big name. In .boss-pair: two compact cards side by side. */
-.reveal .boss-card { display: grid; grid-template-columns: 400px 1fr; gap: 48px; align-items: center; }
+/* Ghost story in the smoke (data-lore-boss). Alone: art left, big name. In .boss-pair: two compact cards side by side.
+   The art files carry a name plate at the bottom; the card shows only the figure (cropped to the top 72 of 98 rows). */
+.reveal .boss-card { display: grid; grid-template-columns: 460px 1fr; gap: 48px; align-items: center; }
 .reveal .boss-card.no-art { grid-template-columns: 1fr; }
-.reveal .boss-art { display: block; width: 100%; height: 400px; object-fit: contain; image-rendering: pixelated; }
-.reveal .boss-card .boss-tag { font-family: var(--mono); font-size: 24px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--deck-hot); margin: 0 0 6px; }
+.reveal .boss-art {
+  display: block; width: 100%; height: auto; aspect-ratio: 120 / 72;
+  object-fit: cover; object-position: 50% 0; image-rendering: pixelated;
+}
+.reveal .boss-card .boss-tag { font-family: var(--mono); font-size: 24px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--deck-accent); margin: 0 0 6px; }
 .reveal .boss-card .boss-name { font-size: 92px; line-height: 0.9; margin: 0 0 24px; }
 .reveal .boss-card .boss-k { font-family: var(--mono); font-size: 24px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--deck-accent); margin: 0 0 4px; }
 .reveal .boss-card .boss-v { font-size: 32px; line-height: 1.3; margin: 0 0 20px; }
@@ -422,7 +445,8 @@ body { overflow: hidden; }
   background: var(--card); border: var(--px) solid var(--deck-frame); box-shadow: var(--px) var(--px) 0 var(--px) var(--deck-shadow);
   padding: 22px 24px;
 }
-.reveal .boss-pair .boss-art { height: 130px; }
+.reveal .boss-pair .boss-art { width: 220px; }
+.reveal .boss-pair .boss-tag { display: none; }
 .reveal .boss-pair .boss-name { font-size: 56px; margin-bottom: 14px; }
 .reveal .boss-pair .boss-v { font-size: 26px; margin-bottom: 12px; }
 
@@ -440,35 +464,32 @@ body { overflow: hidden; }
 .reveal .cards.words h3 { font-size: 42px; display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
 .reveal .cards.words p { font-size: 26px; }
 
-/* Save point (section[data-savepoint]): campfire, SAVING GAME..., a bar that fills in steps, the sentence */
-.reveal section.savepoint { text-align: center; }
-.reveal .save .kicker { text-align: center; margin: 14px 0 18px; }
-.reveal .save-fire { display: block; margin: 0 auto; }
-.reveal .save-label { display: block; margin: 0 auto; color: var(--deck-accent); image-rendering: pixelated; }
-.reveal .save-bar {
-  display: flex; gap: 6px; width: max-content; margin: 18px auto 34px; padding: 6px;
-  border: var(--px) solid var(--deck-frame);
+/* Ember (section[data-ember]): a small glowing ember, the sentence to take home, a quiet line to the next chapter.
+   The ember glows in steps (deck.js frames); with reduced motion it is a still. No bar, no counter. */
+.reveal section.ember-slide { text-align: center; }
+.reveal .ember .kicker { text-align: center; margin: 18px 0 22px; }
+.reveal .ember-glow { display: block; margin: 0 auto; }
+.reveal .ember-line { font: 104px/0.92 var(--pixel); max-width: 1100px; margin: 0 auto; text-wrap: balance; }
+.reveal .ember-slide.long .ember-line { font-size: 68px; line-height: 1; max-width: 1060px; }
+.reveal .ember-next {
+  font-family: var(--mono);
+  font-size: 24px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 40px auto 0;
 }
-.reveal .save-bar span { width: 36px; height: 20px; background: var(--deck-accent); }
-.reveal .save-line { font: 104px/0.92 var(--pixel); max-width: 1100px; margin: 0 auto; text-wrap: balance; }
-.reveal .savepoint.long .save-line { font-size: 64px; line-height: 1; max-width: 1040px; }
 @media (prefers-reduced-motion: no-preference) {
-  .reveal .present .save-bar span { animation: cf-save 1ms both; animation-delay: calc(var(--i) * 110ms + 150ms); }
-  .reveal .present .save-line { animation: cf-save 1ms both 1350ms; }
+  .reveal .present .ember-line { animation: cf-ember 1ms both 700ms; }
+  .reveal .present .ember-next { animation: cf-ember 1ms both 1500ms; }
 }
-@keyframes cf-save { from { visibility: hidden; } to { visibility: visible; } }
+@keyframes cf-ember { from { visibility: hidden; } to { visibility: visible; } }
 
-/* Quest-log tables (vave.log): date or tag in pixel type, then text */
-.reveal table.qlog { width: 100%; border-collapse: collapse; font-size: 26px; line-height: 1.32; }
-.reveal table.qlog th, .reveal table.qlog td { text-align: left; vertical-align: top; padding: 14px 18px 14px 0; border-bottom: var(--px) solid var(--deck-frame); }
-.reveal table.qlog th { font-family: var(--mono); font-size: 22px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding-top: 0; }
-.reveal table.qlog td.d { font: 44px/1 var(--pixel); color: var(--deck-hot); white-space: nowrap; width: 210px; }
-.reveal table.qlog td.tag { font: 40px/1 var(--pixel); color: var(--deck-accent); width: 120px; text-transform: uppercase; }
-.reveal table.qlog td b { color: var(--ink); font-weight: 700; }
-.reveal table.qlog.props td { font-size: 24px; }
-.reveal table.qlog.props td.why { color: var(--muted); width: 36%; }
-.reveal table.qlog.props td.tag { font-size: 40px; }
-.reveal .tagline { font-family: var(--mono); font-size: 24px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--deck-hot); }
+/* Log tables (vave.log): day or tag in pixel type, then text */
+.reveal table.chron { width: 100%; border-collapse: collapse; font-size: 28px; line-height: 1.32; }
+.reveal table.chron td { text-align: left; vertical-align: top; padding: 16px 18px 16px 0; border-bottom: var(--px) solid var(--deck-frame); }
+.reveal table.chron td.d { font: 48px/1 var(--pixel); color: var(--deck-hot); white-space: nowrap; width: 240px; }
+.reveal table.chron td b { color: var(--ink); font-weight: 700; }
 
 /* Two-way arrows between steps (architecture diagram): ⇄ in pixels */
 .reveal .steps.both > li + li::before {
@@ -485,16 +506,20 @@ body { overflow: hidden; }
 .reveal .steps.both > li + li::after { margin-top: 4px; }
 .reveal .steps.both .lore-ico, .reveal .steps.both svg[data-px-icon] { display: block; margin-bottom: 10px; }
 
-/* Credits roll: rises in steps and stops where everything is readable (static with reduced motion) */
-.reveal .credits { overflow: hidden; text-align: center; }
-.reveal .credits dl { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 32px; align-items: baseline; margin: 0 auto; max-width: 1080px; }
-.reveal .credits dt { font-family: var(--mono); font-size: 24px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--deck-accent); text-align: right; }
-.reveal .credits dd { font: 44px/1 var(--pixel); margin: 0; color: var(--ink); text-align: left; }
-.reveal .credits .end { font: 72px/1 var(--pixel); color: var(--deck-hot); margin: 8px 0 0; }
-@media (prefers-reduced-motion: no-preference) {
-  .reveal .present .credits-track { animation: cf-roll 4.8s steps(48) both; }
+/* Kanban of proposals (now · next · later): three columns of short cards */
+.reveal .kanban { display: grid; grid-template-columns: 1fr 1.35fr 1fr; gap: 28px; align-items: start; }
+.reveal .kanban h3 { font-size: 48px; color: var(--deck-hot); margin: 0 0 12px; }
+.reveal .kanban ul { display: grid; gap: 12px; }
+.reveal .kanban ul > li {
+  margin: 0; padding: 12px 16px;
+  font-size: 23px; line-height: 1.28;
+  background: var(--card); border: var(--px) solid var(--deck-frame);
 }
-@keyframes cf-roll { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.reveal .kanban ul > li::before { content: none; }
+.reveal .kanban b { color: var(--ink); }
+
+/* The path of vave.log without its title plate (top 46 of 180 rows cut away) */
+.reveal .art.crop-path { height: auto; width: 100%; max-width: 900px; aspect-ratio: 320 / 134; object-fit: cover; object-position: 50% 100%; }
 
 /* Spacing utilities win over the component resets above (.cards, .steps, .chips … set margin: 0 with the same
    specificity and came later, so mt/mt-lg rendered as 0). Higher specificity, last in the file. */
