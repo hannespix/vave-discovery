@@ -118,6 +118,31 @@
 
   var FIRES = ['fire1', 'fire2', 'fire3'];
 
+  /* ── The arc of the evening (version 3): spark → kindling → many fires → smoke → embers ── */
+  var SMALL_FLAMES = [
+    ['...y...', '...y...', '..yoy..', '..ooy..', '.ooyoo.', '.oyyyo.', '.royor.', 'rroooRr', '.rrrrr.'],
+    ['....y..', '...yy..', '..yoy..', '..oyo..', '.ooyoo.', '.oyyyo.', '.royyr.', 'rrooorr', '.rrrrr.'],
+    ['..y....', '..yy...', '..yoy..', '.ooyo..', '.ooyoo.', '.oyyyo.', '.ryyor.', 'rrooorr', '.rrrrr.'],
+  ];
+  /* A teepee of thin twigs (15×8) */
+  var TWIGS = [
+    '..n.........n..',
+    '...n.......n...',
+    '....m.....m....',
+    '.....m...m.....',
+    'WW....m.m....WW',
+    '.WWmm..W..mmWW.',
+    '...WWmmWmmWW...',
+    '.....WWWWW.....',
+  ];
+  var PUFF = ['.ttt.', 'ttttt', '.ttt.'];
+  var PUFF_DIM = ['.sss.', 'sssss', '.sss.'];
+  /* A small ghost in the smoke (6×6): every campfire has ghost stories */
+  var GHOST = ['.tttt.', 'tttttt', 'tkttkt', 'tttttt', 'tttttt', 't.tt.t'];
+  /* Burnt logs for the embers */
+  var BURNT = { m: '#3a2414', n: '#6b4226', W: '#1f140b' };
+  var GLOW = ['#e8483f', '#ff5a36', '#ffae00', '#ffe06a'];
+
   /* Scenes: name → { w, h, frames: [svg body…], seq?: [frame index per tick] } */
   var SCENES = {
     fire: function () {
@@ -143,6 +168,67 @@
       var seq = []; for (var t = 0; t < 30; t++) seq.push(t === 29 ? 3 : t % 3);
       return { w: 42, h: 26, frames: frames, seq: seq };
     },
+    /* Chapter I: a single spark rises over cold logs */
+    spark: function () {
+      var path = [[11, 12], [10, 8], [12, 4], [11, 1]];
+      return {
+        w: 24, h: 26,
+        frames: path.map(function (p, i) {
+          return spr('logs', 2, 20) + block(11, 21, 2, 1, i % 2 ? PX.PAL.o : PX.PAL.r) + spr('spark', p[0], p[1]);
+        }),
+      };
+    },
+    /* Chapter IV: a small flame in a teepee of twigs */
+    kindling: function () {
+      return {
+        w: 19, h: 20,
+        frames: SMALL_FLAMES.map(function (f, i) {
+          var sp = [[5, 1], [12, 0], [8, 2]][i];
+          return PX.sprite(TWIGS, { x: 2, y: 12 }) + PX.sprite(f, { x: 6, y: 4 }) + block(sp[0], sp[1], 1, 1, PX.PAL.M);
+        }),
+      };
+    },
+    /* Chapter V: many fires make a camp */
+    camp: function () {
+      var ground = block(0, 30, 100, 2, '#1b2d17');
+      var tents = PX.icon('tent', { fill: '#4c7420', x: 22, y: 15 }) + PX.icon('tent', { fill: '#4c7420', x: 61, y: 15 });
+      return {
+        w: 100, h: 32,
+        frames: FIRES.map(function (f, i) {
+          return ground + tents +
+            campfireAt(FIRES[i], 2, 8) + sparksAt(i, 2, 4) +
+            campfireAt(FIRES[(i + 1) % 3], 40, 8) + sparksAt(i + 1, 40, 4) +
+            campfireAt(FIRES[(i + 2) % 3], 78, 8) + sparksAt(i + 2, 78, 4);
+        }),
+      };
+    },
+    /* Chapter VII: smoke rises, and a ghost lives in it */
+    smoke: function () {
+      var puffs = [
+        [[18, 22, PUFF], [13, 15, PUFF_DIM], [21, 9, PUFF]],
+        [[17, 20, PUFF_DIM], [14, 13, PUFF], [20, 7, PUFF_DIM]],
+        [[18, 18, PUFF], [12, 11, PUFF_DIM], [21, 5, PUFF]],
+      ];
+      return {
+        w: 40, h: 50,
+        frames: FIRES.map(function (f, i) {
+          var smoke = puffs[i].map(function (p) { return PX.sprite(p[2], { x: p[0], y: p[1] }); }).join('');
+          return smoke + PX.sprite(GHOST, { x: 25, y: 1 + (i % 2) }) + campfireAt(f, 10, 28);
+        }),
+      };
+    },
+    /* Chapter VIII and every ember slide: burnt logs, glowing in steps */
+    embers: function () {
+      var spots = [[6, 6], [9, 7], [12, 8], [14, 7], [10, 6], [16, 6], [8, 8], [12, 6], [5, 7]];
+      return {
+        w: 24, h: 14,
+        frames: [0, 1, 2].map(function (i) {
+          var glow = spots.map(function (s, k) { return block(s[0] + 2, s[1] + 2, 1, 1, GLOW[(k + i) % GLOW.length]); }).join('');
+          var rise = [[11, 3], [13, 1], [10, 0]][i];
+          return PX.sprite('logs', { x: 2, y: 7, pal: BURNT }) + glow + block(rise[0], rise[1], 1, 1, GLOW[(i + 1) % 4]);
+        }),
+      };
+    },
     /* The circle of light: what the model can see. Small blocks are messages; the dim ones are in the dark. */
     circle: function () {
       var pal = { 1: '#12210f', 2: '#1b2d17', 3: '#2a4123', 4: '#306230' };
@@ -166,16 +252,20 @@
     return { w: s.w, h: s.h, frames: [spr(name, 0, 0)] };
   }
 
-  /* ── Lore (version 2): facts come from window.LORE (shared/lore.js), so every number lives in one place ──
-     Filled at load, before the pixel art is drawn and before reveal.js counts the fragments:
-       <div data-lore-item="token"></div>          item card: icon, name, full name, rarity, fun, booth world, watch out
-       <svg data-item-icon="mcp" data-scale="4">    just an item icon (PX.ITEMS, generic gem as fallback)
-       <ol data-lore-history="0-3"></ol>           timeline entries by index range ("" = all)
+  /* ── Lore: facts come from window.LORE (shared/lore.js), so every number lives in one place ──
+     Filled at load, before the pixel art is drawn and before reveal.js counts the fragments.
+     Version 3 tells a story, not a game: no rarity labels, risks are ghost stories with a way to keep them away.
+       <div data-lore-word="token"></div>          word card: icon, name, full name, plain sentence, booth world, watch out
+                                                   (data-lore-item is the older name and still works)
+       <svg data-word-icon="mcp" data-scale="4">    just the icon of a word (PX.ITEMS, generic gem as fallback; also data-item-icon)
+       <ol data-lore-history="0-3"></ol>           timeline entries: "3", "0-3", "3,4,7" or "" for all
        <div data-lore-myth="3"></div>              the claim; verdict stamp and why appear as one fragment
-       <div data-lore-boss="leaker"></div>         boss card; an <img> inside is the art, else ../art/boss-<id>.svg if it loads
-       <ul data-lore-quests="0-3"></ul>            side quests by index range ("" = all eight)
+       <div data-lore-boss="leaker"></div>         ghost story in the smoke: what it does, how to keep it away;
+                                                   an <img> inside is the art, else ../art/boss-<id>.svg if it loads
+       <ul data-lore-quests="0-3"></ul>            side quests, same index syntax ("" = all eight)
        <ol data-lore-rules></ol>                   the fireplace rules
-       <section data-savepoint="Sentence." data-level="2">   save point: campfire, SAVING GAME… in steps, the sentence */
+       <section data-ember="Sentence." data-next="Next: …">   ember: a small glowing ember, the sentence to take home,
+                                                   and a quiet line that leads to the next chapter */
   var LORE = window.LORE;
 
   /* Small 16×16 icons for the lore (same '#' format as PX.ICONS); only added where pixel.js has no such name */
@@ -247,13 +337,17 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
     });
   }
-  /** "3" | "0-4" | "" → indices within 0…n-1 */
+  /** "3" | "0-4" | "3,4,7" | "0-2,8" | "" → indices within 0…n-1 */
   function indices(spec, n) {
-    var m = String(spec || '').trim().match(/^(\d+)(?:\s*-\s*(\d+))?$/);
-    var from = m ? Number(m[1]) : 0;
-    var to = m ? Number(m[2] != null ? m[2] : m[1]) : n - 1;
+    var parts = String(spec || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    if (!parts.length) parts = ['0-' + (n - 1)];
     var out = [];
-    for (var i = from; i <= Math.min(to, n - 1); i++) out.push(i);
+    parts.forEach(function (p) {
+      var m = p.match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+      if (!m) return;
+      var to = Number(m[2] != null ? m[2] : m[1]);
+      for (var i = Number(m[1]); i <= Math.min(to, n - 1); i++) out.push(i);
+    });
     return out;
   }
   function svgWrap(body, w, h, scale, cls, label) {
@@ -279,21 +373,24 @@
   }
   function byId(list, id) { return list.filter(function (x) { return x.id === id; })[0]; }
 
-  function renderItem(el) {
-    var it = byId(LORE.ITEMS, el.getAttribute('data-lore-item'));
-    if (!it) throw new Error('unknown lore item "' + el.getAttribute('data-lore-item') + '"');
-    el.classList.add('item-card', 'rar-' + it.rarity);
+  /* A word card: no rarity, just the word, a plain sentence and the booth-world picture */
+  function renderWord(el) {
+    var id = el.getAttribute('data-lore-word') || el.getAttribute('data-lore-item');
+    var it = byId(LORE.ITEMS, id);
+    if (!it) throw new Error('unknown word "' + id + '"');
+    el.classList.add('word-card');
     el.innerHTML =
-      '<div class="item-head">' + itemIcon(it.id, 5, 'item-ico') +
-        '<div><p class="item-rar">' + esc(it.rarity) + ' · ' + esc(KINDS[it.kind] || it.kind) + '</p>' +
-        '<h3 class="item-name">' + esc(it.name) + '</h3><p class="item-full">' + esc(it.full) + '</p></div></div>' +
-      '<p class="item-fun">' + esc(it.fun) + '</p>' +
+      '<div class="word-head">' + itemIcon(it.id, 5, 'word-ico') +
+        '<div><p class="word-kind">' + esc(KINDS[it.kind] || it.kind) + '</p>' +
+        '<h3 class="word-name">' + esc(it.name) + '</h3><p class="word-full">' + esc(it.full) + '</p></div></div>' +
+      '<p class="word-fun">' + esc(it.fun) + '</p>' +
       '<p><b class="k">In the booth world:</b> ' + esc(it.space) + '</p>' +
       '<p><b class="k">Watch out:</b> ' + esc(it.watch) + '</p>';
   }
-  function renderItemIcon(svg) {
+  function renderWordIcon(svg) {
     var scale = Number(svg.getAttribute('data-scale')) || 4;
-    svg.outerHTML = itemIcon(svg.getAttribute('data-item-icon'), scale, 'lore-ico ' + (svg.getAttribute('class') || ''));
+    var id = svg.getAttribute('data-word-icon') || svg.getAttribute('data-item-icon');
+    svg.outerHTML = itemIcon(id, scale, 'lore-ico ' + (svg.getAttribute('class') || ''));
   }
   function renderHistory(el) {
     el.classList.add('lore-timeline');
@@ -317,9 +414,9 @@
     if (!b) throw new Error('unknown boss "' + id + '"');
     var img = el.querySelector('img');
     el.classList.add('boss-card');
-    el.innerHTML = '<div class="boss-body"><p class="boss-tag">Boss</p><h3 class="boss-name">' + esc(b.name) + '</h3>' +
-      '<p class="boss-k">Attacks with</p><p class="boss-v">' + esc(b.hp) + '</p>' +
-      '<p class="boss-k">Weakness</p><p class="boss-v boss-weak">' + esc(b.weakness) + '</p></div>';
+    el.innerHTML = '<div class="boss-body"><p class="boss-tag">In the smoke</p><h3 class="boss-name">' + esc(b.name) + '</h3>' +
+      '<p class="boss-k">What it does</p><p class="boss-v">' + esc(b.hp) + '</p>' +
+      '<p class="boss-k">How to keep it away</p><p class="boss-v boss-weak">' + esc(b.weakness) + '</p></div>';
     if (!img && el.getAttribute('data-art') !== 'none') {   // no art in the markup: try the file, drop it if missing
       img = doc.createElement('img');
       img.onerror = function () { if (img.parentNode) img.parentNode.removeChild(img); el.classList.add('no-art'); };
@@ -341,18 +438,15 @@
   function renderRules(el) {
     el.innerHTML = LORE.RULES.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('');
   }
-  function renderSavepoint(sec) {
-    var lvl = sec.getAttribute('data-level');
-    var label = 'SAVING GAME...';
-    var cells = '';
-    for (var i = 0; i < 10; i++) cells += '<span style="--i:' + i + '"></span>';
-    sec.classList.add('savepoint');
-    sec.insertAdjacentHTML('afterbegin', '<div class="save">' +
-      '<svg data-px="campfire" data-scale="8" class="save-fire"></svg>' +
-      (lvl ? '<p class="kicker">Save point · Level ' + esc(lvl) + '</p>' : '') +
-      svgWrap(PX.text(label, { fill: 'currentColor' }), PX.textWidth(label), 7, 5, 'save-label', 'Saving game') +
-      '<div class="save-bar" aria-hidden="true">' + cells + '</div>' +
-      '<p class="save-line">' + esc(sec.getAttribute('data-savepoint')) + '</p></div>');
+  /* Ember: every chapter ends with one sentence worth taking home, by a small glowing ember */
+  function renderEmber(sec) {
+    var next = sec.getAttribute('data-next');
+    sec.classList.add('ember-slide');
+    sec.insertAdjacentHTML('afterbegin', '<div class="ember">' +
+      '<svg data-px="embers" data-scale="10" class="ember-glow"></svg>' +
+      '<p class="kicker">An ember to take home</p>' +
+      '<p class="ember-line">' + esc(sec.getAttribute('data-ember')) + '</p>' +
+      (next ? '<p class="ember-next">' + esc(next) + '</p>' : '') + '</div>');
   }
 
   function renderLore() {
@@ -362,11 +456,11 @@
       });
     }
     if (!PX) return;
-    each('section[data-savepoint]', renderSavepoint);
-    each('svg[data-item-icon]', renderItemIcon);
-    if (!doc.querySelector('[data-lore-item],[data-lore-history],[data-lore-myth],[data-lore-boss],[data-lore-quests],[data-lore-rules]')) return;
+    each('section[data-ember]', renderEmber);
+    each('svg[data-word-icon],svg[data-item-icon]', renderWordIcon);
+    if (!doc.querySelector('[data-lore-word],[data-lore-item],[data-lore-history],[data-lore-myth],[data-lore-boss],[data-lore-quests],[data-lore-rules]')) return;
     if (!LORE) { console.warn('deck: shared/lore.js missing, lore slides stay empty'); return; }
-    each('[data-lore-item]', renderItem);
+    each('[data-lore-word],[data-lore-item]', renderWord);
     each('[data-lore-history]', renderHistory);
     each('[data-lore-myth]', renderMyth);
     each('[data-lore-boss]', renderBoss);
@@ -430,7 +524,7 @@
     }
   }
 
-  renderLore();   // first: lore cards and save points contain pixel art that renderAll draws
+  renderLore();   // first: lore cards and ember slides contain pixel art that renderAll draws
   renderAll();
   if (animated.length) window.setInterval(step, TICK_MS);
 
