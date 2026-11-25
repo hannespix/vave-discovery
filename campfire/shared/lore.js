@@ -62,7 +62,7 @@
       watch: 'Every tool is a door. Only hand out the keys it needs.' },
     { id: 'mcp', name: 'MCP', full: 'Model Context Protocol', kind: 'ai', rarity: 'legendary',
       fun: 'The standard power socket on the fair floor. Any tool plugs in, any AI can use it. (The official docs call it a USB-C port for AI.)',
-      space: 'This board was built by an AI through PixiNotes\' MCP plug. vave.log has one too.',
+      space: 'The text cards of this board went in through PixiNotes\' MCP plug. vave.log has one too.',
       watch: 'A plug is power: connect only what you trust.' },
     { id: 'api', name: 'API', full: 'Application Programming Interface', kind: 'code', rarity: 'common',
       fun: 'The delivery ramp at the back of the hall. Machines talk to machines there; no visitors.',
@@ -133,7 +133,7 @@
   /* ── AI history: the lore. Phrased carefully; numbers are approximate where marked. ── */
   const HISTORY = [
     { year: '1950', title: 'The imitation game', text: 'Alan Turing asks whether machines can think, and proposes a test: can it pass as human in a text chat?' },
-    { year: '1956', title: 'The summer that took 70 years', text: 'A workshop at Dartmouth coins "artificial intelligence". The proposal hoped a group of ten could make real progress over one summer.' },
+    { year: '1956', title: 'The summer that took 70 years', text: 'A proposal for a summer workshop at Dartmouth coins "artificial intelligence". It hoped a group of ten could make real progress over one summer.' },
     { year: '1966', title: 'ELIZA', text: 'A tiny script plays therapist by turning your sentences into questions. Its inventor was shocked how much people confided in it.' },
     { year: '1970s–90s', title: 'AI winters', text: 'Big promises, small results, frozen budgets. Twice. A good reminder for every hype cycle.' },
     { year: '1997', title: 'Deep Blue', text: 'IBM\'s chess computer beats world champion Garry Kasparov.' },
@@ -146,7 +146,7 @@
     { year: '2023', title: 'Agents and drama', text: 'Chatbots fall in love with journalists, lawyers cite invented cases, and OpenAI fires and re-hires its CEO within days.' },
     { year: '2024', title: 'Glue on pizza', text: 'A search AI recommends glue for pizza sauce, from an old joke post. Models also struggle to count the r\'s in "strawberry".' },
     { year: '2025', title: 'Vibe coding', text: 'Andrej Karpathy names it in February; Collins Dictionary makes it Word of the Year. A Chinese model, DeepSeek R1, shakes the chip market.' },
-    { year: '2026', title: 'You are here', text: 'Agents open pull requests, whiteboards have plugs for AI, and a winemaker in public administration ships software at night.' },
+    { year: '2026', title: 'You are here', text: 'Agents open pull requests, whiteboards have plugs for AI, and a winemaker who never studied computer science ships software.' },
   ];
 
   /* ── Myth or fact? verdict: fact | myth | half | rumour | depends ── */

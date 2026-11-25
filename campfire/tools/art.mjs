@@ -1476,8 +1476,8 @@ function remixMap() {
 function vavelogQuest() {
   const W = 320, H = 180, ROAD = 112, rnd = rng(99);
   const STOPS = [
-    ['SEP 29', 'SURVEY +\nPROTOTYPE'], ['OCT 13', 'DAY 1'], ['OCT 14', '~40 PRS'],
-    ['OCT 21', '8 MILESTONES'], ['NOV 20', 'PR #91'], ['NEXT', '?'],
+    ['START', 'SURVEY +\nPROTOTYPE'], ['DAY 1', 'EMPTY REPO'], ['DAY 2', '~30 PRS'],
+    ['WEEK 2', '8 MILESTONES'], ['WEEK 6', 'PR #91'], ['NEXT', '?'],
   ];
   const XS = [34, 86, 138, 190, 242, 290];
   const cv = new Cv(W, H, 'k');
@@ -1521,7 +1521,7 @@ function vavelogQuest() {
   write('vavelog-quest.svg', {
     w: W, h: H, bg: C.k, css, body,
     title: 'Quest log: the making of vave.log',
-    desc: 'A pixel quest road at night with milestone flags: Sep 29, survey and prototype; Oct 13, day 1; Oct 14, about 40 pull requests; Oct 21, 8 milestones; Nov 20, pull request number 91; next: a treasure chest with a question mark that sparkles. Pix walks along the road.',
+    desc: 'A pixel quest road at night with milestone flags: start, survey and prototype; day 1, an empty repository; day 2, about 30 pull requests; week 2, 8 milestones; week 6, pull request number 91; next: a treasure chest with a question mark that sparkles. Pix walks along the road.',
   });
 }
 

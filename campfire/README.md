@@ -31,12 +31,13 @@ vave.log als eigenes Quest-Level samt Vorschlägen zur Weiterentwicklung und mod
 ## Bauen
 
 ```bash
-node campfire/tools/art.mjs [name …]            # Pixel-Art neu erzeugen (SVG + PNG), optional nur einzelne Bilder
+node campfire/tools/art.mjs [jobName …]         # Pixel-Art neu erzeugen (SVG), optional nur einzelne Jobs, z. B. vavelogQuest
 node campfire/tools/build.mjs                   # Decks, Module, Hub → dist/ (alles eingebettet, offline)
 PLAYWRIGHT_CORE=… CHROMIUM=… node campfire/tools/pdf.mjs     # Decks → dist/pdf/*.pdf
 node campfire/tools/board.mjs --mcp pixinotes-mcp.mjs         # PixiNotes-Board → dist/campfire.pixiboard.json
 ```
 
+- **PNG-Vorschauen** in `art/` sind die SVGs, in Chromium mit 4× gerendert (1280×720); `art.mjs` schreibt nur SVG.
 - **Reihenfolge:** art → build → pdf → board. Das Board bettet die gebauten Decks, Module und PDFs ein.
 - **Inhalte ändern:** Begriffe, Geschichte, Mythen, Bosse und Quests nur in `shared/lore.js` pflegen. Module, Art und
   Board lesen von dort.

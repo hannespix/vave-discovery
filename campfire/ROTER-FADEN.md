@@ -21,7 +21,7 @@ which in every good game is a save point.**
 
 Three promises (minute 3):
 1. You'll understand the words people throw around: tokens, agents, MCP, pull requests. Explained with booths, not maths.
-2. You'll see real things built by a non-developer, including VAVE's own tool, and how it came to be.
+2. You'll see real things built by a non-developer, including a tool built for VAVE, and how it came to be.
 3. You'll leave with fireplace rules, so nobody gets burnt.
 
 The running jokes (use them, they carry the evening):
@@ -66,7 +66,7 @@ Questions are side quests: drop a bubble any time, they get picked up at the nex
 - **Character sheet** (one slide, RPG style):
   - **Class:** Translator (problem → machine)
   - **Origin:** farm kid, winery, wine engineer, public administration
-  - **Special skill:** asks good questions at 11 pm
+  - **Special skill:** asks "why?" until the problem gives up
   - **Weakness:** never studied computer science
   - **Inventory:** 41 repositories
 - **Life strip** [⇢ `art/life-strip.svg`] and **repo wall** [⇢ `art/repo-wall.svg`].
@@ -139,7 +139,7 @@ Live play:
   shows the walking paths."* Fallback: the finished *Booth Builder* from level 9.
 - **Tiny to real:**
   - email-checker: tiny
-  - the VAVE survey: one file, made for a CEO's phone
+  - the VAVE survey: one file, made for a phone
   - pixoodle.de: real users, own domain
 - **Save point:** "A small fire is still a fire."
 
@@ -149,11 +149,11 @@ Live play:
   designers are good at it.
 - **AI forgets, files remember:** `CLAUDE.md` / `AGENTS.md` (how we work here), design principles (the CD as rules),
   `STATE.md` (where we are). Every coding AI reads them, whichever brand.
-- **Give it your CD and it follows it:** the clickable VAVE prototype in violet and lime with Readex Pro.
+- **Give it your CD and it follows it:** a clickable prototype in VAVE's brand, violet and lime with Readex Pro.
 - **Design wow for spaces:** liquid type, letters you can pull and burst. Imagine it on an LED wall that reacts to
   visitors.
 - **From phone to production:** a change requested from the train, reviewed as a pull request, live minutes later.
-  19 pull requests in one day on the discovery project.
+  19 pull requests in one session on the discovery project.
 - **Save point:** "Taste is the real skill."
 
 ## 6 · THE GUILD HALL: GitHub, accounts, many AIs, many repos (0:55–1:07) · *Advanced*
@@ -203,32 +203,33 @@ review, same checks, any AI can take the next shift. That's the antidote to the 
 - **House rules for remixing:** one job per repo, note the origin, same routine everywhere (branch → pull request →
   checks → merge → live check), and check the licence before you take.
 
-**The reveal:** "By the way: the board you've been looking at was built by an AI, through PixiNotes' own MCP server.
-I described the quest; it wrote the cards and laid them out." Show `campfire/tools/board.mjs` for ten seconds.
+**The reveal:** "By the way: the board you've been looking at is built by a script that an AI wrote. I described the
+quest; the text cards go in through PixiNotes' own MCP server, layout and embedded files straight into the board file."
+Show `campfire/tools/board.mjs` for ten seconds.
 
 **Save point:** "Guilds beat lone heroes."
 
 ## 7 · QUEST LOG: vave.log (1:07–1:17) · *Advanced*
 
-**Goal:** Show the real thing: how VAVE's own tool came to be, what it can do, and where it could go next. Honest,
+**Goal:** Show the real thing: how a tool built for VAVE came to be, what the draft can do (in testing, not in daily
+use), and where it could go next. Honest,
 with numbers from the repository. [⇢ deck *Quest log*, `art/vavelog-quest.svg`, board frame 7]
 
-**The trigger.** On 29 September the discovery survey went out as one HTML file, and a clickable prototype went live.
-No survey answers came back yet. So vave.log was built on assumptions and public research, on purpose as a phase-one
-draft to be tested with real people. *Say it:* "Every feature in here is a hypothesis until you've used it."
+**The trigger.** It started with a discovery project: a survey as one HTML file and a clickable prototype. Then
+vave.log was built on assumptions and public research, on purpose, as a phase-one draft to be tested with real people. *Say it:* "Every feature in here is a hypothesis until you've used it."
 
 **The quest log** (from the repository's history, 105 commits, pull requests up to #91):
 
-| Date | What happened |
+| When | What happened |
 |---|---|
-| **13 Oct · Day 1** | From an empty repo to a working app: login, database with row-level security, the MCP foundation, first screens, finance in three languages, the animated logo |
-| **14 Oct** | About 40 pull requests in one day: demo agency, connected workflows and forecasts, app install, auto-deploy, global timer, then audit milestones (fixes, invoices, e-invoice and DATEV export, time and capacity) |
-| **15 Oct** | Quotes that turn into projects, in-app help, bank import, kanban, accessibility to WCAG 2.2 AA |
-| **21 Oct** | Eight milestones in one day: holidays, leave planning, work-time model, capacity cockpit, long-term capacity, a "where is it burning?" board, strength profiles, AI time suggestions |
-| **16–17 Nov** | A deck for project leads, an audit with about 60 findings, and the capacity plan rebuilt after **watching one real user work** (Excel import, phases, service types) |
-| **19–20 Nov** | Group of companies, holidays for China, Dubai and Singapore, timeline drag, five polish rounds (#87–#91) |
+| **Day 1** | From an empty repo to a working app: login, database with row-level security, the MCP foundation, first screens, finance in three languages, the animated logo |
+| **Day 2** | About 30 pull requests: demo agency, connected workflows and forecasts, app install, auto-deploy, global timer |
+| **Day 3** | Audit milestones (fixes, invoices, e-invoice and DATEV export, time and capacity), quotes that turn into projects, in-app help, bank import, kanban, automated checks against WCAG 2.2 AA |
+| **Week 2** | Eight milestones: holidays, leave planning, work-time model, capacity cockpit, long-term capacity, a "where is it burning?" board, strength profiles, AI time suggestions |
+| **Weeks 5–6** | A deck for project leads, an audit with about 60 findings, and the capacity plan rebuilt after **watching one real user work** (Excel import, phases, service types) |
+| **Week 6** | Group of companies, holidays for China, Dubai and Singapore, timeline drag, five polish rounds (#87–#91) |
 
-**What it does today:**
+**What the draft can do** (in testing, not in daily use yet):
 - **Time:** timer, approvals, flextime account.
 - **Leave:** requests, team calendar, holidays for DE/AT/CH/CN/SG/UAE.
 - **Capacity:** cockpit heatmap, long-term scenarios, an Excel-style plan.
@@ -242,7 +243,8 @@ draft to be tested with real people. *Say it:* "Every feature in here is a hypot
   what they may see.
 - An **MCP server with 68 tools** lets an AI assistant log time or ask "where is it burning?", with exactly the rights
   of the person asking.
-- About 70 test files, and every change passes checks, a security audit and browser tests before it goes live.
+- About 70 test files, and every change passes checks, a dependency vulnerability check and browser tests before it
+  goes live.
 
 **Remix inside the story:**
 - The survey and prototype from the discovery project led to vave.log.
@@ -251,7 +253,7 @@ draft to be tested with real people. *Say it:* "Every feature in here is a hypot
 - The same MCP idea as PixiNotes (an AI plugs into the app), built differently: remote over the web with login, instead
   of local.
 
-**Where it could go: proposals, not decisions** (to discuss with Tobias; agents propose, humans decide):
+**Where it could go: proposals, not decisions** (to discuss with VAVE; agents propose, humans decide):
 
 | | Proposal | Why for VAVE |
 |---|---|---|
