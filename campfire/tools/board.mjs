@@ -108,21 +108,22 @@ const CAMPS = [
   { name: 'VI · A fire for VAVE', cards: [
     kapitel(6, 'VI · A fire for VAVE'),
     app('decks/vave-fire.html', 'deck', DECK, 'A fire for VAVE'),
-    // PixiNotes strikes through the LAST column (done). That column stays empty: it is for what VAVE decides.
-    op({ op: 'kanban', title: 'vave.log: proposals, not decisions', columns: ['Built, in test', 'Now', 'Next', 'Later', 'Decided by VAVE'], items: [
+    // Ideas and open questions, no plan: VAVE decides outside the room. PixiNotes strikes through the LAST column (done),
+    // so that column ("Later") starts empty and nothing built or proposed looks cancelled.
+    op({ op: 'kanban', title: 'vave.log: ideas, not decisions', columns: ['Built, in test', 'Ideas', 'Questions for VAVE', 'Later'], items: [
       { text: 'Time tracking, timer, holidays and absences', column: 'Built, in test' },
       { text: 'Capacity plan v1', column: 'Built, in test' },
       { text: 'MCP server: 68 tools for AI assistants', column: 'Built, in test' },
       { text: 'English · Deutsch · 中文', column: 'Built, in test' },
-      { text: 'AI time entry live (MCP + consent screen)', column: 'Now' },
-      { text: 'Capacity plan v2: rates per service, € per phase', column: 'Now' },
-      { text: 'Build-up radar: crews, trucks, hall slots', column: 'Next' },
-      { text: 'Fair deadline radar from technical guidelines', column: 'Next' },
-      { text: 'Modular stock: frames, LED tiles, furniture', column: 'Next' },
-      { text: 'Site reports from the phone', column: 'Next' },
-      { text: 'Client approvals for render variants', column: 'Next' },
-      { text: 'Group: cross-company staffing', column: 'Later' },
-      { text: 'Multi-currency invoices (with tax advice)', column: 'Later' },
+      { text: 'AI time entry through MCP, with a consent screen', column: 'Ideas' },
+      { text: 'Capacity plan v2: rates per service, € per phase', column: 'Ideas' },
+      { text: 'Build-up radar: crews, trucks, hall slots', column: 'Ideas' },
+      { text: 'Fair deadline radar from technical guidelines', column: 'Ideas' },
+      { text: 'Modular stock: frames, LED tiles, furniture', column: 'Ideas' },
+      { text: 'Site reports from the phone', column: 'Ideas' },
+      { text: 'Client approvals for render variants', column: 'Ideas' },
+      { text: 'Cross-company staffing', column: 'Ideas' },
+      { text: 'Multi-currency invoices (with tax advice)', column: 'Ideas' },
     ] }, [60, 860], { w: 1720, h: 560 }),
   ] },
   { name: 'VII · Smoke', cards: [
@@ -132,9 +133,9 @@ const CAMPS = [
   ] },
   { name: 'VIII · Embers', cards: [
     kapitel(8, 'VIII · Embers'),
-    bubbles('Side quests in space', 'Where should VAVE light the first fire? Three dots each.', LORE.QUESTS.map((q) => q.title), 'deck', TOOL),
+    bubbles('Ideas for spaces', 'Which idea would help your work most?', LORE.QUESTS.map((q) => q.title), 'deck', TOOL),
     app('modules/booth-builder.html', [60, 860], DECK, 'Booth Builder'),
-    op({ op: 'kanban', title: 'Try on Monday', columns: ['Idea', 'Trying', 'Done'], items: [{ text: 'Rebuild one boring spreadsheet as a single HTML file (dummy data)' }, { text: 'Write a CLAUDE.md / AGENTS.md for one project' }] }, [1220, 90], LOW),
+    op({ op: 'kanban', title: 'Try on Monday (within VAVE\'s AI rules, with dummy data)', columns: ['Idea', 'Trying', 'Done'], items: [{ text: 'Rebuild one boring spreadsheet as a single HTML file' }, { text: 'Write a CLAUDE.md / AGENTS.md for one project' }] }, [1220, 90], LOW),
     bubbles('Your questions', 'What do you want to ask the fire?', [], [1220, 860], LOW),
     // the closing words come last, after the questions: the deck ends the evening
     app('decks/embers.html', [60, 1620], { w: 1100, h: 460 }, 'Embers'),

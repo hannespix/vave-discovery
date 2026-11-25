@@ -489,7 +489,7 @@ function repoWall() {
   css += `.w{fill:${C.f};opacity:0;${anim('wv', 5)}}`;
   for (let d = 0; d <= diag; d++) css += `.w${d}{animation-delay:${(d * 0.08).toFixed(2)}s}`;
 
-  body += PX.text('41 REPOS · 1 YEAR', { x: GX, y: 10, scale: 2, fill: C.i });
+  body += PX.text('41 REPOS', { x: GX, y: 10, scale: 2, fill: C.i });
   body += PX.text('ONE TILE PER REPOSITORY', { x: GX, y: 30, fill: C.t });
   const LX = 118;
   cats.forEach(([count, c, label], i) => {
@@ -500,8 +500,8 @@ function repoWall() {
   });
   write('repo-wall.svg', {
     w: W, h: H, css, body,
-    title: '41 repos, 1 year',
-    desc: 'A wall of 41 pixel tiles, one per repository built in one year, coloured by kind: 17 everyday tools, 6 family business and winery, 9 personal and play, 4 brand and presentation, 3 for VAVE, 2 system configuration. A light wave runs across the tiles.',
+    title: '41 repos',
+    desc: 'A wall of 41 pixel tiles, one per repository, coloured by kind: 17 everyday tools, 6 family business and winery, 9 personal and play, 4 brand and presentation, 3 for VAVE, 2 system configuration. A light wave runs across the tiles.',
   });
 }
 
@@ -605,7 +605,7 @@ function trailMap() {
 
 /* ── 5 · Fireplace rules ──────────────────────────────────────────────────── */
 function fireplaceRules() {
-  const rules = ['NO CLIENT SECRETS IN\nCONSUMER CHATS', 'KEYS NEVER LIVE IN CODE', 'EVERY TOOL HAS AN OWNER',
+  const rules = ['NO CLIENT SECRETS OR\nPERSONAL DATA IN\nCONSUMER CHATS', 'KEYS NEVER LIVE IN CODE', 'EVERY TOOL HAS AN OWNER',
     'SHIP SMALL, REVIEW ALWAYS', 'TEST WHAT MATTERS', 'RESPECT LICENCES AND PEOPLE', 'HUMANS DECIDE'];
   const W = 216, BX = 8, BW = W - 16, TX = BX + 20, MAXW = BX + BW - 12 - TX;
   // explicit '\n' wins; otherwise greedy word wrap to MAXW
