@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Playing with Fire · Campfire quest</title>
+<title>Playing with Fire · Stories around the fire</title>
 <link rel="stylesheet" href="shared/campfire.css">
 <style>
   body { min-height: 100vh; }
@@ -19,8 +19,9 @@
   .lead { color: var(--muted); max-width: 60ch; margin: 0 0 28px; }
 
   .trail { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; list-style: none; padding: 0; margin: 0; }
-  .station { padding: 20px 22px 22px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 8px; }
+  .station { padding: 20px 22px 22px; display: grid; grid-template-rows: auto auto auto 1fr auto; gap: 8px; }
   .station .top { display: flex; align-items: center; gap: 12px; }
+  .station .cover { width: 100%; aspect-ratio: 1; display: block; image-rendering: pixelated; background: var(--night-0); margin-bottom: 6px; }
   .station .ico { width: 40px; height: 40px; color: var(--fire-2); flex: none; }
   .station .nr { font: 22px/1 var(--pixel); color: var(--muted); }
   .station h3 { font: 34px/0.95 var(--pixel); margin: 0; color: var(--ink); }
@@ -54,46 +55,44 @@
     <div>
       <span class="px-label">Campfire talk · VAVE · 90 minutes · English</span>
       <h1>PLAYING<br>WITH FIRE</h1>
-      <p>A campfire quest through AI in ten levels. We collect the right items, learn the lore, meet the guild, fight a few bosses, and end at a campfire, which in every good game is a save point.</p>
+      <p>Stories around the fire, about AI. Fire was humanity's first technology; AI might be its latest. One evening, eight chapters: the old tales and the rumours, the words people use, the first small fire and how to keep it going, a camp of many fires, the one we lit for VAVE, the smoke to watch out for, and the embers you take home.</p>
       <p class="meta px-label">A talk on AI, vibecoding and repos by Hannes · pix·el</p>
     </div>
     <svg class="fire pixelart" id="hero-fire" viewBox="0 0 24 24" role="img" aria-label="A crackling pixel campfire"></svg>
   </header>
 
-  <h2>The quest</h2>
-  <p class="lead">Ten levels, from press start to new game+. Every deck and every tool is a single file: it works offline, on a phone, and inside the PixiNotes board.</p>
+  <h2>The evening</h2>
+  <p class="lead">Eight chapters around one fire. Every deck and every tool is a single file: it works offline, on a phone, and inside the PixiNotes board.</p>
   <ol class="trail">
-    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="tent" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">LEVEL 0 · 0:00</span></div><h3>Press start</h3><p>The meeting room becomes a campfire. How to play: questions are side quests, campfires are save points.</p><div class="links"><a href="decks/press-start.html">Deck</a><a class="pdf" href="pdf/press-start.pdf">PDF</a></div></li>
-    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="pix" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">LEVEL 1 · 0:05</span></div><h3>Character select</h3><p>A translator between problems and machines: farm kid, winery, wine engineer, public administration, 41 repositories.</p><div class="links"><a href="decks/press-start.html">Deck</a></div></li>
-    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="rag" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">LEVEL 2 · 0:11 · Beginner</span></div><h3>The lore</h3><p>AI history from 1950 to now, and the rumour mill: myth or fact? Every hype had a winter.</p><div class="links"><a href="decks/lore.html">Deck</a><a class="mod" href="modules/myth-or-fact.html">Myth or Fact?</a><a class="pdf" href="pdf/lore.pdf">PDF</a></div></li>
-    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="repo" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">LEVEL 3 · 0:23 · Beginner</span></div><h3>The inventory</h3><p>30 terms as RPG items, explained with booths: tokens are Lego, the context window is the booth footprint, MCP is the power socket.</p><div class="links"><a href="decks/inventory.html">Deck</a><a class="mod" href="modules/inventory.html">Inventory</a><a class="mod" href="modules/token-oracle.html">Token Oracle</a><a class="mod" href="modules/context-circle.html">Context Circle</a><a class="pdf" href="pdf/inventory.pdf">PDF</a></div></li>
-    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="kindling" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">LEVEL 4 · 0:35 · Beginner</span></div><h3>Kindling</h3><p>Your first builds: one HTML file, one good briefing, a live booth mini-build.</p><div class="links"><a href="decks/kindling.html">Deck</a><a class="mod" href="modules/prompt-forge.html">Prompt Forge</a><a class="pdf" href="pdf/kindling.pdf">PDF</a></div></li>
-    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="fire" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">LEVEL 5 · 0:45 · Casual</span></div><h3>Crafting</h3><p>The loop: describe, build, look, feedback. AI forgets, files remember. Liquid type for LED walls.</p><div class="links"><a href="decks/kindling.html#/8">Deck, 2nd half</a></div></li>
-    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="org" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">LEVEL 6 · 0:55 · Advanced</span></div><h3>The guild hall</h3><p>GitHub as the neutral meeting room: accounts and roles, many AIs through one workflow, and many repos remixed like Lego.</p><div class="links"><a href="decks/guild.html">Deck</a><a class="mod" href="modules/git-time-machine.html">Git Time Machine</a><a class="pdf" href="pdf/guild.pdf">PDF</a></div></li>
-    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="issue" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">LEVEL 7 · 1:07 · Advanced</span></div><h3>Quest log: vave.log</h3><p>How a tool for VAVE came to be, a draft in testing: 105 commits, 68 MCP tools, three languages. Plus proposals for what comes next.</p><div class="links"><a href="decks/questlog.html">Deck</a><a class="mod" href="https://hannespix.github.io/vave.log/">Live demo</a><a class="pdf" href="pdf/questlog.pdf">PDF</a></div></li>
-    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="hallucination" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">LEVEL 8 · 1:17</span></div><h3>Boss fight</h3><p>Seven bosses, from the Hallucinator to the Lock-in Dragon, each with a weakness. Plus the fireplace rules.</p><div class="links"><a href="decks/bossfight.html">Deck</a><a class="mod" href="modules/fireplace-check.html">Fireplace Check</a><a class="pdf" href="pdf/bossfight.pdf">PDF</a></div></li>
-    <li class="station px-frame"><div class="top"><svg class="ico" data-px-icon="bubble" viewBox="0 0 16 16" aria-hidden="true"></svg><span class="nr">LEVEL 9 · 1:25</span></div><h3>New game+</h3><p>Side quests for communication in space, the Booth Builder, try on Monday, questions, credits.</p><div class="links"><a href="decks/newgame.html">Deck</a><a class="mod" href="modules/booth-builder.html">Booth Builder</a><a class="pdf" href="pdf/newgame.pdf">PDF</a></div></li>
+    <li class="station px-frame"><img class="cover" src="art/chapter-1.svg" alt="Chapter card I · The gathering" loading="lazy"><span class="nr">0:00</span><h3>I · The gathering</h3><p>The fire is lit. Who is telling tonight: a translator between problems and machines. Three promises, and questions are sticks for the fire.</p><div class="links"><a href="decks/gathering.html">Deck</a><a class="pdf" href="pdf/gathering.pdf">PDF</a></div></li>
+    <li class="station px-frame"><img class="cover" src="art/chapter-2.svg" alt="Chapter card II · Old fires" loading="lazy"><span class="nr">0:07 · Beginner</span><h3>II · Old fires</h3><p>Seventy years of AI stories, from the summer that took 70 years to glue on pizza. Then the rumours: myth or fact?</p><div class="links"><a href="decks/old-fires.html">Deck</a><a class="mod" href="modules/myth-or-fact.html">Myth or Fact?</a><a class="pdf" href="pdf/old-fires.pdf">PDF</a></div></li>
+    <li class="station px-frame"><img class="cover" src="art/chapter-3.svg" alt="Chapter card III · Words by the fire" loading="lazy"><span class="nr">0:19 · Beginner</span><h3>III · Words by the fire</h3><p>The words everybody uses, said plainly with booths and showrooms: tokens are Lego, the context window is the booth footprint, MCP is the power socket.</p><div class="links"><a href="decks/words.html">Deck</a><a class="mod" href="modules/token-oracle.html">Token Oracle</a><a class="mod" href="modules/context-circle.html">Context Circle</a><a class="mod" href="modules/inventory.html">All 30 words</a><a class="pdf" href="pdf/words.pdf">PDF</a></div></li>
+    <li class="station px-frame"><img class="cover" src="art/chapter-4.svg" alt="Chapter card IV · Kindling" loading="lazy"><span class="nr">0:33 · Beginner → Casual</span><h3>IV · Kindling</h3><p>Your first small fire: one HTML file, one good briefing, a live booth mini-build. Then how to keep it going: the loop, memory files, your brand.</p><div class="links"><a href="decks/kindling.html">Deck</a><a class="mod" href="modules/prompt-forge.html">Prompt Forge</a><a class="pdf" href="pdf/kindling.pdf">PDF</a></div></li>
+    <li class="station px-frame"><img class="cover" src="art/chapter-5.svg" alt="Chapter card V · Many fires" loading="lazy"><span class="nr">0:50 · Advanced</span><h3>V · Many fires</h3><p>GitHub as the camp: one account, many organizations, many AIs through one workflow, and many repos remixed like Lego.</p><div class="links"><a href="decks/many-fires.html">Deck</a><a class="mod" href="modules/git-time-machine.html">Git Time Machine</a><a class="pdf" href="pdf/many-fires.pdf">PDF</a></div></li>
+    <li class="station px-frame"><img class="cover" src="art/chapter-6.svg" alt="Chapter card VI · A fire for VAVE" loading="lazy"><span class="nr">1:03 · Advanced</span><h3>VI · A fire for VAVE</h3><p>The making of vave.log, a tool built for VAVE and a draft in testing: how it grew, what it can do, and proposals for what comes next.</p><div class="links"><a href="decks/vave-fire.html">Deck</a><a class="pdf" href="pdf/vave-fire.pdf">PDF</a></div></li>
+    <li class="station px-frame"><img class="cover" src="art/chapter-7.svg" alt="Chapter card VII · Smoke" loading="lazy"><span class="nr">1:15</span><h3>VII · Smoke</h3><p>Every campfire has ghost stories. Ours are true: seven of them, each with a way to keep it away. Plus the fireplace rules.</p><div class="links"><a href="decks/smoke.html">Deck</a><a class="mod" href="modules/fireplace-check.html">Fireplace Check</a><a class="pdf" href="pdf/smoke.pdf">PDF</a></div></li>
+    <li class="station px-frame"><img class="cover" src="art/chapter-8.svg" alt="Chapter card VIII · Embers" loading="lazy"><span class="nr">1:23</span><h3>VIII · Embers</h3><p>What you take home: side quests for communication in space, the Booth Builder, one experiment for Monday, and your questions.</p><div class="links"><a href="decks/embers.html">Deck</a><a class="mod" href="modules/booth-builder.html">Booth Builder</a><a class="pdf" href="pdf/embers.pdf">PDF</a></div></li>
   </ol>
 
-  <h2>Take the whole quest</h2>
+  <h2>Take the whole evening</h2>
   <div class="take">
     <div>
-      <p class="lead">The talk also exists as a ready-made <strong>PixiNotes</strong> board: eight frames for the ten levels under a world map, decks and tools as live cards, AI history and the making of vave.log as tables, idea bubbles with dot voting, kanban boards and PDFs. A script written by an AI builds it: the text cards go in through PixiNotes' own MCP server.</p>
+      <p class="lead">The talk also exists as a ready-made <strong>PixiNotes</strong> board, and the board is the stage: eight camps along a fire trail, each with its pixel chapter card, its deck and its live tools, idea bubbles and kanbans. Presentation mode steps only through what the room should see. A script written by an AI builds it: the native cards go in through PixiNotes' own MCP server.</p>
       <a class="px-btn fire" href="campfire.pixiboard.json" download>Download the board</a>
       <ol>
         <li>Open <a href="https://hannespix.github.io/pixinotes/">PixiNotes</a> (web or the offline file).</li>
         <li>Drag <code>campfire.pixiboard.json</code> onto any board.</li>
         <li>It arrives as a <strong>new</strong> board. Your other boards stay untouched.</li>
-        <li>Presentation mode walks the levels row by row and follows the arrows inside each level.</li>
+        <li>Presentation mode walks the camps in order: chapter card, deck, tools, bubbles.</li>
       </ol>
     </div>
     <div class="px-frame" style="padding:20px">
       <span class="px-label">What's inside</span>
       <ul>
         <li>8 reveal.js decks, also as PDF handouts</li>
-        <li>8 interactive modules: Inventory, Myth or Fact?, Token Oracle, Context Circle, Prompt Forge, Git Time Machine, Fireplace Check, Booth Builder</li>
-        <li>Pixel art: title screen, world map, booth world, lore, guild hall, remix map, quest log, bosses</li>
-        <li>Native board modules: timelines, kanban, sheets, idea bubbles with voting</li>
+        <li>8 interactive tools: Myth or Fact?, Token Oracle, Context Circle, Words, Prompt Forge, Git Time Machine, Fireplace Check, Booth Builder</li>
+        <li>Pixel art: eight chapter cards, the title, the trail, the booth world, old fires, the camp, the remix map, the making of vave.log, the smoke</li>
+        <li>Native board cards: idea bubbles with dot voting, kanbans</li>
       </ul>
     </div>
   </div>
@@ -101,19 +100,19 @@
   <h2>Pixel art</h2>
   <p class="lead">Every image is SVG: sharp at any size, animated in steps, still when your system asks for less motion. PNG versions are four times the pixel size.</p>
   <div class="art">
-    <figure class="px-frame"><img data-link src="art/title-screen.svg" alt="Title screen: Playing with Fire, press start" loading="lazy"><figcaption><span>Title screen</span><span><a href="art/title-screen.svg" download>SVG</a> · <a href="art/title-screen.png" download>PNG</a></span></figcaption></figure>
-    <figure class="px-frame"><img data-link src="art/world-map.svg" alt="The ten levels as a side-scroller world map" loading="lazy"><figcaption><span>World map</span><span><a href="art/world-map.svg" download>SVG</a> · <a href="art/world-map.png" download>PNG</a></span></figcaption></figure>
-    <figure class="px-frame"><img data-link src="art/booth-scene.svg" alt="A pixel trade-fair booth at night with an LED wall and visitors" loading="lazy"><figcaption><span>The booth world</span><span><a href="art/booth-scene.svg" download>SVG</a> · <a href="art/booth-scene.png" download>PNG</a></span></figcaption></figure>
-    <figure class="px-frame"><img data-link src="art/lore-strip.svg" alt="AI history as a pixel timeline from 1950 to now" loading="lazy"><figcaption><span>The lore</span><span><a href="art/lore-strip.svg" download>SVG</a> · <a href="art/lore-strip.png" download>PNG</a></span></figcaption></figure>
-    <figure class="px-frame"><img data-link src="art/items-sheet.svg" alt="All 30 inventory items as pixel icons" loading="lazy"><figcaption><span>Inventory</span><span><a href="art/items-sheet.svg" download>SVG</a> · <a href="art/items-sheet.png" download>PNG</a></span></figcaption></figure>
-    <figure class="px-frame"><img data-link src="art/guild-hall.svg" alt="GitHub as a guild hall: teams, roles, AI agents, gates" loading="lazy"><figcaption><span>Guild hall</span><span><a href="art/guild-hall.svg" download>SVG</a> · <a href="art/guild-hall.png" download>PNG</a></span></figcaption></figure>
-    <figure class="px-frame"><img data-link src="art/remix-map.svg" alt="How pieces travelled between the repos" loading="lazy"><figcaption><span>Remix map</span><span><a href="art/remix-map.svg" download>SVG</a> · <a href="art/remix-map.png" download>PNG</a></span></figcaption></figure>
-    <figure class="px-frame"><img data-link src="art/vavelog-quest.svg" alt="The making of vave.log as a quest road" loading="lazy"><figcaption><span>Quest log</span><span><a href="art/vavelog-quest.svg" download>SVG</a> · <a href="art/vavelog-quest.png" download>PNG</a></span></figcaption></figure>
-    <figure class="px-frame"><img data-link src="art/bosses.svg" alt="The seven risk bosses" loading="lazy"><figcaption><span>Bosses</span><span><a href="art/bosses.svg" download>SVG</a> · <a href="art/bosses.png" download>PNG</a></span></figcaption></figure>
-    <figure class="px-frame"><img data-link src="art/life-strip.svg" alt="Six panels from farm kid to vibecoder" loading="lazy"><figcaption><span>Life strip</span><span><a href="art/life-strip.svg" download>SVG</a> · <a href="art/life-strip.png" download>PNG</a></span></figcaption></figure>
-    <figure class="px-frame"><img data-link src="art/repo-wall.svg" alt="41 tiles, one per repository" loading="lazy"><figcaption><span>Repo wall</span><span><a href="art/repo-wall.svg" download>SVG</a> · <a href="art/repo-wall.png" download>PNG</a></span></figcaption></figure>
-    <figure class="px-frame"><img data-link src="art/fireplace-rules.svg" alt="Seven fireplace rules on a sign" loading="lazy"><figcaption><span>Fireplace rules</span><span><a href="art/fireplace-rules.svg" download>SVG</a> · <a href="art/fireplace-rules.png" download>PNG</a></span></figcaption></figure>
-    <figure class="px-frame"><img data-link src="art/pix-wave.svg" alt="Pix hopping and waving" loading="lazy"><figcaption><span>Pix waves</span><span><a href="art/pix-wave.svg" download>SVG</a> · <a href="art/pix-wave.png" download>PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/title-fire.svg" alt="Title: Playing with Fire, stories around the fire" loading="lazy"><figcaption><span>Title</span><span><a href="art/title-fire.svg">SVG</a> · <a href="art/title-fire.png">PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/story-map.svg" alt="The trail of the evening with eight camps" loading="lazy"><figcaption><span>The trail</span><span><a href="art/story-map.svg">SVG</a> · <a href="art/story-map.png">PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/campfire-scene.svg" alt="Pix by the campfire under the stars" loading="lazy"><figcaption><span>Gather round</span><span><a href="art/campfire-scene.svg">SVG</a> · <a href="art/campfire-scene.png">PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/lore-strip.svg" alt="AI history as a pixel timeline from 1950 to now" loading="lazy"><figcaption><span>Old fires</span><span><a href="art/lore-strip.svg">SVG</a> · <a href="art/lore-strip.png">PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/items-sheet.svg" alt="Thirty AI and GitHub words as pixel icons" loading="lazy"><figcaption><span>Words by the fire</span><span><a href="art/items-sheet.svg">SVG</a> · <a href="art/items-sheet.png">PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/booth-scene.svg" alt="A pixel trade-fair booth with an LED wall and visitors" loading="lazy"><figcaption><span>The booth world</span><span><a href="art/booth-scene.svg">SVG</a> · <a href="art/booth-scene.png">PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/guild-hall.svg" alt="GitHub as a hall: teams, roles, AI agents, gates" loading="lazy"><figcaption><span>The camp</span><span><a href="art/guild-hall.svg">SVG</a> · <a href="art/guild-hall.png">PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/remix-map.svg" alt="How pieces travelled between the repos" loading="lazy"><figcaption><span>Remix map</span><span><a href="art/remix-map.svg">SVG</a> · <a href="art/remix-map.png">PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/vavelog-quest.svg" alt="The making of vave.log as a road with milestones" loading="lazy"><figcaption><span>The making of vave.log</span><span><a href="art/vavelog-quest.svg">SVG</a> · <a href="art/vavelog-quest.png">PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/bosses.svg" alt="Seven friendly ghosts in the smoke" loading="lazy"><figcaption><span>In the smoke</span><span><a href="art/bosses.svg">SVG</a> · <a href="art/bosses.png">PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/life-strip.svg" alt="Six panels from farm kid to vibecoder" loading="lazy"><figcaption><span>Who is telling</span><span><a href="art/life-strip.svg">SVG</a> · <a href="art/life-strip.png">PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/repo-wall.svg" alt="41 tiles, one per repository" loading="lazy"><figcaption><span>Repo wall</span><span><a href="art/repo-wall.svg">SVG</a> · <a href="art/repo-wall.png">PNG</a></span></figcaption></figure>
+    <figure class="px-frame"><img data-link src="art/fireplace-rules.svg" alt="Seven fireplace rules on a sign" loading="lazy"><figcaption><span>Fireplace rules</span><span><a href="art/fireplace-rules.svg">SVG</a> · <a href="art/fireplace-rules.png">PNG</a></span></figcaption></figure>
   </div>
 
   <footer>
@@ -125,7 +124,7 @@
 <script>
 (function () {
   'use strict';
-  // Station icons: Pix, an inventory item (PX.ITEMS) or a classic icon; unknown names fall back to the spark
+  // Icons: Pix, a word icon (PX.ITEMS) or a classic icon; unknown names fall back to the spark
   for (const svg of document.querySelectorAll('svg[data-px-icon]')) {
     const name = svg.dataset.pxIcon;
     const item = PX.ITEMS && PX.ITEMS[name];
