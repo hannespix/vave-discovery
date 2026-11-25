@@ -4,9 +4,11 @@
 > - **Format:** Campfire-Talk bei VAVE, 90 Minuten, auf Englisch. Version 3 liegt zwischen den ersten beiden: der
 >   Lagerfeuer-Abend aus Version 1 mit den reicheren Inhalten aus Version 2, aber ohne Spielmechanik (keine Level,
 >   keine Save Points, keine Seltenheit). Acht Kapitel, erzählt wie am Feuer.
-> - **Board = Bühne:** Alle sehen das Whiteboard. Im Präsentationsmodus kommen nur Karten für das Publikum: die acht
->   Decks, die Live-Tools und die Mitmach-Bubbles. Keine Notizen, keine Anleitungen, keine Zeitangaben, keine
->   Rahmen-Titelfolien. Kapitelüberschriften und Lagerfeuer sind aufs Board gezeichnet und erzeugen keine Folie.
+> - **Board = Bühne:** Alle sehen das Whiteboard. Im Präsentationsmodus kommen nur Karten für das Publikum: je Kapitel
+>   die Pixel-Kapitelkarte, das Deck, die Live-Tools und die Mitmach-Bubbles. Keine Notizen, keine Anleitungen, keine
+>   Zeitangaben, keine Rahmen-Titelfolien. Nur der Pfad zwischen den Lagerplätzen ist gezeichnet.
+> - **PixiNotes dunkel stellen:** Im dunklen Theme liegen Kapitelkarten, Bubbles und Kanban auf Nachtgrund statt in
+>   einem weißen Rahmen. Das trägt die Lagerfeuer-Stimmung durch den ganzen Abend.
 > - **Du redest frei.** Die Decks tragen die Geschichte; die Sprechernotizen (Taste S) sind Stichworte, kein Skript.
 > - **Inhalte:** Begriffe, Jahreszahlen, Gerüchte und Risiken stehen in `shared/lore.js`.
 > - **Öffentlich:** Diese Datei liegt in einem öffentlichen Repo und enthält nur, was auch im Vortrag zu hören ist.
@@ -16,7 +18,7 @@
 
 ## The story in one breath
 
-**Fire was humanity's first technology; AI might be its latest. Tonight we sit around one fire and tell its story:
+**Fire was one of our first technologies; AI might be one of our latest. Tonight we sit around one fire and tell its story:
 how we gathered, the old tales and the rumours, the words people use, how to light your first small fire and keep it
 going, how many fires make a camp, the one we lit for VAVE, the smoke to watch out for, and the embers you take
 home.**
@@ -47,18 +49,18 @@ Motifs that carry the evening (light touch, never a game):
 | 0:19 | **III · Words by the fire** | Beginner | deck *Words by the fire*, *Token Oracle*, *Context Circle*, *Words* (30 terms) |
 | 0:33 | **IV · Kindling** | Beginner → Casual | deck *Kindling*, *Prompt Forge* |
 | 0:50 | **V · Many fires** | Advanced | deck *Many fires*, *Git Time Machine* |
-| 1:03 | **VI · A fire for VAVE** | Advanced | deck *A fire for VAVE*, kanban *vave.log: proposals* |
+| 1:03 | **VI · A fire for VAVE** | Advanced | deck *A fire for VAVE*, kanban *vave.log: ideas, not decisions* |
 | 1:15 | **VII · Smoke** | all | deck *Smoke*, *Fireplace Check* |
-| 1:23 | **VIII · Embers** | all | deck *Embers*, bubbles *Side quests*, *Booth Builder*, kanban *Try on Monday*, bubbles *Your questions* |
+| 1:23 | **VIII · Embers** | all | bubbles *Ideas for spaces*, *Booth Builder*, kanban *Try on Monday*, bubbles *Your questions*, then the deck *Embers* closes the evening |
 
 ---
 
 ## I · The gathering (0:00–0:07)
 
-**Mood:** dark room, one fire, everyone pulls a chair closer. [⇢ deck *The gathering*, `art/title-fire.svg`]
+**Mood:** dark room, one fire, everyone pulls a chair closer. [⇢ deck *The gathering*, `art/campfire-scene.svg`]
 
 - **Open with the fire, not with yourself:** "Long before anyone wrote, people sat around a fire and told stories.
-  Fire was our first technology. Tonight we talk about what might be the latest one."
+  Fire was one of our first technologies. Tonight we talk about what might be one of the latest."
 - **Who's telling:** farm kid, winery, wine engineer, public administration, 41 repositories
   [⇢ `art/life-strip.svg`, `art/repo-wall.svg`].
   > "I'm not a developer. My day job is in public administration, not in IT. What I am is a translator: I know what
@@ -74,7 +76,7 @@ Motifs that carry the evening (light touch, never a game):
 `art/lore-strip.svg`]
 
 - **Told as one story, not a list:** 1950 Turing asks if machines can think → 1956 a proposal hopes to crack it in
-  one summer (the summer took 70 years) → 1966 ELIZA, and people confide in a script → two winters after big
+  one summer (that summer is still going) → 1966 ELIZA, and people confide in a script → two winters after big
   promises → 1997 Deep Blue, 2016 Move 37 → 2017 the Transformer, the T in GPT → 2022 ChatGPT → 2024 glue on pizza
   → 2025 "vibe coding" gets a name → tonight.
 - **Rumours by the fire** [⇢ module *Myth or Fact?*]: the room votes with hands, Hannes reveals. 14 tales, from "the
@@ -126,10 +128,10 @@ Three pictures to keep, each with a live tool:
 - **Keeping it going:** the loop Describe → Build → Look → Feedback. Screenshots beat words. That's design work, and
   designers are good at it.
 - **AI forgets, files remember:** `CLAUDE.md` / `AGENTS.md` (how we work here), design principles (the CD as rules),
-  `STATE.md` (where we are). Every coding AI reads them.
+  `STATE.md` (where we are). `CLAUDE.md` / `AGENTS.md` is read first; it points to the other two.
 - **Brand in, brand out:** give it your CD and it follows it. **For spaces:** liquid type, letters you pull and burst,
   imagined on an LED wall that reacts to visitors.
-- **From phone to production:** a change asked for on the train, reviewed as a pull request, live minutes later.
+- **From phone to production:** a change asked for from the phone, reviewed as a pull request, live minutes later.
 - **Ember:** "A small fire is still a fire. Taste is what keeps it burning."
 
 ## V · Many fires: GitHub, many accounts, many AIs, many repos (0:50–1:03)
@@ -140,7 +142,7 @@ different AIs work together, and how to build like Lego, not monoliths. [⇢ dec
 
 - **GitHub in six words** [⇢ *Git Time Machine*]: repository = folder with memory · commit = a saved version · branch =
   variant B · pull request = client approval round · Actions = safety inspectors · Pages = shop window.
-- **One person, one account, many camps:** your personal account joins the VAVE organization. People come and go; the
+- **One person, one account, many camps:** if VAVE sets up a GitHub organization, your account can join it. People come and go; the
   work stays with the agency. Teams and roles (read, triage, write, maintain, admin); a freelancer gets one repo, not
   the whole house; bots and AI agents get their own limited keys; `main` only through a reviewed pull request;
   `CODEOWNERS` lets the brand guardian approve design files; secrets live in the vault, never in the code.
@@ -166,8 +168,8 @@ use. [⇢ deck *A fire for VAVE*, `art/vavelog-quest.svg`]
 - **How it started:** a discovery project, a survey as one HTML file and a clickable prototype. Then vave.log was
   built on assumptions and public research, on purpose, as a phase-one draft to be tested with real people.
   > "Every feature in here is a hypothesis until you've used it."
-- **How it grew** (from the repository's history, 105 commits, pull requests up to #91): Day 1, an empty repo becomes
-  a working app with login and the MCP foundation · Day 2, about 30 pull requests · Day 3, invoices, quotes that turn
+- **How it grew** (from the repository's history, 105 commits, pull requests up to #91): Day 1, login and the MCP
+  foundation · Day 2, about 30 pull requests · Day 3, invoices, quotes that turn
   into projects, checks against WCAG 2.2 AA · Week 2, eight milestones around leave and capacity · Weeks 5–6, an audit
   with about 60 findings, and the capacity plan rebuilt after **watching one real user work** · Week 6, group of
   companies, holidays for China, Dubai and Singapore, polish.
@@ -178,13 +180,11 @@ use. [⇢ deck *A fire for VAVE*, `art/vavelog-quest.svg`]
   plug for AI with 68 tools lets an assistant log time or ask "where is it burning?", with exactly the rights of the
   person asking. About 70 test files; every change passes checks before it goes live.
 - **The lesson:** the best feature came from watching one real person use it for an hour. Not from a prompt.
-- **Where it could go: proposals, not decisions** (agents propose, humans decide), on the board as a kanban the room
-  can move:
-  - **Now:** AI time entry with a proper consent screen · capacity plan v2 (rates per service, € per phase)
-  - **Next:** build-up radar (crews, trucks, hall slots) · fair deadline radar from the technical guidelines ·
-    modular stock (frames, LED tiles, furniture) · site reports from the phone · client approvals for render
-    variants
-  - **Later:** cross-company staffing · multi-currency invoices, only with tax advice
+- **Where it could go: ideas, not decisions** (agents propose, VAVE decides, not in this room). On the board as a
+  kanban with *Built, in test*, *Ideas* and *Questions for VAVE*. Ideas: AI time entry through MCP with a consent screen ·
+  capacity plan v2 (rates per service, € per phase) · build-up radar (crews, trucks, hall slots) · fair deadline radar
+  from the technical guidelines · modular stock (frames, LED tiles, furniture) · site reports from the phone · client
+  approvals for render variants · cross-company staffing · multi-currency invoices, only with tax advice.
 - **Ember:** "The best ideas come from watching, not prompting."
 
 ## VII · Smoke: ghost stories that are true (1:15–1:23)
@@ -195,8 +195,8 @@ use. [⇢ deck *A fire for VAVE*, `art/vavelog-quest.svg`]
 | In the smoke | What it does | How to keep it away |
 |---|---|---|
 | **The Hallucinator** | confident errors | verify, ask for sources, test what it built |
-| **The Leaker** | confidential data in the wrong chat | business plan, client NDA first, anonymise, ask |
-| **The Key Goblin** | passwords and keys in code | a vault, never in files; let an AI audit your repos, rotate what it finds |
+| **The Leaker** | client or personal data in the wrong chat | business plan, client NDA first, anonymise, ask |
+| **The Key Goblin** | passwords and keys in code | turn on secret scanning and push protection; a key that was ever pushed is burnt: rotate it |
 | **The Licence Lich** | fonts, images, code, AI output | own or license it, check tool terms and the client contract, label AI content where required |
 | **The Orphan Golem** | tools nobody maintains | every tool has an owner, docs live in the repo |
 | **The Lock-in Dragon** | one vendor for everything | pull requests and open formats, so any AI can take the next shift |
@@ -204,7 +204,7 @@ use. [⇢ deck *A fire for VAVE*, `art/vavelog-quest.svg`]
 
 - **Live:** [⇢ *Fireplace Check*]: six questions about a real task, then green, yellow or red. A rule of thumb, not
   legal advice: the client contract and the NDA always win.
-- **The fireplace rules:** no client secrets in consumer chats · keys never live in code · every tool has an owner ·
+- **The fireplace rules:** no client secrets or personal data in consumer chats · keys never live in code · every tool has an owner ·
   ship small, review always · test what matters · respect licences and people · humans decide.
 - **Ember:** "Mind the smoke, and the fire stays friendly."
 
@@ -212,11 +212,11 @@ use. [⇢ deck *A fire for VAVE*, `art/vavelog-quest.svg`]
 
 **Mood:** the fire is low, the conversation gets honest. [⇢ deck *Embers*]
 
-- **Side quests in space** (board: bubbles, three dots each): concept sprint · fair rules decoder · booth flow test ·
+- **Ideas for spaces** (board: bubbles, *which idea would help your work most?*): concept sprint · fair rules decoder · booth flow test ·
   living LED walls · showroom stories in four languages · modular reuse · build-up radar · pitch prototypes.
 - **Booth Builder** (board): place counter, LED wall and lounge, open the doors, watch where people stop. A rule-based
-  critic says what a visitor would say. Built in an afternoon; that's the point.
-- **Try on Monday** (board: kanban): one small experiment per person, with dummy data.
+  critic says what a visitor would say. Small enough to build quickly; that's the point.
+- **Try on Monday** (board: kanban): one small experiment per person, within VAVE's AI rules, with dummy data.
 - **Questions** (board: bubbles): the sticks the room threw into the fire.
 - **Last line:**
   > "Fire didn't replace cooks. It made cooking possible. Keep your taste, feed the fire, mind the smoke. Thanks for

@@ -71,8 +71,8 @@ const DECK = { w: 1100, h: 690 }, TOOL = { w: 560, h: 520 }, LOW = { w: 560, h: 
 
 const op = (mcp, slot, size) => ({ mcp, slot, size });
 const app = (file, slot, size, titel) => ({ app: file, slot, size, titel });
-const bild = (file, slot, w, titel) => ({ bild: file, slot, w, titel });
-const kapitel = (n, titel) => bild(`chapter-${n}.svg`, 'card', 520, titel);
+const bild = (file, slot, w, titel, folie) => ({ bild: file, slot, w, titel, folie });
+const kapitel = (n, titel) => bild(`chapter-${n}.svg`, 'card', 520, titel, 520);   // 520 px on the slide: whole card, no crop
 const bubbles = (title, question, ideas, slot, size) => op({ op: 'bubbles', title, question, ideas }, slot, size);
 
 // Eight camps, one per chapter of ROTER-FADEN.md (version 3). The order of the cards is the presentation path.
@@ -108,21 +108,23 @@ const CAMPS = [
   { name: 'VI · A fire for VAVE', cards: [
     kapitel(6, 'VI · A fire for VAVE'),
     app('decks/vave-fire.html', 'deck', DECK, 'A fire for VAVE'),
-    op({ op: 'kanban', title: 'vave.log: proposals, not decisions', columns: ['Now', 'Next', 'Later', 'Built, in test'], items: [
+    // Ideas and open questions, no plan: VAVE decides outside the room. PixiNotes strikes through the LAST column (done),
+    // so that column ("Later") starts empty and nothing built or proposed looks cancelled.
+    op({ op: 'kanban', title: 'vave.log: ideas, not decisions', columns: ['Built, in test', 'Ideas', 'Questions for VAVE', 'Later'], items: [
       { text: 'Time tracking, timer, holidays and absences', column: 'Built, in test' },
       { text: 'Capacity plan v1', column: 'Built, in test' },
       { text: 'MCP server: 68 tools for AI assistants', column: 'Built, in test' },
       { text: 'English · Deutsch · 中文', column: 'Built, in test' },
-      { text: 'AI time entry live (MCP + consent screen)', column: 'Now' },
-      { text: 'Capacity plan v2: rates per service, € per phase', column: 'Now' },
-      { text: 'Build-up radar: crews, trucks, hall slots', column: 'Next' },
-      { text: 'Fair deadline radar from technical guidelines', column: 'Next' },
-      { text: 'Modular stock: frames, LED tiles, furniture', column: 'Next' },
-      { text: 'Site reports from the phone', column: 'Next' },
-      { text: 'Client approvals for render variants', column: 'Next' },
-      { text: 'Group: cross-company staffing', column: 'Later' },
-      { text: 'Multi-currency invoices (with tax advice)', column: 'Later' },
-    ] }, [60, 860], { w: 1100, h: 560 }),
+      { text: 'AI time entry through MCP, with a consent screen', column: 'Ideas' },
+      { text: 'Capacity plan v2: rates per service, € per phase', column: 'Ideas' },
+      { text: 'Build-up radar: crews, trucks, hall slots', column: 'Ideas' },
+      { text: 'Fair deadline radar from technical guidelines', column: 'Ideas' },
+      { text: 'Modular stock: frames, LED tiles, furniture', column: 'Ideas' },
+      { text: 'Site reports from the phone', column: 'Ideas' },
+      { text: 'Client approvals for render variants', column: 'Ideas' },
+      { text: 'Cross-company staffing', column: 'Ideas' },
+      { text: 'Multi-currency invoices (with tax advice)', column: 'Ideas' },
+    ] }, [60, 860], { w: 1720, h: 560 }),
   ] },
   { name: 'VII · Smoke', cards: [
     kapitel(7, 'VII · Smoke'),
@@ -131,11 +133,12 @@ const CAMPS = [
   ] },
   { name: 'VIII · Embers', cards: [
     kapitel(8, 'VIII · Embers'),
-    app('decks/embers.html', 'deck', DECK, 'Embers'),
-    bubbles('Side quests in space', 'Where should VAVE light the first fire? Three dots each.', LORE.QUESTS.map((q) => q.title), [60, 860], TOOL),
-    app('modules/booth-builder.html', [640, 860], DECK, 'Booth Builder'),
-    op({ op: 'kanban', title: 'Try on Monday', columns: ['Idea', 'Trying', 'Done'], items: [{ text: 'Rebuild one boring spreadsheet as a single HTML file (dummy data)' }, { text: 'Write a CLAUDE.md / AGENTS.md for one project' }] }, [60, 1620], LOW),
-    bubbles('Your questions', 'What do you want to ask the fire?', [], [640, 1620], LOW),
+    bubbles('Ideas for spaces', 'Which idea would help your work most?', LORE.QUESTS.map((q) => q.title), 'deck', TOOL),
+    app('modules/booth-builder.html', [60, 860], DECK, 'Booth Builder'),
+    op({ op: 'kanban', title: 'Try on Monday (within VAVE\'s AI rules, with dummy data)', columns: ['Idea', 'Trying', 'Done'], items: [{ text: 'Rebuild one boring spreadsheet as a single HTML file' }, { text: 'Write a CLAUDE.md / AGENTS.md for one project' }] }, [1220, 90], LOW),
+    bubbles('Your questions', 'What do you want to ask the fire?', [], [1220, 860], LOW),
+    // the closing words come last, after the questions: the deck ends the evening
+    app('decks/embers.html', [60, 1620], { w: 1100, h: 460 }, 'Embers'),
   ] },
 ];
 
@@ -180,7 +183,11 @@ function andereKarten(karten, ort) {
     } else if (k.bild) {
       const f = datei_(`art/${k.bild}`);
       const m = existsSync(f) ? svgMass(f) : { w: 16, h: 9 };
-      extra.push({ id: k.id, type: 'image', position: ort(k), width: k.w, height: Math.round((k.w * m.h) / m.w), data: { src: existsSync(f) ? `data:image/svg+xml;base64,${b64(f)}` : '', name: k.bild, titel: k.titel } });
+      // On a presentation slide PixiNotes shows an image at its natural size (max 600 px) below a ~95 px header, and
+      // a 600 px square would lose its bottom edge on a 657 px slide. So the SVG carries a natural width of k.folie.
+      const svg = existsSync(f) ? readFileSync(f, 'utf8') : '';
+      const natur = k.folie ? svg.replace(/<svg\b([^>]*?)\swidth="[^"]*"\s+height="[^"]*"/, `<svg$1 width="${k.folie}" height="${Math.round((k.folie * m.h) / m.w)}"`) : svg;
+      extra.push({ id: k.id, type: 'image', position: ort(k), width: k.w, height: Math.round((k.w * m.h) / m.w), data: { src: svg ? `data:image/svg+xml;base64,${Buffer.from(natur).toString('base64')}` : '', name: k.bild, titel: k.titel } });
     } else if (k.raw) {
       extra.push({ id: k.id, ...k.raw, position: ort(k) });
     }

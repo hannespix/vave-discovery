@@ -858,7 +858,7 @@ body {
   /* ── AI history: the lore. Phrased carefully; numbers are approximate where marked. ── */
   const HISTORY = [
     { year: '1950', title: 'The imitation game', text: 'Alan Turing asks whether machines can think, and proposes a test: can it pass as human in a text chat?' },
-    { year: '1956', title: 'The summer that took 70 years', text: 'A proposal for a summer workshop at Dartmouth coins "artificial intelligence". It hoped a group of ten could make real progress over one summer.' },
+    { year: '1956', title: 'The summer that is still going', text: 'The 1955 proposal for a 1956 summer workshop at Dartmouth coins "artificial intelligence". It hoped a group of ten could make real progress over one summer.' },
     { year: '1966', title: 'ELIZA', text: 'A tiny script plays therapist by turning your sentences into questions. Its inventor was shocked how much people confided in it.' },
     { year: '1970s–90s', title: 'AI winters', text: 'Big promises, small results, frozen budgets. Twice. A good reminder for every hype cycle.' },
     { year: '1997', title: 'Deep Blue', text: 'IBM\'s chess computer beats world champion Garry Kasparov.' },
@@ -876,8 +876,8 @@ body {
 
   /* ── Myth or fact? verdict: fact | myth | half | rumour | depends ── */
   const MYTHS = [
-    { claim: 'AI researchers once planned to crack it in a single summer.', verdict: 'fact',
-      why: 'The 1955 proposal for the Dartmouth workshop hoped ten people over two months could make a significant advance.' },
+    { claim: 'AI researchers once planned to crack it in a single summer.', verdict: 'half',
+      why: 'The 1955 proposal for the Dartmouth workshop hoped ten people over two months could make a significant advance. Not to crack it, but close enough to be a famous overestimate.' },
     { claim: 'The first computer bug was a real moth.', verdict: 'half',
       why: 'In 1947 a moth was taped into the Harvard Mark II logbook as the "first actual case of bug being found". The word "bug" was already older.' },
     { claim: 'A car dealer\'s chatbot sold a new SUV for one dollar.', verdict: 'half',
@@ -903,21 +903,21 @@ body {
     { claim: '"Vibe coding" was a Word of the Year.', verdict: 'fact',
       why: 'Collins Dictionary chose it for 2025, less than a year after Karpathy coined it.' },
     { claim: 'AI will replace designers by 2025.', verdict: 'myth',
-      why: 'It is 2026. You are still here, and the tools need your taste more than ever.' },
+      why: 'Nobody here was replaced by 2025. How roles change is for VAVE to shape.' },
   ];
 
-  /* ── Bosses: the risks, as a boss fight. weakness = what beats it. ── */
+  /* ── Ghost stories in the smoke: the risks. hp = what it does, weakness = how to keep it away. ── */
   const BOSSES = [
     { id: 'hallucinator', name: 'The Hallucinator', hp: 'confident errors', weakness: 'Verify facts, ask for sources, test what it built.' },
-    { id: 'leaker', name: 'The Leaker', hp: 'confidential data in the wrong chat', weakness: 'Business plan, client NDA first, anonymise, ask before pasting.' },
-    { id: 'goblin', name: 'The Key Goblin', hp: 'passwords and keys in code', weakness: 'Secrets in a vault, never in files; let an AI audit your repos and rotate what it finds.' },
+    { id: 'leaker', name: 'The Leaker', hp: 'client or personal data in the wrong chat', weakness: 'Business plan, client NDA first, anonymise, ask before pasting.' },
+    { id: 'goblin', name: 'The Key Goblin', hp: 'passwords and keys in code', weakness: 'Turn on secret scanning and push protection. A key that was ever pushed is burnt: rotate it.' },
     { id: 'lich', name: 'The Licence Lich', hp: 'fonts, images, code, AI output', weakness: 'Use what you own or license; check tool terms and the client contract; label AI content where required.' },
     { id: 'golem', name: 'The Orphan Golem', hp: 'tools nobody maintains', weakness: 'Every tool has an owner; docs live in the repo.' },
     { id: 'dragon', name: 'The Lock-in Dragon', hp: 'one vendor for everything', weakness: 'Work through GitHub pull requests and open formats; then any AI can take the next shift.' },
     { id: 'drain', name: 'The Brain Drain', hp: 'people stop thinking', weakness: 'AI amplifies taste. Keep the taste human.' },
   ];
 
-  /* ── Side quests: where AI helps communication in space (VAVE's world) ── */
+  /* ── Ideas for spaces: where AI could help communication in space (VAVE's world) ── */
   const QUESTS = [
     { title: 'Concept sprint', text: 'Moodboards, AI renders and a clickable walk-through of the booth in a day, before the first CAD line.' },
     { title: 'Fair rules decoder', text: 'Turn an 80-page technical guideline into a checklist: heights, fire safety, rigging, deadlines. Human checks the result.' },
@@ -929,9 +929,9 @@ body {
     { title: 'Pitch prototypes', text: 'Clients click through the idea instead of reading about it.' },
   ];
 
-  /* ── The fireplace rules (unchanged) ── */
+  /* ── The fireplace rules ── */
   const RULES = [
-    'No client secrets in consumer chats.',
+    'No client secrets or personal data in consumer chats.',
     'Keys never live in code.',
     'Every tool has an owner.',
     'Ship small, review always.',
