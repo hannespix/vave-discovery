@@ -34,18 +34,18 @@ The running jokes (use them, they carry the evening):
 
 ## Timeline at a glance
 
-| Clock | Level | Agreed chapter | On the board |
+| Clock | Level | Agreed chapter | Board frame (deck first, then the live cards) |
 |---|---|---|---|
-| 0:00 | **0 · PRESS START** | – | title screen, warm-up bubbles, how to play |
-| 0:05 | **1 · CHARACTER SELECT** | – | character sheet, life strip, repo wall |
-| 0:11 | **2 · THE LORE** | Beginner | AI history as a timeline, *Myth or Fact?* |
-| 0:23 | **3 · THE INVENTORY** | Beginner | *Inventory* (30 terms), *Token Oracle*, *Context Circle* |
-| 0:35 | **4 · KINDLING** | Beginner | *Prompt Forge*, live mini-build, tiny-to-real |
-| 0:45 | **5 · CRAFTING** | Casual | the loop, memory files, liquid type for LED walls |
-| 0:55 | **6 · THE GUILD HALL** | Advanced | GitHub, accounts and roles, many AIs, many repos (remix map), *Git Time Machine* |
-| 1:07 | **7 · QUEST LOG: vave.log** | Advanced | making-of timeline, architecture, roadmap proposals |
-| 1:17 | **8 · BOSS FIGHT** | all | seven bosses, *Fireplace Check*, fireplace rules |
-| 1:25 | **9 · NEW GAME+** | all | side quests for VAVE (dot voting), *Booth Builder*, try on Monday, Q&A |
+| 0:00 | **0 · PRESS START** | – | frame 0–1: warm-up bubbles, deck *Press start* (levels 0 and 1) |
+| 0:05 | **1 · CHARACTER SELECT** | – | frame 0–1: same deck, then *Show one* with two live links |
+| 0:11 | **2 · THE LORE** | Beginner | deck *The lore*, *Myth or Fact?*, AI history as a table, rumour mill |
+| 0:23 | **3 · THE INVENTORY** | Beginner | deck *Inventory*, *Inventory* (30 terms), *Token Oracle*, *Context Circle* |
+| 0:35 | **4 · KINDLING** | Beginner | frame 4–5: deck *Kindling* (levels 4 and 5), *Prompt Forge*, live mini-build prompt |
+| 0:45 | **5 · CRAFTING** | Casual | frame 4–5: same deck, then *Show* with liquid type |
+| 0:55 | **6 · THE GUILD HALL** | Advanced | deck *Guild hall*, *Git Time Machine*, remix map |
+| 1:07 | **7 · QUEST LOG: vave.log** | Advanced | deck *Quest log*, making-of table, roadmap proposals (kanban) |
+| 1:17 | **8 · BOSS FIGHT** | all | deck *Boss fight*, *Fireplace Check*, bosses and weaknesses (table) |
+| 1:25 | **9 · NEW GAME+** | all | side quests for VAVE (dot voting), *Booth Builder*, try on Monday, deck *New game+*, Q&A |
 
 Questions are side quests: drop a bubble any time, they get picked up at the next save point.
 
@@ -53,8 +53,9 @@ Questions are side quests: drop a bubble any time, they get picked up at the nex
 
 ## 0 · PRESS START (0:00–0:05)
 
-- **Board:** title screen [⇢ `art/title-screen.svg`], Pix by the fire, the QR code to join (invite link without
-  account).
+- **Board:** the overview (liquid title, world map, agenda), then frame *Levels 0–1* with the warm-up bubbles and the
+  deck *Press start* [⇢ title screen `art/title-screen.svg` as its first slide]. Join via Live → invite link without
+  account → QR code.
 - **Warm-up bubbles:** *"One word: right now, AI makes me feel …"*. Read three out loud.
 - **How to play (say it like a game tutorial):**
   > "Ten levels, ninety minutes. Questions are side quests: drop them as bubbles. Campfires are save points. Nobody
@@ -213,7 +214,7 @@ Show `campfire/tools/board.mjs` for ten seconds.
 
 **Goal:** Show the real thing: how a tool built for VAVE came to be, what the draft can do (in testing, not in daily
 use), and where it could go next. Honest,
-with numbers from the repository. [⇢ deck *Quest log*, `art/vavelog-quest.svg`, board frame 7]
+with numbers from the repository. [⇢ deck *Quest log*, `art/vavelog-quest.svg`, board frame *Level 7*]
 
 **The trigger.** It started with a discovery project: a survey as one HTML file and a clickable prototype. Then
 vave.log was built on assumptions and public research, on purpose, as a phase-one draft to be tested with real people. *Say it:* "Every feature in here is a hypothesis until you've used it."
