@@ -692,7 +692,9 @@ function icons() {
 
 /* ══ Version 2: the pixel RPG quest ══════════════════════════════════════════ */
 /* Shared bits for the v2 screens. All scenes are 320×180 (16:9) unless noted. */
-const RAR = { common: '4', rare: 'c', epic: 'd', legendary: 'M' };
+/* Rarity frame colours, the same mapping as --rar-* in shared/campfire.css:
+   common muted (t) · rare lime (d, --lcd-d) · epic orange (o, --fire-2) · legendary gold (y, --fire-3) */
+const RAR = { common: 't', rare: 'd', epic: 'o', legendary: 'y' };
 /** Double frame like the trail map */
 function frame2(W, H) {
   const fr = new Cv(W, H);
@@ -1057,12 +1059,18 @@ function boothScene() {
   for (let y = TY + 12; y < 96; y++) { const hw = 1 + Math.floor((y - TY - 12) / 9); beam.push([203 - hw, y, hw * 2 + 1, 1]); }
   body += `<path fill="${C.f}" fill-opacity=".1" d="${dotD(beam)}"/><path fill="${C.f}" fill-opacity=".12" d="${ellD(203, 126, 16, 3)}"/>`;
   [84, 150].forEach((x) => { const b = []; for (let y = TY + 12; y < 44; y++) { const hw = 1 + Math.floor((y - TY - 12) / 6); b.push([x - hw, y, hw * 2 + 1, 1]); } body += `<path fill="${C.f}" fill-opacity=".07" d="${dotD(b)}"/>`; });
-  // LED wall: two lines of type flowing in pixel steps, clipped to the wall
+  // LED wall: two lines of type flowing in pixel steps, clipped to the wall.
+  // The still (frame 0, reduced motion, PNG) shows only whole words: each loop is shifted so that one phrase
+  // that fits the wall sits centred in it and its neighbours fall outside the clip.
   const T1 = 'COMMUNICATION IN SPACE  ·  ', T2 = 'BRAND · SPACE · STORY · PEOPLE · ';
+  const S1 = 'IN SPACE', S2 = 'STORY · PEOPLE';
   const w1 = PX.textWidth(T1, 2) + 6, w2 = PX.textWidth(T2) + 4;
+  const at = (t, sub, s) => { const i = t.indexOf(sub); return i ? PX.textWidth(t.slice(0, i), s) + s : 0; };
+  const x1 = LX + Math.floor((LW - PX.textWidth(S1, 2)) / 2) - at(T1, S1, 2);
+  const x2 = LX + Math.floor((LW - PX.textWidth(S2)) / 2) - at(T2, S2, 1);
   body += `<clipPath id="boothLed"><rect x="${LX}" y="${LY}" width="${LW}" height="${LH}"/></clipPath><g clip-path="url(#boothLed)">`;
-  body += `<g class="ld1">${[0, 1, 2].map((k) => PX.text(T1, { x: LX + 4 + k * w1, y: LY + 10, scale: 2, fill: C.e })).join('')}</g>`;
-  body += `<g class="ld2">${[0, 1, 2, 3].map((k) => PX.text(T2, { x: LX - w2 + k * w2, y: LY + 34, fill: C.c })).join('')}</g>`;
+  body += `<g class="ld1">${[0, 1, 2].map((k) => PX.text(T1, { x: x1 + k * w1, y: LY + 10, scale: 2, fill: C.e })).join('')}</g>`;
+  body += `<g class="ld2">${[-1, 0, 1, 2].map((k) => PX.text(T2, { x: x2 + k * w2, y: LY + 34, fill: C.c })).join('')}</g>`;
   body += `<g class="ld3"><path fill="${C.a}" d="${dotD(Array.from({ length: 24 }, (_, i) => [LX + 2 + i * 4, LY + 46 - (i * 7 % 5), 2, 1 + (i * 7 % 5)]))}"/></g></g>`;
   css += `@keyframes ld1{to{transform:translate(-${w1}px,0)}}.ld1{animation:ld1 ${(w1 / 18).toFixed(2)}s steps(${w1}) infinite}`;
   css += `@keyframes ld2{to{transform:translate(${w2}px,0)}}.ld2{animation:ld2 ${(w2 / 12).toFixed(2)}s steps(${w2}) infinite}`;
